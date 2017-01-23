@@ -58,7 +58,7 @@ class BloomFilter {
 	static from (array, errorRate) {
 		const arrayLength = array.length;
 		const size = Math.ceil(-((arrayLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)));
-		const nbHashes = (size / arrayLength) * Math.log(2);
+		const nbHashes = Math.ceil((size / arrayLength) * Math.log(2));
 		const filter = new BloomFilter(size, nbHashes);
 		array.forEach(element => filter.add(element));
 		return filter;
