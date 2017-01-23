@@ -24,7 +24,7 @@ SOFTWARE.
 
 'use strict';
 
-const crypto = require('crypto'); // TODO: use more pertinent hash functions (FNV1a, Murmur, ...) in production
+const murmur = require('murmurhash3js');
 const utils = require('./utils.js');
 
 /**
@@ -57,7 +57,7 @@ class BloomFilter {
 	 */
 	static from (array, errorRate) {
 		const arrayLength = array.length;
-		const size = Math.floor(-((arrayLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)));
+		const size = Math.ceil(-((arrayLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)));
 		const nbHashes = (size / arrayLength) * Math.log(2);
 		const filter = new BloomFilter(size, nbHashes);
 		array.forEach(element => filter.add(element));
@@ -70,9 +70,9 @@ class BloomFilter {
 	 * @return {void}
 	 */
 	add (element) {
-		const hex = crypto.createHash('sha512').update(element).digest('hex');
-		const firstHash = parseInt(hex.substring(0, 64), 16);
-		const secondHash = parseInt(hex.substring(64), 16);
+		const hex = murmur.x64.hash128(element);
+		const firstHash = parseInt(hex.substring(0, 16), 16);
+		const secondHash = parseInt(hex.substring(16), 16);
 
 		for(let i = 0; i < this.nbHashes; i++) {
 			this.filter[utils.doubleHashing(i, firstHash, secondHash, this.size)] = true;
@@ -86,9 +86,9 @@ class BloomFilter {
 	 * @return {boolean} False if the element is definitvely not in the filter, True is the element might be in the filter
 	 */
 	has (element) {
-		const hex = crypto.createHash('sha512').update(element).digest('hex');
-		const firstHash = parseInt(hex.substring(0, 64), 16);
-		const secondHash = parseInt(hex.substring(64), 16);
+		const hex = murmur.x64.hash128(element);
+		const firstHash = parseInt(hex.substring(0, 16), 16);
+		const secondHash = parseInt(hex.substring(16), 16);
 
 		for(let i = 0; i < this.nbHashes; i++) {
 			if(!this.filter[utils.doubleHashing(i, firstHash, secondHash, this.size)]) {

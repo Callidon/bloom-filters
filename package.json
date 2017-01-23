@@ -16,9 +16,9 @@
   "keywords": [
     "bloom",
     "filter",
-		"bloom filter",
+    "bloom filter",
     "probabilistic",
-		"datastructure"
+    "datastructure"
   ],
   "author": "Thomas Minier <tminier01@gmail.com>",
   "contributors": [
@@ -36,5 +36,8 @@
     "istanbul": "^0.4.5",
     "jsdoc": "^3.4.3",
     "mocha": "^3.2.0"
+  },
+  "dependencies": {
+    "murmurhash3js": "^3.0.1"
   }
 }

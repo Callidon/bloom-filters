@@ -40,7 +40,7 @@ describe('BloomFilter', () => {
 		it('should build a new filter using #from', () => {
 			const data = [ 'alice', 'bob', 'carl' ];
 			const targetRate = 0.1;
-			const expectedSize = Math.floor(-((data.length * Math.log(targetRate))/Math.pow(Math.log(2), 2)));
+			const expectedSize = Math.ceil(-((data.length * Math.log(targetRate))/Math.pow(Math.log(2), 2)));
 			const expectedHashes = (expectedSize / data.length) * Math.log(2);
 			const filter = BloomFilter.from(data, targetRate);
 
