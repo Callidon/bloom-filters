@@ -39,7 +39,7 @@ filter = BloomFilter.from([ 'alice', 'bob' ], 0.1);
 console.log(filter.has('bob')); // output: true
 console.log(filter.has('daniel')); // output: false
 
-// print false positive rate
+// print false positive rate (around 0.1)
 console.log(filter.rate());
 ```
 
@@ -70,4 +70,4 @@ npm run doc
 ...
 
 ## License
-[MIT License](https://github.com/Callidon/carson/blob/master/LICENSE)
+[MIT License](https://github.com/Callidon/bloom-filters/blob/master/LICENSE)
