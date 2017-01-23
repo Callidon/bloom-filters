@@ -1,0 +1,61 @@
+{
+    "env": {
+        "browser": true,
+				"node": true,
+        "es6": true,
+				"mocha": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "indent": [
+            "error",
+            "tab"
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+				"strict": [
+					"error",
+					"global"
+				],
+				"eqeqeq": 2,
+				"global-require": 2,
+				"no-mixed-requires": 2,
+				"array-bracket-spacing": [
+					"warn",
+					"always"
+				],
+				"block-spacing": [
+					"warn",
+					"always"
+				],
+				"spaced-comment": [
+					"warn",
+					"always"
+				],
+				"guard-for-in": 2,
+				"no-case-declarations": 2,
+				"no-var": 2,
+				"dot-notation": 1,
+				"brace-style": 1,
+				"space-before-blocks": 1,
+				"space-before-function-paren": 1,
+				"comma-spacing": [
+					"warn",
+					{
+						"before": false,
+						"after": true
+					}
+				],
+				"valid-jsdoc": 1
+    }
+}
