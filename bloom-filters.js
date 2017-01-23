@@ -24,6 +24,9 @@ SOFTWARE.
 
 'use strict';
 
-module.exports = () => {
-	console.log('hello world!');
+// re-exports top-level classes to module's public API
+const BloomFilter = require('./src/bloom-filter.js');
+
+module.exports = {
+	BloomFilter
 };
