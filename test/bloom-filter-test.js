@@ -1,4 +1,4 @@
-/* file : utils-test.js
+/* file : bloom-filter.js
 MIT License
 
 Copyright (c) 2016 Thomas Minier & Arnaud Grall
@@ -25,26 +25,31 @@ SOFTWARE.
 'use strict';
 
 require('chai').should();
-const utils = require('../src/utils.js');
+const BloomFilter = require('../src/bloom-filter.js');
 
-describe('Utils', () => {
-	describe('#allocateArray', () => {
-		it('should allocate an array with the given size and value', () => {
-			const array = utils.allocateArray(15, 1);
-			array.length.should.equal(15);
-			array.forEach(value => value.should.equal(1));
+describe('BloomFilter', () => {
+	describe('construction', () => {
+		it('should add element to the filter with #add', () => {
+			const filter = new BloomFilter(15, 2);
+			filter.add('alice');
+			filter.add('bob');
+			filter.length.should.equal(2);
+		});
+		it('should build a new filter using #from', () => {
+			const filter = BloomFilter.from([ 'alice', 'bob' ], 15, 2);
+			filter.length.should.equal(2);
 		});
 	});
+	describe('#has', () => {
+		const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], 15, 2);
+		it('should return false for inexistent elements', () => {
+			filter.has('daniel').should.be.false;
+		});
 
-	describe('#doubleHashing', () => {
-		it('should perform a double hashing', () => {
-			const hashA = Math.random(Number.MIN_VALUE, Number.MAX_VALUE / 2);
-			const hashB = Math.random(Number.MAX_VALUE / 2, Number.MAX_VALUE);
-			const size = 1000;
-			const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
-			values.forEach(n => {
-				utils.doubleHashing(n, hashA, hashB, size).should.equal((hashA + n * hashB) % size);
-			});
+		it('should return true for elements thta might be in the set', () => {
+			filter.has('alice').should.be.true;
+			filter.has('bob').should.be.true;
+			filter.has('carl').should.be.true;
 		});
 	});
 });
