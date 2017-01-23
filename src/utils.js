@@ -60,7 +60,8 @@ const hashTwice = (hashA, hashB, value) => {
 };
 
 /**
- * Apply Double Hash equation to produce a new hash.
+ * Apply Double Hashing to produce a n-hash
+ * 
  * This implementation used directly the value produced by the two hash functions instead of the functions themselves.
  * @see {@link http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=4060353E67A356EF9528D2C57C064F5A?doi=10.1.1.152.579&rep=rep1&type=pdf} for more details about double hashing.
  * @param  {int} n - The indice of the hash function we want to produce

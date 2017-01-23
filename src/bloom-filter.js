@@ -24,7 +24,7 @@ SOFTWARE.
 
 'use strict';
 
-const crypto = require('crypto'); // TODO: use more pertinent hash functions (FNV, Murmur, ...) in production
+const crypto = require('crypto'); // TODO: use more pertinent hash functions (FNV1a, Murmur, ...) in production
 const utils = require('./utils.js');
 
 /**
@@ -47,28 +47,30 @@ class BloomFilter {
 	}
 
 	/**
-	 * Build a new Bloom Filter from an existing array
+	 * Build a new Bloom Filter from an existing array with a fixed error rate
 	 * @param {Array} array - The array used to build the filter
-	 * @param {int} size - The filter size
-	 * @param {int} nbHashes - The number of hash functions to use
-	 * @return {BloomFilter} A new Bloom Filter filled with iterable's values
+	 * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
+	 * @return {BloomFilter} A new Bloom Filter filled with iterable's elements
 	 * @example
-	 * const values = ['alice', 'bob', 'carl'];
-	 * const filter = BloomFilter.from(values, 16, 2);
+	 * // create a filter with a false positive rate of 0.1
+	 * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
 	 */
-	static from (array, size, nbHashes) {
+	static from (array, errorRate) {
+		const arrayLength = array.length;
+		const size = Math.floor(-((arrayLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)));
+		const nbHashes = (size / arrayLength) * Math.log(2);
 		const filter = new BloomFilter(size, nbHashes);
-		array.forEach(value => filter.add(value));
+		array.forEach(element => filter.add(element));
 		return filter;
 	}
 
 	/**
-	 * Add a value to the filter
-	 * @param {*} value - The value to add
+	 * Add a element to the filter
+	 * @param {*} element - The element to add
 	 * @return {void}
 	 */
-	add (value) {
-		const hex = crypto.createHash('sha512').update(value).digest('hex');
+	add (element) {
+		const hex = crypto.createHash('sha512').update(element).digest('hex');
 		const firstHash = parseInt(hex.substring(0, 64), 16);
 		const secondHash = parseInt(hex.substring(64), 16);
 
@@ -80,11 +82,11 @@ class BloomFilter {
 
 	/**
 	 * Test an element for membership
-	 * @param {*} value - The value to look for in the filter
-	 * @return {boolean} False if the value is definitvely not in the filter, True is the value might be in the filter
+	 * @param {*} element - The element to look for in the filter
+	 * @return {boolean} False if the element is definitvely not in the filter, True is the element might be in the filter
 	 */
-	has (value) {
-		const hex = crypto.createHash('sha512').update(value).digest('hex');
+	has (element) {
+		const hex = crypto.createHash('sha512').update(element).digest('hex');
 		const firstHash = parseInt(hex.substring(0, 64), 16);
 		const secondHash = parseInt(hex.substring(64), 16);
 
@@ -97,7 +99,7 @@ class BloomFilter {
 	}
 
 	/**
-	 * Get the current false positive rate of the filter
+	 * Get the current false positive (or error rate) rate of the filter
 	 * @return {int} The current false positive rate of the filter
 	 */
 	rate () {
