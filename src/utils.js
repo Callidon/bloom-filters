@@ -24,7 +24,9 @@ SOFTWARE.
 
 'use strict';
 
-// JSDOC typedef
+const murmur = require('murmurhash3js');
+
+/* JSDOC typedef */
 /**
  * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
  * @property {number} first - The result of the first hashing function applied to a value
@@ -46,22 +48,35 @@ const allocateArray = (size, defaultValue) => {
 };
 
 /**
- * Hash a value using two hash functions
- * @param  {function} hashA - The first hash function
- * @param  {function} hashB - The second hash function
+ * Hash a value into two values (in hex or integer format)
+ *
+ * Use MumurmurHash3 as the default hashing function, but another function can be easily used.
+ * @see {@link https://en.wikipedia.org/wiki/MurmurHash} for more details about MurmurHash3
  * @param  {*} value - The value to hash
- * @return {TwoHashes} The results of the hash functions applied to the value
+ * @param  {boolean|undefined} asInt - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
+ * @param  {function|undefined} hashFunction - (optional) The hash function used. It should return a 128-bits long hash. By default, MumurmurHash3 is used.
+ * @return {TwoHashes} The results of the hash functions applied to the value (in hex or integer)
  */
-const hashTwice = (hashA, hashB, value) => {
+const hashTwice = (value, asInt, hashFunction) => {
+	const hash128 = hashFunction || murmur.x64.hash128;
+	const hex = hash128(value);
+	const firstHash = hex.substring(0, 16);
+	const secondHash = hex.substring(16);
+	if(asInt) {
+		return {
+			first: parseInt(firstHash, 16),
+			second: parseInt(secondHash, 16)
+		};
+	}
 	return {
-		first: hashA(value),
-		second: hashB(value)
+		first: firstHash,
+		second: secondHash
 	};
 };
 
 /**
  * Apply Double Hashing to produce a n-hash
- * 
+ *
  * This implementation used directly the value produced by the two hash functions instead of the functions themselves.
  * @see {@link http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=4060353E67A356EF9528D2C57C064F5A?doi=10.1.1.152.579&rep=rep1&type=pdf} for more details about double hashing.
  * @param  {int} n - The indice of the hash function we want to produce

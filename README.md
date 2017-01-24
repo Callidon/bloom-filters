@@ -32,7 +32,7 @@ let filter = new BloomFilter(15, 2);
 filter.add('alice');
 filter.add('bob');
 
-// create a Bloom Filter from an array and a 1% error rate
+// create a Bloom Filter from an array with a 1% error rate
 filter = BloomFilter.from([ 'alice', 'bob' ], 0.1);
 
 // lookup for some data

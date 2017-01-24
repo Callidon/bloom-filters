@@ -24,7 +24,6 @@ SOFTWARE.
 
 'use strict';
 
-const murmur = require('murmurhash3js');
 const utils = require('./utils.js');
 
 /**
@@ -70,12 +69,10 @@ class BloomFilter {
 	 * @return {void}
 	 */
 	add (element) {
-		const hex = murmur.x64.hash128(element);
-		const firstHash = parseInt(hex.substring(0, 16), 16);
-		const secondHash = parseInt(hex.substring(16), 16);
+		const hashes = utils.hashTwice(element, true);
 
 		for(let i = 0; i < this.nbHashes; i++) {
-			this.filter[utils.doubleHashing(i, firstHash, secondHash, this.size)] = true;
+			this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)] = true;
 		}
 		this.length++;
 	}
@@ -86,12 +83,10 @@ class BloomFilter {
 	 * @return {boolean} False if the element is definitvely not in the filter, True is the element might be in the filter
 	 */
 	has (element) {
-		const hex = murmur.x64.hash128(element);
-		const firstHash = parseInt(hex.substring(0, 16), 16);
-		const secondHash = parseInt(hex.substring(16), 16);
+		const hashes = utils.hashTwice(element, true);
 
 		for(let i = 0; i < this.nbHashes; i++) {
-			if(!this.filter[utils.doubleHashing(i, firstHash, secondHash, this.size)]) {
+			if(!this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)]) {
 				return false;
 			}
 		}
