@@ -86,11 +86,24 @@ const hashTwice = (value, asInt, hashFunction) => {
  * @return {int} - The result of hash_n applied to a value.
  */
 const doubleHashing = (n, hashA, hashB, size) => {
-	return (hashA + n * hashB) % size;
+	return Math.abs(hashA + n * hashB) % size;
+};
+
+/**
+ * Generate a random int bewteen two bounds (included)
+ * @param {int} min - The lower bound
+ * @param {int} max - The upper bound
+ * @return {int} A random int bewteen lower and upper bound (included)
+ */
+const randomInt = (min, max) => {
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
 module.exports = {
 	allocateArray,
 	hashTwice,
-	doubleHashing
+	doubleHashing,
+	randomInt
 };

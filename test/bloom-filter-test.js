@@ -1,4 +1,4 @@
-/* file : bloom-filter.js
+/* file : bloom-filter-test.js
 MIT License
 
 Copyright (c) 2016 Thomas Minier & Arnaud Grall

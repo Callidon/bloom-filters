@@ -29,7 +29,9 @@ const utils = require('./utils.js');
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
  * that is used to test whether an element is a member of a set. False positive matches are possible, but false negatives are not.
- * @see {@link https://en.wikipedia.org/wiki/Bloom_filter} for more details about classic Bloom Filters.
+ *
+ * Reference: Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.
+ * @see {@link http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf} for more details about classic Bloom Filters.
  * @author Thomas Minier
  */
 class BloomFilter {
@@ -64,7 +66,7 @@ class BloomFilter {
 	}
 
 	/**
-	 * Add a element to the filter
+	 * Add an element to the filter
 	 * @param {*} element - The element to add
 	 * @return {void}
 	 */
@@ -80,7 +82,7 @@ class BloomFilter {
 	/**
 	 * Test an element for membership
 	 * @param {*} element - The element to look for in the filter
-	 * @return {boolean} False if the element is definitvely not in the filter, True is the element might be in the filter
+	 * @return {boolean} False if the element is definitively not in the filter, True is the element might be in the filter
 	 */
 	has (element) {
 		const hashes = utils.hashTwice(element, true);
@@ -94,7 +96,7 @@ class BloomFilter {
 	}
 
 	/**
-	 * Get the current false positive (or error rate) rate of the filter
+	 * Get the current false positive rate (or error rate) of the filter
 	 * @return {int} The current false positive rate of the filter
 	 */
 	rate () {

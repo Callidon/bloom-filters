@@ -47,4 +47,11 @@ describe('Utils', () => {
 			});
 		});
 	});
+
+	describe('#randomInt', () => {
+		it('shuld generate a random int in an interval', () => {
+			const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
+			utils.randomInt(values[0], values[9]).should.be.oneOf(values);
+		});
+	});
 });
