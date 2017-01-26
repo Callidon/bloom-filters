@@ -44,11 +44,21 @@ describe('Bucket', () => {
 		});
 	});
 
+	describe('#at', () => {
+		it('should provies an accessor for bucket\'s elements', () => {
+			const bucket = new Bucket(3);
+			bucket.add('foo');
+			bucket.add('bar');
+			bucket.at(0).should.equal('foo');
+			bucket.at(1).should.equal('bar');
+		});
+	});
+
 	describe('#add', () => {
 		it('should add an element to the bucket', () => {
 			const bucket = new Bucket(5);
 			bucket.add('foo');
-			bucket.elements[0].should.equal('foo');
+			bucket.at(0).should.equal('foo');
 			bucket.length.should.equal(1);
 		});
 

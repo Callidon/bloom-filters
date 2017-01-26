@@ -24,6 +24,7 @@ SOFTWARE.
 
 'use strict';
 
+const fm = require('./formulas.js');
 const utils = require('./utils.js');
 
 /**
@@ -58,8 +59,8 @@ class BloomFilter {
 	 */
 	static from (array, errorRate) {
 		const arrayLength = array.length;
-		const size = Math.ceil(-((arrayLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)));
-		const nbHashes = Math.ceil((size / arrayLength) * Math.log(2));
+		const size = fm.optimalFilterSize(arrayLength, errorRate);
+		const nbHashes = fm.optimalHashes(size, arrayLength);
 		const filter = new BloomFilter(size, nbHashes);
 		array.forEach(element => filter.add(element));
 		return filter;

@@ -26,6 +26,11 @@ SOFTWARE.
 
 const murmur = require('murmurhash3js');
 
+/**
+ * Utilitaries functions
+ * @namespace Utils
+ */
+
 /* JSDOC typedef */
 /**
  * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
@@ -38,6 +43,7 @@ const murmur = require('murmurhash3js');
  * @param  {int} size - The size of the array
  * @param  {*} defaultValue - The default value used to fill the array
  * @return {Array} A newly allocated array
+ * @memberof Utils
  */
 const allocateArray = (size, defaultValue) => {
 	const array = new Array(size);
@@ -56,6 +62,7 @@ const allocateArray = (size, defaultValue) => {
  * @param  {boolean|undefined} asInt - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
  * @param  {function|undefined} hashFunction - (optional) The hash function used. It should return a 128-bits long hash. By default, MumurmurHash3 is used.
  * @return {TwoHashes} The results of the hash functions applied to the value (in hex or integer)
+ * @memberof Utils
  */
 const hashTwice = (value, asInt, hashFunction) => {
 	const hash128 = hashFunction || murmur.x64.hash128;
@@ -84,6 +91,7 @@ const hashTwice = (value, asInt, hashFunction) => {
  * @param  {int} hashB - The result of the second hash function applied to a value.
  * @param  {int} size - The size of the datastructures associated to the hash context (ex: the size of a Bloom Filter)
  * @return {int} - The result of hash_n applied to a value.
+ * @memberof Utils
  */
 const doubleHashing = (n, hashA, hashB, size) => {
 	return Math.abs(hashA + n * hashB) % size;
@@ -94,6 +102,7 @@ const doubleHashing = (n, hashA, hashB, size) => {
  * @param {int} min - The lower bound
  * @param {int} max - The upper bound
  * @return {int} A random int bewteen lower and upper bound (included)
+ * @memberof Utils
  */
 const randomInt = (min, max) => {
 	min = Math.ceil(min);

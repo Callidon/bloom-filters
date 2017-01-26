@@ -36,7 +36,7 @@ class Bucket {
 	 * @param {int} size - The number of element in the bucket
 	 */
 	constructor (size) {
-		this.elements = [];
+		this.elements = utils.allocateArray(size, null);
 		this.size = size;
 		this.length = 0;
 	}
@@ -50,13 +50,30 @@ class Bucket {
 	}
 
 	/**
+	 * Get the index of the first empty slot in the bucket
+	 * @return {int} The index of the first empty slot, or -1 if the bucket is full
+	 */
+	nextEmptySlot () {
+		return this.elements.indexOf(null);
+	}
+
+	/**
+	 * Get the element at the given index in the bucket
+	 * @param {int} index - The index to access
+	 * @return {*} The element at the given index
+	 */
+	at (index) {
+		return this.elements[index];
+	}
+
+	/**
 	 * Add an element to the bucket
 	 * @param {*} element - The element to add in the bucket
 	 * @return {boolean} True if the insertion is a success, False if the bucket is full
 	 */
 	add (element) {
 		if (!this.isFree()) return false;
-		this.elements.push(element);
+		this.set(this.nextEmptySlot(), element);
 		this.length++;
 		return true;
 	}
@@ -69,8 +86,7 @@ class Bucket {
 	remove (element) {
 		const index = this.elements.indexOf(element);
 		if (index <= -1) return false;
-		this.elements.splice(index, 1);
-		this.length--;
+		this.unset(index);
 		return true;
 	}
 
@@ -81,6 +97,26 @@ class Bucket {
 	 */
 	has (element) {
 		return this.elements.indexOf(element) > -1;
+	}
+
+	/**
+	 * Set an element at the given index in the bucket
+	 * @param  {int} index - The index at where the element should be inserted
+	 * @param  {*} element - The element to insert
+	 * @return {void}
+	 */
+	set (index, element) {
+		this.elements[index] = element;
+	}
+
+	/**
+	 * Unset the element at the given index
+	 * @param  {int} index - The index of the element that should be unset
+	 * @return {void}
+	 */
+	unset (index) {
+		this.elements[index] = null;
+		this.length--;
 	}
 
 	/**
