@@ -30,7 +30,6 @@ const BloomFilter = require('../src/bloom-filter.js');
 
 describe('BloomFilter', () => {
 	describe('construction', () => {
-
 		it('should add element to the filter with #add', () => {
 			const filter = new BloomFilter(15, 2);
 			filter.add('alice');

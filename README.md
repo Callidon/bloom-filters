@@ -10,6 +10,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 * [Installation](#installation)
 * [Data structures](#data-structures)
 	* [Classic Bloom Filter](#classic-bloom-filter)
+	* [Cuckoo Filter](#cuckoo-filter)
 * [Tests](#tests)
 * [Documentation](#documentation)
 * [References](#references)
@@ -28,7 +29,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 ```javascript
 const BloomFilter = require('bloom-filters').BloomFilter;
 
-// create a Bloom Filter with size 15 and 2 hash functions
+// create a Bloom Filter with size = 15 and 2 hash functions
 let filter = new BloomFilter(15, 2);
 filter.add('alice');
 filter.add('bob');
@@ -42,6 +43,25 @@ console.log(filter.has('daniel')); // output: false
 
 // print false positive rate (around 0.1)
 console.log(filter.rate());
+```
+
+## Cuckoo Filter
+
+```javascript
+const CuckooFilter = require('bloom-filters').CuckooFilter;
+
+// create a Cuckoo Filter with size = 15, fingerprint length = 3 and bucket size = 2
+let filter = new CuckooFilter(15, 3, 2);
+filter.add('alice');
+filter.add('bob');
+
+// lookup for some data
+console.log(filter.has('bob')); // output: true
+console.log(filter.has('daniel')); // output: false
+
+// remove something
+filter.remove('bob');
+console.log(filter.has('bob')); // output: false
 ```
 
 ### Top-K

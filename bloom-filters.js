@@ -26,7 +26,9 @@ SOFTWARE.
 
 // re-exports top-level classes to module's public API
 const BloomFilter = require('./src/bloom-filter.js');
+const CuckooFilter = require('./src/cuckoo-filter.js');
 
 module.exports = {
-	BloomFilter
+	BloomFilter,
+	CuckooFilter
 };
