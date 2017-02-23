@@ -27,6 +27,7 @@ SOFTWARE.
 /**
  * Various formulas used with Bloom Filters
  * @namespace Formulas
+ * @private
  */
 
  /**

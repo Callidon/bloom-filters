@@ -29,6 +29,7 @@ const murmur = require('murmurhash3js');
 /**
  * Utilitaries functions
  * @namespace Utils
+ * @private
  */
 
 /* JSDOC typedef */
@@ -36,6 +37,7 @@ const murmur = require('murmurhash3js');
  * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
  * @property {number} first - The result of the first hashing function applied to a value
  * @property {number} second - The result of the second hashing function applied to a value
+ * @memberof Utils
  */
 
 /**

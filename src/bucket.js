@@ -29,6 +29,7 @@ const utils = require('./utils.js');
 /**
  * A Bucket is a container of a fixed number of values, used in various bloom filters.
  * @author Thomas Minier
+ * @private
  */
 class Bucket {
 	/**

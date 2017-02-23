@@ -27,8 +27,10 @@ SOFTWARE.
 // re-exports top-level classes to module's public API
 const BloomFilter = require('./src/bloom-filter.js');
 const CuckooFilter = require('./src/cuckoo-filter.js');
+const CountMinSketch = require('./src/count-min-sketch.js');
 
 module.exports = {
 	BloomFilter,
-	CuckooFilter
+	CuckooFilter,
+	CountMinSketch
 };

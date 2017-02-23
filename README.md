@@ -11,6 +11,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 * [Data structures](#data-structures)
 	* [Classic Bloom Filter](#classic-bloom-filter)
 	* [Cuckoo Filter](#cuckoo-filter)
+	* [Count Min Sketch](#count-min-sketch)
 * [Tests](#tests)
 * [Documentation](#documentation)
 * [References](#references)
@@ -64,10 +65,23 @@ filter.remove('bob');
 console.log(filter.has('bob')); // output: false
 ```
 
-### Top-K
+### Count Min Sketch
 
 ```javascript
-...
+const CountMinSketch = require('bloom-filters').CountMinSketch;
+
+// creates a new count min sketch with epsilon = 0.001 and delta = 0.99
+const sketch = new CountMinSketch(0.001, 0.99);
+
+// push some occurrences in the sketch
+sketch.update('alice');
+sketch.update('alice');
+sketch.update('bob');
+
+// count occurrences
+console.log(sketch.count('alice')); // output: 2
+console.log(sketch.count('bob')); // output: 1
+console.log(sketch.count('daniel')); // output: 0
 ```
 
 ## Tests
@@ -90,6 +104,7 @@ npm run doc
 
 * [Classic Bloom Filter](http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf): Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.
 * [Cuckoo Filter](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf): Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). Cuckoo filter: Practically better than bloom. In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
+* [Count Min Sketch](https://www.usenix.org/legacy/events/hotsec10/tech/full_papers/Schechter.pdf): Schechter, S., Herley, C., & Mitzenmacher, M. (2010, August). Popularity is everything: A new approach to protecting passwords from statistical-guessing attacks. In Proceedings of the 5th USENIX conference on Hot topics in security (pp. 1-8). USENIX Association.
 
 ## License
 [MIT License](https://github.com/Callidon/bloom-filters/blob/master/LICENSE)
