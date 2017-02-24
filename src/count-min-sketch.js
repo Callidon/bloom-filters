@@ -33,6 +33,21 @@ const utils = require('./utils.js');
  * Reference: Schechter, S., Herley, C., & Mitzenmacher, M. (2010, August). Popularity is everything: A new approach to protecting passwords from statistical-guessing attacks. In Proceedings of the 5th USENIX conference on Hot topics in security (pp. 1-8). USENIX Association.
  * @author Thomas Minier
  * @see {@link https://www.usenix.org/legacy/events/hotsec10/tech/full_papers/Schechter.pdf} for more details on Count Min Sketch
+ * @example
+ * const CountMinSketch = require('bloom-filters').CountMinSketch;
+ *
+ * // create a new count min sketch with epsilon = 0.001 and delta = 0.99
+ * const sketch = new CountMinSketch(0.001, 0.99);
+ *
+ * // push some occurrences in the sketch
+ * sketch.update('alice');
+ * sketch.update('alice');
+ * sketch.update('bob');
+ *
+ * // count occurrences
+ * console.log(sketch.count('alice')); // output: 2
+ * console.log(sketch.count('bob')); // output: 1
+ * console.log(sketch.count('daniel')); // output: 0
  */
 class CountMinSketch {
 	/**
@@ -52,6 +67,9 @@ class CountMinSketch {
 	 * Update the count min sketch with a new occurrence of an element
 	 * @param {string} element - The new element
 	 * @return {void}
+	 * @example
+	 * const sketch = new CountMinSketch(0.001, 0.99);
+	 * sketch.update('foo');
 	 */
 	update (element) {
 		const hashes = utils.hashTwice(element, true);
@@ -62,9 +80,16 @@ class CountMinSketch {
 	}
 
 	/**
-	 * Peform a point query, i.e. estimate the number of occurence of an element
+	 * Perform a point query, i.e. estimate the number of occurence of an element
 	 * @param {string} element - The element we want to count
 	 * @return {int} The estimate number of occurence of the element
+	 * @example
+	 * const sketch = new CountMinSketch(0.001, 0.99);
+	 * sketch.update('foo');
+	 * sketch.update('foo');
+	 *
+	 * console.log(sketch.count('foo')); // output: 2
+	 * console.log(sketch.count('bar')); // output: 0
 	 */
 	count (element) {
 		let min = Infinity;
@@ -83,6 +108,18 @@ class CountMinSketch {
 	 * @param {CountMinSketch} sketch - The sketch to merge with
 	 * @return {void}
 	 * @throws Error
+	 * @example
+	 * const sketch = new CountMinSketch(0.001, 0.99);
+	 * const otherSketch = new CountMinSketch(0.001, 0.99);
+	 *
+	 * sketch.update('foo');
+	 * otherSketch.update('foo');
+	 * otherSketch.update('bar');
+	 *
+	 * // merge the two sketches
+	 * sketch.merge(otherSketch);
+	 * console.log(sketch.count('foo')); // output: 2
+	 * console.log(sketch.count('bar')); // output: 1
 	 */
 	merge (sketch) {
 		if (this.columns !== sketch.columns) throw new Error('Cannot merge two sketches with different number of columns');
@@ -98,6 +135,12 @@ class CountMinSketch {
 	/**
 	 * Clone the sketch
 	 * @return {CountMinSketch} A new cloned sketch
+	 * @example
+	 * const sketch = new CountMinSketch(0.001, 0.99);
+	 * sketch.update('foo');
+	 *
+	 * const clone = sketch.clone();
+	 * console.log(clone.count('foo')); // output: 1
 	 */
 	clone () {
 		const sketch = new CountMinSketch(this.epsilon, this.delta);

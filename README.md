@@ -5,6 +5,8 @@
 
 JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash
 
+[Online documentation](https://callidon.github.io/bloom-filters/)
+
 # Table of contents
 
 * [Installation](#installation)
@@ -12,8 +14,8 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Classic Bloom Filter](#classic-bloom-filter)
 	* [Cuckoo Filter](#cuckoo-filter)
 	* [Count Min Sketch](#count-min-sketch)
-* [Tests](#tests)
 * [Documentation](#documentation)
+* [Tests](#tests)
 * [References](#references)
 * [License](#license)
 
@@ -54,7 +56,7 @@ console.log(filter.rate());
 const CuckooFilter = require('bloom-filters').CuckooFilter;
 
 // create a Cuckoo Filter with size = 15, fingerprint length = 3 and bucket size = 2
-let filter = new CuckooFilter(15, 3, 2);
+const filter = new CuckooFilter(15, 3, 2);
 filter.add('alice');
 filter.add('bob');
 
@@ -86,6 +88,10 @@ console.log(sketch.count('bob')); // output: 1
 console.log(sketch.count('daniel')); // output: 0
 ```
 
+# Documentation
+
+See [documentation online](https://callidon.github.io/bloom-filters/) or generate it in directory `doc/` with: `npm run doc`
+
 ## Tests
 
 Running with Mocha + Chai
@@ -97,11 +103,6 @@ npm test
 npm run coverage
 ```
 
-# Documentation
-Generate JSDoc in directory `doc/`
-```
-npm run doc
-```
 ## References
 
 * [Classic Bloom Filter](http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf): Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.

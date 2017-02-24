@@ -36,6 +36,21 @@ const utils = require('./utils.js');
  * In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
  * @author Thomas Minier
  * @see {@link https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf} for more details about Cuckoo filters
+ * @example
+ * const CuckooFilter = require('bloom-filters').CuckooFilter;
+ *
+ * // create a Cuckoo Filter with size = 15, fingerprint length = 3 and bucket size = 2
+ * const filter = new CuckooFilter(15, 3, 2);
+ * filter.add('alice');
+ * filter.add('bob');
+ *
+ * // lookup for some data
+ * console.log(filter.has('bob')); // output: true
+ * console.log(filter.has('daniel')); // output: false
+ *
+ * // remove something
+ * filter.remove('bob');
+ * console.log(filter.has('bob')); // output: false
  */
 class CuckooFilter {
 	/**
@@ -73,6 +88,10 @@ class CuckooFilter {
 	 * Add an element to the filter
 	 * @param {*} element - The element to add
 	 * @return {boolean} True if the insertion is a success, False if the filter is full
+	 * @example
+	 * const filter = new CuckooFilter(15, 3, 2);
+	 * filter.add('alice');
+	 * filter.add('bob');
 	 */
 	add (element) {
 		const locations = this._locations(element);
@@ -105,6 +124,13 @@ class CuckooFilter {
 	 * Remove an element from the filter
 	 * @param {*} element - The element to remove
 	 * @return {boolean} True if the element has been removed from the filter, False if it wasn't in the filter
+	 * @example
+	 * const filter = new CuckooFilter(15, 3, 2);
+	 * filter.add('alice');
+	 * filter.add('bob');
+	 *
+	 * // remove an element
+	 * filter.remove('bob');
 	 */
 	remove (element) {
 		const locations = this._locations(element);
@@ -124,6 +150,12 @@ class CuckooFilter {
 	 * Test an element for membership
 	 * @param {*} element - The element to look for in the filter
 	 * @return {boolean} False if the element is definitively not in the filter, True is the element might be in the filter
+	 * @example
+	 * const filter = new CuckooFilter(15, 3, 2);
+	 * filter.add('alice');
+	 *
+	 * console.log(filter.has('alice')); // output: true
+	 * console.log(filter.has('bob')); // output: false
 	 */
 	has (element) {
 		const locations = this._locations(element);

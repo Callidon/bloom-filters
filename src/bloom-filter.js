@@ -34,6 +34,25 @@ const utils = require('./utils.js');
  * Reference: Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.
  * @see {@link http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf} for more details about classic Bloom Filters.
  * @author Thomas Minier
+ * @example
+ * const BloomFilter = require('bloom-filters').BloomFilter;
+ *
+ * // create a Bloom Filter with size = 15 and 1% error rate
+ * let filter = new BloomFilter(15, 0.1);
+ *
+ * // alternatively, create a Bloom Filter from an array with 1% error rate
+ * filter = BloomFilter.from([ 'alice', 'bob' ], 0.1);
+ *
+ * // add some value in the filter
+ * filter.add('alice');
+ * filter.add('bob');
+ *
+ * // lookup for some data
+ * console.log(filter.has('bob')); // output: true
+ * console.log(filter.has('daniel')); // output: false
+ *
+ * // print false positive rate (around 0.1)
+ * console.log(filter.rate());
  */
 class BloomFilter {
 	/**
@@ -67,6 +86,9 @@ class BloomFilter {
 	 * Add an element to the filter
 	 * @param {*} element - The element to add
 	 * @return {void}
+	 * @example
+	 * const filter = new BloomFilter(15, 0.1);
+	 * filter.add('foo');
 	 */
 	add (element) {
 		const hashes = utils.hashTwice(element, true);
@@ -81,6 +103,11 @@ class BloomFilter {
 	 * Test an element for membership
 	 * @param {*} element - The element to look for in the filter
 	 * @return {boolean} False if the element is definitively not in the filter, True is the element might be in the filter
+	 * @example
+	 * const filter = new BloomFilter(15, 0.1);
+	 * filter.add('foo');
+	 * console.log(filter.has('foo')); // output: true
+	 * console.log(filter.has('bar')); // output: false
 	 */
 	has (element) {
 		const hashes = utils.hashTwice(element, true);
@@ -96,6 +123,9 @@ class BloomFilter {
 	/**
 	 * Get the current false positive rate (or error rate) of the filter
 	 * @return {int} The current false positive rate of the filter
+	 * @example
+	 * const filter = new BloomFilter(15, 0.1);
+	 * console.log(filter.rate()); // output: something around 0.1
 	 */
 	rate () {
 		return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes);
