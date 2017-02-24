@@ -43,14 +43,18 @@ const murmur = require('murmurhash3js');
 /**
  * Create a new array fill with a base value
  * @param  {int} size - The size of the array
- * @param  {*} defaultValue - The default value used to fill the array
+ * @param  {*} defaultValue - The default value used to fill the array. If it's a function, it will be invoked to get the default value.
  * @return {Array} A newly allocated array
  * @memberof Utils
  */
 const allocateArray = (size, defaultValue) => {
 	const array = new Array(size);
+	let getDefault = defaultValue;
+	if (typeof defaultValue !== 'function') {
+		getDefault = () => defaultValue;
+	}
 	for(let ind = 0; ind < size; ind++) {
-		array[ind] = defaultValue;
+		array[ind] = getDefault();
 	}
 	return array;
 };

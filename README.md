@@ -20,7 +20,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 ## Installation
 
 ```bash
-  npm install bloom-filters
+  npm install bloom-filters --save
 ```
 
 ## Data structures
@@ -30,13 +30,15 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 ```javascript
 const BloomFilter = require('bloom-filters').BloomFilter;
 
-// create a Bloom Filter with size = 15 and 2 hash functions
-let filter = new BloomFilter(15, 2);
+// create a Bloom Filter with size = 15 and 1% error rate
+let filter = new BloomFilter(15, 0.1);
+
+// alternatively, create a Bloom Filter from an array with 1% error rate
+filter = BloomFilter.from([ 'alice', 'bob' ], 0.1);
+
+// add some value in the filter
 filter.add('alice');
 filter.add('bob');
-
-// create a Bloom Filter from an array with a 1% error rate
-filter = BloomFilter.from([ 'alice', 'bob' ], 0.1);
 
 // lookup for some data
 console.log(filter.has('bob')); // output: true
@@ -70,7 +72,7 @@ console.log(filter.has('bob')); // output: false
 ```javascript
 const CountMinSketch = require('bloom-filters').CountMinSketch;
 
-// creates a new count min sketch with epsilon = 0.001 and delta = 0.99
+// create a new count min sketch with epsilon = 0.001 and delta = 0.99
 const sketch = new CountMinSketch(0.001, 0.99);
 
 // push some occurrences in the sketch

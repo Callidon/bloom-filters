@@ -29,9 +29,11 @@ const fs = require('fs');
 const BloomFilter = require('../src/bloom-filter.js');
 
 describe('BloomFilter', () => {
+	const targetRate = 0.1;
+	
 	describe('construction', () => {
 		it('should add element to the filter with #add', () => {
-			const filter = new BloomFilter(15, 2);
+			const filter = new BloomFilter(15, targetRate);
 			filter.add('alice');
 			filter.add('bob');
 			filter.length.should.equal(2);
@@ -39,7 +41,6 @@ describe('BloomFilter', () => {
 
 		it('should build a new filter using #from', () => {
 			const data = [ 'alice', 'bob', 'carl' ];
-			const targetRate = 0.1;
 			const expectedSize = Math.ceil(-((data.length * Math.log(targetRate))/Math.pow(Math.log(2), 2)));
 			const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2));
 			const filter = BloomFilter.from(data, targetRate);
@@ -50,8 +51,9 @@ describe('BloomFilter', () => {
 			filter.rate().should.be.closeTo(targetRate, 0.1);
 		});
 	});
+
 	describe('#has', () => {
-		const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], 0.1);
+		const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate);
 
 		it('should return false for elements that are definitevely nt in the set', () => {
 			filter.has('daniel').should.be.false;
@@ -63,11 +65,13 @@ describe('BloomFilter', () => {
 			filter.has('bob').should.be.true;
 			filter.has('carl').should.be.true;
 		});
+	});
 
+	describe('#benchmark', () => {
 		it('should handle decent volume of data', done => {
 			fs.readFile('/usr/share/dict/american-english', (err, file) => {
 				const lines = file.toString('utf-8').split('\n');
-				const alphabet = BloomFilter.from(lines, 0.1);
+				const alphabet = BloomFilter.from(lines, targetRate);
 				alphabet.rate().should.be.closeTo(0.1, 0.1);
 				alphabet.has('1').should.be.false;
 				alphabet.has('hello').should.be.true;

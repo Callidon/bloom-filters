@@ -43,10 +43,10 @@ class CuckooFilter {
 	 * @param {int} size - The filter size
 	 * @param {int} fLength - The length of the fingerprints
 	 * @param {int} bucketSize - The size of the buckets in the filter
-	 * @param {int|undefined} maxKicks - (optional) The max number of kicks when resolving collision at insertion
+	 * @param {int|undefined} maxKicks - (optional) The max number of kicks when resolving collision at insertion, default to 1
 	 */
 	constructor (size, fLength, bucketSize, maxKicks) {
-		this.filter = utils.allocateArray(size, 0).map(() => new Bucket(bucketSize, null));
+		this.filter = utils.allocateArray(size, () => new Bucket(bucketSize));
 		this.size = size;
 		this.fingerprintLength = fLength;
 		this.length = 0;
@@ -137,6 +137,7 @@ class CuckooFilter {
 	 * @param  {int} size - The filter size
 	 * @param  {int} rate - The error rate, i.e. 'false positive' rate, targetted by the filter
 	 * @return {int} The optimal fingerprint length in bytes
+	 * @private
 	 */
 	_computeFingerpintLength (size, rate) {
 		const length = Math.ceil(Math.log(2 * size / rate)) / 8;
@@ -148,6 +149,7 @@ class CuckooFilter {
 	 * For a element, compute its fingerprint and the index of its two buckets
 	 * @param {*} element - The element to hash
 	 * @return {locations} The fingerprint of the element and the index of its two buckets
+	 * @private
 	 */
 	_locations (element) {
 		const hash = murmur.x86.hash32(element);

@@ -38,13 +38,13 @@ const utils = require('./utils.js');
 class BloomFilter {
 	/**
 	 * Constructor
-	 * @param {int} size - The filter size
-	 * @param {int} nbHashes - The number of hash functions to use
+	 * @param {int} capacity - The filter capacity, i.e. the maximum number of elements it will contains
+	 * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
 	 */
-	constructor (size, nbHashes) {
-		this.filter = utils.allocateArray(size, false);
-		this.size = size;
-		this.nbHashes = nbHashes;
+	constructor (capacity, errorRate) {
+		this.size = fm.optimalFilterSize(capacity, errorRate);
+		this.nbHashes = fm.optimalHashes(this.size, capacity);
+		this.filter = utils.allocateArray(this.size, false);
 		this.length = 0;
 	}
 
@@ -58,10 +58,7 @@ class BloomFilter {
 	 * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
 	 */
 	static from (array, errorRate) {
-		const arrayLength = array.length;
-		const size = fm.optimalFilterSize(arrayLength, errorRate);
-		const nbHashes = fm.optimalHashes(size, arrayLength);
-		const filter = new BloomFilter(size, nbHashes);
+		const filter = new BloomFilter(array.length, errorRate);
 		array.forEach(element => filter.add(element));
 		return filter;
 	}

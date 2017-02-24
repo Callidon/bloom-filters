@@ -63,7 +63,7 @@ describe('CountMinSketch', () => {
 		sketch.count('moo').should.equal(2);
 	});
 
-	it('should reject impossible merge', () => {
+	it('should reject an impossible merge', () => {
 		const sketch = new CountMinSketch(0.001, 0.99);
 		const otherSketch = new CountMinSketch(0.001, 0.99);
 

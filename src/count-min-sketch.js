@@ -67,7 +67,7 @@ class CountMinSketch {
 	 * @return {int} The estimate number of occurence of the element
 	 */
 	count (element) {
-		let min = Number.MAX_VALUE;
+		let min = Infinity;
 		const hashes = utils.hashTwice(element, true);
 
 		for(let i = 0; i < this.rows; i++) {
@@ -85,8 +85,8 @@ class CountMinSketch {
 	 * @throws Error
 	 */
 	merge (sketch) {
-		if (this.columns !== sketch.columns) throw new Error('Cannot merge two sketchs with different number of columns');
-		if (this.rows !== sketch.rows) throw new Error('Cannot merge two sketchs with different number of rows');
+		if (this.columns !== sketch.columns) throw new Error('Cannot merge two sketches with different number of columns');
+		if (this.rows !== sketch.rows) throw new Error('Cannot merge two sketches with different number of rows');
 
 		for (let i = 0; i < this.rows; i++) {
 			for (let j = 0; j < this.columns; j++) {

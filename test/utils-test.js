@@ -29,10 +29,16 @@ const utils = require('../src/utils.js');
 
 describe('Utils', () => {
 	describe('#allocateArray', () => {
-		it('should allocate an array with the given size and value', () => {
+		it('should allocate an array with the given size and a default value', () => {
 			const array = utils.allocateArray(15, 1);
 			array.length.should.equal(15);
 			array.forEach(value => value.should.equal(1));
+		});
+
+		it('should allow the use of a function to set the default value', () => {
+			const array = utils.allocateArray(15, () => 'foo');
+			array.length.should.equal(15);
+			array.forEach(value => value.should.equal('foo'));
 		});
 	});
 
@@ -49,7 +55,7 @@ describe('Utils', () => {
 	});
 
 	describe('#randomInt', () => {
-		it('shuld generate a random int in an interval', () => {
+		it('should generate a random int in an interval', () => {
 			const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
 			utils.randomInt(values[0], values[9]).should.be.oneOf(values);
 		});
