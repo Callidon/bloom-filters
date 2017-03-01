@@ -1,5 +1,5 @@
 # Bloom-Filters
-[![Build Status](https://travis-ci.org/Callidon/bloom-filters.svg?branch=master)](https://travis-ci.org/Callidon/bloom-filters) [![Coverage Status](https://coveralls.io/repos/github/Callidon/bloom-filters/badge.svg?branch=master)](https://coveralls.io/github/Callidon/bloom-filters?branch=master)
+[![Build Status](https://travis-ci.org/Callidon/bloom-filters.svg?branch=master)](https://travis-ci.org/Callidon/bloom-filters) [![codecov](https://codecov.io/gh/Callidon/bloom-filters/branch/master/graph/badge.svg)](https://codecov.io/gh/Callidon/bloom-filters)
 
 **Keywords:** bloom, filter, bloom filter, probabilistic, datastructure
 

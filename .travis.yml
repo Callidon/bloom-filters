@@ -9,7 +9,7 @@ script:
 - npm run lint
 - npm run test
 - npm run coverage
-- cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+- node_modules/codecov/bin/codecov -t $CODECOV_TOKEN
 after_success:
   - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && bash deploy_doc.sh
 deploy:

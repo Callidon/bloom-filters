@@ -1,12 +1,12 @@
 {
   "name": "bloom-filters",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "bloom-filters.js",
   "scripts": {
     "lint": "eslint src/",
     "test": "mocha test/**/*.js --trace-deprecation",
-    "coverage": "istanbul cover node_modules/.bin/_mocha test/**/*.js",
+    "coverage": "istanbul cover node_modules/.bin/_mocha test/**/*.js --reporter lcovonly -- -R spec",
     "doc": "jsdoc -c jsdoc.json README.md src/"
   },
   "repository": {
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/Callidon/bloom-filters#readme",
   "devDependencies": {
     "chai": "^3.5.0",
-    "coveralls": "^2.11.15",
+    "codecov": "^1.0.1",
     "eslint": "^3.14.0",
     "istanbul": "^0.4.5",
     "jsdoc": "^3.4.3",
