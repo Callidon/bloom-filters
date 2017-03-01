@@ -12,6 +12,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 * [Installation](#installation)
 * [Data structures](#data-structures)
 	* [Classic Bloom Filter](#classic-bloom-filter)
+	* [Partitioned Bloom Filter](#partitioned-bloom-filter)
 	* [Cuckoo Filter](#cuckoo-filter)
 	* [Count Min Sketch](#count-min-sketch)
 * [Documentation](#documentation)
@@ -48,6 +49,19 @@ console.log(filter.has('daniel')); // output: false
 
 // print false positive rate (around 0.1)
 console.log(filter.rate());
+```
+
+### Partitioned Bloom Filter
+
+Partitioned Bloom Filter follow the same API than [Classic Bloom Filter](#classic-bloom-filter).
+```javascript
+const PartitionedBloomFilter = require('bloom-filters').PartitionedBloomFilter;
+
+// create a Partitioned Bloom Filter with size = 15 and 1% error rate
+const filter = new PartitionedBloomFilter(15, 0.1);
+
+// now use it like a classic bloom filter!
+// ...
 ```
 
 ## Cuckoo Filter
@@ -106,6 +120,7 @@ npm run coverage
 ## References
 
 * [Classic Bloom Filter](http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf): Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.
+* [Partitioned Bloom Filter](https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf): hang, F., Feng, W. C., & Li, K. (2004, March). Approximate caches for packet classification. In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
 * [Cuckoo Filter](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf): Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). Cuckoo filter: Practically better than bloom. In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
 * [Count Min Sketch](https://www.usenix.org/legacy/events/hotsec10/tech/full_papers/Schechter.pdf): Schechter, S., Herley, C., & Mitzenmacher, M. (2010, August). Popularity is everything: A new approach to protecting passwords from statistical-guessing attacks. In Proceedings of the 5th USENIX conference on Hot topics in security (pp. 1-8). USENIX Association.
 

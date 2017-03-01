@@ -60,7 +60,7 @@ class CountMinSketch {
 		this.delta = delta;
 		this.columns = Math.ceil(Math.E / epsilon);
 		this.rows = Math.ceil(Math.log(1 / delta));
-		this.matrix = utils.allocateArray(this.rows, utils.allocateArray(this.columns, 0));
+		this.matrix = utils.allocateArray(this.rows, () => utils.allocateArray(this.columns, 0));
 	}
 
 	/**

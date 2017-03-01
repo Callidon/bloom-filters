@@ -1,4 +1,4 @@
-/* file : bloom-filter-test.js
+/* file : partitioned-bloom-filter-test.js
 MIT License
 
 Copyright (c) 2016 Thomas Minier & Arnaud Grall
@@ -26,14 +26,14 @@ SOFTWARE.
 
 require('chai').should();
 const fs = require('fs');
-const BloomFilter = require('../src/bloom-filter.js');
+const PartitionedBloomFilter = require('../src/partitioned-bloom-filter.js');
 
-describe('BloomFilter', () => {
+describe('PartitionedBloomFilter', () => {
 	const targetRate = 0.1;
 
 	describe('construction', () => {
 		it('should add element to the filter with #add', () => {
-			const filter = new BloomFilter(15, targetRate);
+			const filter = new PartitionedBloomFilter(15, targetRate);
 			filter.add('alice');
 			filter.add('bob');
 			filter.length.should.equal(2);
@@ -43,7 +43,7 @@ describe('BloomFilter', () => {
 			const data = [ 'alice', 'bob', 'carl' ];
 			const expectedSize = Math.ceil(-((data.length * Math.log(targetRate))/Math.pow(Math.log(2), 2)));
 			const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2));
-			const filter = BloomFilter.from(data, targetRate);
+			const filter = PartitionedBloomFilter.from(data, targetRate);
 
 			filter.size.should.equal(expectedSize);
 			filter.nbHashes.should.equal(expectedHashes);
@@ -53,9 +53,12 @@ describe('BloomFilter', () => {
 	});
 
 	describe('#has', () => {
-		const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate);
+		const filter = new PartitionedBloomFilter(15, targetRate);
+		filter.add('alice');
+		filter.add('bob');
+		filter.add('carl');
 
-		it('should return false for elements that are definitively nt in the set', () => {
+		it('should return false for elements that are definitively not in the set', () => {
 			filter.has('daniel').should.be.false;
 			filter.has('al').should.be.false;
 		});
@@ -71,7 +74,7 @@ describe('BloomFilter', () => {
 		it('should handle decent volume of data', done => {
 			fs.readFile('/usr/share/dict/american-english', (err, file) => {
 				const lines = file.toString('utf-8').split('\n');
-				const alphabet = BloomFilter.from(lines, targetRate);
+				const alphabet = PartitionedBloomFilter.from(lines, targetRate);
 				alphabet.rate().should.be.closeTo(0.1, 0.1);
 				alphabet.has('1').should.be.false;
 				alphabet.has('hello').should.be.true;

@@ -1,4 +1,4 @@
-/* file : bloom-filter.js
+/* file : partitioned-bloom-filter.js
 MIT License
 
 Copyright (c) 2016 Thomas Minier & Arnaud Grall
@@ -28,20 +28,25 @@ const fm = require('./formulas.js');
 const utils = require('./utils.js');
 
 /**
- * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
- * that is used to test whether an element is a member of a set. False positive matches are possible, but false negatives are not.
+ * A Partitioned Bloom Filter is a variation of a classic Bloom filter.
  *
- * Reference: Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.
- * @see {@link http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf} for more details about classic Bloom Filters.
+ * This filter works by partitioning the M-sized bit array into k slices of size m = M/k bits, k = nb of hash functions in the filter.
+ * Each hash function produces an index over m for its respective slice.
+ * Thus, each element is described by exactly k bits, meaning the distribution of false positives is uniform across all elements.
+ *
+ * Be careful, as a Partitioned Bloom Filter have much higher collison rosks that a classic Bloom Filter on small sets of data.
+ *
+ * Reference: Chang, F., Feng, W. C., & Li, K. (2004, March). Approximate caches for packet classification. In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
+ * @see {@link https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf} for more details about Partitioned Bloom Filters
  * @author Thomas Minier
  * @example
- * const BloomFilter = require('bloom-filters').BloomFilter;
+ * const PartitionedBloomFilter = require('bloom-filters').PartitionedBloomFilter;
  *
- * // create a Bloom Filter with capacity = 15 and 1% error rate
- * let filter = new BloomFilter(15, 0.1);
+ * // create a Partitioned Bloom Filter with capacity = 15 and 1% error rate
+ * let filter = new PartitionedBloomFilter(15, 0.1);
  *
- * // alternatively, create a Bloom Filter from an array with 1% error rate
- * filter = BloomFilter.from([ 'alice', 'bob' ], 0.1);
+ * // alternatively, create a Partitioned Bloom Filter from an array with 1% error rate
+ * filter = PartitionedBloomFilter.from([ 'alice', 'bob' ], 0.1);
  *
  * // add some value in the filter
  * filter.add('alice');
@@ -54,7 +59,7 @@ const utils = require('./utils.js');
  * // print false positive rate (around 0.1)
  * console.log(filter.rate());
  */
-class BloomFilter {
+class PartitionedBloomFilter {
 	/**
 	 * Constructor
 	 * @param {int} capacity - The filter capacity, i.e. the maximum number of elements it will contains
@@ -63,21 +68,22 @@ class BloomFilter {
 	constructor (capacity, errorRate) {
 		this.size = fm.optimalFilterSize(capacity, errorRate);
 		this.nbHashes = fm.optimalHashes(this.size, capacity);
-		this.filter = utils.allocateArray(this.size, false);
+		this.subarraySize = Math.ceil(this.size / this.nbHashes);
+		this.filter = utils.allocateArray(this.nbHashes, () => utils.allocateArray(this.subarraySize, false));
 		this.length = 0;
 	}
 
 	/**
-	 * Build a new Bloom Filter from an existing array with a fixed error rate
+	 * Build a new Partitioned Bloom Filter from an existing array with a fixed error rate
 	 * @param {Array} array - The array used to build the filter
 	 * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
 	 * @return {BloomFilter} A new Bloom Filter filled with iterable's elements
 	 * @example
 	 * // create a filter with a false positive rate of 0.1
-	 * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
+	 * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
 	 */
 	static from (array, errorRate) {
-		const filter = new BloomFilter(array.length, errorRate);
+		const filter = new PartitionedBloomFilter(array.length, errorRate);
 		array.forEach(element => filter.add(element));
 		return filter;
 	}
@@ -87,14 +93,14 @@ class BloomFilter {
 	 * @param {*} element - The element to add
 	 * @return {void}
 	 * @example
-	 * const filter = new BloomFilter(15, 0.1);
+	 * const filter = new PartitionedBloomFilter(15, 0.1);
 	 * filter.add('foo');
 	 */
 	add (element) {
 		const hashes = utils.hashTwice(element, true);
 
 		for(let i = 0; i < this.nbHashes; i++) {
-			this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)] = true;
+			this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)] = true;
 		}
 		this.length++;
 	}
@@ -104,7 +110,7 @@ class BloomFilter {
 	 * @param {*} element - The element to look for in the filter
 	 * @return {boolean} False if the element is definitively not in the filter, True is the element might be in the filter
 	 * @example
-	 * const filter = new BloomFilter(15, 0.1);
+	 * const filter = new PartitionedBloomFilter(15, 0.1);
 	 * filter.add('foo');
 	 * console.log(filter.has('foo')); // output: true
 	 * console.log(filter.has('bar')); // output: false
@@ -113,7 +119,7 @@ class BloomFilter {
 		const hashes = utils.hashTwice(element, true);
 
 		for(let i = 0; i < this.nbHashes; i++) {
-			if(!this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)]) {
+			if(!this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)]) {
 				return false;
 			}
 		}
@@ -124,7 +130,7 @@ class BloomFilter {
 	 * Get the current false positive rate (or error rate) of the filter
 	 * @return {int} The current false positive rate of the filter
 	 * @example
-	 * const filter = new BloomFilter(15, 0.1);
+	 * const filter = new PartitionedBloomFilter(15, 0.1);
 	 * console.log(filter.rate()); // output: something around 0.1
 	 */
 	rate () {
@@ -132,4 +138,4 @@ class BloomFilter {
 	}
 }
 
-module.exports = BloomFilter;
+module.exports = PartitionedBloomFilter;
