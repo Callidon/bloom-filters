@@ -34,7 +34,7 @@ const utils = require('./utils.js');
  * Each hash function produces an index over m for its respective slice.
  * Thus, each element is described by exactly k bits, meaning the distribution of false positives is uniform across all elements.
  *
- * Be careful, as a Partitioned Bloom Filter have much higher collison rosks that a classic Bloom Filter on small sets of data.
+ * Be careful, as a Partitioned Bloom Filter have much higher collison risks that a classic Bloom Filter on small sets of data.
  *
  * Reference: Chang, F., Feng, W. C., & Li, K. (2004, March). Approximate caches for packet classification. In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
  * @see {@link https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf} for more details about Partitioned Bloom Filters

@@ -30,9 +30,9 @@ const utils = require('./utils.js');
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
  * It uses hash functions to map events to frequencies, but unlike a hash table uses only sub-linear space, at the expense of overcounting some events due to collisions.
  *
- * Reference: Schechter, S., Herley, C., & Mitzenmacher, M. (2010, August). Popularity is everything: A new approach to protecting passwords from statistical-guessing attacks. In Proceedings of the 5th USENIX conference on Hot topics in security (pp. 1-8). USENIX Association.
+ * Reference: Cormode, G., & Muthukrishnan, S. (2005). An improved data stream summary: the count-min sketch and its applications. Journal of Algorithms, 55(1), 58-75.
  * @author Thomas Minier
- * @see {@link https://www.usenix.org/legacy/events/hotsec10/tech/full_papers/Schechter.pdf} for more details on Count Min Sketch
+ * @see {@link http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf} for more details on Count Min Sketch
  * @example
  * const CountMinSketch = require('bloom-filters').CountMinSketch;
  *

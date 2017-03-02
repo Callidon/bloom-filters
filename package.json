@@ -18,7 +18,9 @@
     "filter",
     "bloom filter",
     "probabilistic",
-    "datastructure"
+    "datastructure",
+		"count min sketch",
+		"cuckoo"
   ],
   "author": "Thomas Minier <thomas.minier@protonmail.com>",
   "contributors": [
