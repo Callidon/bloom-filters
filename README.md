@@ -28,8 +28,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 
 ## Data structures
 
-
-### Classic Bloom Filter
+### Classic Bloom Filter
 
 ```javascript
 const BloomFilter = require('bloom-filters').BloomFilter;
