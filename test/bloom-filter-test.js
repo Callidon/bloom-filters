@@ -82,7 +82,7 @@ describe('BloomFilter', () => {
 
   describe('#saveAsJSON', () => {
     const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate);
-    it('should export a bucket to a JSON object', () => {
+    it('should export a bloom filter to a JSON object', () => {
       const exported = filter.saveAsJSON();
       exported.type.should.equal('BloomFilter');
       exported.size.should.equal(filter.size);
@@ -91,7 +91,7 @@ describe('BloomFilter', () => {
       exported.filter.should.deep.equal(filter.filter);
     });
 
-    it('should create a bucket from a JSON export', () => {
+    it('should create a bloom filter from a JSON export', () => {
       const exported = filter.saveAsJSON();
       const newFilter = BloomFilter.fromJSON(exported);
       newFilter.size.should.equal(filter.size);
@@ -110,7 +110,7 @@ describe('BloomFilter', () => {
       ];
 
       invalids.forEach(json => {
-        (() => BloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a BloomFilter from a JSON export which does not respresent a bloom filter');
+        (() => BloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a BloomFilter from a JSON export which does not represent a bloom filter');
       });
     });
   });

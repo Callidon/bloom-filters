@@ -89,11 +89,11 @@ class BloomFilter {
    */
   static fromJSON (json) {
     if ((json.type !== 'BloomFilter') || !('size' in json) || !('length' in json) || !('nbHashes' in json) || !('filter' in json))
-      throw new Error('Cannot create a BloomFilter from a JSON export which does not respresent a bloom filter');
+      throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter');
     const filter = new BloomFilter(1, 0.1);
     filter.size = json.size;
     filter.nbHashes = json.nbHashes;
-    filter.filter = [].concat.apply(json.filter);
+    filter.filter = json.filter.slice(0);
     filter.length = json.length;
     return filter;
   }
@@ -148,8 +148,8 @@ class BloomFilter {
   }
 
   /**
-   * Export a bloom filter as a JSON object
-   * @return {Object} The exported bloom filter as a JSON object
+   * Export a Bloom Filter as a JSON object
+   * @return {Object} The exported Bloom Filter as a JSON object
    */
   saveAsJSON () {
     return {
@@ -157,7 +157,7 @@ class BloomFilter {
       size: this.size,
       length: this.length,
       nbHashes: this.nbHashes,
-      filter: [].concat.apply(this.filter)
+      filter: this.filter.slice(0)
     };
   }
 }

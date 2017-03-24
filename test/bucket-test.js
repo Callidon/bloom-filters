@@ -150,7 +150,7 @@ describe('Bucket', () => {
       ];
 
       invalids.forEach(json => {
-        (() => Bucket.fromJSON(json)).should.throw(Error, 'Cannot create a Bucket from a JSON export which does not respresent a bucket');
+        (() => Bucket.fromJSON(json)).should.throw(Error, 'Cannot create a Bucket from a JSON export which does not represent a bucket');
       });
     });
   });

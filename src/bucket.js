@@ -49,7 +49,7 @@ class Bucket {
    */
   static fromJSON (json) {
     if ((json.type !== 'Bucket') || !('size' in json) || !('elements' in json))
-      throw new Error('Cannot create a Bucket from a JSON export which does not respresent a bucket');
+      throw new Error('Cannot create a Bucket from a JSON export which does not represent a bucket');
     const bucket = new Bucket(json.size);
     json.elements.forEach((elt, i) => {
       if (elt !== null) {
@@ -158,7 +158,7 @@ class Bucket {
     return {
       type: 'Bucket',
       size: this.size,
-      elements: [].concat.apply(this.elements)
+      elements: this.elements.slice(0)
     };
   }
 }

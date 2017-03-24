@@ -64,6 +64,19 @@ class CountMinSketch {
   }
 
   /**
+   * Create a new Count-Min Sketch from a JSON export
+   * @param  {Object} json - A JSON export of a Count-Min Sketch
+   * @return {CountMinSketch} A new Count-Min Sketch
+   */
+  static fromJSON (json) {
+    if ((json.type !== 'CountMinSketch') || !('epsilon' in json) || !('delta' in json) || !('matrix' in json))
+      throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch');
+    const sketch = new CountMinSketch(json.epsilon, json.delta);
+    sketch.matrix = json.matrix.slice(0);
+    return sketch;
+  }
+
+  /**
    * Update the count min sketch with a new occurrence of an element
    * @param {string} element - The new element
    * @return {void}
@@ -146,6 +159,19 @@ class CountMinSketch {
     const sketch = new CountMinSketch(this.epsilon, this.delta);
     sketch.merge(this);
     return sketch;
+  }
+
+  /**
+   * Export a Count-Min Sketch as a JSON object
+   * @return {Object} The exported Count-Min Sketch as a JSON object
+   */
+  saveAsJSON () {
+    return {
+      type: 'CountMinSketch',
+      epsilon: this.epsilon,
+      delta: this.delta,
+      matrix: this.matrix.slice(0)
+    };
   }
 }
 

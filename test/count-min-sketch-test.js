@@ -90,4 +90,43 @@ describe('CountMinSketch', () => {
     clone.count('moo').should.equal(0);
   });
 
+  describe('#saveAsJSON', () => {
+    const sketch = new CountMinSketch(0.001, 0.99);
+    sketch.update('foo');
+    sketch.update('foo');
+    sketch.update('foo');
+    sketch.update('bar');
+
+    it('should export a count-min sketch to a JSON object', () => {
+      const exported = sketch.saveAsJSON();
+      exported.type.should.equal('CountMinSketch');
+      exported.epsilon.should.equal(sketch.epsilon);
+      exported.delta.should.equal(sketch.delta);
+      exported.matrix.should.deep.equal(sketch.matrix);
+    });
+
+    it('should create a count-min sketch from a JSON export', () => {
+      const exported = sketch.saveAsJSON();
+      const newSketch = CountMinSketch.fromJSON(exported);
+      newSketch.epsilon.should.equal(sketch.epsilon);
+      newSketch.delta.should.equal(sketch.delta);
+      newSketch.columns.should.equal(sketch.columns);
+      newSketch.rows.should.equal(sketch.rows);
+      newSketch.matrix.should.deep.equal(sketch.matrix);
+    });
+
+    it('should reject imports from invalid JSON objects', () => {
+      const invalids = [
+        { type: 'something' },
+        { type: 'CountMinSketch' },
+        { type: 'CountMinSketch', epsilon: 1 },
+        { type: 'CountMinSketch', epsilon: 1, delta: 1 }
+      ];
+
+      invalids.forEach(json => {
+        (() => CountMinSketch.fromJSON(json)).should.throw(Error, 'Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch');
+      });
+    });
+  });
+
 });
