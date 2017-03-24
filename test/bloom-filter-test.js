@@ -79,4 +79,39 @@ describe('BloomFilter', () => {
 			});
 		});
 	});
+
+  describe('#saveAsJSON', () => {
+    const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate);
+    it('should export a bucket to a JSON object', () => {
+      const exported = filter.saveAsJSON();
+      exported.type.should.equal('BloomFilter');
+      exported.size.should.equal(filter.size);
+      exported.length.should.equal(filter.length);
+      exported.nbHashes.should.equal(filter.nbHashes);
+      exported.filter.should.deep.equal(filter.filter);
+    });
+
+    it('should create a bucket from a JSON export', () => {
+      const exported = filter.saveAsJSON();
+      const newFilter = BloomFilter.fromJSON(exported);
+      newFilter.size.should.equal(filter.size);
+      newFilter.length.should.equal(filter.length);
+      newFilter.nbHashes.should.equal(filter.nbHashes);
+      newFilter.filter.should.deep.equal(filter.filter);
+    });
+
+    it('should reject imports from invalid JSON objects', () => {
+      const invalids = [
+        { type: 'something' },
+        { type: 'BloomFilter' },
+        { type: 'BloomFilter', size: 1 },
+        { type: 'BloomFilter', size: 1, length: 1 },
+        { type: 'BloomFilter', size: 1, length: 1, nbHashes: 2 }
+      ];
+
+      invalids.forEach(json => {
+        (() => BloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a BloomFilter from a JSON export which does not respresent a bloom filter');
+      });
+    });
+  });
 });

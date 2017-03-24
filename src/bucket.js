@@ -32,105 +32,135 @@ const utils = require('./utils.js');
  * @private
  */
 class Bucket {
-	/**
-	 * Constructor
-	 * @param {int} size - The number of element in the bucket
-	 */
-	constructor (size) {
-		this.elements = utils.allocateArray(size, null);
-		this.size = size;
-		this.length = 0;
-	}
+  /**
+   * Constructor
+   * @param {int} size - The number of element in the bucket
+   */
+  constructor (size) {
+    this.elements = utils.allocateArray(size, null);
+    this.size = size;
+    this.length = 0;
+  }
 
-	/**
-	 * Indicates if the bucket has any space available
-	 * @return {boolean} True if te bucket has any space available, False if if its full
-	 */
-	isFree () {
-		return this.length < this.size;
-	}
+  /**
+   * Create a new Bucket from a JSON export
+   * @param  {Object} json - A JSON export of a Bucket
+   * @return {Bucket} A new Bucket
+   */
+  static fromJSON (json) {
+    if ((json.type !== 'Bucket') || !('size' in json) || !('elements' in json))
+      throw new Error('Cannot create a Bucket from a JSON export which does not respresent a bucket');
+    const bucket = new Bucket(json.size);
+    json.elements.forEach((elt, i) => {
+      if (elt !== null) {
+        bucket.elements[i] = elt;
+        bucket.length++;
+      }
+    });
+    return bucket;
+  }
 
-	/**
-	 * Get the index of the first empty slot in the bucket
-	 * @return {int} The index of the first empty slot, or -1 if the bucket is full
-	 */
-	nextEmptySlot () {
-		return this.elements.indexOf(null);
-	}
+  /**
+   * Indicates if the bucket has any space available
+   * @return {boolean} True if te bucket has any space available, False if if its full
+   */
+  isFree () {
+    return this.length < this.size;
+  }
 
-	/**
-	 * Get the element at the given index in the bucket
-	 * @param {int} index - The index to access
-	 * @return {*} The element at the given index
-	 */
-	at (index) {
-		return this.elements[index];
-	}
+  /**
+   * Get the index of the first empty slot in the bucket
+   * @return {int} The index of the first empty slot, or -1 if the bucket is full
+   */
+  nextEmptySlot () {
+    return this.elements.indexOf(null);
+  }
 
-	/**
-	 * Add an element to the bucket
-	 * @param {*} element - The element to add in the bucket
-	 * @return {boolean} True if the insertion is a success, False if the bucket is full
-	 */
-	add (element) {
-		if (!this.isFree()) return false;
-		this.set(this.nextEmptySlot(), element);
-		this.length++;
-		return true;
-	}
+  /**
+   * Get the element at the given index in the bucket
+   * @param {int} index - The index to access
+   * @return {*} The element at the given index
+   */
+  at (index) {
+    return this.elements[index];
+  }
 
-	/**
-	 * Remove an element from the bucket
-	 * @param {*} element - The element to remove from the bucket
-	 * @return {boolean} True if the element has been successfully removed, False if it was not in the bucket
-	 */
-	remove (element) {
-		const index = this.elements.indexOf(element);
-		if (index <= -1) return false;
-		this.unset(index);
-		return true;
-	}
+  /**
+   * Add an element to the bucket
+   * @param {*} element - The element to add in the bucket
+   * @return {boolean} True if the insertion is a success, False if the bucket is full
+   */
+  add (element) {
+    if (!this.isFree()) return false;
+    this.set(this.nextEmptySlot(), element);
+    this.length++;
+    return true;
+  }
 
-	/**
-	 * Test an element for membership
-	 * @param {*} element - The element to look for in the bucket
-	 * @return {boolean} True is the element is in the bucket, otherwise False
-	 */
-	has (element) {
-		return this.elements.indexOf(element) > -1;
-	}
+  /**
+   * Remove an element from the bucket
+   * @param {*} element - The element to remove from the bucket
+   * @return {boolean} True if the element has been successfully removed, False if it was not in the bucket
+   */
+  remove (element) {
+    const index = this.elements.indexOf(element);
+    if (index <= -1) return false;
+    this.unset(index);
+    return true;
+  }
 
-	/**
-	 * Set an element at the given index in the bucket
-	 * @param  {int} index - The index at where the element should be inserted
-	 * @param  {*} element - The element to insert
-	 * @return {void}
-	 */
-	set (index, element) {
-		this.elements[index] = element;
-	}
+  /**
+   * Test an element for membership
+   * @param {*} element - The element to look for in the bucket
+   * @return {boolean} True is the element is in the bucket, otherwise False
+   */
+  has (element) {
+    return this.elements.indexOf(element) > -1;
+  }
 
-	/**
-	 * Unset the element at the given index
-	 * @param  {int} index - The index of the element that should be unset
-	 * @return {void}
-	 */
-	unset (index) {
-		this.elements[index] = null;
-		this.length--;
-	}
+  /**
+   * Set an element at the given index in the bucket
+   * @param  {int} index - The index at where the element should be inserted
+   * @param  {*} element - The element to insert
+   * @return {void}
+   */
+  set (index, element) {
+    this.elements[index] = element;
+  }
 
-	/**
-	 * Randomly swap an element of the bucket with a given element, then return the replaced element
-	 * @param {*} element - The element to be inserted
-	 * @return {*} The element that have been swapped with the parameter
-	 */
-	swapRandom (element) {
-		const index = utils.randomInt(0, this.length - 1);
-		const tmp = this.elements[index];
-		this.elements[index] = element;
-		return tmp;
-	}
+  /**
+   * Unset the element at the given index
+   * @param  {int} index - The index of the element that should be unset
+   * @return {void}
+   */
+  unset (index) {
+    this.elements[index] = null;
+    this.length--;
+  }
+
+  /**
+   * Randomly swap an element of the bucket with a given element, then return the replaced element
+   * @param {*} element - The element to be inserted
+   * @return {*} The element that have been swapped with the parameter
+   */
+  swapRandom (element) {
+    const index = utils.randomInt(0, this.length - 1);
+    const tmp = this.elements[index];
+    this.elements[index] = element;
+    return tmp;
+  }
+
+  /**
+   * Export a bucket as a JSON object
+   * @return {Object} The exported bucket as a JSON object
+   */
+  saveAsJSON () {
+    return {
+      type: 'Bucket',
+      size: this.size,
+      elements: [].concat.apply(this.elements)
+    };
+  }
 }
 
 module.exports = Bucket;

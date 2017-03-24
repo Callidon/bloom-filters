@@ -121,4 +121,37 @@ describe('Bucket', () => {
 			bucket.has(expected).should.be.true;
 		});
 	});
+
+  describe('#saveAsJSON', () => {
+    const bucket = new Bucket(5);
+    const values = [ 'foo', 'bar', 'moo' ];
+    values.forEach(value => bucket.add(value));
+
+    it('should export a bucket to a JSON object', () => {
+      const exported = bucket.saveAsJSON();
+      exported.type.should.equal('Bucket');
+      exported.size.should.equal(bucket.size);
+      exported.elements.should.deep.equal(bucket.elements);
+    });
+
+    it('should create a bucket from a JSON export', () => {
+      const exported = bucket.saveAsJSON();
+      const newBucket = Bucket.fromJSON(exported);
+      newBucket.size.should.equal(bucket.size);
+      newBucket.length.should.equal(bucket.length);
+      newBucket.elements.should.deep.equals(bucket.elements);
+    });
+
+    it('should reject imports from invalid JSON objects', () => {
+      const invalids = [
+        { type: 'something' },
+        { type: 'Bucket' },
+        { type: 'Bucket', size: 1 }
+      ];
+
+      invalids.forEach(json => {
+        (() => Bucket.fromJSON(json)).should.throw(Error, 'Cannot create a Bucket from a JSON export which does not respresent a bucket');
+      });
+    });
+  });
 });
