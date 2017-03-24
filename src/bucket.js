@@ -25,18 +25,21 @@ SOFTWARE.
 'use strict';
 
 const utils = require('./utils.js');
+const Exportable = require('./exportable.js');
 
 /**
  * A Bucket is a container of a fixed number of values, used in various bloom filters.
+ * @extends Exportable
  * @author Thomas Minier
  * @private
  */
-class Bucket {
+class Bucket extends Exportable {
   /**
    * Constructor
    * @param {int} size - The number of element in the bucket
    */
   constructor (size) {
+    super('Bucket', 'size', 'elements');
     this.elements = utils.allocateArray(size, null);
     this.size = size;
     this.length = 0;
@@ -148,18 +151,6 @@ class Bucket {
     const tmp = this.elements[index];
     this.elements[index] = element;
     return tmp;
-  }
-
-  /**
-   * Export a bucket as a JSON object
-   * @return {Object} The exported bucket as a JSON object
-   */
-  saveAsJSON () {
-    return {
-      type: 'Bucket',
-      size: this.size,
-      elements: this.elements.slice(0)
-    };
   }
 }
 

@@ -26,6 +26,7 @@ SOFTWARE.
 
 const fm = require('./formulas.js');
 const utils = require('./utils.js');
+const Exportable = require('./exportable.js');
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -33,6 +34,7 @@ const utils = require('./utils.js');
  *
  * Reference: Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.
  * @see {@link http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf} for more details about classic Bloom Filters.
+ * @extends Exportable
  * @author Thomas Minier
  * @example
  * const BloomFilter = require('bloom-filters').BloomFilter;
@@ -54,13 +56,14 @@ const utils = require('./utils.js');
  * // print false positive rate (around 0.1)
  * console.log(filter.rate());
  */
-class BloomFilter {
+class BloomFilter extends Exportable {
   /**
    * Constructor
    * @param {int} capacity - The filter capacity, i.e. the maximum number of elements it will contains
    * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
    */
   constructor (capacity, errorRate) {
+    super('BloomFilter', 'size', 'length', 'nbHashes', 'filter');
     this.size = fm.optimalFilterSize(capacity, errorRate);
     this.nbHashes = fm.optimalHashes(this.size, capacity);
     this.filter = utils.allocateArray(this.size, false);
@@ -145,20 +148,6 @@ class BloomFilter {
    */
   rate () {
     return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes);
-  }
-
-  /**
-   * Export a Bloom Filter as a JSON object
-   * @return {Object} The exported Bloom Filter as a JSON object
-   */
-  saveAsJSON () {
-    return {
-      type: 'BloomFilter',
-      size: this.size,
-      length: this.length,
-      nbHashes: this.nbHashes,
-      filter: this.filter.slice(0)
-    };
   }
 }
 

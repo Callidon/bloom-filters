@@ -25,14 +25,16 @@ SOFTWARE.
 'use strict';
 
 const utils = require('./utils.js');
+const Exportable = require('./exportable.js');
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
  * It uses hash functions to map events to frequencies, but unlike a hash table uses only sub-linear space, at the expense of overcounting some events due to collisions.
  *
  * Reference: Cormode, G., & Muthukrishnan, S. (2005). An improved data stream summary: the count-min sketch and its applications. Journal of Algorithms, 55(1), 58-75.
- * @author Thomas Minier
  * @see {@link http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf} for more details on Count Min Sketch
+ * @extends Exportable
+ * @author Thomas Minier
  * @example
  * const CountMinSketch = require('bloom-filters').CountMinSketch;
  *
@@ -49,13 +51,14 @@ const utils = require('./utils.js');
  * console.log(sketch.count('bob')); // output: 1
  * console.log(sketch.count('daniel')); // output: 0
  */
-class CountMinSketch {
+class CountMinSketch extends Exportable {
   /**
    * Constructor. Creates a new Count-Min Sketch whose relative accuracy is within a factor of epsilon with probability delta.
    * @param {number} epsilon - Factor of relative accuracy
    * @param {number} delta - Probability of relative accuracy
    */
   constructor (epsilon, delta) {
+    super('CountMinSketch', 'epsilon', 'delta', 'matrix');
     this.epsilon = epsilon;
     this.delta = delta;
     this.columns = Math.ceil(Math.E / epsilon);
@@ -159,19 +162,6 @@ class CountMinSketch {
     const sketch = new CountMinSketch(this.epsilon, this.delta);
     sketch.merge(this);
     return sketch;
-  }
-
-  /**
-   * Export a Count-Min Sketch as a JSON object
-   * @return {Object} The exported Count-Min Sketch as a JSON object
-   */
-  saveAsJSON () {
-    return {
-      type: 'CountMinSketch',
-      epsilon: this.epsilon,
-      delta: this.delta,
-      matrix: this.matrix.slice(0)
-    };
   }
 }
 
