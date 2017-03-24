@@ -82,4 +82,42 @@ describe('PartitionedBloomFilter', () => {
       });
     });
   });
+
+  describe('#saveAsJSON', () => {
+    const filter = new PartitionedBloomFilter(15, targetRate);
+    filter.add('alice');
+    filter.add('bob');
+    filter.add('carl');
+
+    it('should export a partitioned bloom filter to a JSON object', () => {
+      const exported = filter.saveAsJSON();
+      exported.type.should.equal('PartitionedBloomFilter');
+      exported.capacity.should.equal(15);
+      exported.errorRate.should.equal(targetRate);
+      exported.filter.should.deep.equal(filter.filter);
+    });
+
+    it('should create a partitioned bloom filter from a JSON export', () => {
+      const exported = filter.saveAsJSON();
+      const newFilter = PartitionedBloomFilter.fromJSON(exported);
+      newFilter.size.should.equal(filter.size);
+      newFilter.nbHashes.should.equal(filter.nbHashes);
+      newFilter.subarraySize.should.equal(filter.subarraySize);
+      newFilter.length.should.equal(filter.length);
+      newFilter.filter.should.deep.equal(filter.filter);
+    });
+
+    it('should reject imports from invalid JSON objects', () => {
+      const invalids = [
+        { type: 'something' },
+        { type: 'PartitionedBloomFilter' },
+        { type: 'PartitionedBloomFilter', capacity: 1 },
+        { type: 'PartitionedBloomFilter', capacity: 1, errorRate: 1 }
+      ];
+
+      invalids.forEach(json => {
+        (() => PartitionedBloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter');
+      });
+    });
+  });
 });
