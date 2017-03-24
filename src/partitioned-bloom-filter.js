@@ -60,82 +60,82 @@ const utils = require('./utils.js');
  * console.log(filter.rate());
  */
 class PartitionedBloomFilter {
-	/**
-	 * Constructor
-	 * @param {int} capacity - The filter capacity, i.e. the maximum number of elements it will contains
-	 * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
-	 */
-	constructor (capacity, errorRate) {
-		this.size = fm.optimalFilterSize(capacity, errorRate);
-		this.nbHashes = fm.optimalHashes(this.size, capacity);
-		this.subarraySize = Math.ceil(this.size / this.nbHashes);
-		this.filter = utils.allocateArray(this.nbHashes, () => utils.allocateArray(this.subarraySize, false));
-		this.length = 0;
-	}
+  /**
+   * Constructor
+   * @param {int} capacity - The filter capacity, i.e. the maximum number of elements it will contains
+   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
+   */
+  constructor (capacity, errorRate) {
+    this.size = fm.optimalFilterSize(capacity, errorRate);
+    this.nbHashes = fm.optimalHashes(this.size, capacity);
+    this.subarraySize = Math.ceil(this.size / this.nbHashes);
+    this.filter = utils.allocateArray(this.nbHashes, () => utils.allocateArray(this.subarraySize, false));
+    this.length = 0;
+  }
 
-	/**
-	 * Build a new Partitioned Bloom Filter from an existing array with a fixed error rate
-	 * @param {Array} array - The array used to build the filter
-	 * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
-	 * @return {BloomFilter} A new Bloom Filter filled with iterable's elements
-	 * @example
-	 * // create a filter with a false positive rate of 0.1
-	 * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
-	 */
-	static from (array, errorRate) {
-		const filter = new PartitionedBloomFilter(array.length, errorRate);
-		array.forEach(element => filter.add(element));
-		return filter;
-	}
+  /**
+   * Build a new Partitioned Bloom Filter from an existing array with a fixed error rate
+   * @param {Array} array - The array used to build the filter
+   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
+   * @return {BloomFilter} A new Bloom Filter filled with iterable's elements
+   * @example
+   * // create a filter with a false positive rate of 0.1
+   * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
+   */
+  static from (array, errorRate) {
+    const filter = new PartitionedBloomFilter(array.length, errorRate);
+    array.forEach(element => filter.add(element));
+    return filter;
+  }
 
-	/**
-	 * Add an element to the filter
-	 * @param {*} element - The element to add
-	 * @return {void}
-	 * @example
-	 * const filter = new PartitionedBloomFilter(15, 0.1);
-	 * filter.add('foo');
-	 */
-	add (element) {
-		const hashes = utils.hashTwice(element, true);
+  /**
+   * Add an element to the filter
+   * @param {*} element - The element to add
+   * @return {void}
+   * @example
+   * const filter = new PartitionedBloomFilter(15, 0.1);
+   * filter.add('foo');
+   */
+  add (element) {
+    const hashes = utils.hashTwice(element, true);
 
-		for(let i = 0; i < this.nbHashes; i++) {
-			this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)] = true;
-		}
-		this.length++;
-	}
+    for(let i = 0; i < this.nbHashes; i++) {
+      this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)] = true;
+    }
+    this.length++;
+  }
 
-	/**
-	 * Test an element for membership
-	 * @param {*} element - The element to look for in the filter
-	 * @return {boolean} False if the element is definitively not in the filter, True is the element might be in the filter
-	 * @example
-	 * const filter = new PartitionedBloomFilter(15, 0.1);
-	 * filter.add('foo');
-	 * console.log(filter.has('foo')); // output: true
-	 * console.log(filter.has('bar')); // output: false
-	 */
-	has (element) {
-		const hashes = utils.hashTwice(element, true);
+  /**
+   * Test an element for membership
+   * @param {*} element - The element to look for in the filter
+   * @return {boolean} False if the element is definitively not in the filter, True is the element might be in the filter
+   * @example
+   * const filter = new PartitionedBloomFilter(15, 0.1);
+   * filter.add('foo');
+   * console.log(filter.has('foo')); // output: true
+   * console.log(filter.has('bar')); // output: false
+   */
+  has (element) {
+    const hashes = utils.hashTwice(element, true);
 
-		for(let i = 0; i < this.nbHashes; i++) {
-			if(!this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)]) {
-				return false;
-			}
-		}
-		return true;
-	}
+    for(let i = 0; i < this.nbHashes; i++) {
+      if(!this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)]) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-	/**
-	 * Get the current false positive rate (or error rate) of the filter
-	 * @return {int} The current false positive rate of the filter
-	 * @example
-	 * const filter = new PartitionedBloomFilter(15, 0.1);
-	 * console.log(filter.rate()); // output: something around 0.1
-	 */
-	rate () {
-		return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes);
-	}
+  /**
+   * Get the current false positive rate (or error rate) of the filter
+   * @return {int} The current false positive rate of the filter
+   * @example
+   * const filter = new PartitionedBloomFilter(15, 0.1);
+   * console.log(filter.rate()); // output: something around 0.1
+   */
+  rate () {
+    return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes);
+  }
 }
 
 module.exports = PartitionedBloomFilter;

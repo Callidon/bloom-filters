@@ -28,36 +28,36 @@ require('chai').should();
 const utils = require('../src/utils.js');
 
 describe('Utils', () => {
-	describe('#allocateArray', () => {
-		it('should allocate an array with the given size and a default value', () => {
-			const array = utils.allocateArray(15, 1);
-			array.length.should.equal(15);
-			array.forEach(value => value.should.equal(1));
-		});
+  describe('#allocateArray', () => {
+    it('should allocate an array with the given size and a default value', () => {
+      const array = utils.allocateArray(15, 1);
+      array.length.should.equal(15);
+      array.forEach(value => value.should.equal(1));
+    });
 
-		it('should allow the use of a function to set the default value', () => {
-			const array = utils.allocateArray(15, () => 'foo');
-			array.length.should.equal(15);
-			array.forEach(value => value.should.equal('foo'));
-		});
-	});
+    it('should allow the use of a function to set the default value', () => {
+      const array = utils.allocateArray(15, () => 'foo');
+      array.length.should.equal(15);
+      array.forEach(value => value.should.equal('foo'));
+    });
+  });
 
-	describe('#doubleHashing', () => {
-		it('should perform a double hashing', () => {
-			const hashA = Math.random(Number.MIN_VALUE, Number.MAX_VALUE / 2);
-			const hashB = Math.random(Number.MAX_VALUE / 2, Number.MAX_VALUE);
-			const size = 1000;
-			const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
-			values.forEach(n => {
-				utils.doubleHashing(n, hashA, hashB, size).should.equal((hashA + n * hashB) % size);
-			});
-		});
-	});
+  describe('#doubleHashing', () => {
+    it('should perform a double hashing', () => {
+      const hashA = Math.random(Number.MIN_VALUE, Number.MAX_VALUE / 2);
+      const hashB = Math.random(Number.MAX_VALUE / 2, Number.MAX_VALUE);
+      const size = 1000;
+      const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
+      values.forEach(n => {
+        utils.doubleHashing(n, hashA, hashB, size).should.equal((hashA + n * hashB) % size);
+      });
+    });
+  });
 
-	describe('#randomInt', () => {
-		it('should generate a random int in an interval', () => {
-			const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
-			utils.randomInt(values[0], values[9]).should.be.oneOf(values);
-		});
-	});
+  describe('#randomInt', () => {
+    it('should generate a random int in an interval', () => {
+      const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ];
+      utils.randomInt(values[0], values[9]).should.be.oneOf(values);
+    });
+  });
 });

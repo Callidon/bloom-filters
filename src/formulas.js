@@ -38,7 +38,7 @@ SOFTWARE.
  * @memberof Formulas
  */
 const optimalFilterSize = (setLength, errorRate) => {
-	return Math.ceil(-((setLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)));
+  return Math.ceil(-((setLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)));
 };
 
 /**
@@ -49,11 +49,11 @@ const optimalFilterSize = (setLength, errorRate) => {
  * @memberof Formulas
  */
 const optimalHashes = (size, setLength) => {
-	return Math.ceil((size / setLength) * Math.log(2));
+  return Math.ceil((size / setLength) * Math.log(2));
 };
 
 
 module.exports = {
-	optimalFilterSize,
-	optimalHashes
+  optimalFilterSize,
+  optimalHashes
 };

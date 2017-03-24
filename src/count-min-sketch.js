@@ -50,103 +50,103 @@ const utils = require('./utils.js');
  * console.log(sketch.count('daniel')); // output: 0
  */
 class CountMinSketch {
-	/**
-	 * Constructor. Creates a new Count-Min Sketch whose relative accuracy is within a factor of epsilon with probability delta.
-	 * @param {number} epsilon - Factor of relative accuracy
-	 * @param {number} delta - Probability of relative accuracy
-	 */
-	constructor (epsilon, delta) {
-		this.epsilon = epsilon;
-		this.delta = delta;
-		this.columns = Math.ceil(Math.E / epsilon);
-		this.rows = Math.ceil(Math.log(1 / delta));
-		this.matrix = utils.allocateArray(this.rows, () => utils.allocateArray(this.columns, 0));
-	}
+  /**
+   * Constructor. Creates a new Count-Min Sketch whose relative accuracy is within a factor of epsilon with probability delta.
+   * @param {number} epsilon - Factor of relative accuracy
+   * @param {number} delta - Probability of relative accuracy
+   */
+  constructor (epsilon, delta) {
+    this.epsilon = epsilon;
+    this.delta = delta;
+    this.columns = Math.ceil(Math.E / epsilon);
+    this.rows = Math.ceil(Math.log(1 / delta));
+    this.matrix = utils.allocateArray(this.rows, () => utils.allocateArray(this.columns, 0));
+  }
 
-	/**
-	 * Update the count min sketch with a new occurrence of an element
-	 * @param {string} element - The new element
-	 * @return {void}
-	 * @example
-	 * const sketch = new CountMinSketch(0.001, 0.99);
-	 * sketch.update('foo');
-	 */
-	update (element) {
-		const hashes = utils.hashTwice(element, true);
+  /**
+   * Update the count min sketch with a new occurrence of an element
+   * @param {string} element - The new element
+   * @return {void}
+   * @example
+   * const sketch = new CountMinSketch(0.001, 0.99);
+   * sketch.update('foo');
+   */
+  update (element) {
+    const hashes = utils.hashTwice(element, true);
 
-		for(let i = 0; i < this.rows; i++) {
-			this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)]++;
-		}
-	}
+    for(let i = 0; i < this.rows; i++) {
+      this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)]++;
+    }
+  }
 
-	/**
-	 * Perform a point query, i.e. estimate the number of occurence of an element
-	 * @param {string} element - The element we want to count
-	 * @return {int} The estimate number of occurence of the element
-	 * @example
-	 * const sketch = new CountMinSketch(0.001, 0.99);
-	 * sketch.update('foo');
-	 * sketch.update('foo');
-	 *
-	 * console.log(sketch.count('foo')); // output: 2
-	 * console.log(sketch.count('bar')); // output: 0
-	 */
-	count (element) {
-		let min = Infinity;
-		const hashes = utils.hashTwice(element, true);
+  /**
+   * Perform a point query, i.e. estimate the number of occurence of an element
+   * @param {string} element - The element we want to count
+   * @return {int} The estimate number of occurence of the element
+   * @example
+   * const sketch = new CountMinSketch(0.001, 0.99);
+   * sketch.update('foo');
+   * sketch.update('foo');
+   *
+   * console.log(sketch.count('foo')); // output: 2
+   * console.log(sketch.count('bar')); // output: 0
+   */
+  count (element) {
+    let min = Infinity;
+    const hashes = utils.hashTwice(element, true);
 
-		for(let i = 0; i < this.rows; i++) {
-			let v = this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)];
-			min = Math.min(v, min);
-		}
+    for(let i = 0; i < this.rows; i++) {
+      let v = this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)];
+      min = Math.min(v, min);
+    }
 
-		return min;
-	}
+    return min;
+  }
 
-	/**
-	 * Merge this sketch with another sketch, if they have the same number of columns and rows.
-	 * @param {CountMinSketch} sketch - The sketch to merge with
-	 * @return {void}
-	 * @throws Error
-	 * @example
-	 * const sketch = new CountMinSketch(0.001, 0.99);
-	 * const otherSketch = new CountMinSketch(0.001, 0.99);
-	 *
-	 * sketch.update('foo');
-	 * otherSketch.update('foo');
-	 * otherSketch.update('bar');
-	 *
-	 * // merge the two sketches
-	 * sketch.merge(otherSketch);
-	 * console.log(sketch.count('foo')); // output: 2
-	 * console.log(sketch.count('bar')); // output: 1
-	 */
-	merge (sketch) {
-		if (this.columns !== sketch.columns) throw new Error('Cannot merge two sketches with different number of columns');
-		if (this.rows !== sketch.rows) throw new Error('Cannot merge two sketches with different number of rows');
+  /**
+   * Merge this sketch with another sketch, if they have the same number of columns and rows.
+   * @param {CountMinSketch} sketch - The sketch to merge with
+   * @return {void}
+   * @throws Error
+   * @example
+   * const sketch = new CountMinSketch(0.001, 0.99);
+   * const otherSketch = new CountMinSketch(0.001, 0.99);
+   *
+   * sketch.update('foo');
+   * otherSketch.update('foo');
+   * otherSketch.update('bar');
+   *
+   * // merge the two sketches
+   * sketch.merge(otherSketch);
+   * console.log(sketch.count('foo')); // output: 2
+   * console.log(sketch.count('bar')); // output: 1
+   */
+  merge (sketch) {
+    if (this.columns !== sketch.columns) throw new Error('Cannot merge two sketches with different number of columns');
+    if (this.rows !== sketch.rows) throw new Error('Cannot merge two sketches with different number of rows');
 
-		for (let i = 0; i < this.rows; i++) {
-			for (let j = 0; j < this.columns; j++) {
-				this.matrix[i][j] += sketch.matrix[i][j];
-			}
-		}
-	}
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.columns; j++) {
+        this.matrix[i][j] += sketch.matrix[i][j];
+      }
+    }
+  }
 
-	/**
-	 * Clone the sketch
-	 * @return {CountMinSketch} A new cloned sketch
-	 * @example
-	 * const sketch = new CountMinSketch(0.001, 0.99);
-	 * sketch.update('foo');
-	 *
-	 * const clone = sketch.clone();
-	 * console.log(clone.count('foo')); // output: 1
-	 */
-	clone () {
-		const sketch = new CountMinSketch(this.epsilon, this.delta);
-		sketch.merge(this);
-		return sketch;
-	}
+  /**
+   * Clone the sketch
+   * @return {CountMinSketch} A new cloned sketch
+   * @example
+   * const sketch = new CountMinSketch(0.001, 0.99);
+   * sketch.update('foo');
+   *
+   * const clone = sketch.clone();
+   * console.log(clone.count('foo')); // output: 1
+   */
+  clone () {
+    const sketch = new CountMinSketch(this.epsilon, this.delta);
+    sketch.merge(this);
+    return sketch;
+  }
 }
 
 module.exports = CountMinSketch;

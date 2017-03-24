@@ -31,8 +31,8 @@ const CuckooFilter = require('./src/cuckoo-filter.js');
 const CountMinSketch = require('./src/count-min-sketch.js');
 
 module.exports = {
-	BloomFilter,
-	PartitionedBloomFilter,
-	CuckooFilter,
-	CountMinSketch
+  BloomFilter,
+  PartitionedBloomFilter,
+  CuckooFilter,
+  CountMinSketch
 };

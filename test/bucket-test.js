@@ -29,98 +29,98 @@ const Bucket = require('../src/bucket.js');
 
 describe('Bucket', () => {
 
-	describe('#isFree', () => {
-		it('should return True when the bucket as free space available', () => {
-			const bucket = new Bucket(5);
-			bucket.isFree().should.be.true;
-			bucket.add('foo');
-			bucket.isFree().should.be.true;
-		});
+  describe('#isFree', () => {
+    it('should return True when the bucket as free space available', () => {
+      const bucket = new Bucket(5);
+      bucket.isFree().should.be.true;
+      bucket.add('foo');
+      bucket.isFree().should.be.true;
+    });
 
-		it('should return False when the bucket is full', () => {
-			const bucket = new Bucket(1);
-			bucket.add('foo');
-			bucket.isFree().should.be.false;
-		});
-	});
+    it('should return False when the bucket is full', () => {
+      const bucket = new Bucket(1);
+      bucket.add('foo');
+      bucket.isFree().should.be.false;
+    });
+  });
 
-	describe('#at', () => {
-		it('should provies an accessor for bucket\'s elements', () => {
-			const bucket = new Bucket(3);
-			bucket.add('foo');
-			bucket.add('bar');
-			bucket.at(0).should.equal('foo');
-			bucket.at(1).should.equal('bar');
-		});
-	});
+  describe('#at', () => {
+    it('should provies an accessor for bucket\'s elements', () => {
+      const bucket = new Bucket(3);
+      bucket.add('foo');
+      bucket.add('bar');
+      bucket.at(0).should.equal('foo');
+      bucket.at(1).should.equal('bar');
+    });
+  });
 
-	describe('#add', () => {
-		it('should add an element to the bucket', () => {
-			const bucket = new Bucket(5);
-			bucket.add('foo');
-			bucket.at(0).should.equal('foo');
-			bucket.length.should.equal(1);
-		});
+  describe('#add', () => {
+    it('should add an element to the bucket', () => {
+      const bucket = new Bucket(5);
+      bucket.add('foo');
+      bucket.at(0).should.equal('foo');
+      bucket.length.should.equal(1);
+    });
 
-		it('should not add an element when bucket is full', () => {
-			const bucket = new Bucket(1);
-			bucket.add('foo');
-			bucket.add('bar').should.be.false;
-			bucket.length.should.equal(1);
-		});
-	});
+    it('should not add an element when bucket is full', () => {
+      const bucket = new Bucket(1);
+      bucket.add('foo');
+      bucket.add('bar').should.be.false;
+      bucket.length.should.equal(1);
+    });
+  });
 
-	describe('#remove', () => {
-		it('should remove an element from the bucket', () => {
-			const bucket = new Bucket(5);
-			bucket.add('foo');
-			bucket.remove('foo').should.be.true;
-			bucket.length.should.equal(0);
-		});
+  describe('#remove', () => {
+    it('should remove an element from the bucket', () => {
+      const bucket = new Bucket(5);
+      bucket.add('foo');
+      bucket.remove('foo').should.be.true;
+      bucket.length.should.equal(0);
+    });
 
-		it('should remove an element without altering the others', () => {
-			const bucket = new Bucket(5);
-			bucket.add('foo');
-			bucket.add('bar');
-			bucket.add('moo');
-			bucket.remove('bar').should.be.true;
-			bucket.elements.indexOf('foo').should.be.greaterThan(-1);
-			bucket.elements.indexOf('moo').should.be.greaterThan(-1);
-			bucket.length.should.equal(2);
-		});
+    it('should remove an element without altering the others', () => {
+      const bucket = new Bucket(5);
+      bucket.add('foo');
+      bucket.add('bar');
+      bucket.add('moo');
+      bucket.remove('bar').should.be.true;
+      bucket.elements.indexOf('foo').should.be.greaterThan(-1);
+      bucket.elements.indexOf('moo').should.be.greaterThan(-1);
+      bucket.length.should.equal(2);
+    });
 
-		it('should fail to remove elements that are not in the bucket', () => {
-			const bucket = new Bucket(5);
-			bucket.add('foo');
-			bucket.remove('bar').should.be.false;
-			bucket.length.should.equal(1);
-		});
-	});
+    it('should fail to remove elements that are not in the bucket', () => {
+      const bucket = new Bucket(5);
+      bucket.add('foo');
+      bucket.remove('bar').should.be.false;
+      bucket.length.should.equal(1);
+    });
+  });
 
-	describe('#has', () => {
-		it('should return True when the element is in the bucket', () => {
-			const bucket = new Bucket(5);
-			bucket.add('foo');
-			bucket.has('foo').should.be.true;
-		});
+  describe('#has', () => {
+    it('should return True when the element is in the bucket', () => {
+      const bucket = new Bucket(5);
+      bucket.add('foo');
+      bucket.has('foo').should.be.true;
+    });
 
-		it('should return False when the element is not in the bucket', () => {
-			const bucket = new Bucket(5);
-			bucket.add('foo');
-			bucket.has('moo').should.be.false;
-		});
-	});
+    it('should return False when the element is not in the bucket', () => {
+      const bucket = new Bucket(5);
+      bucket.add('foo');
+      bucket.has('moo').should.be.false;
+    });
+  });
 
-	describe('#swapRandom', () => {
-		it('should randomly swap an element from the inside of the bucket with one from the outside', () => {
-			const bucket = new Bucket(5);
-			const values = [ 'foo', 'bar', 'moo' ];
-			values.forEach(value => bucket.add(value));
-			const expected = 'boo';
-			bucket.swapRandom(expected).should.be.oneOf(values);
-			bucket.has(expected).should.be.true;
-		});
-	});
+  describe('#swapRandom', () => {
+    it('should randomly swap an element from the inside of the bucket with one from the outside', () => {
+      const bucket = new Bucket(5);
+      const values = [ 'foo', 'bar', 'moo' ];
+      values.forEach(value => bucket.add(value));
+      const expected = 'boo';
+      bucket.swapRandom(expected).should.be.oneOf(values);
+      bucket.has(expected).should.be.true;
+    });
+  });
 
   describe('#saveAsJSON', () => {
     const bucket = new Bucket(5);
