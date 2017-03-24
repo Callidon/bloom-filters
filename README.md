@@ -28,16 +28,17 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 
 ## Data structures
 
+
 ### Classic Bloom Filter
 
 ```javascript
 const BloomFilter = require('bloom-filters').BloomFilter;
 
 // create a Bloom Filter with size = 15 and 1% error rate
-let filter = new BloomFilter(15, 0.1);
+let filter = new BloomFilter(15, 0.01);
 
 // alternatively, create a Bloom Filter from an array with 1% error rate
-filter = BloomFilter.from([ 'alice', 'bob' ], 0.1);
+filter = BloomFilter.from([ 'alice', 'bob' ], 0.01);
 
 // add some value in the filter
 filter.add('alice');
@@ -47,7 +48,7 @@ filter.add('bob');
 console.log(filter.has('bob')); // output: true
 console.log(filter.has('daniel')); // output: false
 
-// print false positive rate (around 0.1)
+// print false positive rate (around 0.01)
 console.log(filter.rate());
 ```
 
@@ -58,13 +59,13 @@ Partitioned Bloom Filter follow the same API than [Classic Bloom Filter](#classi
 const PartitionedBloomFilter = require('bloom-filters').PartitionedBloomFilter;
 
 // create a Partitioned Bloom Filter with size = 15 and 1% error rate
-const filter = new PartitionedBloomFilter(15, 0.1);
+const filter = new PartitionedBloomFilter(15, 0.01);
 
 // now use it like a classic bloom filter!
 // ...
 ```
 
-## Cuckoo Filter
+### Cuckoo Filter
 
 ```javascript
 const CuckooFilter = require('bloom-filters').CuckooFilter;
