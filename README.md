@@ -15,6 +15,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Partitioned Bloom Filter](#partitioned-bloom-filter)
 	* [Cuckoo Filter](#cuckoo-filter)
 	* [Count Min Sketch](#count-min-sketch)
+* [Export and import](#export-and-import)
 * [Documentation](#documentation)
 * [Tests](#tests)
 * [References](#references)
@@ -102,7 +103,32 @@ console.log(sketch.count('bob')); // output: 1
 console.log(sketch.count('daniel')); // output: 0
 ```
 
-# Documentation
+## Export and import
+
+All data structures exposed by this package can be **exported and imported from/to JSON**:
+
+* Use the method `saveAsJSON()` to export any data structures into a JSON object.
+* Use the static method `fromJSON(json)` to load a data structure from a JSON object.
+
+```javascript
+const BloomFilter = require('bloom-filters').BloomFilter;
+
+const filter = new BloomFilter(15, 0.01);
+filter.add('alice');
+
+// export a bloom filter to JSON
+const exported = filter.saveAsJSON();
+
+// do something with the JSON object (save it as file, send it to a server, etc)
+// ...
+
+// import the same filter from its JSON export
+const importedFilter = BloomFilter.fromJSON(exported);
+console.log(filter.has('alice')); // output: true
+console.log(filter.has('bob')); // output: false
+```
+
+## Documentation
 
 See [documentation online](https://callidon.github.io/bloom-filters/) or generate it in directory `doc/` with: `npm run doc`
 
