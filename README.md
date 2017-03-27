@@ -105,7 +105,7 @@ console.log(sketch.count('daniel')); // output: 0
 
 ## Export and import
 
-All data structures exposed by this package can be **exported and imported from/to JSON**:
+All data structures exposed by this package can be **exported and imported to/from JSON**:
 
 * Use the method `saveAsJSON()` to export any data structures into a JSON object.
 * Use the static method `fromJSON(json)` to load a data structure from a JSON object.
