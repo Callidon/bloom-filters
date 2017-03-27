@@ -152,6 +152,16 @@ class Bucket extends Exportable {
     this.elements[index] = element;
     return tmp;
   }
+
+  /**
+   * Test if two buckets are equals, i.e. have the same size, length and content
+   * @param  {Bucket} bucket - The other bucket with which to compare
+   * @return {boolean} True if the two buckets are equals, False otherwise
+   */
+  equals (bucket) {
+    if ((this.size !== bucket.size) || (this.length !== bucket.length)) return false;
+    return this.elements.every((elt, index) => bucket.at(index) === elt);
+  }
 }
 
 module.exports = Bucket;

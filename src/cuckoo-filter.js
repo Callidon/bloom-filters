@@ -26,6 +26,7 @@ SOFTWARE.
 
 const murmur = require('murmurhash3js');
 const Bucket = require('./bucket.js');
+const Exportable = require('./exportable.js');
 const utils = require('./utils.js');
 
 /**
@@ -34,8 +35,9 @@ const utils = require('./utils.js');
  *
  * Reference: Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). Cuckoo filter: Practically better than bloom.
  * In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
- * @author Thomas Minier
  * @see {@link https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf} for more details about Cuckoo filters
+ * @extends Exportable
+ * @author Thomas Minier
  * @example
  * const CuckooFilter = require('bloom-filters').CuckooFilter;
  *
@@ -52,7 +54,7 @@ const utils = require('./utils.js');
  * filter.remove('bob');
  * console.log(filter.has('bob')); // output: false
  */
-class CuckooFilter {
+class CuckooFilter extends Exportable {
   /**
    * Constructor
    * @param {int} size - The filter size
@@ -61,6 +63,8 @@ class CuckooFilter {
    * @param {int|undefined} maxKicks - (optional) The max number of kicks when resolving collision at insertion, default to 1
    */
   constructor (size, fLength, bucketSize, maxKicks) {
+    super('CuckooFilter', 'size', 'fingerprintLength', 'length', 'maxKicks', 'filter');
+    this._registerResolver('filter', filter => filter.map(bucket => bucket.saveAsJSON()));
     this.filter = utils.allocateArray(size, () => new Bucket(bucketSize));
     this.size = size;
     this.fingerprintLength = fLength;
@@ -83,6 +87,20 @@ class CuckooFilter {
   //   array.forEach(element => filter.add(element));
   //   return filter;
   // }
+
+  /**
+   * Create a new Cuckoo Filter from a JSON export
+   * @param  {Object} json - A JSON export of a Cuckoo Filter
+   * @return {CuckooFilter} A new Cuckoo Filter
+   */
+  static fromJSON (json) {
+    if ((json.type !== 'CuckooFilter') || !('size' in json) || !('fingerprintLength' in json) || !('length' in json) || !('maxKicks' in json) || !('filter' in json))
+      throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter');
+    const filter = new CuckooFilter(json.size, json.fingerprintLength, json.bucketSize, json.maxKicks);
+    filter.length = json.length;
+    filter.filter = json.filter.map(json => Bucket.fromJSON(json));
+    return filter;
+  }
 
   /**
    * Add an element to the filter

@@ -122,6 +122,48 @@ describe('Bucket', () => {
     });
   });
 
+  describe('#equals', () => {
+    it('should return True when two buckets are equals', () => {
+      const b1 = new Bucket(5);
+      const b2 = new Bucket(5);
+      const values = [ 'foo', 'bar', 'moo' ];
+      values.forEach(value => {
+        b1.add(value);
+        b2.add(value);
+      });
+
+      b1.equals(b2).should.be.true;
+    });
+
+    it('should return False when two buckets are not equals due to their size', () => {
+      const b1 = new Bucket(5);
+      const b2 = new Bucket(3);
+
+      b1.equals(b2).should.be.false;
+    });
+
+    it('should return False when two buckets are not equals due to their length', () => {
+      const b1 = new Bucket(5);
+      const b2 = new Bucket(5);
+      b1.add('foo');
+      b1.add('bar');
+      b2.add('moo');
+
+      b1.equals(b2).should.be.false;
+    });
+
+    it('should return False when two buckets are not equals due to their content', () => {
+      const b1 = new Bucket(5);
+      const b2 = new Bucket(5);
+      b1.add('foo');
+      b1.add('bar');
+      b2.add('foo');
+      b2.add('moo');
+
+      b1.equals(b2).should.be.false;
+    });
+  });
+
   describe('#saveAsJSON', () => {
     const bucket = new Bucket(5);
     const values = [ 'foo', 'bar', 'moo' ];

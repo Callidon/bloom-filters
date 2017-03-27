@@ -158,4 +158,45 @@ describe('CuckooFilter', () => {
       filter.has('foo').should.be.true;
     });
   });
+
+  describe('#saveAsJSON', () => {
+    const filter = new CuckooFilter(15, 3, 2);
+    filter.add('alice');
+    filter.add('bob');
+
+    it('should export a cuckoo filter to a JSON object', () => {
+      const exported = filter.saveAsJSON();
+      exported.type.should.equal('CuckooFilter');
+      exported.size.should.equal(filter.size);
+      exported.fingerprintLength.should.equal(filter.fingerprintLength);
+      exported.length.should.equal(filter.length);
+      exported.maxKicks.should.deep.equal(filter.maxKicks);
+      exported.filter.should.deep.equal(filter.filter.map(b => b.saveAsJSON()));
+    });
+
+    it('should create a cuckoo filter from a JSON export', () => {
+      const exported = filter.saveAsJSON();
+      const newFilter = CuckooFilter.fromJSON(exported);
+      newFilter.size.should.equal(filter.size);
+      newFilter.fingerprintLength.should.equal(filter.fingerprintLength);
+      newFilter.length.should.equal(filter.length);
+      newFilter.maxKicks.should.deep.equal(filter.maxKicks);
+      newFilter.filter.every((b, index) => filter.filter[index].equals(b)).should.be.true;
+    });
+
+    it('should reject imports from invalid JSON objects', () => {
+      const invalids = [
+        { type: 'something' },
+        { type: 'CuckooFilter' },
+        { type: 'CuckooFilter', size: 1 },
+        { type: 'CuckooFilter', size: 1, fingerprintLength: 1 },
+        { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2 },
+        { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2, maxKicks: 1 }
+      ];
+
+      invalids.forEach(json => {
+        (() => CuckooFilter.fromJSON(json)).should.throw(Error, 'Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter');
+      });
+    });
+  });
 });
