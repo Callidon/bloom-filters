@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "standard",
     "test": "mocha test/**/*.js --trace-deprecation",
-    "coverage": "istanbul cover node_modules/.bin/_mocha test/**/*.js --reporter lcovonly -- -R spec",
+    "coverage": "nyc --reporter=lcov npm test",
+    "report": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov",
     "doc": "jsdoc -c jsdoc.json README.md src/"
   },
   "repository": {
@@ -34,10 +35,9 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "codecov": "^1.0.1",
-    "eslint": "^3.14.0",
-    "istanbul": "^0.4.5",
     "jsdoc": "^3.4.3",
     "mocha": "^3.2.0",
+    "nyc": "^11.0.3",
     "standard": "^10.0.2"
   },
   "dependencies": {

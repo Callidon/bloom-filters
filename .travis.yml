@@ -8,7 +8,8 @@ script:
 - npm run doc
 - npm run lint
 - npm run test
-- npm run coverage
+after_success:
+- npm run report
 - node_modules/codecov/bin/codecov -t $CODECOV_TOKEN
 before_deploy: npm run doc
 deploy:
