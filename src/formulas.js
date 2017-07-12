@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
 /**
  * Various formulas used with Bloom Filters
@@ -38,8 +38,8 @@ SOFTWARE.
  * @memberof Formulas
  */
 const optimalFilterSize = (setLength, errorRate) => {
-  return Math.ceil(-((setLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)));
-};
+  return Math.ceil(-((setLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)))
+}
 
 /**
  * Compute the optimal number of hash functions to be used by a Bloom Filter
@@ -49,11 +49,10 @@ const optimalFilterSize = (setLength, errorRate) => {
  * @memberof Formulas
  */
 const optimalHashes = (size, setLength) => {
-  return Math.ceil((size / setLength) * Math.log(2));
-};
-
+  return Math.ceil((size / setLength) * Math.log(2))
+}
 
 module.exports = {
   optimalFilterSize,
   optimalHashes
-};
+}

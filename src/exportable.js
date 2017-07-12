@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
 /**
  * An Exportable is a class that can be exported into a JSON object
@@ -36,17 +36,17 @@ class Exportable {
    * @param  {string[]} fields - The fields to exports as JSON
    */
   constructor (type, ...fields) {
-    this.type = type;
-    this.fields = fields;
-    this.resolvers = new Map();
+    this.type = type
+    this.fields = fields
+    this.resolvers = new Map()
     this.resolvers.set('_default', v => {
       if (Array.isArray(v)) {
-        return v.slice(0);
+        return v.slice(0)
       } else if (typeof v === 'object') {
-        return Object.assign({}, v);
+        return Object.assign({}, v)
       }
-      return v;
-    });
+      return v
+    })
   }
 
   /**
@@ -57,7 +57,7 @@ class Exportable {
    * @private
    */
   _registerResolver (field, resolver) {
-    this.resolvers.set(field, resolver);
+    this.resolvers.set(field, resolver)
   }
 
   /**
@@ -65,20 +65,20 @@ class Exportable {
    * @return {Object} The exported JSON object
    */
   saveAsJSON () {
-    let value;
-    const json = { type: this.type };
+    let value
+    const json = { type: this.type }
     this.fields.forEach(fieldName => {
       if (fieldName in this) {
-        value = this[fieldName];
+        value = this[fieldName]
         if (this.resolvers.has(fieldName)) {
-          json[fieldName] = this.resolvers.get(fieldName)(value);
+          json[fieldName] = this.resolvers.get(fieldName)(value)
         } else {
-          json[fieldName] = this.resolvers.get('_default')(value);
+          json[fieldName] = this.resolvers.get('_default')(value)
         }
       }
-    });
-    return json;
+    })
+    return json
   }
 }
 
-module.exports = Exportable;
+module.exports = Exportable

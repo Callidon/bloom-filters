@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
-const murmur = require('murmurhash3js');
-const Bucket = require('./bucket.js');
-const Exportable = require('./exportable.js');
-const utils = require('./utils.js');
+const murmur = require('murmurhash3js')
+const Bucket = require('./bucket.js')
+const Exportable = require('./exportable.js')
+const utils = require('./utils.js')
 
 /**
  * Cuckoo filters improve on Bloom filters by supporting deletion, limited counting,
@@ -63,13 +63,13 @@ class CuckooFilter extends Exportable {
    * @param {int|undefined} maxKicks - (optional) The max number of kicks when resolving collision at insertion, default to 1
    */
   constructor (size, fLength, bucketSize, maxKicks) {
-    super('CuckooFilter', 'size', 'fingerprintLength', 'length', 'maxKicks', 'filter');
-    this._registerResolver('filter', filter => filter.map(bucket => bucket.saveAsJSON()));
-    this.filter = utils.allocateArray(size, () => new Bucket(bucketSize));
-    this.size = size;
-    this.fingerprintLength = fLength;
-    this.length = 0;
-    this.maxKicks = maxKicks || 1;
+    super('CuckooFilter', 'size', 'fingerprintLength', 'length', 'maxKicks', 'filter')
+    this._registerResolver('filter', filter => filter.map(bucket => bucket.saveAsJSON()))
+    this.filter = utils.allocateArray(size, () => new Bucket(bucketSize))
+    this.size = size
+    this.fingerprintLength = fLength
+    this.length = 0
+    this.maxKicks = maxKicks || 1
   }
 
   /**
@@ -94,12 +94,11 @@ class CuckooFilter extends Exportable {
    * @return {CuckooFilter} A new Cuckoo Filter
    */
   static fromJSON (json) {
-    if ((json.type !== 'CuckooFilter') || !('size' in json) || !('fingerprintLength' in json) || !('length' in json) || !('maxKicks' in json) || !('filter' in json))
-      throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter');
-    const filter = new CuckooFilter(json.size, json.fingerprintLength, json.bucketSize, json.maxKicks);
-    filter.length = json.length;
-    filter.filter = json.filter.map(json => Bucket.fromJSON(json));
-    return filter;
+    if ((json.type !== 'CuckooFilter') || !('size' in json) || !('fingerprintLength' in json) || !('length' in json) || !('maxKicks' in json) || !('filter' in json)) { throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter') }
+    const filter = new CuckooFilter(json.size, json.fingerprintLength, json.bucketSize, json.maxKicks)
+    filter.length = json.length
+    filter.filter = json.filter.map(json => Bucket.fromJSON(json))
+    return filter
   }
 
   /**
@@ -112,30 +111,30 @@ class CuckooFilter extends Exportable {
    * filter.add('bob');
    */
   add (element) {
-    const locations = this._locations(element);
+    const locations = this._locations(element)
     // store fingerprint in an available empty bucket
     if (this.filter[locations.firstIndex].isFree()) {
-      this.filter[locations.firstIndex].add(locations.fingerprint);
+      this.filter[locations.firstIndex].add(locations.fingerprint)
     } else if (this.filter[locations.secondIndex].isFree()) {
-      this.filter[locations.secondIndex].add(locations.fingerprint);
+      this.filter[locations.secondIndex].add(locations.fingerprint)
     } else {
       // buckets are full, we must relocate one of them
-      let index = Math.random() < 0.5 ? locations.firstIndex : locations.secondIndex;
-      let movedElement = locations.fingerprint;
+      let index = Math.random() < 0.5 ? locations.firstIndex : locations.secondIndex
+      let movedElement = locations.fingerprint
       for (let nbTry = 0; nbTry < this.maxKicks; nbTry++) {
-        movedElement = this.filter[index].swapRandom(movedElement);
-        index = Math.abs(index ^ Math.abs(murmur.x86.hash32(movedElement))) % this.size;
+        movedElement = this.filter[index].swapRandom(movedElement)
+        index = Math.abs(index ^ Math.abs(murmur.x86.hash32(movedElement))) % this.size
         // add the moved element to the bucket if possible
         if (this.filter[index].isFree()) {
-          this.filter[index].add(movedElement);
-          this.length++;
-          return true;
+          this.filter[index].add(movedElement)
+          this.length++
+          return true
         }
       }
-      return false;
+      return false
     }
-    this.length++;
-    return true;
+    this.length++
+    return true
   }
 
   /**
@@ -151,17 +150,17 @@ class CuckooFilter extends Exportable {
    * filter.remove('bob');
    */
   remove (element) {
-    const locations = this._locations(element);
+    const locations = this._locations(element)
     if (this.filter[locations.firstIndex].has(locations.fingerprint)) {
-      this.filter[locations.firstIndex].remove(locations.fingerprint);
-      this.length--;
-      return true;
+      this.filter[locations.firstIndex].remove(locations.fingerprint)
+      this.length--
+      return true
     } else if (this.filter[locations.secondIndex].has(locations.fingerprint)) {
-      this.filter[locations.secondIndex].remove(locations.fingerprint);
-      this.length--;
-      return true;
+      this.filter[locations.secondIndex].remove(locations.fingerprint)
+      this.length--
+      return true
     }
-    return false;
+    return false
   }
 
   /**
@@ -176,8 +175,8 @@ class CuckooFilter extends Exportable {
    * console.log(filter.has('bob')); // output: false
    */
   has (element) {
-    const locations = this._locations(element);
-    return this.filter[locations.firstIndex].has(locations.fingerprint) || this.filter[locations.secondIndex].has(locations.fingerprint);
+    const locations = this._locations(element)
+    return this.filter[locations.firstIndex].has(locations.fingerprint) || this.filter[locations.secondIndex].has(locations.fingerprint)
   }
 
   /**
@@ -190,9 +189,9 @@ class CuckooFilter extends Exportable {
    * @private
    */
   _computeFingerpintLength (size, rate) {
-    const length = Math.ceil(Math.log(2 * size / rate)) / 8;
-    if(length <= 0) return 1;
-    return length;
+    const length = Math.ceil(Math.log(2 * size / rate)) / 8
+    if (length <= 0) return 1
+    return length
   }
 
   /**
@@ -202,16 +201,16 @@ class CuckooFilter extends Exportable {
    * @private
    */
   _locations (element) {
-    const hash = murmur.x86.hash32(element);
-    const fingerprint = hash.toString(16).substring(0, this.fingerprintLength);
-    const firstIndex = Math.abs(hash);
-    const secondIndex = Math.abs(firstIndex ^ Math.abs(murmur.x86.hash32(fingerprint)));
+    const hash = murmur.x86.hash32(element)
+    const fingerprint = hash.toString(16).substring(0, this.fingerprintLength)
+    const firstIndex = Math.abs(hash)
+    const secondIndex = Math.abs(firstIndex ^ Math.abs(murmur.x86.hash32(fingerprint)))
     return {
       fingerprint,
       firstIndex: firstIndex % this.size,
       secondIndex: secondIndex % this.size
-    };
+    }
   }
 }
 
-module.exports = CuckooFilter;
+module.exports = CuckooFilter

@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
-const fm = require('./formulas.js');
-const utils = require('./utils.js');
-const Exportable = require('./exportable.js');
+const fm = require('./formulas.js')
+const utils = require('./utils.js')
+const Exportable = require('./exportable.js')
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -63,11 +63,11 @@ class BloomFilter extends Exportable {
    * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
    */
   constructor (capacity, errorRate) {
-    super('BloomFilter', 'size', 'length', 'nbHashes', 'filter');
-    this.size = fm.optimalFilterSize(capacity, errorRate);
-    this.nbHashes = fm.optimalHashes(this.size, capacity);
-    this.filter = utils.allocateArray(this.size, false);
-    this.length = 0;
+    super('BloomFilter', 'size', 'length', 'nbHashes', 'filter')
+    this.size = fm.optimalFilterSize(capacity, errorRate)
+    this.nbHashes = fm.optimalHashes(this.size, capacity)
+    this.filter = utils.allocateArray(this.size, false)
+    this.length = 0
   }
 
   /**
@@ -80,9 +80,9 @@ class BloomFilter extends Exportable {
    * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
   static from (array, errorRate) {
-    const filter = new BloomFilter(array.length, errorRate);
-    array.forEach(element => filter.add(element));
-    return filter;
+    const filter = new BloomFilter(array.length, errorRate)
+    array.forEach(element => filter.add(element))
+    return filter
   }
 
   /**
@@ -91,14 +91,13 @@ class BloomFilter extends Exportable {
    * @return {BloomFilter} A new Bloom Filter
    */
   static fromJSON (json) {
-    if ((json.type !== 'BloomFilter') || !('size' in json) || !('length' in json) || !('nbHashes' in json) || !('filter' in json))
-      throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter');
-    const filter = new BloomFilter(1, 0.1);
-    filter.size = json.size;
-    filter.nbHashes = json.nbHashes;
-    filter.filter = json.filter.slice(0);
-    filter.length = json.length;
-    return filter;
+    if ((json.type !== 'BloomFilter') || !('size' in json) || !('length' in json) || !('nbHashes' in json) || !('filter' in json)) { throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter') }
+    const filter = new BloomFilter(1, 0.1)
+    filter.size = json.size
+    filter.nbHashes = json.nbHashes
+    filter.filter = json.filter.slice(0)
+    filter.length = json.length
+    return filter
   }
 
   /**
@@ -110,12 +109,12 @@ class BloomFilter extends Exportable {
    * filter.add('foo');
    */
   add (element) {
-    const hashes = utils.hashTwice(element, true);
+    const hashes = utils.hashTwice(element, true)
 
-    for(let i = 0; i < this.nbHashes; i++) {
-      this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)] = true;
+    for (let i = 0; i < this.nbHashes; i++) {
+      this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)] = true
     }
-    this.length++;
+    this.length++
   }
 
   /**
@@ -129,14 +128,14 @@ class BloomFilter extends Exportable {
    * console.log(filter.has('bar')); // output: false
    */
   has (element) {
-    const hashes = utils.hashTwice(element, true);
+    const hashes = utils.hashTwice(element, true)
 
-    for(let i = 0; i < this.nbHashes; i++) {
-      if(!this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)]) {
-        return false;
+    for (let i = 0; i < this.nbHashes; i++) {
+      if (!this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)]) {
+        return false
       }
     }
-    return true;
+    return true
   }
 
   /**
@@ -147,8 +146,8 @@ class BloomFilter extends Exportable {
    * console.log(filter.rate()); // output: something around 0.1
    */
   rate () {
-    return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes);
+    return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes)
   }
 }
 
-module.exports = BloomFilter;
+module.exports = BloomFilter

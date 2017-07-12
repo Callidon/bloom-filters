@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
-const fm = require('./formulas.js');
-const utils = require('./utils.js');
-const Exportable = require('./exportable.js');
+const fm = require('./formulas.js')
+const utils = require('./utils.js')
+const Exportable = require('./exportable.js')
 
 /**
  * A Partitioned Bloom Filter is a variation of a classic Bloom filter.
@@ -68,14 +68,14 @@ class PartitionedBloomFilter extends Exportable {
    * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
    */
   constructor (capacity, errorRate) {
-    super('PartitionedBloomFilter', 'capacity', 'errorRate', 'length', 'filter');
-    this.capacity = capacity;
-    this.errorRate = errorRate;
-    this.size = fm.optimalFilterSize(capacity, errorRate);
-    this.nbHashes = fm.optimalHashes(this.size, capacity);
-    this.subarraySize = Math.ceil(this.size / this.nbHashes);
-    this.filter = utils.allocateArray(this.nbHashes, () => utils.allocateArray(this.subarraySize, false));
-    this.length = 0;
+    super('PartitionedBloomFilter', 'capacity', 'errorRate', 'length', 'filter')
+    this.capacity = capacity
+    this.errorRate = errorRate
+    this.size = fm.optimalFilterSize(capacity, errorRate)
+    this.nbHashes = fm.optimalHashes(this.size, capacity)
+    this.subarraySize = Math.ceil(this.size / this.nbHashes)
+    this.filter = utils.allocateArray(this.nbHashes, () => utils.allocateArray(this.subarraySize, false))
+    this.length = 0
   }
 
   /**
@@ -88,9 +88,9 @@ class PartitionedBloomFilter extends Exportable {
    * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
   static from (array, errorRate) {
-    const filter = new PartitionedBloomFilter(array.length, errorRate);
-    array.forEach(element => filter.add(element));
-    return filter;
+    const filter = new PartitionedBloomFilter(array.length, errorRate)
+    array.forEach(element => filter.add(element))
+    return filter
   }
 
   /**
@@ -99,12 +99,11 @@ class PartitionedBloomFilter extends Exportable {
    * @return {PartitionedBloomFilter} A new Partitioned Bloom Filter
    */
   static fromJSON (json) {
-    if ((json.type !== 'PartitionedBloomFilter') || !('capacity' in json) || !('errorRate' in json) || !('length' in json) || !('filter' in json))
-    throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter');
-    const filter = new PartitionedBloomFilter(json.capacity, json.errorRate);
-    filter.length = json.length;
-    filter.filter = json.filter.slice(0);
-    return filter;
+    if ((json.type !== 'PartitionedBloomFilter') || !('capacity' in json) || !('errorRate' in json) || !('length' in json) || !('filter' in json)) { throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter') }
+    const filter = new PartitionedBloomFilter(json.capacity, json.errorRate)
+    filter.length = json.length
+    filter.filter = json.filter.slice(0)
+    return filter
   }
 
   /**
@@ -116,12 +115,12 @@ class PartitionedBloomFilter extends Exportable {
    * filter.add('foo');
    */
   add (element) {
-    const hashes = utils.hashTwice(element, true);
+    const hashes = utils.hashTwice(element, true)
 
-    for(let i = 0; i < this.nbHashes; i++) {
-      this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)] = true;
+    for (let i = 0; i < this.nbHashes; i++) {
+      this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)] = true
     }
-    this.length++;
+    this.length++
   }
 
   /**
@@ -135,14 +134,14 @@ class PartitionedBloomFilter extends Exportable {
    * console.log(filter.has('bar')); // output: false
    */
   has (element) {
-    const hashes = utils.hashTwice(element, true);
+    const hashes = utils.hashTwice(element, true)
 
-    for(let i = 0; i < this.nbHashes; i++) {
-      if(!this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)]) {
-        return false;
+    for (let i = 0; i < this.nbHashes; i++) {
+      if (!this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)]) {
+        return false
       }
     }
-    return true;
+    return true
   }
 
   /**
@@ -153,8 +152,8 @@ class PartitionedBloomFilter extends Exportable {
    * console.log(filter.rate()); // output: something around 0.1
    */
   rate () {
-    return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes);
+    return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes)
   }
 }
 
-module.exports = PartitionedBloomFilter;
+module.exports = PartitionedBloomFilter

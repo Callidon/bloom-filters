@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
-const utils = require('./utils.js');
-const Exportable = require('./exportable.js');
+const utils = require('./utils.js')
+const Exportable = require('./exportable.js')
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
@@ -58,12 +58,12 @@ class CountMinSketch extends Exportable {
    * @param {number} delta - Probability of relative accuracy
    */
   constructor (epsilon, delta) {
-    super('CountMinSketch', 'epsilon', 'delta', 'matrix');
-    this.epsilon = epsilon;
-    this.delta = delta;
-    this.columns = Math.ceil(Math.E / epsilon);
-    this.rows = Math.ceil(Math.log(1 / delta));
-    this.matrix = utils.allocateArray(this.rows, () => utils.allocateArray(this.columns, 0));
+    super('CountMinSketch', 'epsilon', 'delta', 'matrix')
+    this.epsilon = epsilon
+    this.delta = delta
+    this.columns = Math.ceil(Math.E / epsilon)
+    this.rows = Math.ceil(Math.log(1 / delta))
+    this.matrix = utils.allocateArray(this.rows, () => utils.allocateArray(this.columns, 0))
   }
 
   /**
@@ -72,11 +72,10 @@ class CountMinSketch extends Exportable {
    * @return {CountMinSketch} A new Count-Min Sketch
    */
   static fromJSON (json) {
-    if ((json.type !== 'CountMinSketch') || !('epsilon' in json) || !('delta' in json) || !('matrix' in json))
-      throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch');
-    const sketch = new CountMinSketch(json.epsilon, json.delta);
-    sketch.matrix = json.matrix.slice(0);
-    return sketch;
+    if ((json.type !== 'CountMinSketch') || !('epsilon' in json) || !('delta' in json) || !('matrix' in json)) { throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch') }
+    const sketch = new CountMinSketch(json.epsilon, json.delta)
+    sketch.matrix = json.matrix.slice(0)
+    return sketch
   }
 
   /**
@@ -88,10 +87,10 @@ class CountMinSketch extends Exportable {
    * sketch.update('foo');
    */
   update (element) {
-    const hashes = utils.hashTwice(element, true);
+    const hashes = utils.hashTwice(element, true)
 
-    for(let i = 0; i < this.rows; i++) {
-      this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)]++;
+    for (let i = 0; i < this.rows; i++) {
+      this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)]++
     }
   }
 
@@ -108,15 +107,15 @@ class CountMinSketch extends Exportable {
    * console.log(sketch.count('bar')); // output: 0
    */
   count (element) {
-    let min = Infinity;
-    const hashes = utils.hashTwice(element, true);
+    let min = Infinity
+    const hashes = utils.hashTwice(element, true)
 
-    for(let i = 0; i < this.rows; i++) {
-      let v = this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)];
-      min = Math.min(v, min);
+    for (let i = 0; i < this.rows; i++) {
+      let v = this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)]
+      min = Math.min(v, min)
     }
 
-    return min;
+    return min
   }
 
   /**
@@ -138,12 +137,12 @@ class CountMinSketch extends Exportable {
    * console.log(sketch.count('bar')); // output: 1
    */
   merge (sketch) {
-    if (this.columns !== sketch.columns) throw new Error('Cannot merge two sketches with different number of columns');
-    if (this.rows !== sketch.rows) throw new Error('Cannot merge two sketches with different number of rows');
+    if (this.columns !== sketch.columns) throw new Error('Cannot merge two sketches with different number of columns')
+    if (this.rows !== sketch.rows) throw new Error('Cannot merge two sketches with different number of rows')
 
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.columns; j++) {
-        this.matrix[i][j] += sketch.matrix[i][j];
+        this.matrix[i][j] += sketch.matrix[i][j]
       }
     }
   }
@@ -159,10 +158,10 @@ class CountMinSketch extends Exportable {
    * console.log(clone.count('foo')); // output: 1
    */
   clone () {
-    const sketch = new CountMinSketch(this.epsilon, this.delta);
-    sketch.merge(this);
-    return sketch;
+    const sketch = new CountMinSketch(this.epsilon, this.delta)
+    sketch.merge(this)
+    return sketch
   }
 }
 
-module.exports = CountMinSketch;
+module.exports = CountMinSketch

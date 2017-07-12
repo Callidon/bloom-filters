@@ -22,98 +22,98 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
-require('chai').should();
-const CountMinSketch = require('../src/count-min-sketch.js');
+require('chai').should()
+const CountMinSketch = require('../src/count-min-sketch.js')
 
 describe('CountMinSketch', () => {
   it('should support update and point query (count) operations', () => {
-    const sketch = new CountMinSketch(0.001, 0.99);
+    const sketch = new CountMinSketch(0.001, 0.99)
     // populate the sketch with some values
-    sketch.update('foo');
-    sketch.update('foo');
-    sketch.update('foo');
-    sketch.update('bar');
+    sketch.update('foo')
+    sketch.update('foo')
+    sketch.update('foo')
+    sketch.update('bar')
     // assert point queries results
-    sketch.count('foo').should.equal(3);
-    sketch.count('bar').should.equal(1);
-    sketch.count('moo').should.equal(0);
-  });
+    sketch.count('foo').should.equal(3)
+    sketch.count('bar').should.equal(1)
+    sketch.count('moo').should.equal(0)
+  })
 
   it('should support a merge between two sketches', () => {
-    const sketch = new CountMinSketch(0.001, 0.99);
-    const otherSketch = new CountMinSketch(0.001, 0.99);
+    const sketch = new CountMinSketch(0.001, 0.99)
+    const otherSketch = new CountMinSketch(0.001, 0.99)
 
     // populate the sketches with some values
-    sketch.update('foo');
-    sketch.update('foo');
-    sketch.update('foo');
-    sketch.update('bar');
+    sketch.update('foo')
+    sketch.update('foo')
+    sketch.update('foo')
+    sketch.update('bar')
 
-    otherSketch.update('foo');
-    otherSketch.update('bar');
-    otherSketch.update('moo');
-    otherSketch.update('moo');
+    otherSketch.update('foo')
+    otherSketch.update('bar')
+    otherSketch.update('moo')
+    otherSketch.update('moo')
 
     // merge sketches
-    sketch.merge(otherSketch);
-    sketch.count('foo').should.equal(4);
-    sketch.count('bar').should.equal(2);
-    sketch.count('moo').should.equal(2);
-  });
+    sketch.merge(otherSketch)
+    sketch.count('foo').should.equal(4)
+    sketch.count('bar').should.equal(2)
+    sketch.count('moo').should.equal(2)
+  })
 
   it('should reject an impossible merge', () => {
-    const sketch = new CountMinSketch(0.001, 0.99);
-    const otherSketch = new CountMinSketch(0.001, 0.99);
+    const sketch = new CountMinSketch(0.001, 0.99)
+    const otherSketch = new CountMinSketch(0.001, 0.99)
 
     otherSketch.columns++;
-    (() => sketch.merge(otherSketch)).should.throw(Error);
+    (() => sketch.merge(otherSketch)).should.throw(Error)
 
-    otherSketch.columns--;
+    otherSketch.columns--
     otherSketch.rows--;
-    (() => sketch.merge(otherSketch)).should.throw(Error);
-  });
+    (() => sketch.merge(otherSketch)).should.throw(Error)
+  })
 
   it('should the clone operation', () => {
-    const sketch = new CountMinSketch(0.001, 0.99);
+    const sketch = new CountMinSketch(0.001, 0.99)
     // populate the sketches with some values
-    sketch.update('foo');
-    sketch.update('foo');
-    sketch.update('foo');
-    sketch.update('bar');
+    sketch.update('foo')
+    sketch.update('foo')
+    sketch.update('foo')
+    sketch.update('bar')
 
     // clone it
-    const clone = sketch.clone();
-    clone.count('foo').should.equal(3);
-    clone.count('bar').should.equal(1);
-    clone.count('moo').should.equal(0);
-  });
+    const clone = sketch.clone()
+    clone.count('foo').should.equal(3)
+    clone.count('bar').should.equal(1)
+    clone.count('moo').should.equal(0)
+  })
 
   describe('#saveAsJSON', () => {
-    const sketch = new CountMinSketch(0.001, 0.99);
-    sketch.update('foo');
-    sketch.update('foo');
-    sketch.update('foo');
-    sketch.update('bar');
+    const sketch = new CountMinSketch(0.001, 0.99)
+    sketch.update('foo')
+    sketch.update('foo')
+    sketch.update('foo')
+    sketch.update('bar')
 
     it('should export a count-min sketch to a JSON object', () => {
-      const exported = sketch.saveAsJSON();
-      exported.type.should.equal('CountMinSketch');
-      exported.epsilon.should.equal(sketch.epsilon);
-      exported.delta.should.equal(sketch.delta);
-      exported.matrix.should.deep.equal(sketch.matrix);
-    });
+      const exported = sketch.saveAsJSON()
+      exported.type.should.equal('CountMinSketch')
+      exported.epsilon.should.equal(sketch.epsilon)
+      exported.delta.should.equal(sketch.delta)
+      exported.matrix.should.deep.equal(sketch.matrix)
+    })
 
     it('should create a count-min sketch from a JSON export', () => {
-      const exported = sketch.saveAsJSON();
-      const newSketch = CountMinSketch.fromJSON(exported);
-      newSketch.epsilon.should.equal(sketch.epsilon);
-      newSketch.delta.should.equal(sketch.delta);
-      newSketch.columns.should.equal(sketch.columns);
-      newSketch.rows.should.equal(sketch.rows);
-      newSketch.matrix.should.deep.equal(sketch.matrix);
-    });
+      const exported = sketch.saveAsJSON()
+      const newSketch = CountMinSketch.fromJSON(exported)
+      newSketch.epsilon.should.equal(sketch.epsilon)
+      newSketch.delta.should.equal(sketch.delta)
+      newSketch.columns.should.equal(sketch.columns)
+      newSketch.rows.should.equal(sketch.rows)
+      newSketch.matrix.should.deep.equal(sketch.matrix)
+    })
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
@@ -121,12 +121,11 @@ describe('CountMinSketch', () => {
         { type: 'CountMinSketch' },
         { type: 'CountMinSketch', epsilon: 1 },
         { type: 'CountMinSketch', epsilon: 1, delta: 1 }
-      ];
+      ]
 
       invalids.forEach(json => {
-        (() => CountMinSketch.fromJSON(json)).should.throw(Error, 'Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch');
-      });
-    });
-  });
-
-});
+        (() => CountMinSketch.fromJSON(json)).should.throw(Error, 'Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch')
+      })
+    })
+  })
+})

@@ -4,7 +4,7 @@
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "bloom-filters.js",
   "scripts": {
-    "lint": "eslint src/",
+    "lint": "standard",
     "test": "mocha test/**/*.js --trace-deprecation",
     "coverage": "istanbul cover node_modules/.bin/_mocha test/**/*.js --reporter lcovonly -- -R spec",
     "doc": "jsdoc -c jsdoc.json README.md src/"
@@ -19,8 +19,8 @@
     "bloom filter",
     "probabilistic",
     "datastructure",
-		"count min sketch",
-		"cuckoo"
+    "count min sketch",
+    "cuckoo"
   ],
   "author": "Thomas Minier <thomas.minier@protonmail.com>",
   "contributors": [
@@ -37,9 +37,15 @@
     "eslint": "^3.14.0",
     "istanbul": "^0.4.5",
     "jsdoc": "^3.4.3",
-    "mocha": "^3.2.0"
+    "mocha": "^3.2.0",
+    "standard": "^10.0.2"
   },
   "dependencies": {
     "murmurhash3js": "^3.0.1"
+  },
+  "standard": {
+    "env": [
+      "mocha"
+    ]
   }
 }

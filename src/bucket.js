@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
-const utils = require('./utils.js');
-const Exportable = require('./exportable.js');
+const utils = require('./utils.js')
+const Exportable = require('./exportable.js')
 
 /**
  * A Bucket is a container of a fixed number of values, used in various bloom filters.
@@ -39,10 +39,10 @@ class Bucket extends Exportable {
    * @param {int} size - The number of element in the bucket
    */
   constructor (size) {
-    super('Bucket', 'size', 'elements');
-    this.elements = utils.allocateArray(size, null);
-    this.size = size;
-    this.length = 0;
+    super('Bucket', 'size', 'elements')
+    this.elements = utils.allocateArray(size, null)
+    this.size = size
+    this.length = 0
   }
 
   /**
@@ -51,16 +51,15 @@ class Bucket extends Exportable {
    * @return {Bucket} A new Bucket
    */
   static fromJSON (json) {
-    if ((json.type !== 'Bucket') || !('size' in json) || !('elements' in json))
-      throw new Error('Cannot create a Bucket from a JSON export which does not represent a bucket');
-    const bucket = new Bucket(json.size);
+    if ((json.type !== 'Bucket') || !('size' in json) || !('elements' in json)) { throw new Error('Cannot create a Bucket from a JSON export which does not represent a bucket') }
+    const bucket = new Bucket(json.size)
     json.elements.forEach((elt, i) => {
       if (elt !== null) {
-        bucket.elements[i] = elt;
-        bucket.length++;
+        bucket.elements[i] = elt
+        bucket.length++
       }
-    });
-    return bucket;
+    })
+    return bucket
   }
 
   /**
@@ -68,7 +67,7 @@ class Bucket extends Exportable {
    * @return {boolean} True if te bucket has any space available, False if if its full
    */
   isFree () {
-    return this.length < this.size;
+    return this.length < this.size
   }
 
   /**
@@ -76,7 +75,7 @@ class Bucket extends Exportable {
    * @return {int} The index of the first empty slot, or -1 if the bucket is full
    */
   nextEmptySlot () {
-    return this.elements.indexOf(null);
+    return this.elements.indexOf(null)
   }
 
   /**
@@ -85,7 +84,7 @@ class Bucket extends Exportable {
    * @return {*} The element at the given index
    */
   at (index) {
-    return this.elements[index];
+    return this.elements[index]
   }
 
   /**
@@ -94,10 +93,10 @@ class Bucket extends Exportable {
    * @return {boolean} True if the insertion is a success, False if the bucket is full
    */
   add (element) {
-    if (!this.isFree()) return false;
-    this.set(this.nextEmptySlot(), element);
-    this.length++;
-    return true;
+    if (!this.isFree()) return false
+    this.set(this.nextEmptySlot(), element)
+    this.length++
+    return true
   }
 
   /**
@@ -106,10 +105,10 @@ class Bucket extends Exportable {
    * @return {boolean} True if the element has been successfully removed, False if it was not in the bucket
    */
   remove (element) {
-    const index = this.elements.indexOf(element);
-    if (index <= -1) return false;
-    this.unset(index);
-    return true;
+    const index = this.elements.indexOf(element)
+    if (index <= -1) return false
+    this.unset(index)
+    return true
   }
 
   /**
@@ -118,7 +117,7 @@ class Bucket extends Exportable {
    * @return {boolean} True is the element is in the bucket, otherwise False
    */
   has (element) {
-    return this.elements.indexOf(element) > -1;
+    return this.elements.indexOf(element) > -1
   }
 
   /**
@@ -128,7 +127,7 @@ class Bucket extends Exportable {
    * @return {void}
    */
   set (index, element) {
-    this.elements[index] = element;
+    this.elements[index] = element
   }
 
   /**
@@ -137,8 +136,8 @@ class Bucket extends Exportable {
    * @return {void}
    */
   unset (index) {
-    this.elements[index] = null;
-    this.length--;
+    this.elements[index] = null
+    this.length--
   }
 
   /**
@@ -147,10 +146,10 @@ class Bucket extends Exportable {
    * @return {*} The element that have been swapped with the parameter
    */
   swapRandom (element) {
-    const index = utils.randomInt(0, this.length - 1);
-    const tmp = this.elements[index];
-    this.elements[index] = element;
-    return tmp;
+    const index = utils.randomInt(0, this.length - 1)
+    const tmp = this.elements[index]
+    this.elements[index] = element
+    return tmp
   }
 
   /**
@@ -159,9 +158,9 @@ class Bucket extends Exportable {
    * @return {boolean} True if the two buckets are equals, False otherwise
    */
   equals (bucket) {
-    if ((this.size !== bucket.size) || (this.length !== bucket.length)) return false;
-    return this.elements.every((elt, index) => bucket.at(index) === elt);
+    if ((this.size !== bucket.size) || (this.length !== bucket.length)) return false
+    return this.elements.every((elt, index) => bucket.at(index) === elt)
   }
 }
 
-module.exports = Bucket;
+module.exports = Bucket

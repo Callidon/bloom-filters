@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict';
+'use strict'
 
-const murmur = require('murmurhash3js');
+const murmur = require('murmurhash3js')
 
 /**
  * Utilitaries functions
@@ -48,16 +48,16 @@ const murmur = require('murmurhash3js');
  * @memberof Utils
  */
 const allocateArray = (size, defaultValue) => {
-  const array = new Array(size);
-  let getDefault = defaultValue;
+  const array = new Array(size)
+  let getDefault = defaultValue
   if (typeof defaultValue !== 'function') {
-    getDefault = () => defaultValue;
+    getDefault = () => defaultValue
   }
-  for(let ind = 0; ind < size; ind++) {
-    array[ind] = getDefault();
+  for (let ind = 0; ind < size; ind++) {
+    array[ind] = getDefault()
   }
-  return array;
-};
+  return array
+}
 
 /**
  * Hash a value into two values (in hex or integer format)
@@ -71,21 +71,21 @@ const allocateArray = (size, defaultValue) => {
  * @memberof Utils
  */
 const hashTwice = (value, asInt, hashFunction) => {
-  const hash128 = hashFunction || murmur.x64.hash128;
-  const hex = hash128(value);
-  const firstHash = hex.substring(0, 16);
-  const secondHash = hex.substring(16);
-  if(asInt) {
+  const hash128 = hashFunction || murmur.x64.hash128
+  const hex = hash128(value)
+  const firstHash = hex.substring(0, 16)
+  const secondHash = hex.substring(16)
+  if (asInt) {
     return {
       first: parseInt(firstHash, 16),
       second: parseInt(secondHash, 16)
-    };
+    }
   }
   return {
     first: firstHash,
     second: secondHash
-  };
-};
+  }
+}
 
 /**
  * Apply Double Hashing to produce a n-hash
@@ -100,8 +100,8 @@ const hashTwice = (value, asInt, hashFunction) => {
  * @memberof Utils
  */
 const doubleHashing = (n, hashA, hashB, size) => {
-  return Math.abs(hashA + n * hashB) % size;
-};
+  return Math.abs(hashA + n * hashB) % size
+}
 
 /**
  * Generate a random int bewteen two bounds (included)
@@ -111,14 +111,14 @@ const doubleHashing = (n, hashA, hashB, size) => {
  * @memberof Utils
  */
 const randomInt = (min, max) => {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+  min = Math.ceil(min)
+  max = Math.floor(max)
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
 
 module.exports = {
   allocateArray,
   hashTwice,
   doubleHashing,
   randomInt
-};
+}
