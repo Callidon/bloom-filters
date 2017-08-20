@@ -54,7 +54,7 @@ console.log(filter.rate());
 
 ### Partitioned Bloom Filter
 
-Partitioned Bloom Filter follow the same API than [Classic Bloom Filter](#classic-bloom-filter).
+Partitioned Bloom Filter follows the same API than [Classic Bloom Filter](#classic-bloom-filter).
 ```javascript
 const PartitionedBloomFilter = require('bloom-filters').PartitionedBloomFilter;
 
