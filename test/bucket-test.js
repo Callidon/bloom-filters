@@ -83,8 +83,8 @@ describe('Bucket', () => {
       bucket.add('bar')
       bucket.add('moo')
       bucket.remove('bar').should.equal(true)
-      bucket.elements.indexOf('foo').should.be.greaterThan(-1)
-      bucket.elements.indexOf('moo').should.be.greaterThan(-1)
+      bucket._elements.indexOf('foo').should.be.greaterThan(-1)
+      bucket._elements.indexOf('moo').should.be.greaterThan(-1)
       bucket.length.should.equal(2)
     })
 
@@ -171,8 +171,8 @@ describe('Bucket', () => {
     it('should export a bucket to a JSON object', () => {
       const exported = bucket.saveAsJSON()
       exported.type.should.equal('Bucket')
-      exported.size.should.equal(bucket.size)
-      exported.elements.should.deep.equal(bucket.elements)
+      exported._size.should.equal(bucket.size)
+      exported._elements.should.deep.equal(bucket._elements)
     })
 
     it('should create a bucket from a JSON export', () => {
@@ -180,7 +180,7 @@ describe('Bucket', () => {
       const newBucket = Bucket.fromJSON(exported)
       newBucket.size.should.equal(bucket.size)
       newBucket.length.should.equal(bucket.length)
-      newBucket.elements.should.deep.equals(bucket.elements)
+      newBucket._elements.should.deep.equals(bucket._elements)
     })
 
     it('should reject imports from invalid JSON objects', () => {
