@@ -24,6 +24,7 @@ SOFTWARE.
 
 'use strict'
 
+const eq = require('lodash.eq')
 const utils = require('./utils.js')
 const Exportable = require('./exportable.js')
 
@@ -159,7 +160,7 @@ class Bucket extends Exportable {
    */
   equals (bucket) {
     if ((this.size !== bucket.size) || (this.length !== bucket.length)) return false
-    return this.elements.every((elt, index) => bucket.at(index) === elt)
+    return this.elements.every((elt, index) => eq(bucket.at(index), elt))
   }
 }
 

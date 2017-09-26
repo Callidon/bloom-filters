@@ -49,10 +49,7 @@ const murmur = require('murmurhash3js')
  */
 const allocateArray = (size, defaultValue) => {
   const array = new Array(size)
-  let getDefault = defaultValue
-  if (typeof defaultValue !== 'function') {
-    getDefault = () => defaultValue
-  }
+  const getDefault = (typeof defaultValue !== 'function') ? () => defaultValue : defaultValue
   for (let ind = 0; ind < size; ind++) {
     array[ind] = getDefault()
   }
@@ -65,14 +62,13 @@ const allocateArray = (size, defaultValue) => {
  * Use MumurmurHash3 as the default hashing function, but another function can be easily used.
  * @see {@link https://en.wikipedia.org/wiki/MurmurHash} for more details about MurmurHash3
  * @param  {*} value - The value to hash
- * @param  {boolean|undefined} asInt - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
- * @param  {function|undefined} hashFunction - (optional) The hash function used. It should return a 128-bits long hash. By default, MumurmurHash3 is used.
+ * @param  {boolean} [asInt=false] - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
+ * @param  {function} [hashFunction=null] - (optional) The hash function used. It should return a 128-bits long hash. By default, MumurmurHash3 is used.
  * @return {TwoHashes} The results of the hash functions applied to the value (in hex or integer)
  * @memberof Utils
  */
-const hashTwice = (value, asInt, hashFunction) => {
-  const hash128 = hashFunction || murmur.x64.hash128
-  const hex = hash128(value)
+const hashTwice = (value, asInt = false, hashFunction = null) => {
+  const hex = (hashFunction !== null) ? hashFunction(value) : murmur.x64.hash128(value)
   const firstHash = hex.substring(0, 16)
   const secondHash = hex.substring(16)
   if (asInt) {
