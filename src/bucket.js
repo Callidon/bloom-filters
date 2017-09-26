@@ -136,7 +136,7 @@ class Bucket extends Exportable {
    * @return {boolean} True is the element is in the bucket, otherwise False
    */
   has (element) {
-    return this._elements.indexOf(element) > -1
+    return indexOf(this._elements, element) > -1
   }
 
   /**

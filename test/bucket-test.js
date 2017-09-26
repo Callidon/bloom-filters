@@ -44,7 +44,7 @@ describe('Bucket', () => {
   })
 
   describe('#at', () => {
-    it('should provies an accessor for bucket\'s elements', () => {
+    it('should provides an accessor for bucket\'s elements', () => {
       const bucket = new Bucket(3)
       bucket.add('foo')
       bucket.add('bar')
