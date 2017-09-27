@@ -60,16 +60,56 @@ class CuckooFilter extends Exportable {
    * @param {int} size - The filter size
    * @param {int} fLength - The length of the fingerprints
    * @param {int} bucketSize - The size of the buckets in the filter
-   * @param {int|undefined} maxKicks - (optional) The max number of kicks when resolving collision at insertion, default to 1
+   * @param {int} [maxKicks=1] - (optional) The max number of kicks when resolving collision at insertion, default to 1
    */
-  constructor (size, fLength, bucketSize, maxKicks) {
-    super('CuckooFilter', 'size', 'fingerprintLength', 'length', 'maxKicks', 'filter')
-    this._registerResolver('filter', filter => filter.map(bucket => bucket.saveAsJSON()))
-    this.filter = utils.allocateArray(size, () => new Bucket(bucketSize))
-    this.size = size
-    this.fingerprintLength = fLength
-    this.length = 0
-    this.maxKicks = maxKicks || 1
+  constructor (size, fLength, bucketSize, maxKicks = 1) {
+    super('CuckooFilter', '_size', '_fingerprintLength', '_length', '_maxKicks', '_filter')
+    this._registerResolver('_filter', filter => filter.map(bucket => bucket.saveAsJSON()))
+    this._filter = utils.allocateArray(size, () => new Bucket(bucketSize))
+    this._size = size
+    this._fingerprintLength = fLength
+    this._length = 0
+    this._maxKicks = maxKicks
+  }
+
+  /**
+   * Get the filter size
+   * @return {integer} The filter size
+   */
+  get size () {
+    return this._size
+  }
+
+  /**
+   * Get the filter length, i.e. the current number of elements in the filter
+   * @return {integer} The filter length
+   */
+  get length () {
+    return this._length
+  }
+
+  /**
+   * Get the length of the fingerprints in the filter
+   * @return {integer} The length of the fingerprints
+   */
+  get fingerprintLength () {
+    return this._fingerprintLength
+  }
+
+  /**
+   * Get the size of the buckets in the filter
+   * @return {integer} The size of the buckets in the filter
+   */
+  get bucketSize () {
+    return this._bucketSize
+  }
+
+  /**
+   * Get the max number of kicks when resolving collision at insertion
+   * @return {integer} The max number of kicks when resolving collision at insertion
+   */
+  get maxKicks () {
+    return this._maxKicks
   }
 
   /**
@@ -94,10 +134,10 @@ class CuckooFilter extends Exportable {
    * @return {CuckooFilter} A new Cuckoo Filter
    */
   static fromJSON (json) {
-    if ((json.type !== 'CuckooFilter') || !('size' in json) || !('fingerprintLength' in json) || !('length' in json) || !('maxKicks' in json) || !('filter' in json)) { throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter') }
-    const filter = new CuckooFilter(json.size, json.fingerprintLength, json.bucketSize, json.maxKicks)
-    filter.length = json.length
-    filter.filter = json.filter.map(json => Bucket.fromJSON(json))
+    if ((json.type !== 'CuckooFilter') || !('_size' in json) || !('_fingerprintLength' in json) || !('_length' in json) || !('_maxKicks' in json) || !('_filter' in json)) { throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter') }
+    const filter = new CuckooFilter(json._size, json._fingerprintLength, json._bucketSize, json._maxKicks)
+    filter._length = json._length
+    filter._filter = json._filter.map(json => Bucket.fromJSON(json))
     return filter
   }
 
@@ -113,27 +153,27 @@ class CuckooFilter extends Exportable {
   add (element) {
     const locations = this._locations(element)
     // store fingerprint in an available empty bucket
-    if (this.filter[locations.firstIndex].isFree()) {
-      this.filter[locations.firstIndex].add(locations.fingerprint)
-    } else if (this.filter[locations.secondIndex].isFree()) {
-      this.filter[locations.secondIndex].add(locations.fingerprint)
+    if (this._filter[locations.firstIndex].isFree()) {
+      this._filter[locations.firstIndex].add(locations.fingerprint)
+    } else if (this._filter[locations.secondIndex].isFree()) {
+      this._filter[locations.secondIndex].add(locations.fingerprint)
     } else {
       // buckets are full, we must relocate one of them
       let index = Math.random() < 0.5 ? locations.firstIndex : locations.secondIndex
       let movedElement = locations.fingerprint
-      for (let nbTry = 0; nbTry < this.maxKicks; nbTry++) {
-        movedElement = this.filter[index].swapRandom(movedElement)
-        index = Math.abs(index ^ Math.abs(murmur.x86.hash32(movedElement))) % this.size
+      for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
+        movedElement = this._filter[index].swapRandom(movedElement)
+        index = Math.abs(index ^ Math.abs(murmur.x86.hash32(movedElement))) % this._size
         // add the moved element to the bucket if possible
-        if (this.filter[index].isFree()) {
-          this.filter[index].add(movedElement)
-          this.length++
+        if (this._filter[index].isFree()) {
+          this._filter[index].add(movedElement)
+          this._length++
           return true
         }
       }
       return false
     }
-    this.length++
+    this._length++
     return true
   }
 
@@ -151,13 +191,13 @@ class CuckooFilter extends Exportable {
    */
   remove (element) {
     const locations = this._locations(element)
-    if (this.filter[locations.firstIndex].has(locations.fingerprint)) {
-      this.filter[locations.firstIndex].remove(locations.fingerprint)
-      this.length--
+    if (this._filter[locations.firstIndex].has(locations.fingerprint)) {
+      this._filter[locations.firstIndex].remove(locations.fingerprint)
+      this._length--
       return true
-    } else if (this.filter[locations.secondIndex].has(locations.fingerprint)) {
-      this.filter[locations.secondIndex].remove(locations.fingerprint)
-      this.length--
+    } else if (this._filter[locations.secondIndex].has(locations.fingerprint)) {
+      this._filter[locations.secondIndex].remove(locations.fingerprint)
+      this._length--
       return true
     }
     return false
@@ -176,7 +216,7 @@ class CuckooFilter extends Exportable {
    */
   has (element) {
     const locations = this._locations(element)
-    return this.filter[locations.firstIndex].has(locations.fingerprint) || this.filter[locations.secondIndex].has(locations.fingerprint)
+    return this._filter[locations.firstIndex].has(locations.fingerprint) || this._filter[locations.secondIndex].has(locations.fingerprint)
   }
 
   /**
@@ -202,13 +242,13 @@ class CuckooFilter extends Exportable {
    */
   _locations (element) {
     const hash = murmur.x86.hash32(element)
-    const fingerprint = hash.toString(16).substring(0, this.fingerprintLength)
+    const fingerprint = hash.toString(16).substring(0, this._fingerprintLength)
     const firstIndex = Math.abs(hash)
     const secondIndex = Math.abs(firstIndex ^ Math.abs(murmur.x86.hash32(fingerprint)))
     return {
       fingerprint,
-      firstIndex: firstIndex % this.size,
-      secondIndex: secondIndex % this.size
+      firstIndex: firstIndex % this._size,
+      secondIndex: secondIndex % this._size
     }
   }
 }

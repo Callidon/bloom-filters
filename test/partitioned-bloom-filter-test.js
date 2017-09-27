@@ -46,7 +46,7 @@ describe('PartitionedBloomFilter', () => {
       const filter = PartitionedBloomFilter.from(data, targetRate)
 
       filter.size.should.equal(expectedSize)
-      filter.nbHashes.should.equal(expectedHashes)
+      filter._nbHashes.should.equal(expectedHashes)
       filter.length.should.equal(data.length)
       filter.rate().should.be.closeTo(targetRate, 0.1)
     })
@@ -93,19 +93,19 @@ describe('PartitionedBloomFilter', () => {
     it('should export a partitioned bloom filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
       exported.type.should.equal('PartitionedBloomFilter')
-      exported.capacity.should.equal(15)
-      exported.errorRate.should.equal(targetRate)
-      exported.filter.should.deep.equal(filter.filter)
+      exported._capacity.should.equal(15)
+      exported._errorRate.should.equal(targetRate)
+      exported._filter.should.deep.equal(filter._filter)
     })
 
     it('should create a partitioned bloom filter from a JSON export', () => {
       const exported = filter.saveAsJSON()
       const newFilter = PartitionedBloomFilter.fromJSON(exported)
       newFilter.size.should.equal(filter.size)
-      newFilter.nbHashes.should.equal(filter.nbHashes)
-      newFilter.subarraySize.should.equal(filter.subarraySize)
+      newFilter._nbHashes.should.equal(filter._nbHashes)
+      newFilter._subarraySize.should.equal(filter._subarraySize)
       newFilter.length.should.equal(filter.length)
-      newFilter.filter.should.deep.equal(filter.filter)
+      newFilter._filter.should.deep.equal(filter._filter)
     })
 
     it('should reject imports from invalid JSON objects', () => {

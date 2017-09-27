@@ -67,11 +67,11 @@ describe('CountMinSketch', () => {
     const sketch = new CountMinSketch(0.001, 0.99)
     const otherSketch = new CountMinSketch(0.001, 0.99)
 
-    otherSketch.columns++;
+    otherSketch._columns++;
     (() => sketch.merge(otherSketch)).should.throw(Error)
 
-    otherSketch.columns--
-    otherSketch.rows--;
+    otherSketch._columns--
+    otherSketch._rows--;
     (() => sketch.merge(otherSketch)).should.throw(Error)
   })
 
@@ -100,9 +100,9 @@ describe('CountMinSketch', () => {
     it('should export a count-min sketch to a JSON object', () => {
       const exported = sketch.saveAsJSON()
       exported.type.should.equal('CountMinSketch')
-      exported.epsilon.should.equal(sketch.epsilon)
-      exported.delta.should.equal(sketch.delta)
-      exported.matrix.should.deep.equal(sketch.matrix)
+      exported._epsilon.should.equal(sketch.epsilon)
+      exported._delta.should.equal(sketch.delta)
+      exported._matrix.should.deep.equal(sketch._matrix)
     })
 
     it('should create a count-min sketch from a JSON export', () => {
@@ -110,9 +110,9 @@ describe('CountMinSketch', () => {
       const newSketch = CountMinSketch.fromJSON(exported)
       newSketch.epsilon.should.equal(sketch.epsilon)
       newSketch.delta.should.equal(sketch.delta)
-      newSketch.columns.should.equal(sketch.columns)
-      newSketch.rows.should.equal(sketch.rows)
-      newSketch.matrix.should.deep.equal(sketch.matrix)
+      newSketch._columns.should.equal(sketch._columns)
+      newSketch._rows.should.equal(sketch._rows)
+      newSketch._matrix.should.deep.equal(sketch._matrix)
     })
 
     it('should reject imports from invalid JSON objects', () => {

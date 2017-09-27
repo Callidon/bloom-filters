@@ -60,14 +60,16 @@ class BloomFilter extends Exportable {
   /**
    * Constructor
    * @param {int} capacity - The filter capacity, i.e. the maximum number of elements it will contains
-   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
+   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targeted by the filter
    */
   constructor (capacity, errorRate) {
-    super('BloomFilter', 'size', 'length', 'nbHashes', 'filter')
-    this.size = fm.optimalFilterSize(capacity, errorRate)
-    this.nbHashes = fm.optimalHashes(this.size, capacity)
-    this.filter = utils.allocateArray(this.size, false)
-    this.length = 0
+    super('BloomFilter', '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter')
+    this._capacity = capacity
+    this._errorRate = errorRate
+    this._size = fm.optimalFilterSize(capacity, errorRate)
+    this._nbHashes = fm.optimalHashes(this._size, capacity)
+    this._filter = utils.allocateArray(this._size, false)
+    this._length = 0
   }
 
   /**
@@ -91,13 +93,40 @@ class BloomFilter extends Exportable {
    * @return {BloomFilter} A new Bloom Filter
    */
   static fromJSON (json) {
-    if ((json.type !== 'BloomFilter') || !('size' in json) || !('length' in json) || !('nbHashes' in json) || !('filter' in json)) { throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter') }
-    const filter = new BloomFilter(1, 0.1)
-    filter.size = json.size
-    filter.nbHashes = json.nbHashes
-    filter.filter = json.filter.slice(0)
-    filter.length = json.length
+    if ((json.type !== 'BloomFilter') || !('_capacity' in json) || !('_errorRate' in json) ||
+    !('_size' in json) || !('_length' in json) || !('_nbHashes' in json) || !('_filter' in json)) {
+      throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter')
+    }
+    const filter = new BloomFilter(json._capacity, json._errorRate)
+    filter._size = json._size
+    filter._nbHashes = json._nbHashes
+    filter._filter = json._filter.slice(0)
+    filter._length = json._length
     return filter
+  }
+
+  /**
+   * Get the filter capacity, i.e. the maximum number of elements it will contains
+   * @return {integer} The filter capacity
+   */
+  get capacity () {
+    return this._capacity
+  }
+
+  /**
+   * Get the optimal size of the filter
+   * @return {integer} The size of the filter
+   */
+  get size () {
+    return this._size
+  }
+
+  /**
+   * Get the number of elements currently in the filter
+   * @return {integer} The filter length
+   */
+  get length () {
+    return this._length
   }
 
   /**
@@ -111,10 +140,10 @@ class BloomFilter extends Exportable {
   add (element) {
     const hashes = utils.hashTwice(element, true)
 
-    for (let i = 0; i < this.nbHashes; i++) {
-      this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)] = true
+    for (let i = 0; i < this._nbHashes; i++) {
+      this._filter[utils.doubleHashing(i, hashes.first, hashes.second, this._size)] = true
     }
-    this.length++
+    this._length++
   }
 
   /**
@@ -130,8 +159,8 @@ class BloomFilter extends Exportable {
   has (element) {
     const hashes = utils.hashTwice(element, true)
 
-    for (let i = 0; i < this.nbHashes; i++) {
-      if (!this.filter[utils.doubleHashing(i, hashes.first, hashes.second, this.size)]) {
+    for (let i = 0; i < this._nbHashes; i++) {
+      if (!this._filter[utils.doubleHashing(i, hashes.first, hashes.second, this._size)]) {
         return false
       }
     }
@@ -146,7 +175,7 @@ class BloomFilter extends Exportable {
    * console.log(filter.rate()); // output: something around 0.1
    */
   rate () {
-    return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes)
+    return Math.pow(1 - Math.exp((-this._nbHashes * this._length) / this._size), this._nbHashes)
   }
 }
 

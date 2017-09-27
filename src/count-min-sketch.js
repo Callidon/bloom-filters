@@ -58,12 +58,12 @@ class CountMinSketch extends Exportable {
    * @param {number} delta - Probability of relative accuracy
    */
   constructor (epsilon, delta) {
-    super('CountMinSketch', 'epsilon', 'delta', 'matrix')
-    this.epsilon = epsilon
-    this.delta = delta
-    this.columns = Math.ceil(Math.E / epsilon)
-    this.rows = Math.ceil(Math.log(1 / delta))
-    this.matrix = utils.allocateArray(this.rows, () => utils.allocateArray(this.columns, 0))
+    super('CountMinSketch', '_epsilon', '_delta', '_matrix')
+    this._epsilon = epsilon
+    this._delta = delta
+    this._columns = Math.ceil(Math.E / epsilon)
+    this._rows = Math.ceil(Math.log(1 / delta))
+    this._matrix = utils.allocateArray(this._rows, () => utils.allocateArray(this._columns, 0))
   }
 
   /**
@@ -72,10 +72,26 @@ class CountMinSketch extends Exportable {
    * @return {CountMinSketch} A new Count-Min Sketch
    */
   static fromJSON (json) {
-    if ((json.type !== 'CountMinSketch') || !('epsilon' in json) || !('delta' in json) || !('matrix' in json)) { throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch') }
-    const sketch = new CountMinSketch(json.epsilon, json.delta)
-    sketch.matrix = json.matrix.slice(0)
+    if ((json.type !== 'CountMinSketch') || !('_epsilon' in json) || !('_delta' in json) || !('_matrix' in json)) { throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch') }
+    const sketch = new CountMinSketch(json._epsilon, json._delta)
+    sketch._matrix = json._matrix.slice()
     return sketch
+  }
+
+  /**
+   * Get the factor of relative accuracy
+   * @return {number} The factor of relative accuracy
+   */
+  get epsilon () {
+    return this._epsilon
+  }
+
+  /**
+   * Get the probability of relative accuracy
+   * @return {number} The probability of relative accuracy
+   */
+  get delta () {
+    return this._delta
   }
 
   /**
@@ -89,8 +105,8 @@ class CountMinSketch extends Exportable {
   update (element) {
     const hashes = utils.hashTwice(element, true)
 
-    for (let i = 0; i < this.rows; i++) {
-      this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)]++
+    for (let i = 0; i < this._rows; i++) {
+      this._matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this._columns)]++
     }
   }
 
@@ -110,8 +126,8 @@ class CountMinSketch extends Exportable {
     let min = Infinity
     const hashes = utils.hashTwice(element, true)
 
-    for (let i = 0; i < this.rows; i++) {
-      let v = this.matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this.columns)]
+    for (let i = 0; i < this._rows; i++) {
+      let v = this._matrix[i][utils.doubleHashing(i, hashes.first, hashes.second, this._columns)]
       min = Math.min(v, min)
     }
 
@@ -137,12 +153,12 @@ class CountMinSketch extends Exportable {
    * console.log(sketch.count('bar')); // output: 1
    */
   merge (sketch) {
-    if (this.columns !== sketch.columns) throw new Error('Cannot merge two sketches with different number of columns')
-    if (this.rows !== sketch.rows) throw new Error('Cannot merge two sketches with different number of rows')
+    if (this._columns !== sketch._columns) throw new Error('Cannot merge two sketches with different number of columns')
+    if (this._rows !== sketch._rows) throw new Error('Cannot merge two sketches with different number of rows')
 
-    for (let i = 0; i < this.rows; i++) {
-      for (let j = 0; j < this.columns; j++) {
-        this.matrix[i][j] += sketch.matrix[i][j]
+    for (let i = 0; i < this._rows; i++) {
+      for (let j = 0; j < this._columns; j++) {
+        this._matrix[i][j] += sketch._matrix[i][j]
       }
     }
   }
@@ -158,7 +174,7 @@ class CountMinSketch extends Exportable {
    * console.log(clone.count('foo')); // output: 1
    */
   clone () {
-    const sketch = new CountMinSketch(this.epsilon, this.delta)
+    const sketch = new CountMinSketch(this._epsilon, this._delta)
     sketch.merge(this)
     return sketch
   }

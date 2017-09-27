@@ -68,14 +68,38 @@ class PartitionedBloomFilter extends Exportable {
    * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
    */
   constructor (capacity, errorRate) {
-    super('PartitionedBloomFilter', 'capacity', 'errorRate', 'length', 'filter')
-    this.capacity = capacity
-    this.errorRate = errorRate
-    this.size = fm.optimalFilterSize(capacity, errorRate)
-    this.nbHashes = fm.optimalHashes(this.size, capacity)
-    this.subarraySize = Math.ceil(this.size / this.nbHashes)
-    this.filter = utils.allocateArray(this.nbHashes, () => utils.allocateArray(this.subarraySize, false))
-    this.length = 0
+    super('PartitionedBloomFilter', '_capacity', '_errorRate', '_length', '_filter')
+    this._capacity = capacity
+    this._errorRate = errorRate
+    this._size = fm.optimalFilterSize(capacity, errorRate)
+    this._nbHashes = fm.optimalHashes(this._size, capacity)
+    this._subarraySize = Math.ceil(this._size / this._nbHashes)
+    this._filter = utils.allocateArray(this._nbHashes, () => utils.allocateArray(this._subarraySize, false))
+    this._length = 0
+  }
+
+  /**
+   * Get the filter capacity, i.e. the maximum number of elements it will contains
+   * @return {integer} The filter capacity, i.e. the maximum number of elements it will contains
+   */
+  get capacity () {
+    return this._capacity
+  }
+
+  /**
+   * Get the optimal size of the filter
+   * @return {integer} The size of the filter
+   */
+  get size () {
+    return this._size
+  }
+
+  /**
+   * Get the number of elements currently in the filter
+   * @return {integer} The filter length
+   */
+  get length () {
+    return this._length
   }
 
   /**
@@ -99,10 +123,10 @@ class PartitionedBloomFilter extends Exportable {
    * @return {PartitionedBloomFilter} A new Partitioned Bloom Filter
    */
   static fromJSON (json) {
-    if ((json.type !== 'PartitionedBloomFilter') || !('capacity' in json) || !('errorRate' in json) || !('length' in json) || !('filter' in json)) { throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter') }
-    const filter = new PartitionedBloomFilter(json.capacity, json.errorRate)
-    filter.length = json.length
-    filter.filter = json.filter.slice(0)
+    if ((json.type !== 'PartitionedBloomFilter') || !('_capacity' in json) || !('_errorRate' in json) || !('_length' in json) || !('_filter' in json)) { throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter') }
+    const filter = new PartitionedBloomFilter(json._capacity, json._errorRate)
+    filter._length = json._length
+    filter._filter = json._filter.slice()
     return filter
   }
 
@@ -117,10 +141,10 @@ class PartitionedBloomFilter extends Exportable {
   add (element) {
     const hashes = utils.hashTwice(element, true)
 
-    for (let i = 0; i < this.nbHashes; i++) {
-      this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)] = true
+    for (let i = 0; i < this._nbHashes; i++) {
+      this._filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this._subarraySize)] = true
     }
-    this.length++
+    this._length++
   }
 
   /**
@@ -136,8 +160,8 @@ class PartitionedBloomFilter extends Exportable {
   has (element) {
     const hashes = utils.hashTwice(element, true)
 
-    for (let i = 0; i < this.nbHashes; i++) {
-      if (!this.filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this.subarraySize)]) {
+    for (let i = 0; i < this._nbHashes; i++) {
+      if (!this._filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this._subarraySize)]) {
         return false
       }
     }
@@ -152,7 +176,7 @@ class PartitionedBloomFilter extends Exportable {
    * console.log(filter.rate()); // output: something around 0.1
    */
   rate () {
-    return Math.pow(1 - Math.exp((-this.nbHashes * this.length) / this.size), this.nbHashes)
+    return Math.pow(1 - Math.exp((-this._nbHashes * this._length) / this._size), this._nbHashes)
   }
 }
 

@@ -52,7 +52,7 @@ describe('CuckooFilter', () => {
       filter.add('alice')
       filter.add('bob')
       filter.length.should.equal(2)
-      filter.filter.forEach(bucket => {
+      filter._filter.forEach(bucket => {
         nbElements += bucket.length
       })
       nbElements.should.equal(2)
@@ -71,10 +71,10 @@ describe('CuckooFilter', () => {
       filter.add(element)
 
       // assert that buckets are full
-      filter.filter[locations.firstIndex].isFree().should.equal(false)
-      filter.filter[locations.secondIndex].isFree().should.equal(false)
+      filter._filter[locations.firstIndex].isFree().should.equal(false)
+      filter._filter[locations.secondIndex].isFree().should.equal(false)
 
-      nbElements += filter.filter[locations.firstIndex].length + filter.filter[locations.secondIndex].length
+      nbElements += filter._filter[locations.firstIndex].length + filter._filter[locations.secondIndex].length
       nbElements.should.equal(4)
     })
 
@@ -84,13 +84,13 @@ describe('CuckooFilter', () => {
       let nbElements = 0
       const locations = filter._locations(element)
       // artificially fills up the two possible buckets with dumb values
-      filter.filter[locations.firstIndex].add('001')
-      filter.filter[locations.secondIndex].add('002')
-      filter.length += 2
+      filter._filter[locations.firstIndex].add('001')
+      filter._filter[locations.secondIndex].add('002')
+      filter._length += 2
 
       filter.add(element).should.equal(true)
 
-      filter.filter.forEach(bucket => {
+      filter._filter.forEach(bucket => {
         if (bucket.length > 0) {
           bucket._elements[0].should.be.oneOf([ '001', '002', locations.fingerprint ])
           nbElements += bucket.length
@@ -116,7 +116,7 @@ describe('CuckooFilter', () => {
 
       filter.add(element)
       filter.remove(element).should.equal(true)
-      filter.filter[locations.firstIndex].length.should.equal(0)
+      filter._filter[locations.firstIndex].length.should.equal(0)
     })
 
     it('should look inside every possible bucket', () => {
@@ -127,9 +127,9 @@ describe('CuckooFilter', () => {
       filter.add(element)
       filter.add(element)
       filter.remove(element).should.equal(true)
-      filter.filter[locations.firstIndex].length.should.equal(0)
+      filter._filter[locations.firstIndex].length.should.equal(0)
       filter.remove(element).should.equal(true)
-      filter.filter[locations.secondIndex].length.should.equal(0)
+      filter._filter[locations.secondIndex].length.should.equal(0)
     })
 
     it('should fail to remove elements that are not in the filter', () => {
@@ -169,11 +169,11 @@ describe('CuckooFilter', () => {
     it('should export a cuckoo filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
       exported.type.should.equal('CuckooFilter')
-      exported.size.should.equal(filter.size)
-      exported.fingerprintLength.should.equal(filter.fingerprintLength)
-      exported.length.should.equal(filter.length)
-      exported.maxKicks.should.deep.equal(filter.maxKicks)
-      exported.filter.should.deep.equal(filter.filter.map(b => b.saveAsJSON()))
+      exported._size.should.equal(filter.size)
+      exported._fingerprintLength.should.equal(filter.fingerprintLength)
+      exported._length.should.equal(filter.length)
+      exported._maxKicks.should.deep.equal(filter.maxKicks)
+      exported._filter.should.deep.equal(filter._filter.map(b => b.saveAsJSON()))
     })
 
     it('should create a cuckoo filter from a JSON export', () => {
@@ -183,7 +183,7 @@ describe('CuckooFilter', () => {
       newFilter.fingerprintLength.should.equal(filter.fingerprintLength)
       newFilter.length.should.equal(filter.length)
       newFilter.maxKicks.should.deep.equal(filter.maxKicks)
-      newFilter.filter.every((b, index) => filter.filter[index].equals(b)).should.equal(true)
+      newFilter._filter.every((b, index) => filter._filter[index].equals(b)).should.equal(true)
     })
 
     it('should reject imports from invalid JSON objects', () => {

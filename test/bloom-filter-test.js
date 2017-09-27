@@ -46,7 +46,7 @@ describe('BloomFilter', () => {
       const filter = BloomFilter.from(data, targetRate)
 
       filter.size.should.equal(expectedSize)
-      filter.nbHashes.should.equal(expectedHashes)
+      filter._nbHashes.should.equal(expectedHashes)
       filter.length.should.equal(data.length)
       filter.rate().should.be.closeTo(targetRate, 0.1)
     })
@@ -86,19 +86,19 @@ describe('BloomFilter', () => {
     it('should export a bloom filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
       exported.type.should.equal('BloomFilter')
-      exported.size.should.equal(filter.size)
-      exported.length.should.equal(filter.length)
-      exported.nbHashes.should.equal(filter.nbHashes)
-      exported.filter.should.deep.equal(filter.filter)
+      exported._size.should.equal(filter.size)
+      exported._length.should.equal(filter.length)
+      exported._nbHashes.should.equal(filter._nbHashes)
+      exported._filter.should.deep.equal(filter._filter)
     })
 
     it('should create a bloom filter from a JSON export', () => {
       const exported = filter.saveAsJSON()
       const newFilter = BloomFilter.fromJSON(exported)
-      newFilter.size.should.equal(filter.size)
-      newFilter.length.should.equal(filter.length)
-      newFilter.nbHashes.should.equal(filter.nbHashes)
-      newFilter.filter.should.deep.equal(filter.filter)
+      newFilter.size.should.equal(filter._size)
+      newFilter.length.should.equal(filter._length)
+      newFilter._nbHashes.should.equal(filter._nbHashes)
+      newFilter._filter.should.deep.equal(filter._filter)
     })
 
     it('should reject imports from invalid JSON objects', () => {
