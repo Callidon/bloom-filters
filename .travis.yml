@@ -14,9 +14,8 @@ after_success:
 before_deploy: npm run doc
 deploy:
 - provider: npm
-  email: thomas.minier@protonmail.com
-  api_key:
-    secure: HqdLjyJSTb+NXToWqd/26Am7acasKXQaI5UyAAYKAzR7ErbkVK4dnlazpB3eYXuX0zH/ClamlYAiogLZEqnuSWEmbZWY2ysCf3lNSHKpBdyfhcWQ8E9hoU4NBR5PRz4bsg3wvj0L/3y0x9JHw4zJHKjJWhiIAKGzjdgmo0Q0zua7bIdo/TYSgDHgEM7R4TlVxSYTVIEmXo7KgwwpvHOtOQ/mq36h8ZXjs4jYE5+28m7Q/MgmyP0XERbhK7zaRY+QvQBNN+SnRx6tUNO7jlmJEm+ZDOHoueiiA9zTf2K9HWauIRI/MtEjkSKyY5A/+mR0rn5Ejuu2OQu/ZfzIxYWAtcZpH91kI3axT4vy80HVbxkVW47OBlPCkl98FRXaybk9zWKOVZtjbIoEfTh3oyIc2Z30EhVDcJoNuhrEs93GxF/wwXpIp+thWmMg2/2j1GnNMrlFh5mMiw8yWVisluS7LZm5rP8AIW5XuBcqjabeBZE392JA55ObH9PUf4hhbhUPkLvb1a6kUBOhyFmQbfhMU90Qt1u8zk1NFGu3Jst34J/vDfXMenelYIWNMKKA/vC/I6uk0Y2C6BkRcRDPA4nrzwyWy/BF5Q7R3Wkulzd/T7QV9DU8rgFw88Hk6RSJ7bgINQomeiDZiO8iKUtAxMSUnJAQxe6QnER+AZEgTCKf4z4=
+  email: tminier01@gmail.com
+  api_key: $NPM_KEY
   on:
     tags: true
     repo: Callidon/bloom-filters
