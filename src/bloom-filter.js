@@ -63,7 +63,7 @@ class BloomFilter extends Exportable {
    * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targeted by the filter
    */
   constructor (capacity, errorRate) {
-    super('BloomFilter', '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter')
+    super()
     this._capacity = capacity
     this._errorRate = errorRate
     this._size = fm.optimalFilterSize(capacity, errorRate)
@@ -84,24 +84,6 @@ class BloomFilter extends Exportable {
   static from (array, errorRate) {
     const filter = new BloomFilter(array.length, errorRate)
     array.forEach(element => filter.add(element))
-    return filter
-  }
-
-  /**
-   * Create a new Bloom Filter from a JSON export
-   * @param  {Object} json - A JSON export of a Bloom Filter
-   * @return {BloomFilter} A new Bloom Filter
-   */
-  static fromJSON (json) {
-    if ((json.type !== 'BloomFilter') || !('_capacity' in json) || !('_errorRate' in json) ||
-    !('_size' in json) || !('_length' in json) || !('_nbHashes' in json) || !('_filter' in json)) {
-      throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter')
-    }
-    const filter = new BloomFilter(json._capacity, json._errorRate)
-    filter._size = json._size
-    filter._nbHashes = json._nbHashes
-    filter._filter = json._filter.slice(0)
-    filter._length = json._length
     return filter
   }
 

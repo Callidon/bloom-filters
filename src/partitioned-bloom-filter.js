@@ -68,7 +68,7 @@ class PartitionedBloomFilter extends Exportable {
    * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
    */
   constructor (capacity, errorRate) {
-    super('PartitionedBloomFilter', '_capacity', '_errorRate', '_length', '_filter')
+    super()
     this._capacity = capacity
     this._errorRate = errorRate
     this._size = fm.optimalFilterSize(capacity, errorRate)
@@ -114,19 +114,6 @@ class PartitionedBloomFilter extends Exportable {
   static from (array, errorRate) {
     const filter = new PartitionedBloomFilter(array.length, errorRate)
     array.forEach(element => filter.add(element))
-    return filter
-  }
-
-  /**
-   * Create a new Partitioned Bloom Filter from a JSON export
-   * @param  {Object} json - A JSON export of a Partitioned Bloom Filter
-   * @return {PartitionedBloomFilter} A new Partitioned Bloom Filter
-   */
-  static fromJSON (json) {
-    if ((json.type !== 'PartitionedBloomFilter') || !('_capacity' in json) || !('_errorRate' in json) || !('_length' in json) || !('_filter' in json)) { throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter') }
-    const filter = new PartitionedBloomFilter(json._capacity, json._errorRate)
-    filter._length = json._length
-    filter._filter = json._filter.slice()
     return filter
   }
 

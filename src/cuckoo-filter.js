@@ -63,8 +63,7 @@ class CuckooFilter extends Exportable {
    * @param {int} [maxKicks=1] - (optional) The max number of kicks when resolving collision at insertion, default to 1
    */
   constructor (size, fLength, bucketSize, maxKicks = 1) {
-    super('CuckooFilter', '_size', '_fingerprintLength', '_length', '_maxKicks', '_filter')
-    this._registerResolver('_filter', filter => filter.map(bucket => bucket.saveAsJSON()))
+    super()
     this._filter = utils.allocateArray(size, () => new Bucket(bucketSize))
     this._size = size
     this._fingerprintLength = fLength

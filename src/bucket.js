@@ -41,7 +41,7 @@ class Bucket extends Exportable {
    * @param {int} size - The maximum number of elements in the bucket
    */
   constructor (size) {
-    super('Bucket', '_size', '_elements')
+    super()
     this._elements = utils.allocateArray(size, null)
     this._size = size
     this._firstNullIndex = 0
@@ -62,23 +62,6 @@ class Bucket extends Exportable {
    */
   get length () {
     return this._length
-  }
-
-  /**
-   * Create a new Bucket from a JSON export
-   * @param  {Object} json - A JSON export of a Bucket
-   * @return {Bucket} A new Bucket
-   */
-  static fromJSON (json) {
-    if ((json.type !== 'Bucket') || !('_size' in json) || !('_elements' in json)) { throw new Error('Cannot create a Bucket from a JSON export which does not represent a bucket') }
-    const bucket = new Bucket(json._size)
-    json._elements.forEach((elt, i) => {
-      if (elt !== null) {
-        bucket._elements[i] = elt
-        bucket._length++
-      }
-    })
-    return bucket
   }
 
   /**

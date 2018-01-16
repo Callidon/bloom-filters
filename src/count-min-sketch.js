@@ -58,24 +58,12 @@ class CountMinSketch extends Exportable {
    * @param {number} delta - Probability of relative accuracy
    */
   constructor (epsilon, delta) {
-    super('CountMinSketch', '_epsilon', '_delta', '_matrix')
+    super()
     this._epsilon = epsilon
     this._delta = delta
     this._columns = Math.ceil(Math.E / epsilon)
     this._rows = Math.ceil(Math.log(1 / delta))
     this._matrix = utils.allocateArray(this._rows, () => utils.allocateArray(this._columns, 0))
-  }
-
-  /**
-   * Create a new Count-Min Sketch from a JSON export
-   * @param  {Object} json - A JSON export of a Count-Min Sketch
-   * @return {CountMinSketch} A new Count-Min Sketch
-   */
-  static fromJSON (json) {
-    if ((json.type !== 'CountMinSketch') || !('_epsilon' in json) || !('_delta' in json) || !('_matrix' in json)) { throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch') }
-    const sketch = new CountMinSketch(json._epsilon, json._delta)
-    sketch._matrix = json._matrix.slice()
-    return sketch
   }
 
   /**

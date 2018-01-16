@@ -24,31 +24,14 @@ SOFTWARE.
 
 'use strict'
 
+const specs = require('./export-import-specs.js')
+
 /**
  * An Exportable is a class that can be exported into a JSON object
  * @abstract
  * @author Thomas Minier
  */
 class Exportable {
-  /**
-   * Constructor
-   * @param  {string} type  - The type of this exportable
-   * @param  {string[]} fields - The fields to exports as JSON
-   */
-  constructor (type, ...fields) {
-    this.type = type
-    this.fields = fields
-    this.resolvers = new Map()
-    this.resolvers.set('_default', v => {
-      if (Array.isArray(v)) {
-        return v.slice(0)
-      } else if (typeof v === 'object') {
-        return Object.assign({}, v)
-      }
-      return v
-    })
-  }
-
   /**
    * Register a resolver used to resolve the export of a field
    * @param  {string} field    - The name of the field associated to this resolver
@@ -65,19 +48,24 @@ class Exportable {
    * @return {Object} The exported JSON object
    */
   saveAsJSON () {
-    let value
-    const json = { type: this.type }
-    this.fields.forEach(fieldName => {
-      if (fieldName in this) {
-        value = this[fieldName]
-        if (this.resolvers.has(fieldName)) {
-          json[fieldName] = this.resolvers.get(fieldName)(value)
-        } else {
-          json[fieldName] = this.resolvers.get('_default')(value)
-        }
-      }
-    })
-    return json
+    const filterType = this.constructor.name
+    if (!(filterType in specs)) {
+      throw new Error(`Error, a filter of type ${filterType} is not exportable nor importable.`)
+    }
+    return specs[filterType].export(this)
+  }
+
+  /**
+   * Create a new Filter from a JSON export
+   * @param  {Object} json - A JSON export of the Filter
+   * @return {Exportable} A new Filter
+   */
+  static fromJSON (json) {
+    const filterType = this.name
+    if (!(filterType in specs)) {
+      throw new Error(`Error, a filter of type ${filterType} is not exportable nor importable.`)
+    }
+    return specs[filterType].import(this, json)
   }
 }
 
