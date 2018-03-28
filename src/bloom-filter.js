@@ -68,7 +68,7 @@ class BloomFilter extends Exportable {
     this._errorRate = errorRate
     this._size = fm.optimalFilterSize(capacity, errorRate)
     this._nbHashes = fm.optimalHashes(this._size, capacity)
-    this._filter = utils.allocateArray(this._size, false)
+    this._filter = utils.allocateArray(this._size, 0)
     this._length = 0
   }
 
@@ -123,7 +123,7 @@ class BloomFilter extends Exportable {
     const hashes = utils.hashTwice(element, true)
 
     for (let i = 0; i < this._nbHashes; i++) {
-      this._filter[utils.doubleHashing(i, hashes.first, hashes.second, this._size)] = true
+      this._filter[utils.doubleHashing(i, hashes.first, hashes.second, this._size)] = 1
     }
     this._length++
   }

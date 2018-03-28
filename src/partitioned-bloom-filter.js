@@ -74,7 +74,7 @@ class PartitionedBloomFilter extends Exportable {
     this._size = fm.optimalFilterSize(capacity, errorRate)
     this._nbHashes = fm.optimalHashes(this._size, capacity)
     this._subarraySize = Math.ceil(this._size / this._nbHashes)
-    this._filter = utils.allocateArray(this._nbHashes, () => utils.allocateArray(this._subarraySize, false))
+    this._filter = utils.allocateArray(this._nbHashes, () => utils.allocateArray(this._subarraySize, 0))
     this._length = 0
   }
 
@@ -129,7 +129,7 @@ class PartitionedBloomFilter extends Exportable {
     const hashes = utils.hashTwice(element, true)
 
     for (let i = 0; i < this._nbHashes; i++) {
-      this._filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this._subarraySize)] = true
+      this._filter[i][utils.doubleHashing(i, hashes.first, hashes.second, this._subarraySize)] = 1
     }
     this._length++
   }
