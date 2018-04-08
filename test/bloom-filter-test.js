@@ -25,7 +25,6 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const fs = require('fs')
 const BloomFilter = require('../src/bloom-filter.js')
 
 describe('BloomFilter', () => {
@@ -64,20 +63,6 @@ describe('BloomFilter', () => {
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)
-    })
-  })
-
-  describe('#benchmark', () => {
-    it('should handle decent volume of data', done => {
-      fs.readFile('/usr/share/dict/american-english', (err, file) => {
-        if (err) done(err)
-        const lines = file.toString('utf-8').split('\n')
-        const alphabet = BloomFilter.from(lines, targetRate)
-        alphabet.rate().should.be.closeTo(0.1, 0.1)
-        alphabet.has('1').should.equal(false)
-        alphabet.has('hello').should.equal(true)
-        done()
-      })
     })
   })
 
