@@ -30,7 +30,7 @@ SOFTWARE.
  * @private
  */
 
- /**
+/**
  * Compute the optimal size of a Bloom Filter
  * @param  {int} setLength - The length of the dataset used to fill the filter
  * @param  {number} errorRate - The targeted false positive rate
