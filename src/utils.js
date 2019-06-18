@@ -117,8 +117,6 @@ const randomInt = (min, max) => {
  * @param  {Buffer} a                          the buffer to copy, then to xor with b
  * @param  {Buffer} b                          the buffer to xor with
  * @param  {Object} [options={}]               options to pass to the new buffer
- * @param  {[type]} [Buffer=require('buffer/'] the class Buffer, can be either node.Buffer or buffer/.Buffer
- * @return {Buffer}                            the xor between the buffer a and b
  */
 function xorBuffer (a, b, options = {}) {
   const c = Buffer.from(a, options)

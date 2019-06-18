@@ -164,7 +164,7 @@ class InvertibleBloomFilter extends Exportable {
 
   /**
    * Decode an InvertibleBloomFilter based on its substracted version
-   * @param  {[type]} substractedInvertibleBloomFilter [description]
+   * @param  {InvertibleBloomFilter} substractedInvertibleBloomFilter The Iblt to decode after being substracted
    * @return {Object}
    */
   static decode (substractedInvertibleBloomFilter) {
@@ -267,11 +267,6 @@ class Cell {
     this._count++
   }
 
-  /**
-   * WARNINJG A PROBLEM IS PERHAPS HERE
-   * @param  {[type]} cell [description]
-   * @return {[type]}      [description]
-   */
   xorm (cell) {
     if (this._idSum !== null && cell._idSum !== null) {
       this._idSum = utils.xorBuffer(this._idSum, cell._idSum)
