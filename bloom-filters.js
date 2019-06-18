@@ -29,10 +29,12 @@ const BloomFilter = require('./src/bloom-filter.js')
 const PartitionedBloomFilter = require('./src/partitioned-bloom-filter.js')
 const CuckooFilter = require('./src/cuckoo-filter.js')
 const CountMinSketch = require('./src/count-min-sketch.js')
+const InvertibleBloomFilter = require('./src/invertible-bloom-lookup-tables.js').InvertibleBloomFilter
 
 module.exports = {
   BloomFilter,
   PartitionedBloomFilter,
   CuckooFilter,
-  CountMinSketch
+  CountMinSketch,
+  InvertibleBloomFilter
 }
