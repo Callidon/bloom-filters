@@ -144,19 +144,36 @@ They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This d
 
 ```javascript
 const { InvertibleBloomFilter } = require('bloom-filters')
+// const Buffer = require('buffer').Buffer
+// or
+const Buffer = require('buffer/').Buffer
 
 // create a new Invertible Bloom Filters with 1000 cells and 4 hash functions
 const iblt = new InvertibleBloomFilter(1000, 4)
 const remote = new InvertibleBloomFilter(1000, 4)
-// push some occurrences in the sketch
-['alice', 42, Buffer.from('help'), 'meow', 'json'].forEach(e => iblt.add(e))
-['alice', 'car', 'meow', Buffer.from('help')].foreach(e => remote.add(e))
+// push some data in the iblt
+const data = [Buffer.from('alice'),
+  Buffer.from(JSON.stringify(42)),
+  Buffer.from('help'),
+  Buffer.from('meow'),
+  Buffer.from('json')]
+
+data.forEach(e => iblt.add(e))
+
+const remoteData = [Buffer.from('alice'),
+  Buffer.from('car'),
+  Buffer.from('meow'),
+  Buffer.from('help')]
+
+remoteData.forEach(e => remote.add(e))
 
 const sub = iblt.substract(remote)
-const { success, missing, additional } = Iblt.decode(sub)
-console.log(success, missing, additional) // true, ['car'], [42, 'json']
-
+const result = InvertibleBloomFilter.decode(sub)
+console.log('Did we successfully decode the substracted iblts?', result.success)
+console.log('Missing elements for iblt: ', result.missing, result.missing.map(e => e.toString()))
+console.log('Additional elements of iblt and missing elements of the remote iblt: ', result.additional, result.additional.map(e => e.toString()))
 ```
+The example can be run in tests/iblt-example.js
 
 ## Export and import
 

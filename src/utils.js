@@ -120,7 +120,7 @@ const randomInt = (min, max) => {
  * @param  {[type]} [Buffer=require('buffer/'] the class Buffer, can be either node.Buffer or buffer/.Buffer
  * @return {Buffer}                            the xor between the buffer a and b
  */
-function xorBuffer (a, b, options = {}, Buffer = require('buffer/').Buffer) {
+function xorBuffer (a, b, options = {}) {
   const c = Buffer.from(a, options)
   for (let i = 0; i < a.length; ++i) {
     c[i] ^= b[i]
