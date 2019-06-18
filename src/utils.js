@@ -112,7 +112,43 @@ const randomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+/**
+ * Return the non-destructive XOR of 2 buffers
+ * @param  {Buffer} a                          the buffer to copy, then to xor with b
+ * @param  {Buffer} b                          the buffer to xor with
+ * @param  {Object} [options={}]               options to pass to the new buffer
+ * @param  {[type]} [Buffer=require('buffer/'] the class Buffer, can be either node.Buffer or buffer/.Buffer
+ * @return {Buffer}                            the xor between the buffer a and b
+ */
+function xorBuffer (a, b, options = {}, Buffer = require('buffer/').Buffer) {
+  const c = Buffer.from(a, options)
+  for (let i = 0; i < a.length; ++i) {
+    c[i] ^= b[i]
+  }
+  return c
+}
+
+/**
+ * Return true if the buffer isEmpty, aka all value are equals to 0.
+ * @param  {Buffer}  buffer the buffer to inspect
+ * @return {Boolean}        true if empty, false otherwise
+ */
+function isEmptyBuffer (buffer) {
+  const json = buffer.toJSON()
+  let i = 0
+  let found = false
+  while (!found && i < json.data.length) {
+    if (json.data[i] !== 0) {
+      found = true
+    }
+    i++
+  }
+  return !found
+}
+
 module.exports = {
+  isEmptyBuffer,
+  xorBuffer,
   allocateArray,
   hashTwice,
   doubleHashing,

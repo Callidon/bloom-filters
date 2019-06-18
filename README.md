@@ -15,6 +15,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Partitioned Bloom Filter](#partitioned-bloom-filter)
 	* [Cuckoo Filter](#cuckoo-filter)
 	* [Count Min Sketch](#count-min-sketch)
+  * [Invertible Bloom Lookup Table (Invertible Bloom Filters)](#invertible-bloom-filters)
 * [Export and import](#export-and-import)
 * [Documentation](#documentation)
 * [Tests](#tests)
@@ -130,6 +131,31 @@ sketch.update('bob')
 console.log(sketch.count('alice')) // output: 2
 console.log(sketch.count('bob')) // output: 1
 console.log(sketch.count('daniel')) // output: 0
+```
+
+### Invertible Bloom Filters
+
+An Invertible Bloom Lookup Table is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
+They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction, in that it randomly combines elements using the XOR function.
+
+**Reference:** Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229. [full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)
+
+**Inputs:** Only Accept Buffer (node: `require('buffer')` or browser `require('buffer/').Buffer`) as input
+
+```javascript
+const { InvertibleBloomFilter } = require('bloom-filters')
+
+// create a new Invertible Bloom Filters with 1000 cells and 4 hash functions
+const iblt = new InvertibleBloomFilter(1000, 4)
+const remote = new InvertibleBloomFilter(1000, 4)
+// push some occurrences in the sketch
+['alice', 42, Buffer.from('help'), 'meow', 'json'].forEach(e => iblt.add(e))
+['alice', 'car', 'meow', Buffer.from('help')].foreach(e => remote.add(e))
+
+const sub = iblt.substract(remote)
+const { success, missing, additional } = Iblt.decode(sub)
+console.log(success, missing, additional) // true, ['car'], [42, 'json']
+
 ```
 
 ## Export and import

@@ -118,10 +118,25 @@ const PartitionedBloomFilterSpecs = {
   }
 }
 
+const InvertibleBloomFilterSpecs = {
+  export: cloneObject('InvertibleBloomFilter', '_size', '_hashCount', '_elements'),
+  import: (InvertibleBloomFilterConstructor, json) => {
+    if ((json.type !== 'InvertibleBloomFilter') || !assertFields(json, '_size', '_hashCount', '_elements')) {
+      throw new Error('Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
+    }
+    const iblt = new InvertibleBloomFilterConstructor(json._size, json._hashCount)
+    iblt._size = json._size
+    iblt._hashCount = json._hashCount
+    iblt._elements = json._elements
+    return iblt
+  }
+}
+
 module.exports = {
   'BloomFilter': BloomFilterSpecs,
   'Bucket': BucketSpecs,
   'CountMinSketch': CountMinSketchSpecs,
   'CuckooFilter': CuckooFilterSpecs,
-  'PartitionedBloomFilter': PartitionedBloomFilterSpecs
+  'PartitionedBloomFilter': PartitionedBloomFilterSpecs,
+  'InvertibleBloomFilter': InvertibleBloomFilterSpecs
 }
