@@ -111,31 +111,16 @@ class CuckooFilter extends Exportable {
   }
 
   /**
-   * Build a new Cuckoo Filter from an existing array with a fixed error rate
-   * @param {Array} array - The array used to build the filter
-   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
-   * @return {CuckooFilter} A new Cuckoo Filter filled with iterable's elements
-   * @example
-   * // create a filter with a false positive rate of 0.1
-   * const filter = CuckooFilter.from(['alice', 'bob', 'carl'], 0.1);
-   */
-  // static from (array, fLength, bucketSize, maxKicks) {
-  //   const length = array.length; // TODO: need to find the good formula for this
-  //   const filter = new CuckooFilter(length, errorRate);
-  //   array.forEach(element => filter.add(element));
-  //   return filter;
-  // }
-
-  /**
    * Create a new Cuckoo Filter from a JSON export
    * @param  {Object} json - A JSON export of a Cuckoo Filter
    * @return {CuckooFilter} A new Cuckoo Filter
    */
   static fromJSON (json) {
-    if ((json.type !== 'CuckooFilter') || !('_size' in json) || !('_fingerprintLength' in json) || !('_length' in json) || !('_maxKicks' in json) || !('_filter' in json)) { throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter') }
+    if ((json.type !== 'CuckooFilter') || !('_size' in json) || !('_fingerprintLength' in json) || !('_length' in json) || !('_maxKicks' in json) || !('_filter' in json) || !('_seed' in json)) { throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter') }
     const filter = new CuckooFilter(json._size, json._fingerprintLength, json._bucketSize, json._maxKicks)
     filter._length = json._length
     filter._filter = json._filter.map(json => Bucket.fromJSON(json))
+    filter.seed = json.seed
     return filter
   }
 
@@ -161,7 +146,7 @@ class CuckooFilter extends Exportable {
       let movedElement = locations.fingerprint
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
         movedElement = this._filter[index].swapRandom(movedElement)
-        index = Math.abs(index ^ Math.abs(utils.hashAsInt(movedElement, utils.getSeed(), 32))) % this._size
+        index = Math.abs(index ^ Math.abs(utils.hashAsInt(movedElement, this.seed, 32))) % this._size
         // add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {
           this._filter[index].add(movedElement)
@@ -239,11 +224,11 @@ class CuckooFilter extends Exportable {
    * @private
    */
   _locations (element) {
-    const hashes = utils.hashIntAndString(element, utils.getSeed(), 16, 32)
+    const hashes = utils.hashIntAndString(element, this.seed, 16, 32)
     const hash = hashes.int
     const fingerprint = hashes.string.substring(0, this._fingerprintLength)
     const firstIndex = Math.abs(hash)
-    const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, utils.getSeed(), 32)))
+    const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, this.seed, 32)))
     return {
       fingerprint,
       firstIndex: firstIndex % this._size,

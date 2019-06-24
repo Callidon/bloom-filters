@@ -46,9 +46,10 @@ class InvertibleBloomFilter extends Exportable {
    * @param  {Array}  [array=[]]    The elements to insert
    * @param  {Number} [size=1000]   The size of the InvertibleBloomFilter
    * @param  {Number} [hashCount=4] the number of hash functions used
+   * @param {Number} seed set the seed for the filter
    * @return {InvertibleBloomFilter}
    */
-  static from (array = [], size = 1000, hashCount = 4) {
+  static from (array = [], size = 1000, hashCount = 4, seed = utils.getDefaultSeed()) {
     const iblt = new InvertibleBloomFilter(size, hashCount)
     array.forEach(e => {
       if (isBuffer(e)) {
@@ -57,6 +58,7 @@ class InvertibleBloomFilter extends Exportable {
         throw new Error('Only buffers are accepted')
       }
     })
+    iblt.seed = seed
     return iblt
   }
 
@@ -111,8 +113,8 @@ class InvertibleBloomFilter extends Exportable {
     if (!isBuffer(element)) {
       throw new Error('Only a buffer can be accepted as input.')
     } else {
-      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element))
-      const indexes = utils.getDistinctIndices(hashes.string.first, this._size, this._hashCount)
+      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element), this.seed)
+      const indexes = utils.getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
       for (let i = 0; i < this._hashCount; ++i) {
         this._elements[indexes[i]].add(element, Buffer.from(hashes.string.first))
       }
@@ -127,8 +129,8 @@ class InvertibleBloomFilter extends Exportable {
     if (!isBuffer(element)) {
       throw new Error('Only a buffer can be accepted as input.')
     } else {
-      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element))
-      const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount)
+      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element), this.seed)
+      const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
       for (let i = 0; i < this._hashCount; ++i) {
         this._elements[indexes[i]].xorm(new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1))
       }
@@ -144,8 +146,8 @@ class InvertibleBloomFilter extends Exportable {
     if (!isBuffer(element)) {
       throw new Error('Only a buffer can be accepted as input.')
     } else {
-      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element))
-      const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount)
+      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element), this.seed)
+      const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
       for (let i = 0; i < this._hashCount; ++i) {
         if (this._elements[indexes[i]].count === 0) {
           return false
@@ -193,6 +195,7 @@ class InvertibleBloomFilter extends Exportable {
   substract (remote) {
     if (this.size !== remote.size) throw new Error('they should be of the same size')
     const toReturn = new InvertibleBloomFilter(remote._size, remote._hashCount)
+    toReturn.seed = this.seed
     for (let i = 0; i < this.size; ++i) {
       const cell = this._elements[i]
       const remoteCell = remote._elements[i]
@@ -208,7 +211,7 @@ class InvertibleBloomFilter extends Exportable {
    * @return {Boolean} true if identical, false otherwise
    */
   equal (iblt) {
-    if (iblt._size !== this._size || iblt._hashCount !== this._hashCount) {
+    if (iblt._size !== this._size || iblt._hashCount !== this._hashCount || iblt.seed !== this.seed) {
       return false
     } else {
       for (let i = 0; i < iblt._elements.length; ++i) {
@@ -229,7 +232,7 @@ class InvertibleBloomFilter extends Exportable {
     // checking for all pure cells
     for (let i = 0; i < sub._elements.length; ++i) {
       cell = sub._elements[i]
-      if (cell.isPure()) {
+      if (cell.isPure(sub.seed)) {
         pureList.push(i)
       }
     }
@@ -237,7 +240,7 @@ class InvertibleBloomFilter extends Exportable {
       cell = sub._elements[pureList.pop()]
       const id = cell.id
       const c = cell.count
-      if (cell.isPure()) {
+      if (cell.isPure(sub.seed)) {
         if (c === 1) {
           samb.push(id)
         } else if (c === -1) {
@@ -245,11 +248,11 @@ class InvertibleBloomFilter extends Exportable {
         } else {
           throw new Error('Please report, not possible')
         }
-        const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(id))
-        const indexes = utils.getDistinctIndices(hashes.string.first, sub._size, sub._hashCount)
+        const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(id), sub.seed)
+        const indexes = utils.getDistinctIndices(hashes.string.first, sub._size, sub._hashCount, sub.seed)
         for (let i = 0; i < indexes.length; ++i) {
           sub._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
-          if (sub._elements[indexes[i]].isPure()) {
+          if (sub._elements[indexes[i]].isPure(sub.seed)) {
             pureList.push(indexes[i])
           }
         }
@@ -346,13 +349,14 @@ class Cell {
    * Return true if the cell is considered as "Pure"
    * A pure cell is a cell with a counter equal to 1 or -1
    * And with a hash equal to the id hashed
+   * @param {Number} seed the seed used to hash
    * @return {Boolean} [description]
    */
-  isPure () {
+  isPure (seed = utils.getDefaultSeed()) {
     if (this.id.equals(Buffer.allocUnsafe(0).fill(0)) || this.hash.equals(Buffer.allocUnsafe(0).fill(0))) return false
     // it must be either 1 or -1
     if (this.count !== 1 && this.count !== -1) return false
-    const hashes = utils.hashTwice(InvertibleBloomFilter._convert(this.id), false)
+    const hashes = utils.hashTwice(InvertibleBloomFilter._convert(this.id), false, this.seed)
     // hashed id must be equal to the hash sum
     if (!this.hash.equals(Buffer.from(hashes.first))) {
       return false

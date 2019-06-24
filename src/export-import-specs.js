@@ -58,12 +58,13 @@ function assertFields (obj, ...fields) {
 }
 
 const BloomFilterSpecs = {
-  export: cloneObject('BloomFilter', '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter'),
+  export: cloneObject('BloomFilter', '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed'),
   import: (FilterConstructor, json) => {
-    if ((json.type !== 'BloomFilter') || !assertFields(json, '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter')) {
+    if ((json.type !== 'BloomFilter') || !assertFields(json, '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed')) {
       throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter')
     }
     const filter = new FilterConstructor(json._capacity, json._errorRate)
+    filter.seed = json._seed
     filter._size = json._size
     filter._nbHashes = json._nbHashes
     filter._filter = json._filter.slice(0)
@@ -73,12 +74,13 @@ const BloomFilterSpecs = {
 }
 
 const BucketSpecs = {
-  export: cloneObject('Bucket', '_size', '_elements'),
+  export: cloneObject('Bucket', '_size', '_elements', '_seed'),
   import: (FilterConstructor, json) => {
-    if ((json.type !== 'Bucket') || !assertFields(json, '_size', '_elements')) {
+    if ((json.type !== 'Bucket') || !assertFields(json, '_size', '_elements', '_seed')) {
       throw new Error('Cannot create a Bucket from a JSON export which does not represent a bucket')
     }
     const bucket = new FilterConstructor(json._size)
+    bucket.seed = json._seed
     json._elements.forEach((elt, i) => {
       if (elt !== null) {
         bucket._elements[i] = elt
@@ -90,28 +92,30 @@ const BucketSpecs = {
 }
 
 const CountMinSketchSpecs = {
-  export: cloneObject('CountMinSketch', '_epsilon', '_delta', '_matrix'),
+  export: cloneObject('CountMinSketch', '_epsilon', '_delta', '_matrix', '_seed'),
   import: (FilterConstructor, json) => {
-    if ((json.type !== 'CountMinSketch') || !assertFields(json, '_epsilon', '_delta', '_matrix')) {
+    if ((json.type !== 'CountMinSketch') || !assertFields(json, '_epsilon', '_delta', '_matrix', '_seed')) {
       throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch')
     }
     const sketch = new FilterConstructor(json._epsilon, json._delta)
     sketch._matrix = json._matrix.slice()
+    sketch.seed = json._seed
     return sketch
   }
 }
 
 const CuckooFilterSpecs = {
-  export: cloneObject('CuckooFilter', '_size', '_fingerprintLength', '_length', '_maxKicks', '_filter')
+  export: cloneObject('CuckooFilter', '_size', '_fingerprintLength', '_length', '_maxKicks', '_filter', '_seed')
 }
 
 const PartitionedBloomFilterSpecs = {
-  export: cloneObject('PartitionedBloomFilter', '_capacity', '_errorRate', '_length', '_filter'),
+  export: cloneObject('PartitionedBloomFilter', '_capacity', '_errorRate', '_length', '_filter', '_seed'),
   import: (FilterConstructor, json) => {
-    if ((json.type !== 'PartitionedBloomFilter') || !assertFields(json, '_capacity', '_errorRate', '_length', '_filter')) {
+    if ((json.type !== 'PartitionedBloomFilter') || !assertFields(json, '_capacity', '_errorRate', '_length', '_filter', '_seed')) {
       throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter')
     }
     const filter = new FilterConstructor(json._capacity, json._errorRate)
+    filter.seed = json._seed
     filter._length = json._length
     filter._filter = json._filter.slice()
     return filter
@@ -119,12 +123,13 @@ const PartitionedBloomFilterSpecs = {
 }
 
 const InvertibleBloomFilterSpecs = {
-  export: cloneObject('InvertibleBloomFilter', '_size', '_hashCount', '_elements'),
+  export: cloneObject('InvertibleBloomFilter', '_size', '_hashCount', '_elements', '_seed'),
   import: (InvertibleBloomFilterConstructor, json) => {
-    if ((json.type !== 'InvertibleBloomFilter') || !assertFields(json, '_size', '_hashCount', '_elements')) {
+    if ((json.type !== 'InvertibleBloomFilter') || !assertFields(json, '_size', '_hashCount', '_elements', '_seed')) {
       throw new Error('Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
     }
     const iblt = new InvertibleBloomFilterConstructor(json._size, json._hashCount)
+    iblt.seed = json._seed
     iblt._size = json._size
     iblt._hashCount = json._hashCount
     iblt._elements = json._elements.map(e => new InvertibleBloomFilterConstructor.Cell(e._idSum, e._hashSum, e._count))

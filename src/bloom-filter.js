@@ -76,13 +76,15 @@ class BloomFilter extends Exportable {
    * Build a new Bloom Filter from an existing array with a fixed error rate
    * @param {Array} array - The array used to build the filter
    * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
+   * @param {Number} seed set the seed for the filter
    * @return {BloomFilter} A new Bloom Filter filled with iterable's elements
    * @example
    * // create a filter with a false positive rate of 0.1
    * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
-  static from (array, errorRate) {
+  static from (array, errorRate, seed = utils.getDefaultSeed()) {
     const filter = new BloomFilter(array.length, errorRate)
+    filter.seed = seed
     array.forEach(element => filter.add(element))
     return filter
   }
@@ -120,7 +122,7 @@ class BloomFilter extends Exportable {
    * filter.add('foo');
    */
   add (element) {
-    const indexes = utils.getDistinctIndices(element, this._size, this._nbHashes)
+    const indexes = utils.getDistinctIndices(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
       this._filter[indexes[i]] = 1
     }
@@ -138,7 +140,7 @@ class BloomFilter extends Exportable {
    * console.log(filter.has('bar')); // output: false
    */
   has (element) {
-    const indexes = utils.getDistinctIndices(element, this._size, this._nbHashes)
+    const indexes = utils.getDistinctIndices(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
       if (!this._filter[indexes[i]]) {
         return false

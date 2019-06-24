@@ -25,6 +25,7 @@ SOFTWARE.
 'use strict'
 
 const specs = require('./export-import-specs.js')
+const utils = require('./utils')
 
 /**
  * An Exportable is a class that can be exported into a JSON object
@@ -32,6 +33,26 @@ const specs = require('./export-import-specs.js')
  * @author Thomas Minier
  */
 class Exportable {
+  constructor () {
+    this._seed = utils.getDefaultSeed()
+  }
+  /**
+   * Return the seed used in this structure
+   * @return {Number|UINT32|UINT64}
+   */
+  get seed () {
+    return this._seed
+  }
+
+  /**
+   * Set the seed for this structure
+   * @param  {Number|UINT32|UINT64} seed the new seed that will be used in this structure
+   * @return {void}
+   */
+  set seed (seed) {
+    this._seed = seed
+  }
+
   /**
    * Register a resolver used to resolve the export of a field
    * @param  {string} field    - The name of the field associated to this resolver
