@@ -24,7 +24,8 @@ SOFTWARE.
 
 'use strict'
 
-const murmur = require('murmurhash3js')
+const XXH = require('xxhashjs')
+let SEED = 0x12345678
 
 /**
  * Utilitaries functions
@@ -59,27 +60,58 @@ const allocateArray = (size, defaultValue) => {
 /**
  * Hash a value into two values (in hex or integer format)
  *
- * Use MumurmurHash3 as the default hashing function, but another function can be easily used.
- * @see {@link https://en.wikipedia.org/wiki/MurmurHash} for more details about MurmurHash3
- * @param  {*} value - The value to hash
+ * It uses XXHASH algorithms: xxHash is an extremely fast non-cryptographic hash algorithm, working at speeds close to RAM limits. It is proposed in two flavors, 32 and 64 bits.
+ * @see {@link https://cyan4973.github.io/xxHash/} for more details about XXHASH
+ * @param  {string|ArrayBuffer|Buffer} value - The value to hash
  * @param  {boolean} [asInt=false] - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
- * @param  {function} [hashFunction=null] - (optional) The hash function used. It should return a 128-bits long hash. By default, MumurmurHash3 is used.
  * @return {TwoHashes} The results of the hash functions applied to the value (in hex or integer)
  * @memberof Utils
  */
-const hashTwice = (value, asInt = false, hashFunction = null) => {
-  const hex = (hashFunction !== null) ? hashFunction(value) : murmur.x64.hash128(value)
-  const firstHash = hex.substring(0, 16)
-  const secondHash = hex.substring(16)
+const hashTwice = (value, asInt = false) => {
+  const length = 16
   if (asInt) {
     return {
-      first: parseInt(firstHash, 16),
-      second: parseInt(secondHash, 16)
+      first: XXH.h64(value, 1).toNumber(),
+      second: XXH.h64(value, 2).toNumber()
+    }
+  } else {
+    let one = XXH.h64(value, 1).toString(16)
+    if (one.length < length) one = '0'.repeat(length - one.length) + one
+    // const one = murmur.x64.hash128(val, seed + 1)
+    let two = XXH.h64(value, 2).toString(16)
+    if (two.length < length) two = '0'.repeat(length - two.length) + two
+    return {
+      first: one,
+      second: two
     }
   }
+}
+
+/**
+ * Same as hashTwice but return Numbers and String equivalent
+ * @param  {string|ArrayBuffer|Buffer} val the value to hash
+ * @param  {Number} seed the seed to change when hashing
+ * @return {Object} {int: {first: <number>, second: <number>}, string: {first: <hex-string>, second: <hex-string>}
+ */
+const allInOneHashTwice = (val, seed = 0) => {
+  const length = 16
+  let one = XXH.h64(val, 1)
+  let two = XXH.h64(val, 2)
+  let stringOne = one.toString(length)
+  if (stringOne.length < length) stringOne = '0'.repeat(length - stringOne.length) + stringOne
+
+  let stringTwo = two.toString(length)
+  if (stringTwo.length < length) stringTwo = '0'.repeat(length - stringTwo.length) + stringTwo
+
   return {
-    first: firstHash,
-    second: secondHash
+    int: {
+      first: one.toNumber(),
+      second: two.toNumber()
+    },
+    string: {
+      first: stringOne,
+      second: stringTwo
+    }
   }
 }
 
@@ -97,6 +129,31 @@ const hashTwice = (value, asInt = false, hashFunction = null) => {
  */
 const doubleHashing = (n, hashA, hashB, size) => {
   return Math.abs(hashA + n * hashB) % size
+}
+
+/**
+ * Generate x distinct indexes on [0, size) using the double hashing technique
+ * @param  {*} element   The element to hash
+ * @param  {Number} size      [description]
+ * @param  {Number} hashcount The number of indexes desired
+ * @return {Number[]}           index among [0, size)
+ */
+const getDistinctIndices = (element, size, hashcount) => {
+  const getDistinctIndicesBis = (n, elem, size, count, indexes = new Map()) => {
+    const hashes = hashTwice(n + elem, true)
+    const ind = doubleHashing(n, hashes.first, hashes.second, size)
+    if (indexes.has(ind)) {
+      return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
+    } else {
+      indexes.set(ind, ind)
+      if (indexes.size === count) {
+        return [...indexes.keys()]
+      } else {
+        return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
+      }
+    }
+  }
+  return getDistinctIndicesBis(1, element, size, hashcount)
 }
 
 /**
@@ -118,20 +175,37 @@ const randomInt = (min, max) => {
  * @param  {Buffer} b                          the buffer to xor with
  * @param  {Object} [options={}]               options to pass to the new buffer
  */
-function xorBuffer (a, b, options = {}) {
-  const c = Buffer.from(a, options)
-  for (let i = 0; i < a.length; ++i) {
-    c[i] ^= b[i]
+function xorBuffer (a, b, options = {}, val = true) {
+  const length = Math.max(a.length, b.length)
+  const buffer = Buffer.allocUnsafe(length).fill(0)
+  for (let i = 0; i < length; ++i) {
+    if (i < a.length && i < b.length) {
+      buffer[length - i - 1] = a[a.length - i - 1] ^ b[b.length - i - 1]
+    } else if (i < a.length && i >= b.length) {
+      buffer[length - i - 1] ^= a[a.length - i - 1]
+    } else if (i < b.length && i >= a.length) {
+      buffer[length - i - 1] ^= b[b.length - i - 1]
+    }
   }
-  return c
+  // now need to remove leading zeroes in the buffer if any
+  let start = 0
+  const it = buffer.values()
+  let value = it.next()
+  while (!value.done && value.value === 0) {
+    start++
+    value = it.next()
+  }
+  const buf2 = buffer.slice(start)
+  return buf2
 }
 
 /**
  * Return true if the buffer isEmpty, aka all value are equals to 0.
  * @param  {Buffer}  buffer the buffer to inspect
- * @return {Boolean}        true if empty, false otherwise
+ * @return {Boolean}        true if empty or null or undefined, false otherwise
  */
 function isEmptyBuffer (buffer) {
+  if (buffer === null || !buffer) return true
   const json = buffer.toJSON()
   let i = 0
   let found = false
@@ -144,7 +218,103 @@ function isEmptyBuffer (buffer) {
   return !found
 }
 
+/**
+ * Return a hash as un unsigned int
+ * @param  {string|ArrayBuffer|Buffer} elem        [description]
+ * @param  {Number|UINT32|UINT64} [seed=SEED] If the seed is UINT32 make sure to set the length to 32
+ * @param  {Number} [length=64] the version used 32 or 64, default: 64
+ * @return {Number}  the hash as unsigned int
+ */
+function hashAsInt (elem, seed = SEED, length = 64) {
+  switch (length) {
+    case 32:
+      return XXH.h32(elem, seed).toNumber()
+    case 64:
+      return XXH.h64(elem, seed).toNumber()
+    default:
+      return XXH.h64(elem, seed).toNumber()
+  }
+}
+
+/**
+ * Return a hash as a string
+ * @param  {string|ArrayBuffer|Buffer} elem        [description]
+ * @param  {Number|UINT32|UINT64} [seed=SEED] If the seed is UINT32 make sure to set the length to 32
+ * @param  {Number} [base=16]   the base in which the string will be returned, default: 16
+ * @param  {Number} [length=64] the version used 32 or 64, default: 64
+ * @return {string} the hash as string
+ */
+function hashAsString (elem, seed = SEED, base = 16, length = 64) {
+  let hash
+  switch (length) {
+    case 32:
+      hash = XXH.h32(elem, seed).toString(base)
+      break
+    case 64:
+      hash = XXH.h64(elem, seed).toString(base)
+      break
+    default:
+      hash = XXH.h64(elem, seed).toString(base)
+      break
+  }
+  if (hash.length < base) {
+    hash = '0'.repeat(base - hash.length) + hash
+  }
+  return hash
+}
+
+/**
+ * Return a hash as an unsigned int and as string
+ * @param  {string|ArrayBuffer|Buffer} elem        [description]
+ * @param  {Number|UINT32|UINT64} [seed=SEED] If the seed is UINT32 make sure to set the length to 32
+ * @param  {Number} [base=16]   the base in which the string will be returned, default: 16
+ * @param  {Number} [length=64] the version used 32 or 64, default: 64
+ * @return {Object}             A hash with its number and string version
+ */
+function hashIntAndString (elem, seed = SEED, base = 16, length = 64) {
+  let hash
+  switch (length) {
+    case 32:
+      hash = XXH.h32(elem, seed)
+      break
+    case 64:
+      hash = XXH.h64(elem, seed)
+      break
+    default:
+      hash = XXH.h64(elem, seed)
+      break
+  }
+  let string = hash.toString(base)
+  if (string.length < base) {
+    string = '0'.repeat(base - string.length) + string
+  }
+  return { int: hash.toNumber(), string }
+}
+
+/**
+ * Return the seed used until now
+ * @return {Number|UINT32|UINT64}
+ */
+function getSeed () {
+  return SEED
+}
+
+/**
+ * Exposes a setter for the seed for each hashing methods used.
+ * @param {Number|UINT32|UINT64} seed the seed to use from now
+ */
+function setSeed (seed) {
+  SEED = seed
+}
+
 module.exports = {
+  setSeed,
+  getSeed,
+  hashAsInt,
+  hashAsString,
+  hashIntAndString,
+  getDistinctIndices,
+  allInOneHashTwice,
   isEmptyBuffer,
   xorBuffer,
   allocateArray,

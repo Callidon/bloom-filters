@@ -27,6 +27,10 @@ SOFTWARE.
 require('chai').should()
 const PartitionedBloomFilter = require('../src/partitioned-bloom-filter.js')
 
+const utils = require('../src/utils')
+const seed = Math.random()
+utils.setSeed(seed)
+
 describe('PartitionedBloomFilter', () => {
   const targetRate = 0.1
 
