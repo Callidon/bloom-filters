@@ -127,7 +127,7 @@ const InvertibleBloomFilterSpecs = {
     const iblt = new InvertibleBloomFilterConstructor(json._size, json._hashCount)
     iblt._size = json._size
     iblt._hashCount = json._hashCount
-    iblt._elements = json._elements
+    iblt._elements = json._elements.map(e => new InvertibleBloomFilterConstructor.Cell(e._idSum, e._hashSum, e._count))
     return iblt
   }
 }

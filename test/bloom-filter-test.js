@@ -100,4 +100,12 @@ describe('BloomFilter', () => {
       })
     })
   })
+
+  describe('Performance test', () => {
+    const max = 1000
+    it('should not return an error', () => {
+      const filter = new BloomFilter(200, 0.01)
+      for (let i = 0; i < max; ++i) filter.add('' + i)
+    })
+  })
 })

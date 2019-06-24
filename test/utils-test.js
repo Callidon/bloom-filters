@@ -26,6 +26,8 @@ SOFTWARE.
 
 require('chai').should()
 const utils = require('../src/utils.js')
+const seed = Math.random()
+utils.setSeed(seed)
 
 describe('Utils', () => {
   describe('#allocateArray', () => {

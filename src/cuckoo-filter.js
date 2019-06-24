@@ -24,7 +24,6 @@ SOFTWARE.
 
 'use strict'
 
-const murmur = require('murmurhash3js')
 const Bucket = require('./bucket.js')
 const Exportable = require('./exportable.js')
 const utils = require('./utils.js')
@@ -162,7 +161,7 @@ class CuckooFilter extends Exportable {
       let movedElement = locations.fingerprint
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
         movedElement = this._filter[index].swapRandom(movedElement)
-        index = Math.abs(index ^ Math.abs(murmur.x86.hash32(movedElement))) % this._size
+        index = Math.abs(index ^ Math.abs(utils.hashAsInt(movedElement, utils.getSeed(), 32))) % this._size
         // add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {
           this._filter[index].add(movedElement)
@@ -240,10 +239,11 @@ class CuckooFilter extends Exportable {
    * @private
    */
   _locations (element) {
-    const hash = murmur.x86.hash32(element)
-    const fingerprint = hash.toString(16).substring(0, this._fingerprintLength)
+    const hashes = utils.hashIntAndString(element, utils.getSeed(), 16, 32)
+    const hash = hashes.int
+    const fingerprint = hashes.string.substring(0, this._fingerprintLength)
     const firstIndex = Math.abs(hash)
-    const secondIndex = Math.abs(firstIndex ^ Math.abs(murmur.x86.hash32(fingerprint)))
+    const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, utils.getSeed(), 32)))
     return {
       fingerprint,
       firstIndex: firstIndex % this._size,

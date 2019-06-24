@@ -25,18 +25,22 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const murmur = require('murmurhash3js')
 const CuckooFilter = require('../src/cuckoo-filter.js')
+const utils = require('../src/utils')
+const seed = Math.random()
+utils.setSeed(seed)
 
 describe('CuckooFilter', () => {
   describe('#_locations', () => {
     it('should compute the fingerprint and indexes for an element', () => {
-      const filter = new CuckooFilter(15, 3, 2)
+      const filter = new CuckooFilter(15, 3, 2, 1)
       const element = 'foo'
-      const hash = murmur.x86.hash32(element)
-      const fingerprint = hash.toString(16).substring(0, 3)
+      const hashes = utils.hashIntAndString(element, seed, 16, 32)
+      const hash = hashes.int
+      const fingerprint = hashes.string.substring(0, 3)
+
       const firstIndex = Math.abs(hash)
-      const secondIndex = Math.abs(firstIndex ^ Math.abs(murmur.x86.hash32(fingerprint)))
+      const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, seed, 32)))
 
       const locations = filter._locations(element)
       locations.fingerprint.should.equal(fingerprint)
@@ -87,7 +91,6 @@ describe('CuckooFilter', () => {
       filter._filter[locations.firstIndex].add('001')
       filter._filter[locations.secondIndex].add('002')
       filter._length += 2
-
       filter.add(element).should.equal(true)
 
       filter._filter.forEach(bucket => {

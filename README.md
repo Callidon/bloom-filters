@@ -5,6 +5,8 @@
 
 JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash
 
+**Use non-cryptographic hash internally** [XXHASH](https://cyan4973.github.io/xxHash/)
+
 [Online documentation](https://callidon.github.io/bloom-filters/)
 
 # Table of contents
@@ -148,9 +150,11 @@ const { InvertibleBloomFilter } = require('bloom-filters')
 // or
 const Buffer = require('buffer/').Buffer
 
-// create a new Invertible Bloom Filters with 1000 cells and 4 hash functions
-const iblt = new InvertibleBloomFilter(1000, 4)
-const remote = new InvertibleBloomFilter(1000, 4)
+const hashcount = 3
+const size = 50
+const iblt = new InvertibleBloomFilter(size, hashcount)
+const remote = new InvertibleBloomFilter(size, hashcount)
+
 // push some data in the iblt
 const data = [Buffer.from('alice'),
   Buffer.from(JSON.stringify(42)),
@@ -169,11 +173,25 @@ remoteData.forEach(e => remote.add(e))
 
 const sub = iblt.substract(remote)
 const result = InvertibleBloomFilter.decode(sub)
-console.log('Did we successfully decode the substracted iblts?', result.success)
+console.log('Did we successfully decode the substracted iblts?', result.success, result.reason)
 console.log('Missing elements for iblt: ', result.missing, result.missing.map(e => e.toString()))
 console.log('Additional elements of iblt and missing elements of the remote iblt: ', result.additional, result.additional.map(e => e.toString()))
+// create the iblt like before
+console.log('Verify if Buffer.from("help") is in the iblt: ', iblt.has(Buffer.from('help')))
+// true with high probability if well configured
+
+iblt.delete(Buffer.from('help'))
+// no error ;)
+
+console.log('Deleting Buffer.from("help") and rechecking:', iblt.has(Buffer.from('help')))
+
+const list = iblt.listEntries()
+console.log('Remaining entries after deletion: ', list.success, list.output.map(e => e.toString()))
+
 ```
 The example can be run in tests/iblt-example.js
+
+**Tuning the IBLT** We recommend to use at least a hashcount of 3 and an alpha of 1.5 for at least 50 differences which equals to 1.5*50 = 75 cells. Then if you insert a huge number of values in there. The decoding will work but testing the presence of a value is still probabilistic. Even for the listEntries function. For more details we suggest you to read the paper ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
 
 ## Export and import
 

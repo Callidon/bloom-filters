@@ -120,10 +120,9 @@ class BloomFilter extends Exportable {
    * filter.add('foo');
    */
   add (element) {
-    const hashes = utils.hashTwice(element, true)
-
-    for (let i = 0; i < this._nbHashes; i++) {
-      this._filter[utils.doubleHashing(i, hashes.first, hashes.second, this._size)] = 1
+    const indexes = utils.getDistinctIndices(element, this._size, this._nbHashes)
+    for (let i = 0; i < indexes.length; i++) {
+      this._filter[indexes[i]] = 1
     }
     this._length++
   }
@@ -139,10 +138,9 @@ class BloomFilter extends Exportable {
    * console.log(filter.has('bar')); // output: false
    */
   has (element) {
-    const hashes = utils.hashTwice(element, true)
-
-    for (let i = 0; i < this._nbHashes; i++) {
-      if (!this._filter[utils.doubleHashing(i, hashes.first, hashes.second, this._size)]) {
+    const indexes = utils.getDistinctIndices(element, this._size, this._nbHashes)
+    for (let i = 0; i < indexes.length; i++) {
+      if (!this._filter[indexes[i]]) {
         return false
       }
     }

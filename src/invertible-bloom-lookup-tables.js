@@ -1,7 +1,7 @@
 const Exportable = require('./exportable.js')
 const utils = require('./utils.js')
 const isBuffer = require('is-buffer')
-// const hashObject = require('object-hash')
+const inspect = Symbol.for('nodejs.util.inspect.custom')
 
 /**
  * Exports an Invertible Bloom Lookup Table.
@@ -16,10 +16,10 @@ class InvertibleBloomFilter extends Exportable {
   /**
    * Construct an Invertible Bloom Lookup Table
    * @param {Number} [size=1000] Number of cells in the InvertibleBloomFilter, should be set to d * alpha where d is the number of difference and alpha a constant
-   * @param {Number} [hashCount=4] The number of hash functions used, empirically studied to be 3 or 4 in most cases
+   * @param {Number} [hashCount=3] The number of hash functions used, empirically studied to be 3 or 4 in most cases
    * @param {Boolean} [verbose] default true, print a warning if size is less than the hashcount
    */
-  constructor (size = 1000, hashCount = 4, verbose = true) {
+  constructor (size = 1000, hashCount = 3, verbose = true) {
     super()
     if (Buffer === undefined) throw new Error('No native Buffer implementation in the browser please require the buffer package feross/buffer: require("buffer/").Buffer')
     if (typeof hashCount !== 'number' || hashCount <= 0) throw new Error('hashCount need to be a number and higher than 0')
@@ -31,6 +31,14 @@ class InvertibleBloomFilter extends Exportable {
     this._hashCount = hashCount
     // the number of elements in the array is n = alpha * size
     this._elements = utils.allocateArray(this._size, () => new Cell())
+  }
+
+  /**
+   * Expose the Cell constructor as statis class of the Invertible Bloom Filter one
+   * @type {Array}
+   */
+  static get Cell () {
+    return Cell
   }
 
   /**
@@ -86,6 +94,15 @@ class InvertibleBloomFilter extends Exportable {
   }
 
   /**
+   * Convert the Buffer into a string that will be stored in the InvertibleBloomFilter
+   * @param  {Buffer} elem the element to convert
+   * @return {string} data representing the buffer
+   */
+  static _convert (elem) {
+    return JSON.stringify(elem.toJSON())
+  }
+
+  /**
    * Add a Buffer to the InvertibleBloomFilter
    * If the element is not a Buffer it will convert it into a Buffer object
    * @param {*|Buffer} element the element to add
@@ -94,14 +111,78 @@ class InvertibleBloomFilter extends Exportable {
     if (!isBuffer(element)) {
       throw new Error('Only a buffer can be accepted as input.')
     } else {
-      const hashes = utils.hashTwice(JSON.stringify(element), false)
+      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element))
+      const indexes = utils.getDistinctIndices(hashes.string.first, this._size, this._hashCount)
       for (let i = 0; i < this._hashCount; ++i) {
-        const first = parseInt(hashes.first, 16)
-        const second = parseInt(hashes.second, 16)
-        const indice = utils.doubleHashing(i, first, second, this._elements.length)
-        this._elements[indice].add(element, Buffer.from(hashes.first))
+        this._elements[indexes[i]].add(element, Buffer.from(hashes.string.first))
       }
     }
+  }
+
+  /**
+   * Delete an element from the Invertible Bloom Filter
+   * @param  {Buffer} element the element to remove
+   */
+  delete (element) {
+    if (!isBuffer(element)) {
+      throw new Error('Only a buffer can be accepted as input.')
+    } else {
+      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element))
+      const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount)
+      for (let i = 0; i < this._hashCount; ++i) {
+        this._elements[indexes[i]].xorm(new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1))
+      }
+    }
+  }
+
+  /**
+   * Return false if an element is not in the iblt, true if an element is in the iblt with an error rate
+   * @param  {Buffer} element the element to get from the Iblt
+   * @return {Boolean|Error|string} false if the element is not in the set, true if it is, 'perhaps', or an Error if an error appears.
+   */
+  has (element) {
+    if (!isBuffer(element)) {
+      throw new Error('Only a buffer can be accepted as input.')
+    } else {
+      const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element))
+      const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount)
+      for (let i = 0; i < this._hashCount; ++i) {
+        if (this._elements[indexes[i]].count === 0) {
+          return false
+        } else if (this._elements[indexes[i]].count === 1) {
+          if (this._elements[indexes[i]].id.equals(element)) {
+            return true
+          } else {
+            return false
+          }
+        }
+        return 'perhaps'
+      }
+    }
+  }
+
+  /**
+   * List all entries from the Iblt, without destruction
+   * Do a copy of this Iblt before trying to list entries!!
+     * Ref; As long as m is chosen so that m > (ck + epsilon )t for some epsilon >  0 LISTENTRIES fails with probability O(t
+  −k+2) whenever n ≤ t.
+   * @return {Buffer[]|Error} A list of all entries
+   */
+  listEntries () {
+    const copy = InvertibleBloomFilter.fromJSON(this.saveAsJSON())
+    let index
+    const output = []
+    let wrong = false
+    while (!wrong && (index = copy._elements.findIndex(e => e.count === 1)) !== -1) {
+      const elem = copy._elements[index].id
+      if (copy.has(elem)) {
+        output.push(elem)
+        copy.delete(elem)
+      } else {
+        wrong = true
+      }
+    }
+    return { output, success: !wrong }
   }
 
   /**
@@ -110,40 +191,15 @@ class InvertibleBloomFilter extends Exportable {
    * @return {InvertibleBloomFilter} a new InvertibleBloomFilter which is the XOR of the local and remote one
    */
   substract (remote) {
-    if (this._numberOfCells !== remote._numberOfCells) throw new Error('they should be of the same size')
+    if (this.size !== remote.size) throw new Error('they should be of the same size')
     const toReturn = new InvertibleBloomFilter(remote._size, remote._hashCount)
-    for (let i = 0; i < this._elements.length; ++i) {
-      let id = null
-      if (this._elements[i]._idSum === null) {
-        id = remote._elements[i]._idSum
-      } else if (remote._elements[i]._idSum === null) {
-        id = this._elements[i]._idSum
-      } else {
-        id = utils.xorBuffer(this._elements[i]._idSum, remote._elements[i]._idSum)
-      }
-
-      let hash = null
-      if (this._elements[i]._hashSum === null) {
-        hash = remote._elements[i]._hashSum
-      } else if (remote._elements[i]._hashSum === null) {
-        hash = this._elements[i]._hashSum
-      } else {
-        hash = utils.xorBuffer(this._elements[i]._hashSum, remote._elements[i]._hashSum)
-      }
-
-      const count = this._elements[i]._count - remote._elements[i]._count
-      toReturn._elements[i] = new Cell(id, hash, count)
+    for (let i = 0; i < this.size; ++i) {
+      const cell = this._elements[i]
+      const remoteCell = remote._elements[i]
+      const r = Cell.xorm(cell, remoteCell)
+      toReturn._elements[i] = r
     }
     return toReturn
-  }
-
-  /**
-   * Convert the element into a Buffer that will be stored in the InvertibleBloomFilter
-   * @param  {*} elem the element to convert
-   * @return {Buffer} The buffer representing the element
-   */
-  _convert (elem) {
-    return Buffer.from(JSON.stringify(elem))
   }
 
   /**
@@ -152,7 +208,7 @@ class InvertibleBloomFilter extends Exportable {
    * @return {Boolean} true if identical, false otherwise
    */
   equal (iblt) {
-    if (iblt._size !== this._size || iblt._hashCount !== this._hashCount || iblt._numberOfCells !== this._numberOfCells) {
+    if (iblt._size !== this._size || iblt._hashCount !== this._hashCount) {
       return false
     } else {
       for (let i = 0; i < iblt._elements.length; ++i) {
@@ -164,64 +220,61 @@ class InvertibleBloomFilter extends Exportable {
 
   /**
    * Decode an InvertibleBloomFilter based on its substracted version
-   * @param  {InvertibleBloomFilter} substractedInvertibleBloomFilter The Iblt to decode after being substracted
+   * @param  {InvertibleBloomFilter} sub The Iblt to decode after being substracted
    * @return {Object}
    */
-  static decode (substractedInvertibleBloomFilter) {
-    const samb = []
-    const sbma = []
+  static decode (sub, samb = [], sbma = []) {
     const pureList = []
-    for (let i = 0; i < substractedInvertibleBloomFilter._elements.length; ++i) {
-      if (substractedInvertibleBloomFilter._elements[i].isPure()) {
+    let cell
+    // checking for all pure cells
+    for (let i = 0; i < sub._elements.length; ++i) {
+      cell = sub._elements[i]
+      if (cell.isPure()) {
         pureList.push(i)
       }
     }
     while (pureList.length !== 0) {
-      const i = pureList.pop()
-      if (!substractedInvertibleBloomFilter._elements[i].isPure()) {
-        continue
-      } else {
-        const s = substractedInvertibleBloomFilter._elements[i]._idSum
-        const c = substractedInvertibleBloomFilter._elements[i]._count
-        if (c > 0) {
-          samb.push(s)
+      cell = sub._elements[pureList.pop()]
+      const id = cell.id
+      const c = cell.count
+      if (cell.isPure()) {
+        if (c === 1) {
+          samb.push(id)
+        } else if (c === -1) {
+          sbma.push(id)
         } else {
-          sbma.push(s)
+          throw new Error('Please report, not possible')
         }
-
-        const hashes = utils.hashTwice(JSON.stringify(s), false)
-        for (let j = 0; j < substractedInvertibleBloomFilter._hashCount; ++j) {
-          const indice = utils.doubleHashing(j, parseInt(hashes.first, 16), parseInt(hashes.second, 16), substractedInvertibleBloomFilter._elements.length)
-          substractedInvertibleBloomFilter._elements[indice].xorm(new Cell(s, Buffer.from(hashes.first), c))
-        }
-      }
-    } // endwhile
-    for (let i = 0; i < substractedInvertibleBloomFilter._elements.length; ++i) {
-      if (substractedInvertibleBloomFilter._elements[i]._idSum === null && substractedInvertibleBloomFilter._elements[i]._hashSum === null && substractedInvertibleBloomFilter._elements[i]._count === 0) {
-        continue
-      } else {
-        const idEmpty = utils.isEmptyBuffer(substractedInvertibleBloomFilter._elements[i].id)
-        const hashEmpty = utils.isEmptyBuffer(substractedInvertibleBloomFilter._elements[i].hash)
-        const count = substractedInvertibleBloomFilter._elements[i]._count === 0
-        if (!idEmpty || !hashEmpty || !count) {
-          return {
-            success: false,
-            reason: {
-              cell: substractedInvertibleBloomFilter._elements[i],
-              idEmpty,
-              hashEmpty,
-              count
-            },
-            additional: samb,
-            missing: sbma
+        const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(id))
+        const indexes = utils.getDistinctIndices(hashes.string.first, sub._size, sub._hashCount)
+        for (let i = 0; i < indexes.length; ++i) {
+          sub._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
+          if (sub._elements[indexes[i]].isPure()) {
+            pureList.push(indexes[i])
           }
         }
       }
     }
-    return {
-      success: true,
-      additional: samb,
-      missing: sbma
+    if (sub._elements.findIndex(e => {
+      return !e.isEmpty()
+    }) > -1) {
+      // console.log('FALSE')
+      return {
+        success: false,
+        reason: {
+          cell,
+          iblt: sub
+        },
+        additional: samb,
+        missing: sbma
+      }
+    } else {
+      // console.log('TRUE')
+      return {
+        success: true,
+        additional: samb,
+        missing: sbma
+      }
     }
   }
 }
@@ -230,10 +283,14 @@ class InvertibleBloomFilter extends Exportable {
  * A cell is composed of an idSum which the XOR of all element inserted in that cell, a hashSum which is the XOR of all hashed element in that cell and a counter which is the number of elements inserted in that cell.
  */
 class Cell {
-  constructor (id = null, sum = null, count = 0) {
+  constructor (id = Buffer.allocUnsafe(0).fill(0), sum = Buffer.allocUnsafe(0).fill(0), count = 0) {
     this._idSum = id
     this._hashSum = sum
     this._count = count
+  }
+
+  [inspect] () {
+    return 'Cell:<' + JSON.stringify(this.id.toJSON().data) + ', ' + JSON.stringify(this.hash.toJSON().data) + ', ' + this.count + '>'
   }
 
   get id () {
@@ -254,32 +311,26 @@ class Cell {
    * @param {Number} hash The hash of the element to XOR in this cell
    */
   add (id, hash) {
-    if (this._idSum === null) {
-      this._idSum = id
-    } else {
-      this._idSum = utils.xorBuffer(this._idSum, id)
-    }
-    if (this._hashSum === null) {
-      this._hashSum = hash
-    } else {
-      this._hashSum = utils.xorBuffer(this._hashSum, hash)
-    }
+    this._idSum = utils.xorBuffer(this.id, id)
+    this._hashSum = utils.xorBuffer(this.hash, hash, false)
     this._count++
   }
 
   xorm (cell) {
-    if (this._idSum !== null && cell._idSum !== null) {
-      this._idSum = utils.xorBuffer(this._idSum, cell._idSum)
-    } else if (this._idSum === null) {
-      this._idSum = cell._idSum
-    }
-    if (this._hashSum !== null && cell._hashSum !== null) {
-      this._hashSum = utils.xorBuffer(this._hashSum, cell._hashSum)
-    } else if (this._hashSum === null) {
-      this._hashSum = cell._hashSum
-    }
+    const c = Cell.xorm(this, cell)
+    this._idSum = c.id
+    this._hashSum = c.hash
+    this._count = c.count
+  }
 
-    this._count = this._count - cell._count
+  isEmpty () {
+    return this._idSum.equals(Buffer.from('')) && this._hashSum.equals(Buffer.from('')) && this._count === 0
+  }
+
+  static xorm (cell, remoteCell) {
+    const c = new Cell(utils.xorBuffer(cell.id, remoteCell.id), utils.xorBuffer(cell.hash, remoteCell.hash, false), cell.count - remoteCell.count)
+    // console.log('xor:', cell, remoteCell)
+    return c
   }
 
   /**
@@ -288,7 +339,7 @@ class Cell {
    * @return {Boolean}  true if identical, false otherwise
    */
   equal (cell) {
-    return cell._count === this._count && cell._hashSum === this._hashSum && cell._idSum === this._idSum
+    return cell.count === this.count && cell.hash.equals(this.hash) && cell.id.equals(this.id)
   }
 
   /**
@@ -298,13 +349,14 @@ class Cell {
    * @return {Boolean} [description]
    */
   isPure () {
-    if (this._idSum === null || this._hashSum === null) return false
+    if (this.id.equals(Buffer.allocUnsafe(0).fill(0)) || this.hash.equals(Buffer.allocUnsafe(0).fill(0))) return false
     // it must be either 1 or -1
-    if (this._count !== 1 && this._count !== -1) return false
-
-    const hashes = utils.hashTwice(JSON.stringify(this._idSum), false)
+    if (this.count !== 1 && this.count !== -1) return false
+    const hashes = utils.hashTwice(InvertibleBloomFilter._convert(this.id), false)
     // hashed id must be equal to the hash sum
-    if (this._hashSum.toString() !== hashes.first) return false
+    if (!this.hash.equals(Buffer.from(hashes.first))) {
+      return false
+    }
     return true
   }
 }

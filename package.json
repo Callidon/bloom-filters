@@ -1,6 +1,6 @@
 {
   "name": "bloom-filters",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "bloom-filters.js",
   "scripts": {
@@ -38,14 +38,16 @@
     "jsdoc": "^3.6.2",
     "mocha": "^6.1.4",
     "nyc": "^14.1.1",
-    "standard": "^12.0.1"
+    "standard": "^12.0.1",
+    "random": "^2.1.1",
+    "seedrandom": "^3.0.1"
   },
   "dependencies": {
     "buffer": "^5.2.1",
     "is-buffer": "^2.0.3",
     "lodash.eq": "^4.0.0",
     "lodash.indexof": "^4.0.5",
-    "murmurhash3js": "^3.0.1"
+    "xxhashjs": "^0.2.2"
   },
   "standard": {
     "env": [
