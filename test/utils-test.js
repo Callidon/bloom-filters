@@ -63,7 +63,7 @@ describe('Utils', () => {
     })
   })
 
-  describe('xorBuffer', () => {
+  describe('#xorBuffer', () => {
     it('should xor correctly 2 Buffers', () => {
       const a = Buffer.allocUnsafe(10).fill(0)
       const b = Buffer.alloc(1, 1)
@@ -99,6 +99,16 @@ describe('Utils', () => {
       utils.xorBuffer(a, b).toString().should.equal(last.toString())
       utils.xorBuffer(a, a).equals(Buffer.allocUnsafe(0)).should.equal(true)
       utils.xorBuffer(b, b).equals(Buffer.allocUnsafe(0)).should.equal(true)
+    })
+  })
+
+  describe('#isBufferEmpty', () => {
+    it('should return true if a buffer is empty', () => {
+      utils.isEmptyBuffer(Buffer.allocUnsafe(10).fill(0)).should.equal(true)
+      utils.isEmptyBuffer(Buffer.allocUnsafe(0).fill(0)).should.equal(true)
+    })
+    it('should return false if a buffer is not empty', () => {
+      utils.isEmptyBuffer(Buffer.allocUnsafe(10).fill(1)).should.equal(false)
     })
   })
 })

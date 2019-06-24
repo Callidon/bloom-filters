@@ -35,7 +35,7 @@ const Exportable = require('./exportable.js')
  * Reference: Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.
  * @see {@link http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf} for more details about classic Bloom Filters.
  * @extends Exportable
- * @author Thomas Minier
+ * @author Thomas Minier & Arnaud Grall
  * @example
  * const BloomFilter = require('bloom-filters').BloomFilter;
  *

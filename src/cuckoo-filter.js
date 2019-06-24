@@ -36,7 +36,7 @@ const utils = require('./utils.js')
  * In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
  * @see {@link https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf} for more details about Cuckoo filters
  * @extends Exportable
- * @author Thomas Minier
+ * @author Thomas Minier & Arnaud Grall
  * @example
  * const CuckooFilter = require('bloom-filters').CuckooFilter;
  *

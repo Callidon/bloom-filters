@@ -34,7 +34,7 @@ const Exportable = require('./exportable.js')
  * Reference: Cormode, G., & Muthukrishnan, S. (2005). An improved data stream summary: the count-min sketch and its applications. Journal of Algorithms, 55(1), 58-75.
  * @see {@link http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf} for more details on Count Min Sketch
  * @extends Exportable
- * @author Thomas Minier
+ * @author Thomas Minier & Arnaud Grall
  * @example
  * const CountMinSketch = require('bloom-filters').CountMinSketch;
  *

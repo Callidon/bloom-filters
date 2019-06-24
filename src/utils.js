@@ -66,6 +66,7 @@ const allocateArray = (size, defaultValue) => {
  * @param {Number} seed the seed used for hashing
  * @return {TwoHashes} The results of the hash functions applied to the value (in hex or integer)
  * @memberof Utils
+ * @author Arnaud Grall & Thomas Minier
  */
 const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
   const length = 16
@@ -92,6 +93,7 @@ const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
  * @param  {string|ArrayBuffer|Buffer} val the value to hash
  * @param  {Number} seed the seed to change when hashing
  * @return {Object} {int: {first: <number>, second: <number>}, string: {first: <hex-string>, second: <hex-string>}
+ * @author Arnaud Grall
  */
 const allInOneHashTwice = (val, seed = 0) => {
   const length = 16
@@ -126,6 +128,7 @@ const allInOneHashTwice = (val, seed = 0) => {
  * @param  {int} size - The size of the datastructures associated to the hash context (ex: the size of a Bloom Filter)
  * @return {int} - The result of hash_n applied to a value.
  * @memberof Utils
+ * @author Thomas Minier
  */
 const doubleHashing = (n, hashA, hashB, size) => {
   return Math.abs(hashA + n * hashB) % size
@@ -138,6 +141,7 @@ const doubleHashing = (n, hashA, hashB, size) => {
  * @param  {Number} hashcount The number of indexes desired
  * @param  {Number} seed the seed used
  * @return {Number[]}           index among [0, size)
+ * @author Arnaud Grall
  */
 const getDistinctIndices = (element, size, hashcount, seed = getDefaultSeed()) => {
   const getDistinctIndicesBis = (n, elem, size, count, indexes = new Map()) => {
@@ -163,6 +167,7 @@ const getDistinctIndices = (element, size, hashcount, seed = getDefaultSeed()) =
  * @param {int} max - The upper bound
  * @return {int} A random int bewteen lower and upper bound (included)
  * @memberof Utils
+ * @author Thomas Minier
  */
 const randomInt = (min, max) => {
   min = Math.ceil(min)
@@ -175,6 +180,8 @@ const randomInt = (min, max) => {
  * @param  {Buffer} a                          the buffer to copy, then to xor with b
  * @param  {Buffer} b                          the buffer to xor with
  * @param  {Object} [options={}]               options to pass to the new buffer
+ * @return {Buffer} the xor between both buffer a and b
+ * @author Arnaud Grall
  */
 function xorBuffer (a, b, options = {}, val = true) {
   const length = Math.max(a.length, b.length)
@@ -204,6 +211,7 @@ function xorBuffer (a, b, options = {}, val = true) {
  * Return true if the buffer isEmpty, aka all value are equals to 0.
  * @param  {Buffer}  buffer the buffer to inspect
  * @return {Boolean}        true if empty or null or undefined, false otherwise
+ * @author Arnaud Grall
  */
 function isEmptyBuffer (buffer) {
   if (buffer === null || !buffer) return true
@@ -225,6 +233,7 @@ function isEmptyBuffer (buffer) {
  * @param  {Number|UINT32|UINT64} [seed=getDefaultSeed()] If the seed is UINT32 make sure to set the length to 32
  * @param  {Number} [length=64] the version used 32 or 64, default: 64
  * @return {Number}  the hash as unsigned int
+ * @author Arnaud Grall
  */
 function hashAsInt (elem, seed = getDefaultSeed(), length = 64) {
   switch (length) {
@@ -244,6 +253,7 @@ function hashAsInt (elem, seed = getDefaultSeed(), length = 64) {
  * @param  {Number} [base=16]   the base in which the string will be returned, default: 16
  * @param  {Number} [length=64] the version used 32 or 64, default: 64
  * @return {string} the hash as string
+ * @author Arnaud Grall
  */
 function hashAsString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
   let hash
@@ -271,6 +281,7 @@ function hashAsString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
  * @param  {Number} [base=16]   the base in which the string will be returned, default: 16
  * @param  {Number} [length=64] the version used 32 or 64, default: 64
  * @return {Object}             A hash with its number and string version
+ * @author Arnaud Grall
  */
 function hashIntAndString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
   let hash
@@ -295,6 +306,7 @@ function hashIntAndString (elem, seed = getDefaultSeed(), base = 16, length = 64
 /**
  * Return the seed used in the package by default
  * @return {Number}
+ * @author Arnaud Grall
  */
 function getDefaultSeed () {
   return 0x1234567890

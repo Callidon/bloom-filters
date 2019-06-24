@@ -40,7 +40,7 @@ const Exportable = require('./exportable.js')
  * Reference: Chang, F., Feng, W. C., & Li, K. (2004, March). Approximate caches for packet classification. In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
  * @see {@link https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf} for more details about Partitioned Bloom Filters
  * @extends Exportable
- * @author Thomas Minier
+ * @author Thomas Minier & Arnaud Grall
  * @example
  * const PartitionedBloomFilter = require('bloom-filters').PartitionedBloomFilter;
  *
