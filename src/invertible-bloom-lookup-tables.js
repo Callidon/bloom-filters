@@ -11,6 +11,7 @@ const inspect = Symbol.for('nodejs.util.inspect.custom')
  * Reference: Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). What's the difference?: efficient set reconciliation without prior context. ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
  * @see {@link http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.220.6282&rep=rep1&type=pdf} for more details about Invertible Bloom Lookup Tables
  * @type {InvertibleBloomFilter}
+ * @author Arnaud Grall
  */
 class InvertibleBloomFilter extends Exportable {
   /**
