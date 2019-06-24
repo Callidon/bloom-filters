@@ -5,7 +5,7 @@
 
 JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash
 
-**Use non-cryptographic hash internally** [XXHASH](https://cyan4973.github.io/xxHash/)
+**Use non-cryptographic hash internally since (v0.7.0)** [XXHASH](https://cyan4973.github.io/xxHash/)
 
 [Online documentation](https://callidon.github.io/bloom-filters/)
 
