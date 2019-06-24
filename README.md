@@ -221,9 +221,7 @@ console.log(filter.has('bob')) // output: false
 
 ## Every hash function is seeded
 
-By default every hash function is seeded with an internal seed which is equal to `0x1234567890`, if you want to change it.
-
-**Attention** the seed is shared among the package. So if you change the seed for one, you change the seed for all.
+By default every hash function is seeded with an internal seed which is equal to `0x1234567890`. If you want to change it:
 
 ```javascript
 const BloomFilter = require('bloom-filter')
