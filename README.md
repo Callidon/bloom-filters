@@ -22,6 +22,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 * [Documentation](#documentation)
 * [Tests](#tests)
 * [References](#references)
+* [Changelog](#changelog)
 * [License](#license)
 
 ## Installation
@@ -218,6 +219,20 @@ console.log(filter.has('alice')) // output: true
 console.log(filter.has('bob')) // output: false
 ```
 
+## Every hash function is seeded
+
+By default every hash function is seeded with an internal seed which is equal to `0x1234567890`, if you want to change it.
+
+**Attention** the seed is shared among the package. So if you change the seed for one, you change the seed for all.
+
+```javascript
+const BloomFilter = require('bloom-filter')
+const bl = new BloomFilter.MyBloomFilter(...)
+console.log(bl.seed) // 78187493520
+bl.seed = 0xABCD
+console.log(bl.seed) // 43981
+```
+
 ## Documentation
 
 See [documentation online](https://callidon.github.io/bloom-filters/) or generate it in directory `doc/` with: `npm run doc`
@@ -239,6 +254,12 @@ npm run coverage
 * [Partitioned Bloom Filter](https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf): Chang, F., Feng, W. C., & Li, K. (2004, March). *Approximate caches for packet classification.* In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
 * [Cuckoo Filter](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf): Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). *Cuckoo filter: Practically better than bloom.* In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
 * [Count Min Sketch](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf): Cormode, G., & Muthukrishnan, S. (2005). *An improved data stream summary: the count-min sketch and its applications.* Journal of Algorithms, 55(1), 58-75.
+
+## Changelog
+
+**v0.7.0** Move to [XXHASH](https://cyan4973.github.io/xxHash/) for hashing elements in the library. One property has been added into the exported json `_seed` which is used to seed every hash of every elements. Update Invertible Bloom Filters with #add, #has, #delete, #listEntries, #substract, #Static.decode methods. Updated the way to get distinct indices which could have collisions in many cases.
+
+**v0.6.1** Add Invertible Bloom Filters (only #encode/#substract/#Static.decode methods)
 
 ## License
 [MIT License](https://github.com/Callidon/bloom-filters/blob/master/LICENSE)

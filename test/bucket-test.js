@@ -26,6 +26,7 @@ SOFTWARE.
 
 require('chai').should()
 const Bucket = require('../src/bucket.js')
+const utils = require('../src/utils')
 
 describe('Bucket', () => {
   describe('#isFree', () => {
@@ -170,6 +171,7 @@ describe('Bucket', () => {
 
     it('should export a bucket to a JSON object', () => {
       const exported = bucket.saveAsJSON()
+      exported._seed.should.equal(utils.getDefaultSeed())
       exported.type.should.equal('Bucket')
       exported._size.should.equal(bucket.size)
       exported._elements.should.deep.equal(bucket._elements)
@@ -187,7 +189,8 @@ describe('Bucket', () => {
       const invalids = [
         { type: 'something' },
         { type: 'Bucket' },
-        { type: 'Bucket', size: 1 }
+        { type: 'Bucket', size: 1 },
+        { type: 'Bucket', size: 1, seed: 1 }
       ]
 
       invalids.forEach(json => {

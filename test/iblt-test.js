@@ -27,161 +27,139 @@ SOFTWARE.
 require('chai').should()
 require('chai').expect()
 const InvertibleBloomFilter = require('../src/invertible-bloom-lookup-tables.js').InvertibleBloomFilter
-const utils = require('../src/utils')
 const random = require('random')
 const seedrandom = require('seedrandom')
 
-const XXH = require('xxhashjs')
-
 describe('Invertible Bloom Lookup Tables', () => {
-  // const alpha = 2
-  // const differences = 100
-  // const hashCount = 3
-  // const size = alpha * differences
-  // const toInsert = [Buffer.from('help'), Buffer.from('meow'), Buffer.from(JSON.stringify({
-  //   data: 'hello world'
-  // }))]
-  // const toCompare = [Buffer.from('meow'), Buffer.from('balloon')]
-  // const diffA = [Buffer.from('balloon')]
-  // const diffB = [Buffer.from('help'), Buffer.from(JSON.stringify({
-  //   data: 'hello world'
-  // }))]
-  //
-  // describe('#add', () => {
-  //   it('should add element to the filter with #add', () => {
-  //     const iblt = new InvertibleBloomFilter(size, hashCount)
-  //     iblt._hashCount.should.equal(hashCount)
-  //     iblt.size.should.equal(size)
-  //     iblt.length.should.equal(0)
-  //     iblt._elements.length.should.equal(size)
-  //     toInsert.forEach(e => {
-  //       iblt.add(e)
-  //     })
-  //     iblt.length.should.equal(toInsert.length)
-  //   })
-  // })
-  //
-  // describe('#delete', () => {
-  //   it('should delete element from the iblt with #delete', () => {
-  //     const iblt = new InvertibleBloomFilter(size, hashCount)
-  //     iblt._hashCount.should.equal(hashCount)
-  //     iblt.size.should.equal(size)
-  //     iblt.length.should.equal(0)
-  //     iblt._elements.length.should.equal(size)
-  //     toInsert.forEach(e => {
-  //       iblt.add(e)
-  //     })
-  //     iblt.length.should.equal(toInsert.length)
-  //     toInsert.forEach(e => {
-  //       iblt.delete(e)
-  //     })
-  //     iblt.length.should.equal(0)
-  //   })
-  // })
-  //
-  // describe('#has', () => {
-  //   it('should get an element from the iblt with #has', () => {
-  //     const iblt = new InvertibleBloomFilter(size, hashCount)
-  //     iblt._hashCount.should.equal(hashCount)
-  //     iblt.size.should.equal(size)
-  //     iblt.length.should.equal(0)
-  //     iblt._elements.length.should.equal(size)
-  //     toInsert.forEach(e => {
-  //       iblt.add(e)
-  //       iblt.has(e).should.equal(true)
-  //     })
-  //   })
-  // })
-  //
-  // describe('#listEntries', () => {
-  //   it('should get all element from the iblt with #listEntries', () => {
-  //     const iblt = new InvertibleBloomFilter(size, hashCount)
-  //     iblt._hashCount.should.equal(hashCount)
-  //     iblt.size.should.equal(size)
-  //     iblt.length.should.equal(0)
-  //     iblt._elements.length.should.equal(size)
-  //     toInsert.forEach(e => {
-  //       iblt.add(e)
-  //     })
-  //     const res = iblt.listEntries()
-  //     res.success.should.equal(true)
-  //     res.output.sort().should.eql(toInsert.sort())
-  //   })
-  // })
-  //
-  // describe('Substracting (#substract) and Decoding (#decode)', () => {
-  //   it('should substract and decode two arrays correctly', () => {
-  //     const iblt = new InvertibleBloomFilter(size, hashCount)
-  //     const iblt2 = new InvertibleBloomFilter(size, hashCount)
-  //     toInsert.forEach(e => {
-  //       iblt.add(e)
-  //     })
-  //     toCompare.forEach(e => {
-  //       iblt2.add(e)
-  //     })
-  //     // should receive an iblt with 42 and car as elements in
-  //     const sub = iblt.substract(iblt2)
-  //     const result = InvertibleBloomFilter.decode(sub)
-  //     result.missing.sort().should.eql(diffA.sort())
-  //     result.additional.sort().should.eql(diffB.sort())
-  //   })
-  // })
-  //
-  // describe('#saveAsJSON', () => {
-  //   const iblt = InvertibleBloomFilter.from([Buffer.from('meow'), Buffer.from('car')], 100, 4)
-  //
-  //   it('should export an Invertible Bloom Filter to a JSON object', () => {
-  //     const exported = iblt.saveAsJSON()
-  //     exported.type.should.equal('InvertibleBloomFilter')
-  //     exported._size.should.equal(iblt.size)
-  //     exported._hashCount.should.equal(iblt.hashCount)
-  //     exported._elements.should.deep.equal(iblt._elements)
-  //   })
-  //
-  //   it('should create an Invertible Bloom Filter from a JSON export', () => {
-  //     const exported = iblt.saveAsJSON()
-  //     const newIblt = InvertibleBloomFilter.fromJSON(exported)
-  //     newIblt.size.should.equal(iblt._size)
-  //     newIblt.hashCount.should.equal(iblt._hashCount)
-  //     newIblt.elements.should.deep.equal(iblt._elements)
-  //   })
-  //
-  //   it('should reject imports from invalid JSON objects', () => {
-  //     const invalids = [
-  //       { type: 'something' },
-  //       { type: 'InvertibleBloomFilter' },
-  //       { type: 'InvertibleBloomFilter', size: 10 },
-  //       { type: 'InvertibleBloomFilter', size: 10, hashCount: 2 },
-  //       { type: 'InvertibleBloomFilter', size: 10, hashCount: 4 },
-  //       { type: 'InvertibleBloomFilter', size: 10, hashCount: 4, invalid: 4 }
-  //     ]
-  //
-  //     invalids.forEach(json => {
-  //       (function () {
-  //         InvertibleBloomFilter.fromJSON(json)
-  //       }).should.throw(Error, 'Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
-  //     })
-  //   })
-  //
-  //   it('should accept import from a valid JSON object', () => {
-  //     (function () {
-  //       InvertibleBloomFilter.fromJSON({
-  //         type: 'InvertibleBloomFilter', _size: 10, _hashCount: 4, _elements: []
-  //       })
-  //     }).should.not.throw(Error, 'Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
-  //   })
-  // })
   const keys = 500
   const hashCount = 3
   const alpha = 1.5
   const d = 100
+  const size = alpha * d
   const step = 10
-  const seed = 123453
+  const seed = 0x1234567890
   random.use(seedrandom(seed))
+  const toInsert = [Buffer.from('help'), Buffer.from('meow'), Buffer.from(JSON.stringify({
+    data: 'hello world'
+  }))]
+
+  describe('#add', () => {
+    it('should add element to the filter with #add', () => {
+      const iblt = new InvertibleBloomFilter(size, hashCount)
+      iblt.seed = seed
+      iblt._hashCount.should.equal(hashCount)
+      iblt.size.should.equal(size)
+      iblt.length.should.equal(0)
+      iblt._elements.length.should.equal(size)
+      toInsert.forEach(e => {
+        iblt.add(e)
+      })
+      iblt.length.should.equal(toInsert.length)
+    })
+  })
+
+  describe('#delete', () => {
+    it('should delete element from the iblt with #delete', () => {
+      const iblt = new InvertibleBloomFilter(size, hashCount)
+      iblt.seed = seed
+      iblt._hashCount.should.equal(hashCount)
+      iblt.size.should.equal(size)
+      iblt.length.should.equal(0)
+      iblt._elements.length.should.equal(size)
+      toInsert.forEach(e => {
+        iblt.add(e)
+      })
+      iblt.length.should.equal(toInsert.length)
+      toInsert.forEach(e => {
+        iblt.delete(e)
+      })
+      iblt.length.should.equal(0)
+    })
+  })
+
+  describe('#has', () => {
+    it('should get an element from the iblt with #has', () => {
+      const iblt = new InvertibleBloomFilter(size, hashCount)
+      iblt.seed = seed
+      iblt._hashCount.should.equal(hashCount)
+      iblt.size.should.equal(size)
+      iblt.length.should.equal(0)
+      iblt._elements.length.should.equal(size)
+      toInsert.forEach(e => {
+        iblt.add(e)
+        iblt.has(e).should.equal(true)
+      })
+    })
+  })
+
+  describe('#listEntries', () => {
+    it('should get all element from the iblt with #listEntries', () => {
+      const iblt = new InvertibleBloomFilter(size, hashCount)
+      iblt.seed = seed
+      iblt._hashCount.should.equal(hashCount)
+      iblt.size.should.equal(size)
+      iblt.length.should.equal(0)
+      iblt._elements.length.should.equal(size)
+      toInsert.forEach(e => {
+        iblt.add(e)
+      })
+      const res = iblt.listEntries()
+      res.success.should.equal(true)
+      res.output.sort().should.eql(toInsert.sort())
+    })
+  })
+
+  describe('#saveAsJSON', () => {
+    const iblt = InvertibleBloomFilter.from([Buffer.from('meow'), Buffer.from('car')], 100, 4, seed)
+
+    it('should export an Invertible Bloom Filter to a JSON object', () => {
+      const exported = iblt.saveAsJSON()
+      exported._seed.should.equal(seed)
+      exported.type.should.equal('InvertibleBloomFilter')
+      exported._size.should.equal(iblt.size)
+      exported._hashCount.should.equal(iblt.hashCount)
+      exported._elements.should.deep.equal(iblt._elements)
+    })
+
+    it('should create an Invertible Bloom Filter from a JSON export', () => {
+      const exported = iblt.saveAsJSON()
+      const newIblt = InvertibleBloomFilter.fromJSON(exported)
+      newIblt.seed.should.equal(seed)
+      newIblt.size.should.equal(iblt._size)
+      newIblt.hashCount.should.equal(iblt._hashCount)
+      newIblt.elements.should.deep.equal(iblt._elements)
+    })
+
+    it('should reject imports from invalid JSON objects', () => {
+      const invalids = [
+        { type: 'something' },
+        { type: 'InvertibleBloomFilter' },
+        { type: 'InvertibleBloomFilter', size: 10 },
+        { type: 'InvertibleBloomFilter', size: 10, hashCount: 2 },
+        { type: 'InvertibleBloomFilter', size: 10, hashCount: 4 },
+        { type: 'InvertibleBloomFilter', size: 10, hashCount: 4, invalid: 4 },
+        { type: 'InvertibleBloomFilter', size: 10, hashCount: 4, invalid: 4, seed: 1 }
+      ]
+
+      invalids.forEach(json => {
+        (function () {
+          InvertibleBloomFilter.fromJSON(json)
+        }).should.throw(Error, 'Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
+      })
+    })
+
+    it('should accept import from a valid JSON object', () => {
+      (function () {
+        InvertibleBloomFilter.fromJSON({
+          type: 'InvertibleBloomFilter', _size: 10, _hashCount: 4, _elements: [], _seed: 1
+        })
+      }).should.not.throw(Error, 'Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
+    })
+  })
+
   describe(`Set differences of [10 to ${d}] with ${keys} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${alpha * d} cells`, () => {
     const set = []
     const prefix = ''
-    const size = alpha * d
     for (let i = 1; i <= keys; ++i) {
       const hash = prefix + i
       if (set.includes(hash)) throw new Error('collision')
@@ -197,9 +175,11 @@ describe('Invertible Bloom Lookup Tables', () => {
 
     function commonTest (size, hashCount, keys, prefix, differences) {
       const iblt = new InvertibleBloomFilter(size, hashCount)
+      iblt.seed = seed
       const setDiffplus = []
       const setDiffminus = []
       const remote = new InvertibleBloomFilter(size, hashCount)
+      remote.seed = seed
       for (let i = 1; i <= keys; ++i) {
         const hash = prefix + i // XXH.h64(prefix + i, seed).toString(16)
         if (i <= (keys - differences)) {
@@ -238,44 +218,5 @@ describe('Invertible Bloom Lookup Tables', () => {
       res.additional.map(e => e.toString()).sort().should.eql(setDiffplus.map(e => e.toString()).sort())
       res.missing.map(e => e.toString()).sort().should.eql(setDiffminus.map(e => e.toString()).sort())
     }
-  })
-
-  describe('xorBuffer', () => {
-    it('should xor correctly 2 Buffers', () => {
-      const a = Buffer.allocUnsafe(10).fill(0)
-      const b = Buffer.alloc(1, 1)
-      const res = Buffer.allocUnsafe(10).fill(0)
-      res[res.length - 1] = 1
-      // xor(a, b) = <Buffer 00 00 00 00 00 00 00 00 00 01>
-      utils.xorBuffer(Buffer.from(a), Buffer.from(b)).toString().should.equal(b.toString())
-      // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
-      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(b)).toString().should.equal(Buffer.from('').toString())
-      // xor(xor(a, b), a) === b
-      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(a)).toString().should.equal(Buffer.from(b).toString())
-      // xor(xor(a, a), a) === a
-      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(a)), Buffer.from(a)).toString().should.equal(Buffer.from('').toString())
-      // xor(xor(b, b), b) === a
-      utils.xorBuffer(utils.xorBuffer(Buffer.from(b), Buffer.from(b)), Buffer.from(b)).toString().should.equal(Buffer.from(b).toString())
-    })
-    it('should xor correctly', () => {
-      let a = Buffer.allocUnsafe(1).fill(1)
-      let b = Buffer.allocUnsafe(1).fill(1)
-      const max = 100
-      let last
-      for (let i = 0; i < max; i++) {
-        const s = XXH.h64('' + i, 0).toString(16)
-        const buf = Buffer.from(s)
-        a = utils.xorBuffer(a, buf)
-        if (i !== (max - 1)) {
-          b = utils.xorBuffer(buf, b)
-        } else {
-          last = buf
-        }
-      }
-      utils.xorBuffer(a, b).equals(last).should.equal(true)
-      utils.xorBuffer(a, b).toString().should.equal(last.toString())
-      utils.xorBuffer(a, a).equals(Buffer.allocUnsafe(0)).should.equal(true)
-      utils.xorBuffer(b, b).equals(Buffer.allocUnsafe(0)).should.equal(true)
-    })
   })
 })

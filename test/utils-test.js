@@ -26,8 +26,8 @@ SOFTWARE.
 
 require('chai').should()
 const utils = require('../src/utils.js')
-const seed = Math.random()
-utils.setSeed(seed)
+const XXH = require('xxhashjs')
+const seed = utils.getDefaultSeed()
 
 describe('Utils', () => {
   describe('#allocateArray', () => {
@@ -60,6 +60,45 @@ describe('Utils', () => {
     it('should generate a random int in an interval', () => {
       const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
       utils.randomInt(values[0], values[9]).should.be.oneOf(values)
+    })
+  })
+
+  describe('xorBuffer', () => {
+    it('should xor correctly 2 Buffers', () => {
+      const a = Buffer.allocUnsafe(10).fill(0)
+      const b = Buffer.alloc(1, 1)
+      const res = Buffer.allocUnsafe(10).fill(0)
+      res[res.length - 1] = 1
+      // xor(a, b) = <Buffer 00 00 00 00 00 00 00 00 00 01>
+      utils.xorBuffer(Buffer.from(a), Buffer.from(b)).toString().should.equal(b.toString())
+      // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
+      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(b)).toString().should.equal(Buffer.from('').toString())
+      // xor(xor(a, b), a) === b
+      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(a)).toString().should.equal(Buffer.from(b).toString())
+      // xor(xor(a, a), a) === a
+      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(a)), Buffer.from(a)).toString().should.equal(Buffer.from('').toString())
+      // xor(xor(b, b), b) === a
+      utils.xorBuffer(utils.xorBuffer(Buffer.from(b), Buffer.from(b)), Buffer.from(b)).toString().should.equal(Buffer.from(b).toString())
+    })
+    it('should xor correctly', () => {
+      let a = Buffer.allocUnsafe(1).fill(1)
+      let b = Buffer.allocUnsafe(1).fill(1)
+      const max = 100
+      let last
+      for (let i = 0; i < max; i++) {
+        const s = XXH.h64('' + i, seed).toString(16)
+        const buf = Buffer.from(s)
+        a = utils.xorBuffer(a, buf)
+        if (i !== (max - 1)) {
+          b = utils.xorBuffer(buf, b)
+        } else {
+          last = buf
+        }
+      }
+      utils.xorBuffer(a, b).equals(last).should.equal(true)
+      utils.xorBuffer(a, b).toString().should.equal(last.toString())
+      utils.xorBuffer(a, a).equals(Buffer.allocUnsafe(0)).should.equal(true)
+      utils.xorBuffer(b, b).equals(Buffer.allocUnsafe(0)).should.equal(true)
     })
   })
 })

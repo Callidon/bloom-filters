@@ -91,7 +91,7 @@ class CountMinSketch extends Exportable {
    * sketch.update('foo');
    */
   update (element) {
-    const indexes = utils.getDistinctIndices(element, this._columns, this._rows)
+    const indexes = utils.getDistinctIndices(element, this._columns, this._rows, this.seed)
     for (let i = 0; i < this._rows; i++) {
       this._matrix[i][indexes[i]]++
     }
@@ -111,7 +111,7 @@ class CountMinSketch extends Exportable {
    */
   count (element) {
     let min = Infinity
-    const indexes = utils.getDistinctIndices(element, this._columns, this._rows)
+    const indexes = utils.getDistinctIndices(element, this._columns, this._rows, this.seed)
     for (let i = 0; i < this._rows; i++) {
       let v = this._matrix[i][indexes[i]]
       min = Math.min(v, min)
@@ -162,6 +162,7 @@ class CountMinSketch extends Exportable {
   clone () {
     const sketch = new CountMinSketch(this._epsilon, this._delta)
     sketch.merge(this)
+    sketch.seed = this.seed
     return sketch
   }
 }

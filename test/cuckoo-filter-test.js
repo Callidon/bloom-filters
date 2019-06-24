@@ -28,12 +28,12 @@ require('chai').should()
 const CuckooFilter = require('../src/cuckoo-filter.js')
 const utils = require('../src/utils')
 const seed = Math.random()
-utils.setSeed(seed)
 
 describe('CuckooFilter', () => {
   describe('#_locations', () => {
     it('should compute the fingerprint and indexes for an element', () => {
       const filter = new CuckooFilter(15, 3, 2, 1)
+      filter.seed = (seed)
       const element = 'foo'
       const hashes = utils.hashIntAndString(element, seed, 16, 32)
       const hash = hashes.int
@@ -52,6 +52,7 @@ describe('CuckooFilter', () => {
   describe('#add', () => {
     it('should add element to the filter with #add', () => {
       const filter = new CuckooFilter(15, 3, 2)
+      filter.seed = (seed)
       let nbElements = 0
       filter.add('alice')
       filter.add('bob')
@@ -64,6 +65,7 @@ describe('CuckooFilter', () => {
 
     it('should should store ane element accross two different buckets', () => {
       const filter = new CuckooFilter(15, 3, 2)
+      filter.seed = (seed)
       const element = 'foo'
       let nbElements = 0
 
@@ -84,6 +86,7 @@ describe('CuckooFilter', () => {
 
     it('should perform random kicks when both buckets are full', () => {
       const filter = new CuckooFilter(15, 3, 1)
+      filter.seed = (seed)
       const element = 'foo'
       let nbElements = 0
       const locations = filter._locations(element)
@@ -105,6 +108,7 @@ describe('CuckooFilter', () => {
 
     it('should reject elements that can\'t be inserted when filter is full', () => {
       const filter = new CuckooFilter(1, 3, 1)
+      filter.seed = (seed)
       const element = 'foo'
       filter.add(element)
       filter.add(element).should.equal(false)
@@ -114,6 +118,7 @@ describe('CuckooFilter', () => {
   describe('#remove', () => {
     it('should remove exisiting elements from the filter', () => {
       const filter = new CuckooFilter(15, 3, 1)
+      filter.seed = (seed)
       const element = 'foo'
       const locations = filter._locations(element)
 
@@ -124,6 +129,7 @@ describe('CuckooFilter', () => {
 
     it('should look inside every possible bucket', () => {
       const filter = new CuckooFilter(15, 3, 1)
+      filter.seed = (seed)
       const element = 'foo'
       const locations = filter._locations(element)
 
@@ -137,6 +143,7 @@ describe('CuckooFilter', () => {
 
     it('should fail to remove elements that are not in the filter', () => {
       const filter = new CuckooFilter(15, 3, 1)
+      filter.seed = (seed)
       filter.add('foo')
       filter.remove('moo').should.equal(false)
     })
@@ -145,18 +152,21 @@ describe('CuckooFilter', () => {
   describe('#has', () => {
     it('should return True when an element may be in the filter', () => {
       const filter = new CuckooFilter(15, 3, 1)
+      filter.seed = (seed)
       filter.add('foo')
       filter.has('foo').should.equal(true)
     })
 
     it('should return False when an element is definitively not in the filter', () => {
       const filter = new CuckooFilter(15, 3, 1)
+      filter.seed = (seed)
       filter.add('foo')
       filter.has('moo').should.equal(false)
     })
 
     it('should look inside every possible bucket', () => {
       const filter = new CuckooFilter(15, 3, 1)
+      filter.seed = (seed)
       filter.add('foo')
       filter.add('foo')
       filter.remove('foo')
@@ -166,6 +176,7 @@ describe('CuckooFilter', () => {
 
   describe('#saveAsJSON', () => {
     const filter = new CuckooFilter(15, 3, 2)
+    filter.seed = (seed)
     filter.add('alice')
     filter.add('bob')
 
@@ -196,7 +207,8 @@ describe('CuckooFilter', () => {
         { type: 'CuckooFilter', size: 1 },
         { type: 'CuckooFilter', size: 1, fingerprintLength: 1 },
         { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2 },
-        { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2, maxKicks: 1 }
+        { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2, maxKicks: 1 },
+        { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2, maxKicks: 1, seed: 1 }
       ]
 
       invalids.forEach(json => {

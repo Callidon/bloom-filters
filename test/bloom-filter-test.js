@@ -29,10 +29,12 @@ const BloomFilter = require('../src/bloom-filter.js')
 
 describe('BloomFilter', () => {
   const targetRate = 0.1
+  const seed = Math.random()
 
   describe('construction', () => {
     it('should add element to the filter with #add', () => {
       const filter = new BloomFilter(15, targetRate)
+      filter.seed = seed
       filter.add('alice')
       filter.add('bob')
       filter.length.should.equal(2)
@@ -42,8 +44,7 @@ describe('BloomFilter', () => {
       const data = [ 'alice', 'bob', 'carl' ]
       const expectedSize = Math.ceil(-((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)))
       const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
-      const filter = BloomFilter.from(data, targetRate)
-
+      const filter = BloomFilter.from(data, targetRate, seed)
       filter.size.should.equal(expectedSize)
       filter._nbHashes.should.equal(expectedHashes)
       filter.length.should.equal(data.length)
@@ -52,8 +53,7 @@ describe('BloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate)
-
+    const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate, seed)
     it('should return false for elements that are definitively nt in the set', () => {
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
@@ -67,9 +67,10 @@ describe('BloomFilter', () => {
   })
 
   describe('#saveAsJSON', () => {
-    const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate)
+    const filter = BloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate, seed)
     it('should export a bloom filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
+      exported._seed.should.equal(filter.seed)
       exported.type.should.equal('BloomFilter')
       exported._size.should.equal(filter.size)
       exported._length.should.equal(filter.length)
@@ -80,6 +81,7 @@ describe('BloomFilter', () => {
     it('should create a bloom filter from a JSON export', () => {
       const exported = filter.saveAsJSON()
       const newFilter = BloomFilter.fromJSON(exported)
+      newFilter.seed.should.equal(seed)
       newFilter.size.should.equal(filter._size)
       newFilter.length.should.equal(filter._length)
       newFilter._nbHashes.should.equal(filter._nbHashes)
@@ -92,7 +94,8 @@ describe('BloomFilter', () => {
         { type: 'BloomFilter' },
         { type: 'BloomFilter', size: 1 },
         { type: 'BloomFilter', size: 1, length: 1 },
-        { type: 'BloomFilter', size: 1, length: 1, nbHashes: 2 }
+        { type: 'BloomFilter', size: 1, length: 1, nbHashes: 2 },
+        { type: 'BloomFilter', size: 1, length: 1, nbHashes: 2, seed: 1 }
       ]
 
       invalids.forEach(json => {

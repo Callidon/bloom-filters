@@ -120,7 +120,8 @@ describe('CountMinSketch', () => {
         { type: 'something' },
         { type: 'CountMinSketch' },
         { type: 'CountMinSketch', epsilon: 1 },
-        { type: 'CountMinSketch', epsilon: 1, delta: 1 }
+        { type: 'CountMinSketch', epsilon: 1, delta: 1 },
+        { type: 'CountMinSketch', epsilon: 1, delta: 1, seed: 1 }
       ]
 
       invalids.forEach(json => {
