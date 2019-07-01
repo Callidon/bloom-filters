@@ -129,4 +129,11 @@ describe('CountMinSketch', () => {
       })
     })
   })
+  describe('Performance test', () => {
+    const max = 1000
+    it('should not return an error when inserting ' + max + ' elements', () => {
+      const filter = new CountMinSketch(0.001, 0.99)
+      for (let i = 0; i < max; ++i) filter.update('' + i)
+    })
+  })
 })

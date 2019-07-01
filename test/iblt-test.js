@@ -31,7 +31,7 @@ const random = require('random')
 const seedrandom = require('seedrandom')
 
 describe('Invertible Bloom Lookup Tables', () => {
-  const keys = 500
+  let keys = 1000
   const hashCount = 3
   const alpha = 1.5
   const d = 100
@@ -158,65 +158,64 @@ describe('Invertible Bloom Lookup Tables', () => {
   })
 
   describe(`Set differences of [10 to ${d}] with ${keys} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${alpha * d} cells`, () => {
-    const set = []
-    const prefix = ''
-    for (let i = 1; i <= keys; ++i) {
-      const hash = prefix + i
-      if (set.includes(hash)) throw new Error('collision')
-      set.push(hash)
-    }
-
     for (let i = step; i <= d; i += step) {
       it('should decodes correctly element for a set difference of ' + i, () => {
         let differences = i
-        commonTest(size, hashCount, keys, prefix, differences)
-      })
-    }
-
-    function commonTest (size, hashCount, keys, prefix, differences) {
-      const iblt = new InvertibleBloomFilter(size, hashCount)
-      iblt.seed = seed
-      const setDiffplus = []
-      const setDiffminus = []
-      const remote = new InvertibleBloomFilter(size, hashCount)
-      remote.seed = seed
-      for (let i = 1; i <= keys; ++i) {
-        const hash = prefix + i // XXH.h64(prefix + i, seed).toString(16)
-        if (i <= (keys - differences)) {
-          iblt.add(Buffer.from(hash, 'utf8'))
-          remote.add(Buffer.from(hash, 'utf8'))
-        } else {
-          // randomly allocate the element one of plus or minus set
-          if (random.float() < 0.5) {
-            setDiffplus.push(Buffer.from(hash, 'utf8'))
-            iblt.add(Buffer.from(hash, 'utf8'))
-          } else {
-            setDiffminus.push(Buffer.from(hash, 'utf8'))
-            remote.add(Buffer.from(hash, 'utf8'))
-          }
-        }
-      }
-      remote.length.should.equal(keys - setDiffplus.length)
-      iblt.length.should.equal(keys - setDiffminus.length)
-      const sub = iblt.substract(remote)
-      const res = InvertibleBloomFilter.decode(sub)
-      try {
-        res.success.should.equal(true)
-      } catch (e) {
-        console.log('Additional: ', res.additional, ' Missing: ', res.missing)
-        console.log('Additional: ', res.additional.map(e => e.toString()), ' Missing: ', res.missing.map(e => e.toString()))
-        console.log('Additional: ', res.additional.map(e => e.toString()).length, ' Missing: ', res.missing.map(e => e.toString()).length)
-        console.log('Number of differences found: ', res.additional.length + res.missing.length)
-        console.log('Should have: ', setDiffplus.length, setDiffminus.length, setDiffminus.length + setDiffplus.length)
-        throw e
-      }
-      let sum = res.additional.length + res.missing.length
-      sum.should.equal(differences)
-      // console.log('Set diff A:', setDiffplus.map(e => e.toString()))
-      // console.log('Set diff B:', setDiffminus.map(e => e.toString()))
-      // console.log('Additional: ', res.additional.map(e => e.toString()), ' Missing: ', res.missing.map(e => e.toString()))
-      res.additional.map(e => e.toString()).sort().should.eql(setDiffplus.map(e => e.toString()).sort())
-      res.missing.map(e => e.toString()).sort().should.eql(setDiffminus.map(e => e.toString()).sort())
+        commonTest(size, hashCount, keys, '', differences)
+      }).timeout(0)
     }
   })
+  for (let k = keys; k < 100000; k = k * 10) {
+    describe(`[Performance] Set differences of [10 to ${d}] with ${k} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${alpha * d} cells`, () => {
+      it('should decodes correctly element for a set difference of ' + d, () => {
+        commonTest(size, hashCount, k, '', d)
+      }).timeout(0)
+    })
+  }
+
+  function commonTest (size, hashCount, keys, prefix, differences) {
+    const iblt = new InvertibleBloomFilter(size, hashCount)
+    iblt.seed = seed
+    const setDiffplus = []
+    const setDiffminus = []
+    const remote = new InvertibleBloomFilter(size, hashCount)
+    remote.seed = seed
+    for (let i = 1; i <= keys; ++i) {
+      const hash = prefix + i // XXH.h64(prefix + i, seed).toString(16)
+      if (i <= (keys - differences)) {
+        iblt.add(Buffer.from(hash, 'utf8'))
+        remote.add(Buffer.from(hash, 'utf8'))
+      } else {
+        // randomly allocate the element one of plus or minus set
+        if (random.float() < 0.5) {
+          setDiffplus.push(Buffer.from(hash, 'utf8'))
+          iblt.add(Buffer.from(hash, 'utf8'))
+        } else {
+          setDiffminus.push(Buffer.from(hash, 'utf8'))
+          remote.add(Buffer.from(hash, 'utf8'))
+        }
+      }
+    }
+    remote.length.should.equal(keys - setDiffplus.length)
+    iblt.length.should.equal(keys - setDiffminus.length)
+    const sub = iblt.substract(remote)
+    const res = InvertibleBloomFilter.decode(sub)
+    try {
+      res.success.should.equal(true)
+    } catch (e) {
+      console.log('Additional: ', res.additional, ' Missing: ', res.missing)
+      console.log('Additional: ', res.additional.map(e => e.toString()), ' Missing: ', res.missing.map(e => e.toString()))
+      console.log('Additional: ', res.additional.map(e => e.toString()).length, ' Missing: ', res.missing.map(e => e.toString()).length)
+      console.log('Number of differences found: ', res.additional.length + res.missing.length)
+      console.log('Should have: ', setDiffplus.length, setDiffminus.length, setDiffminus.length + setDiffplus.length)
+      throw e
+    }
+    let sum = res.additional.length + res.missing.length
+    sum.should.equal(differences)
+    // console.log('Set diff A:', setDiffplus.map(e => e.toString()))
+    // console.log('Set diff B:', setDiffminus.map(e => e.toString()))
+    // console.log('Additional: ', res.additional.map(e => e.toString()), ' Missing: ', res.missing.map(e => e.toString()))
+    res.additional.map(e => e.toString()).sort().should.eql(setDiffplus.map(e => e.toString()).sort())
+    res.missing.map(e => e.toString()).sort().should.eql(setDiffminus.map(e => e.toString()).sort())
+  }
 })
