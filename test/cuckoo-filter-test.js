@@ -216,4 +216,11 @@ describe('CuckooFilter', () => {
       })
     })
   })
+  describe('Performance test', () => {
+    const max = 1000
+    it('should not return an error when inserting ' + max + ' elements', () => {
+      const filter = new CuckooFilter(max, 3, 1)
+      for (let i = 0; i < max; ++i) filter.add('' + i)
+    })
+  })
 })

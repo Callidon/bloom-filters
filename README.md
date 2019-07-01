@@ -17,7 +17,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Partitioned Bloom Filter](#partitioned-bloom-filter)
 	* [Cuckoo Filter](#cuckoo-filter)
 	* [Count Min Sketch](#count-min-sketch)
-  * [Invertible Bloom Lookup Table (Invertible Bloom Filters)](#invertible-bloom-filters)
+  * [Invertible Bloom Filters (Key)](#invertible-bloom-filters)
 * [Export and import](#export-and-import)
 * [Documentation](#documentation)
 * [Tests](#tests)
@@ -145,6 +145,21 @@ They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This d
 
 **Inputs:** Only Accept Buffer (node: `require('buffer')` or browser `require('buffer/').Buffer`) as input
 
+**Methods:**
+Please respects the method inputs and don't pass JSON exported structures as inputs. Import them before.
+
+* `add(element: Buffer) -> void`: add an element into the IBLT
+* `delete(element: Buffer) -> void`: delete an element from the IBLT
+* `has(element: Buffer) -> true|false|'perhaps'`: return whether an element is in the IBLT or not, or perhaphs in
+* `substract(remote: InvertibleBloomFilter)`: this IBLT subtracted from remote, return another IBLT
+* `static InvertibleBloomFilter.decode(subtracted: InvertibleBloomFilter) -> {additional: Buffer[], missing: Buffer[]} `: decode a subtracted IBLT
+* `listEntries() -> {success: true|false, output: Buffer[]}`: list all entries in the IBLT
+* getters:
+  * `length`: return the number of elements inserted, iterate on all count variables of all cells and return the average (sum/size)
+  * `size`: return the number of cells
+  * `hashCount`: return the number of times an element is hashed into the structure
+  * `elements`: return an array of all cells
+
 ```javascript
 const { InvertibleBloomFilter } = require('bloom-filters')
 // const Buffer = require('buffer').Buffer
@@ -174,7 +189,7 @@ remoteData.forEach(e => remote.add(e))
 
 const sub = iblt.substract(remote)
 const result = InvertibleBloomFilter.decode(sub)
-console.log('Did we successfully decode the substracted iblts?', result.success, result.reason)
+console.log('Did we successfully decode the subtracted iblts?', result.success, result.reason)
 console.log('Missing elements for iblt: ', result.missing, result.missing.map(e => e.toString()))
 console.log('Additional elements of iblt and missing elements of the remote iblt: ', result.additional, result.additional.map(e => e.toString()))
 // create the iblt like before
@@ -192,7 +207,7 @@ console.log('Remaining entries after deletion: ', list.success, list.output.map(
 ```
 The example can be run in tests/iblt-example.js
 
-**Tuning the IBLT** We recommend to use at least a hashcount of 3 and an alpha of 1.5 for at least 50 differences which equals to 1.5*50 = 75 cells. Then if you insert a huge number of values in there. The decoding will work but testing the presence of a value is still probabilistic. Even for the listEntries function. For more details we suggest you to read the paper ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
+**Tuning the IBLT** We recommend to use at least a **hashcount** of 3 and an **alpha** of 1.5 for at least 50 differences which equals to 1.5*50 = 75 cells. Then if you insert a huge number of values in there. The decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic on the number of elements  inserted. Even for the listEntries function. For more details we suggest you to read the paper ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
 
 ## Export and import
 

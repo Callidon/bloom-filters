@@ -106,4 +106,11 @@ describe('PartitionedBloomFilter', () => {
       })
     })
   })
+  describe('Performance test', () => {
+    const max = 1000
+    it('should not return an error when inserting ' + max + ' elements', () => {
+      const filter = new PartitionedBloomFilter(max, targetRate)
+      for (let i = 0; i < max; ++i) filter.add('' + i)
+    })
+  })
 })
