@@ -1,7 +1,5 @@
 const { InvertibleBloomFilter } = require('../bloom-filters')
-// const Buffer = require('buffer').Buffer
-// or
-const Buffer = require('buffer/').Buffer
+// the buffer package is auto imported by nodejs
 // create a new Invertible Bloom Filters with 1000 cells and 4 hash functions
 const hashcount = 3
 const size = 50
