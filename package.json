@@ -18,6 +18,7 @@
     "bloom",
     "filter",
     "bloom filter",
+    "invertible bloom filter",
     "probabilistic",
     "datastructure",
     "count min sketch",
@@ -43,7 +44,6 @@
     "seedrandom": "^3.0.1"
   },
   "dependencies": {
-    "buffer": "^5.2.1",
     "is-buffer": "^2.0.3",
     "lodash.eq": "^4.0.0",
     "lodash.indexof": "^4.0.5",

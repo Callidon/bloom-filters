@@ -162,9 +162,9 @@ Please respects the method inputs and don't pass JSON exported structures as inp
 
 ```javascript
 const { InvertibleBloomFilter } = require('bloom-filters')
-// const Buffer = require('buffer').Buffer
-// or
-const Buffer = require('buffer/').Buffer
+
+// IF YOU ARE NODEJS user no need to import Buffer
+// or IF YOU ARE a BROWSER-BASED USER, you must import the package buffer (https://www.npmjs.com/package/buffer)
 
 const hashcount = 3
 const size = 50
