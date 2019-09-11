@@ -28,6 +28,7 @@ SOFTWARE.
 const BloomFilter = require('./src/bloom-filter.js')
 const PartitionedBloomFilter = require('./src/partitioned-bloom-filter.js')
 const CuckooFilter = require('./src/cuckoo-filter.js')
+const CountingBloomFilter = require('./src/counting-bloom-filter.js')
 const CountMinSketch = require('./src/count-min-sketch.js')
 const InvertibleBloomFilter = require('./src/invertible-bloom-lookup-tables.js').InvertibleBloomFilter
 const Utils = require('./src/utils')
@@ -36,6 +37,7 @@ module.exports = {
   BloomFilter,
   PartitionedBloomFilter,
   CuckooFilter,
+  CountingBloomFilter,
   CountMinSketch,
   InvertibleBloomFilter,
   Utils
