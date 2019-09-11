@@ -305,6 +305,8 @@ npm run coverage
 
 ## Changelog
 
+**v0.7.1**: Add the Counting Bloom Filter.
+
 **v0.7.0** Move to [XXHASH](https://cyan4973.github.io/xxHash/) for hashing elements in the library. One property has been added into the exported json `_seed` which is used to seed every hash of every elements. Update Invertible Bloom Filters with #add, #has, #delete, #listEntries, #substract, #Static.decode methods. Updated the way to get distinct indices which could have collisions in many cases.
 
 **v0.6.1** Add Invertible Bloom Filters (only #encode/#substract/#Static.decode methods)
