@@ -73,6 +73,22 @@ const BloomFilterSpecs = {
   }
 }
 
+const CountingBloomFilterSpecs = {
+  export: cloneObject('CountingBloomFilter', '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed'),
+  import: (FilterConstructor, json) => {
+    if ((json.type !== 'CountingBloomFilter') || !assertFields(json, '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed')) {
+      throw new Error('Cannot create a CountingBloomFilter from a JSON export which does not represent a bloom filter')
+    }
+    const filter = new FilterConstructor(json._capacity, json._errorRate)
+    filter.seed = json._seed
+    filter._size = json._size
+    filter._nbHashes = json._nbHashes
+    filter._filter = json._filter.slice(0)
+    filter._length = json._length
+    return filter
+  }
+}
+
 const BucketSpecs = {
   export: cloneObject('Bucket', '_size', '_elements', '_seed'),
   import: (FilterConstructor, json) => {
@@ -143,5 +159,6 @@ module.exports = {
   'CountMinSketch': CountMinSketchSpecs,
   'CuckooFilter': CuckooFilterSpecs,
   'PartitionedBloomFilter': PartitionedBloomFilterSpecs,
-  'InvertibleBloomFilter': InvertibleBloomFilterSpecs
+  'InvertibleBloomFilter': InvertibleBloomFilterSpecs,
+  'CountingBloomFilter': CountingBloomFilterSpecs
 }

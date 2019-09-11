@@ -16,6 +16,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Classic Bloom Filter](#classic-bloom-filter)
 	* [Partitioned Bloom Filter](#partitioned-bloom-filter)
 	* [Cuckoo Filter](#cuckoo-filter)
+  * [Counting Bloom Filter](#counting-bloom-filter)
 	* [Count Min Sketch](#count-min-sketch)
   * [Invertible Bloom Filters (Key)](#invertible-bloom-filters)
 * [Export and import](#export-and-import)
@@ -109,6 +110,38 @@ console.log(filter.has('daniel')) // output: false
 // remove something
 filter.remove('bob')
 console.log(filter.has('bob')) // output: false
+```
+
+### Counting Bloom Filter
+
+A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.
+
+**Reference:** F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, “An Improved Construction for Counting Bloom Filters,” in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.
+
+```javascript
+const CountingBloomFilter = require('bloom-filters').CountingBloomFilter;
+
+// create a Bloom Filter with capacity = 15 and 1% error rate
+let filter = new CountingBloomFilter(15, 0.1);
+
+// alternatively, create a Counting Bloom Filter from an array with 1% error rate
+filter = CountingBloomFilter.from([ 'alice', 'bob' ], 0.1);
+
+// add some value in the filter
+filter.add('alice');
+filter.add('bob');
+filter.add('carole');
+
+// remove some value
+filter.remove('carole');
+
+// lookup for some data
+console.log(filter.has('bob')); // output: true
+console.log(filter.has('carole')); // output: false
+console.log(filter.has('daniel')); // output: false
+
+// print false positive rate (around 0.1)
+console.log(filter.rate());
 ```
 
 ### Count Min Sketch
@@ -266,6 +299,7 @@ npm run coverage
 * [Classic Bloom Filter](http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf): Bloom, B. H. (1970). *Space/time trade-offs in hash coding with allowable errors.* Communications of the ACM, 13(7), 422-426.
 * [Partitioned Bloom Filter](https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf): Chang, F., Feng, W. C., & Li, K. (2004, March). *Approximate caches for packet classification.* In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
 * [Cuckoo Filter](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf): Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). *Cuckoo filter: Practically better than bloom.* In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
+* [Counting Bloom Filter](http://www.eecs.harvard.edu/~michaelm/postscripts/esa2006b.pdf): F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, *An Improved Construction for Counting Bloom Filters*, in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.
 * [Count Min Sketch](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf): Cormode, G., & Muthukrishnan, S. (2005). *An improved data stream summary: the count-min sketch and its applications.* Journal of Algorithms, 55(1), 58-75.
 * [Invertible Bloom Filters](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
 
