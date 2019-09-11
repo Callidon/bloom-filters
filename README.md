@@ -16,7 +16,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Classic Bloom Filter](#classic-bloom-filter)
 	* [Partitioned Bloom Filter](#partitioned-bloom-filter)
 	* [Cuckoo Filter](#cuckoo-filter)
-  * [Counting Bloom Filter](#counting-bloom-filter)
+	* [Counting Bloom Filter](#counting-bloom-filter)
 	* [Count Min Sketch](#count-min-sketch)
   * [Invertible Bloom Filters (Key)](#invertible-bloom-filters)
 * [Export and import](#export-and-import)
