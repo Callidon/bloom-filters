@@ -36,12 +36,12 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "codecov": "^3.5.0",
-    "jsdoc": "^3.6.2",
+    "jsdoc": "^3.6.3",
     "mocha": "^6.1.4",
     "nyc": "^14.1.1",
-    "standard": "^12.0.1",
     "random": "^2.1.1",
-    "seedrandom": "^3.0.1"
+    "seedrandom": "^3.0.1",
+    "standard": "^12.0.1"
   },
   "dependencies": {
     "is-buffer": "^2.0.3",
