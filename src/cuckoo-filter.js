@@ -224,11 +224,11 @@ class CuckooFilter extends Exportable {
    * @private
    */
   _locations (element) {
-    const hashes = utils.hashIntAndString(element, this.seed, 16, 32)
+    const hashes = utils.hashIntAndString(element, this.seed, 16, 64)
     const hash = hashes.int
     const fingerprint = hashes.string.substring(0, this._fingerprintLength)
     const firstIndex = Math.abs(hash)
-    const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, this.seed, 32)))
+    const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, this.seed, 64)))
     return {
       fingerprint,
       firstIndex: firstIndex % this._size,

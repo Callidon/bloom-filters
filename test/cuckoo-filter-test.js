@@ -35,12 +35,12 @@ describe('CuckooFilter', () => {
       const filter = new CuckooFilter(15, 3, 2, 1)
       filter.seed = (seed)
       const element = 'foo'
-      const hashes = utils.hashIntAndString(element, seed, 16, 32)
+      const hashes = utils.hashIntAndString(element, seed, 16, 64)
       const hash = hashes.int
       const fingerprint = hashes.string.substring(0, 3)
 
       const firstIndex = Math.abs(hash)
-      const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, seed, 32)))
+      const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, seed, 64)))
 
       const locations = filter._locations(element)
       locations.fingerprint.should.equal(fingerprint)
@@ -171,6 +171,37 @@ describe('CuckooFilter', () => {
       filter.add('foo')
       filter.remove('foo')
       filter.has('foo').should.equal(true)
+    })
+
+    it('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
+      const filter = new CuckooFilter(15, 3, 2)
+      filter.seed = (seed)
+      filter.add('alice')
+      filter.add('andrew')
+      filter.add('bob')
+      filter.add('sam')
+
+      filter.add('alice')
+      filter.add('andrew')
+      filter.add('bob')
+      filter.add('sam')
+      // lookup for some data
+      const one = filter.has('samx') // output: false [ok]
+      // console.log(one)
+      one.should.equal(false)
+      const two = filter.has('samy') // output: true [?]
+      // console.log(two)
+      // filter._filter.forEach(b => console.log(b._elements))
+      two.should.equal(false)
+      const three = filter.has('alice') // output: true [ok]
+      // console.log(three)
+      three.should.equal(true)
+      const four = filter.has('joe') // output: true [?]
+      // console.log(four)
+      four.should.equal(false)
+      const five = filter.has('joe') // output: true [?]
+      // console.log(five)
+      five.should.equal(false)
     })
   })
 
