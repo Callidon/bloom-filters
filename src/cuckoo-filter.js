@@ -61,10 +61,11 @@ class CuckooFilter extends Exportable {
    * @param {int} bucketSize - The size of the buckets in the filter
    * @param {int} [maxKicks=1] - (optional) The max number of kicks when resolving collision at insertion, default to 1
    */
-  constructor (size, fLength, bucketSize, maxKicks = 1) {
+  constructor (size = 15, fLength = 3, bucketSize = 2, maxKicks = 1) {
     super()
     this._filter = utils.allocateArray(size, () => new Bucket(bucketSize))
     this._size = size
+    this._bucketSize = bucketSize
     this._fingerprintLength = fLength
     this._length = 0
     this._maxKicks = maxKicks
@@ -146,7 +147,8 @@ class CuckooFilter extends Exportable {
       let movedElement = locations.fingerprint
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
         movedElement = this._filter[index].swapRandom(movedElement)
-        index = Math.abs(index ^ Math.abs(utils.hashAsInt(movedElement, this.seed, 32))) % this._size
+        const newHash = utils.hashAsInt(movedElement, this.seed, 64)
+        index = Math.abs((index ^ Math.abs(newHash))) % this._filter.length
         // add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {
           this._filter[index].add(movedElement)
@@ -154,6 +156,7 @@ class CuckooFilter extends Exportable {
           return true
         }
       }
+      // considered full
       return false
     }
     this._length++
@@ -205,16 +208,54 @@ class CuckooFilter extends Exportable {
   /**
    * Compute the optimal fingerprint length in bytes for a given bucket size
    * and a false positive rate.
-   * @warning seems to have problem with / 8, need to assert that formula
-   * @param  {int} size - The filter size
+   * @param  {int} size - The filter bucket size
    * @param  {int} rate - The error rate, i.e. 'false positive' rate, targetted by the filter
    * @return {int} The optimal fingerprint length in bytes
    * @private
    */
-  _computeFingerpintLength (size, rate) {
-    const length = Math.ceil(Math.log(2 * size / rate)) / 8
-    if (length <= 0) return 1
-    return length
+  static _computeFingerpintLength (size, rate) {
+    return Math.ceil(Math.log(1 / rate) + Math.log(2 * size))
+  }
+
+  /**
+   * Return a new CuckooFilter, everythoing computed for you.
+   * @param  {Number} items          [description]
+   * @param  {Number} rate           [description]
+   * @param  {Number} [bucketSize=2] [description]
+   * @param  {Number} load           [description]
+   * @param  {Number} [maxKicks=1]   [description]
+   * @return {CuckooFilter}                [description]
+   */
+  static create (items, rate = 0.01, bucketSize = 2, load = 0.955, maxKicks = 10) {
+    const fl = CuckooFilter._computeFingerpintLength(bucketSize, rate)
+    const capacity = Math.ceil((fl * items) / load)
+    return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
+  }
+
+  /**
+   * Return the false positive rate for this cuckoo filter
+   * @return {Number} The false positive rate
+   */
+  get fpr () {
+    const load = this._computeHashTableLoad()
+    const tmp = -(0.955 * load.size / load.used) + Math.log(2 * this.bucketSize)
+    const rate = Math.exp(tmp)
+    return rate
+  }
+
+  /**
+   * Return the load of this filter
+   * @return {Object} load: is the load, size is the number of entries, free is the free number of entries, used is the number of entry used
+   */
+  _computeHashTableLoad () {
+    let max = this._filter.length * this._bucketSize
+    let used = this._filter.reduce((acc, val) => acc + val.length, 0)
+    return {
+      used,
+      free: max - used,
+      size: max,
+      load: used / max
+    }
   }
 
   /**
@@ -226,14 +267,19 @@ class CuckooFilter extends Exportable {
   _locations (element) {
     const hashes = utils.hashIntAndString(element, this.seed, 16, 64)
     const hash = hashes.int
+    if (this._fingerprintLength > hashes.string.length) {
+      throw new Error('the fingerprint length (' + this._fingerprintLength + ') is higher than the hash length (' + hashes.string.length + '), please reduce the fingerprint length or report if this is an unexpected behavior.')
+    }
     const fingerprint = hashes.string.substring(0, this._fingerprintLength)
     const firstIndex = Math.abs(hash)
-    const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, this.seed, 64)))
-    return {
+    const secondHash = Math.abs(utils.hashAsInt(fingerprint, this.seed, 64))
+    const secondIndex = Math.abs(firstIndex ^ secondHash)
+    const res = {
       fingerprint,
       firstIndex: firstIndex % this._size,
       secondIndex: secondIndex % this._size
     }
+    return res
   }
 }
 

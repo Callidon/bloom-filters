@@ -85,20 +85,20 @@ describe('CuckooFilter', () => {
     })
 
     it('should perform random kicks when both buckets are full', () => {
-      const filter = new CuckooFilter(15, 3, 1)
+      const filter = new CuckooFilter(15, 3, 1, 1)
       filter.seed = (seed)
       const element = 'foo'
       let nbElements = 0
       const locations = filter._locations(element)
       // artificially fills up the two possible buckets with dumb values
-      filter._filter[locations.firstIndex].add('001')
-      filter._filter[locations.secondIndex].add('002')
+      filter._filter[locations.firstIndex].add('xyz')
+      filter._filter[locations.secondIndex].add('lol')
       filter._length += 2
       filter.add(element).should.equal(true)
 
       filter._filter.forEach(bucket => {
         if (bucket.length > 0) {
-          bucket._elements[0].should.be.oneOf([ '001', '002', locations.fingerprint ])
+          bucket._elements[0].should.be.oneOf([ 'xyz', 'lol', locations.fingerprint ])
           nbElements += bucket.length
         }
       })
@@ -249,9 +249,14 @@ describe('CuckooFilter', () => {
   })
   describe('Performance test', () => {
     const max = 1000
-    it('should not return an error when inserting ' + max + ' elements', () => {
-      const filter = new CuckooFilter(max, 3, 1)
-      for (let i = 0; i < max; ++i) filter.add('' + i)
+    const rate = 0.01
+    const bucketSize = 2
+    it('should not return an error when inserting and asking for ' + max + ' elements, rate = ' + rate + ', bucketSize = ' + bucketSize, () => {
+      const filter = CuckooFilter.create(max, rate, bucketSize)
+      for (let i = 0; i < max; ++i) {
+        filter.add('' + i)
+      }
+      for (let i = 0; i < max; ++i) filter.has('' + i).should.equal(true, 'should return true: ' + i)
     })
   })
 })

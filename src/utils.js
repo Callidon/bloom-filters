@@ -268,8 +268,9 @@ function hashAsString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
       hash = XXH.h64(elem, seed).toString(base)
       break
   }
-  if (hash.length < base) {
-    hash = '0'.repeat(base - hash.length) + hash
+  let string = hash
+  if (string.length < (length / 4)) {
+    string = '0'.repeat((length / 4) - string.length) + string
   }
   return hash
 }
@@ -297,8 +298,8 @@ function hashIntAndString (elem, seed = getDefaultSeed(), base = 16, length = 64
       break
   }
   let string = hash.toString(base)
-  if (string.length < base) {
-    string = '0'.repeat(base - string.length) + string
+  if (string.length < (length / 4)) {
+    string = '0'.repeat((length / 4) - string.length) + string
   }
   return { int: hash.toNumber(), string }
 }
