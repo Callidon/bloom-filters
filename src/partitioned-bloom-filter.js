@@ -44,8 +44,9 @@ const Exportable = require('./exportable.js')
  * @example
  * const PartitionedBloomFilter = require('bloom-filters').PartitionedBloomFilter;
  *
- * // create a Partitioned Bloom Filter with capacity = 15 and 1% error rate
- * let filter = new PartitionedBloomFilter(15, 0.1);
+ * // create a Partitioned Bloom Filter with 15 bits, 3 hash functions, and a load factor of 0.5
+ * // creating 3 buckets of 5 bits each. This filter will be considered full after inserting 3 elements
+ * let filter = new PartitionedBloomFilter(15, 3, 0.5);
  *
  * // alternatively, create a Partitioned Bloom Filter from an array with 1% error rate
  * filter = PartitionedBloomFilter.from([ 'alice', 'bob' ], 0.1);
