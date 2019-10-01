@@ -125,12 +125,12 @@ const CuckooFilterSpecs = {
 }
 
 const PartitionedBloomFilterSpecs = {
-  export: cloneObject('PartitionedBloomFilter', '_capacity', '_errorRate', '_length', '_filter', '_seed'),
+  export: cloneObject('PartitionedBloomFilter', '_capacity', '_size', '_nbHashes', '_loadFactor', '_m', '_length', '_filter', '_seed'),
   import: (FilterConstructor, json) => {
-    if ((json.type !== 'PartitionedBloomFilter') || !assertFields(json, '_capacity', '_errorRate', '_length', '_filter', '_seed')) {
+    if ((json.type !== 'PartitionedBloomFilter') || !assertFields(json, '_capacity', '_size', '_nbHashes', '_loadFactor', '_m', '_length', '_filter', '_seed')) {
       throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter')
     }
-    const filter = new FilterConstructor(json._capacity, json._errorRate)
+    const filter = new FilterConstructor(json._size, json._nbHashes, json._loadFactor)
     filter.seed = json._seed
     filter._length = json._length
     filter._filter = json._filter.slice()

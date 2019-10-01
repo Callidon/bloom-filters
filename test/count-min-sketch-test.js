@@ -132,8 +132,16 @@ describe('CountMinSketch', () => {
   describe('Performance test', () => {
     const max = 1000
     it('should not return an error when inserting ' + max + ' elements', () => {
-      const filter = new CountMinSketch(0.001, 0.99)
+      const filter = new CountMinSketch(0.001, 0.001) // error rate 0.01, probability of wrong answer: 0.001
       for (let i = 0; i < max; ++i) filter.update('' + i)
+      const m = new Map()
+      for (let i = 0; i < max; ++i) {
+        const count = filter.count('' + i)
+        if (!m.has(count)) m.set(count, 1)
+        m.set(filter.count('' + i), m.get(count) + 1)
+      }
+      m.size.should.equal(1)
+      m.has(1).should.equal(true)
     })
   })
 })

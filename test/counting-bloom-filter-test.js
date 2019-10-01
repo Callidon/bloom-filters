@@ -116,9 +116,23 @@ describe('CountingBloomFilter', () => {
 
   describe('Performance test', () => {
     const max = 1000
+    const targetedRate = 0.01
     it('should not return an error when inserting ' + max + ' elements', () => {
-      const filter = new CountingBloomFilter(1000, 0.01)
+      const filter = new CountingBloomFilter(max, targetedRate)
       for (let i = 0; i < max; ++i) filter.add('' + i)
+      for (let i = 0; i < max; ++i) {
+        filter.has('' + i).should.equal(true)
+      }
+      let current
+      let falsePositive = 0
+      for (let i = max; i < max * 2; ++i) {
+        current = i
+        const has = filter.has('' + current, true)
+        if (has) falsePositive++
+      }
+      const currentrate = falsePositive / max
+      console.log('CountingBloomFilter false positive rate on %d tests: ', max, currentrate)
+      currentrate.should.be.closeTo(currentrate, targetedRate)
     })
   })
 })

@@ -256,7 +256,16 @@ describe('CuckooFilter', () => {
       for (let i = 0; i < max; ++i) {
         filter.add('' + i)
       }
-      for (let i = 0; i < max; ++i) filter.has('' + i).should.equal(true, 'should return true: ' + i)
+      let current
+      let falsePositive = 0
+      for (let i = max; i < max * 2; ++i) {
+        current = i
+        const has = filter.has('' + current, true)
+        if (has) falsePositive++
+      }
+      const currentrate = falsePositive / max
+      console.log('CuckooFilter false positive rate on %d tests: ', max, currentrate)
+      currentrate.should.be.closeTo(currentrate, rate)
     })
   })
 })

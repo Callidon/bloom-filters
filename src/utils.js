@@ -69,7 +69,7 @@ const allocateArray = (size, defaultValue) => {
  * @author Arnaud Grall & Thomas Minier
  */
 const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
-  const length = 16
+  const length = 64
   if (asInt) {
     return {
       first: XXH.h64(value, seed + 1).toNumber(),
@@ -77,10 +77,9 @@ const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
     }
   } else {
     let one = XXH.h64(value, seed + 1).toString(16)
-    if (one.length < length) one = '0'.repeat(length - one.length) + one
-    // const one = murmur.x64.hash128(val, seed + 1)
+    if (one.length < length / 4) one = '0'.repeat(length / 4 - one.length) + one
     let two = XXH.h64(value, seed + 2).toString(16)
-    if (two.length < length) two = '0'.repeat(length - two.length) + two
+    if (two.length < length / 4) two = '0'.repeat(length / 4 - two.length) + two
     return {
       first: one,
       second: two
@@ -95,15 +94,14 @@ const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
  * @return {Object} {int: {first: <number>, second: <number>}, string: {first: <hex-string>, second: <hex-string>}
  * @author Arnaud Grall
  */
-const allInOneHashTwice = (val, seed = 0) => {
-  const length = 16
+const allInOneHashTwice = (val, seed = getDefaultSeed()) => {
+  const length = 64
   let one = XXH.h64(val, seed + 1)
   let two = XXH.h64(val, seed + 2)
-  let stringOne = one.toString(length)
-  if (stringOne.length < length) stringOne = '0'.repeat(length - stringOne.length) + stringOne
-
-  let stringTwo = two.toString(length)
-  if (stringTwo.length < length) stringTwo = '0'.repeat(length - stringTwo.length) + stringTwo
+  let stringOne = one.toString(16)
+  if (stringOne.length < (length / 4)) stringOne = '0'.repeat((length / 4) - stringOne.length) + stringOne
+  let stringTwo = two.toString(16)
+  if (stringTwo.length < (length / 4)) stringTwo = '0'.repeat((length / 4) - stringTwo.length) + stringTwo
 
   return {
     int: {
@@ -131,7 +129,7 @@ const allInOneHashTwice = (val, seed = 0) => {
  * @author Thomas Minier
  */
 const doubleHashing = (n, hashA, hashB, size) => {
-  return Math.abs(hashA + n * hashB) % size
+  return Math.abs((hashA + n * hashB) % size)
 }
 
 /**
@@ -145,20 +143,40 @@ const doubleHashing = (n, hashA, hashB, size) => {
  */
 const getDistinctIndices = (element, size, hashcount, seed = getDefaultSeed()) => {
   const getDistinctIndicesBis = (n, elem, size, count, indexes = new Map()) => {
-    const hashes = hashTwice(n + elem, true, seed)
-    const ind = doubleHashing(n, hashes.first, hashes.second, size)
-    if (indexes.has(ind)) {
-      return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
+    if (indexes.size === count) {
+      return [...indexes.keys()]
     } else {
-      indexes.set(ind, ind)
-      if (indexes.size === count) {
-        return [...indexes.keys()]
+      const hashes = hashTwice(n + elem, true, seed)
+      const ind = doubleHashing(n, hashes.first, hashes.second, size)
+      if (indexes.has(ind)) {
+        // console.log('generate index: %d for %s', ind, elem)
+        return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
       } else {
+        // console.log('already found: %d for %s', ind, elem)
+        indexes.set(ind, ind)
         return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
       }
     }
   }
   return getDistinctIndicesBis(1, element, size, hashcount)
+}
+
+/**
+ * generate hashCount indexes, one index per [0, size)
+ * it uses the double hashing technique to generate the indexes
+ * @param  {*} element   the element
+ * @param  {Number} size      the range on which we can g-enerate the index, exclusive
+ * @param  {Number} hashCount the number of indexes we want
+ * @return {Number[]} an array of indexes
+ */
+const getIndices = (element, size, hashCount, seed = getDefaultSeed()) => {
+  const arr = []
+  for (let i = 1; i <= hashCount; i++) {
+    const hashes = hashTwice(i + element, true, seed)
+    arr.push(doubleHashing(i, hashes.first, hashes.second, size))
+  }
+  if (arr.length !== hashCount) throw new Error('report this, please, shouldnt be of different size')
+  return arr
 }
 
 /**
@@ -318,6 +336,7 @@ module.exports = {
   hashAsInt,
   hashAsString,
   hashIntAndString,
+  getIndices,
   getDistinctIndices,
   allInOneHashTwice,
   isEmptyBuffer,

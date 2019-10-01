@@ -28,11 +28,11 @@ require('chai').should()
 const PartitionedBloomFilter = require('../src/partitioned-bloom-filter.js')
 
 describe('PartitionedBloomFilter', () => {
-  const targetRate = 0.1
+  const targetRate = 0.001
 
   describe('construction', () => {
     it('should add element to the filter with #add', () => {
-      const filter = new PartitionedBloomFilter(15, targetRate)
+      const filter = PartitionedBloomFilter.create(15, targetRate)
       filter.add('alice')
       filter.add('bob')
       filter.length.should.equal(2)
@@ -40,10 +40,9 @@ describe('PartitionedBloomFilter', () => {
 
     it('should build a new filter using #from', () => {
       const data = [ 'alice', 'bob', 'carl' ]
-      const expectedSize = Math.ceil(-((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)))
-      const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
+      const expectedSize = PartitionedBloomFilter._computeOptimalNumberOfCells(data.length, targetRate)
+      const expectedHashes = PartitionedBloomFilter._computeOptimalNumberOfhashes(targetRate)
       const filter = PartitionedBloomFilter.from(data, targetRate)
-
       filter.size.should.equal(expectedSize)
       filter._nbHashes.should.equal(expectedHashes)
       filter.length.should.equal(data.length)
@@ -52,7 +51,7 @@ describe('PartitionedBloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = new PartitionedBloomFilter(15, targetRate)
+    const filter = PartitionedBloomFilter.create(15, targetRate)
     filter.add('alice')
     filter.add('bob')
     filter.add('carl')
@@ -70,7 +69,7 @@ describe('PartitionedBloomFilter', () => {
   })
 
   describe('#saveAsJSON', () => {
-    const filter = new PartitionedBloomFilter(15, targetRate)
+    const filter = PartitionedBloomFilter.create(15, targetRate)
     filter.add('alice')
     filter.add('bob')
     filter.add('carl')
@@ -79,17 +78,21 @@ describe('PartitionedBloomFilter', () => {
       const exported = filter.saveAsJSON()
       exported.type.should.equal('PartitionedBloomFilter')
       exported._capacity.should.equal(15)
-      exported._errorRate.should.equal(targetRate)
+      exported._size.should.equal(filter._size)
+      exported._loadFactor.should.equal(filter._loadFactor)
+      exported._m.should.equal(filter._m)
+      exported._nbHashes.should.equal(filter._nbHashes)
       exported._filter.should.deep.equal(filter._filter)
     })
 
     it('should create a partitioned bloom filter from a JSON export', () => {
       const exported = filter.saveAsJSON()
       const newFilter = PartitionedBloomFilter.fromJSON(exported)
-      newFilter.size.should.equal(filter.size)
+      newFilter._capacity.should.equal(filter._capacity)
+      newFilter._size.should.equal(filter._size)
+      newFilter._loadFactor.should.equal(filter._loadFactor)
+      newFilter._m.should.equal(filter._m)
       newFilter._nbHashes.should.equal(filter._nbHashes)
-      newFilter._subarraySize.should.equal(filter._subarraySize)
-      newFilter.length.should.equal(filter.length)
       newFilter._filter.should.deep.equal(filter._filter)
     })
 
@@ -108,9 +111,22 @@ describe('PartitionedBloomFilter', () => {
   })
   describe('Performance test', () => {
     const max = 1000
-    it('should not return an error when inserting ' + max + ' elements', () => {
-      const filter = new PartitionedBloomFilter(max, targetRate)
+    it('should not return an error when inserting and querying for ' + max + ' elements', () => {
+      const filter = PartitionedBloomFilter.create(max, targetRate, 0.5)
       for (let i = 0; i < max; ++i) filter.add('' + i)
+      for (let i = 0; i < max; ++i) {
+        filter.has('' + i).should.equal(true)
+      }
+      let current
+      let falsePositive = 0
+      for (let i = max; i < max * 2; ++i) {
+        current = i
+        const has = filter.has('' + current)
+        if (has) falsePositive++
+      }
+      const currentrate = falsePositive / max
+      console.log('PartitionedBloomFilter false positive rate on %d tests = %d (targeted = %d)', max, currentrate, targetRate)
+      currentrate.should.be.closeTo(currentrate, targetRate)
     })
   })
 })

@@ -219,12 +219,12 @@ class CuckooFilter extends Exportable {
 
   /**
    * Return a new CuckooFilter, everythoing computed for you.
-   * @param  {Number} items          [description]
-   * @param  {Number} rate           [description]
-   * @param  {Number} [bucketSize=2] [description]
-   * @param  {Number} load           [description]
-   * @param  {Number} [maxKicks=1]   [description]
-   * @return {CuckooFilter}                [description]
+   * @param  {Number} items          The number of items to insert
+   * @param  {Number} rate           The desired error rate
+   * @param  {Number} [bucketSize=2] The number of buckets desired per cell
+   * @param  {Number} load           The acceptable load for the filter, under which the error rate will be respected
+   * @param  {Number} [maxKicks=10]   the number of kicks done when a collision occurs
+   * @return {CuckooFilter} The CuckoFilter constructed for 'items' items with a provided error rate.
    */
   static create (items, rate = 0.01, bucketSize = 2, load = 0.955, maxKicks = 10) {
     const fl = CuckooFilter._computeFingerpintLength(bucketSize, rate)
@@ -236,7 +236,7 @@ class CuckooFilter extends Exportable {
    * Return the false positive rate for this cuckoo filter
    * @return {Number} The false positive rate
    */
-  get fpr () {
+  rate () {
     const load = this._computeHashTableLoad()
     const tmp = -(0.955 * load.size / load.used) + Math.log(2 * this.bucketSize)
     const rate = Math.exp(tmp)

@@ -35,7 +35,7 @@ class InvertibleBloomFilter extends Exportable {
   }
 
   /**
-   * Expose the Cell constructor as statis class of the Invertible Bloom Filter one
+   * Expose the Cell constructor as statis class of the Invertible Bloom Filter
    * @type {Array}
    */
   static get Cell () {

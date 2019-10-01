@@ -74,15 +74,25 @@ Thus, each element is described by exactly `k` bits, meaning the distribution of
 Be careful, as a Partitioned Bloom Filter have much higher collison risks that a classic Bloom Filter on small sets of data.
 
 **Reference:** Chang, F., Feng, W. C., & Li, K. (2004, March). *Approximate caches for packet classification.* In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
-([Full text article](https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf))
+([Full text article](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&rep=rep1&type=pdf))
 
 Otherwise, a Partitioned Bloom Filter **follows the same API than a [Classic Bloom Filter](#classic-bloom-filter)**.
 
 ```javascript
 const { PartitionedBloomFilter } = require('bloom-filters')
 
-// create a Partitioned Bloom Filter with size = 15 and 1% error rate
-const filter = new PartitionedBloomFilter(15, 0.01)
+// create a PartitionedBloomFilter for 10 elements with an error rate of 1% within a load factor of 0.5
+const filter = PartitionedBloomFilter.create(10, 0.01, 0.5)
+// if you want to customize all parameter you can create the Filter manually
+// const filter = new PartitionedBloomFilter(totalBits, hashFunctions, loadFactor)
+
+// add some value in the filter
+filter.add('alice')
+filter.add('bob')
+
+// lookup for some data
+console.log(filter.has('bob')) // output: true
+console.log(filter.has('daniel')) // output: false
 
 // now use it like a classic bloom filter!
 // ...
@@ -100,6 +110,8 @@ const { CuckooFilter } = require('bloom-filters')
 
 // create a Cuckoo Filter with size = 15, fingerprint length = 3 and bucket size = 2
 const filter = new CuckooFilter(15, 3, 2)
+// or create a CuckooFilter for 2 elements, with an error rate of 0.01 and a bucketSize of 2
+filter = CuckooFilter.create(2, 0.01, 2)
 filter.add('alice')
 filter.add('bob')
 
@@ -155,8 +167,11 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 ```javascript
 const { CountMinSketch } = require('bloom-filters')
 
-// create a new count min sketch with epsilon = 0.001 and delta = 0.99
-const sketch = new CountMinSketch(0.001, 0.99)
+// create a new count min sketch with epsilon = 0.001 and delta = 0.01
+// error rate = 0.01
+// probability of correct response: 1 - 0.01 = 0.99, very strong
+// highest the delta, highest the probability to over-estimate the truth value.
+const sketch = new CountMinSketch(0.001, 0.001)
 
 // push some occurrences in the sketch
 sketch.update('alice')
@@ -297,7 +312,7 @@ npm run coverage
 ## References
 
 * [Classic Bloom Filter](http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf): Bloom, B. H. (1970). *Space/time trade-offs in hash coding with allowable errors.* Communications of the ACM, 13(7), 422-426.
-* [Partitioned Bloom Filter](https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf): Chang, F., Feng, W. C., & Li, K. (2004, March). *Approximate caches for packet classification.* In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
+* [Partitioned Bloom Filter](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&rep=rep1&type=pdf): Chang, F., Feng, W. C., & Li, K. (2004, March). *Approximate caches for packet classification.* In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
 * [Cuckoo Filter](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf): Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). *Cuckoo filter: Practically better than bloom.* In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
 * [Counting Bloom Filter](http://www.eecs.harvard.edu/~michaelm/postscripts/esa2006b.pdf): F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, *An Improved Construction for Counting Bloom Filters*, in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.
 * [Count Min Sketch](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf): Cormode, G., & Muthukrishnan, S. (2005). *An improved data stream summary: the count-min sketch and its applications.* Journal of Algorithms, 55(1), 58-75.
