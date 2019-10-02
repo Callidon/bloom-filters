@@ -287,8 +287,14 @@ function hashAsString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
       break
   }
   let string = hash
-  if (string.length < (length / 4)) {
-    string = '0'.repeat((length / 4) - string.length) + string
+  if (base === 16) {
+    if (string.length < (length / 4)) {
+      string = '0'.repeat((length / 4) - string.length) + string
+    }
+  } else if (base === 2) {
+    if (string.length < length) {
+      string = '0'.repeat(length - string.length) + string
+    }
   }
   return hash
 }
@@ -316,8 +322,14 @@ function hashIntAndString (elem, seed = getDefaultSeed(), base = 16, length = 64
       break
   }
   let string = hash.toString(base)
-  if (string.length < (length / 4)) {
-    string = '0'.repeat((length / 4) - string.length) + string
+  if (base === 16) {
+    if (string.length < (length / 4)) {
+      string = '0'.repeat((length / 4) - string.length) + string
+    }
+  } else if (base === 2) {
+    if (string.length < length) {
+      string = '0'.repeat(length - string.length) + string
+    }
   }
   return { int: hash.toNumber(), string }
 }
@@ -331,7 +343,17 @@ function getDefaultSeed () {
   return 0x1234567890
 }
 
+/**
+ * Return the next power of 2 of x
+ * @param  {Number} x Number
+ * @return {Number} the next power of 2 of x
+ */
+function power2 (x) {
+  return Math.ceil(Math.pow(2, Math.floor(Math.log(x) / Math.log(2))))
+}
+
 module.exports = {
+  power2,
   getDefaultSeed,
   hashAsInt,
   hashAsString,

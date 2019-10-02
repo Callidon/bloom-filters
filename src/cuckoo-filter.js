@@ -59,9 +59,9 @@ class CuckooFilter extends Exportable {
    * @param {int} size - The filter size
    * @param {int} fLength - The length of the fingerprints
    * @param {int} bucketSize - The size of the buckets in the filter
-   * @param {int} [maxKicks=1] - (optional) The max number of kicks when resolving collision at insertion, default to 1
+   * @param {int} [maxKicks=500] - (optional) The max number of kicks when resolving collision at insertion, default to 1
    */
-  constructor (size = 15, fLength = 3, bucketSize = 2, maxKicks = 1) {
+  constructor (size = 15, fLength = 3, bucketSize = 2, maxKicks = 500) {
     super()
     this._filter = utils.allocateArray(size, () => new Bucket(bucketSize))
     this._size = size
@@ -69,6 +69,13 @@ class CuckooFilter extends Exportable {
     this._fingerprintLength = fLength
     this._length = 0
     this._maxKicks = maxKicks
+  }
+  /**
+   * Return the full size, aka the total number of cells
+   * @return {Number}
+   */
+  get fullSize () {
+    return this.size * this.bucketSize
   }
 
   /**
@@ -126,7 +133,7 @@ class CuckooFilter extends Exportable {
   }
 
   /**
-   * Add an element to the filter
+   * Add an element to the filter, if false is returned, it means that the filter is considered as full.
    * @param {*} element - The element to add
    * @return {boolean} True if the insertion is a success, False if the filter is full
    * @example
@@ -134,7 +141,7 @@ class CuckooFilter extends Exportable {
    * filter.add('alice');
    * filter.add('bob');
    */
-  add (element) {
+  add (element, throwError = false) {
     const locations = this._locations(element)
     // store fingerprint in an available empty bucket
     if (this._filter[locations.firstIndex].isFree()) {
@@ -157,7 +164,11 @@ class CuckooFilter extends Exportable {
         }
       }
       // considered full
-      return false
+      if (throwError) {
+        throw new Error('[CuckooFilter] The filter is considered as full')
+      } else {
+        return false
+      }
     }
     this._length++
     return true
@@ -214,7 +225,8 @@ class CuckooFilter extends Exportable {
    * @private
    */
   static _computeFingerpintLength (size, rate) {
-    return Math.ceil(Math.log(1 / rate) + Math.log(2 * size))
+    let f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
+    return Math.ceil(f)
   }
 
   /**
@@ -222,13 +234,13 @@ class CuckooFilter extends Exportable {
    * @param  {Number} items          The number of items to insert
    * @param  {Number} rate           The desired error rate
    * @param  {Number} [bucketSize=2] The number of buckets desired per cell
-   * @param  {Number} load           The acceptable load for the filter, under which the error rate will be respected
    * @param  {Number} [maxKicks=10]   the number of kicks done when a collision occurs
    * @return {CuckooFilter} The CuckoFilter constructed for 'items' items with a provided error rate.
    */
-  static create (items, rate = 0.01, bucketSize = 2, load = 0.955, maxKicks = 10) {
+  static create (items, rate = 0.001, bucketSize = 4, maxKicks = 500) {
     const fl = CuckooFilter._computeFingerpintLength(bucketSize, rate)
-    const capacity = Math.ceil((fl * items) / load)
+    // const capacity = Math.ceil(items / bucketSize / 0.955)
+    const capacity = utils.power2(items)
     return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
   }
 
@@ -238,9 +250,8 @@ class CuckooFilter extends Exportable {
    */
   rate () {
     const load = this._computeHashTableLoad()
-    const tmp = -(0.955 * load.size / load.used) + Math.log(2 * this.bucketSize)
-    const rate = Math.exp(tmp)
-    return rate
+    const c = this._fingerprintLength / load.load
+    return Math.pow(2, Math.log2(2 * this._bucketSize) - (load.load * c))
   }
 
   /**
@@ -265,7 +276,7 @@ class CuckooFilter extends Exportable {
    * @private
    */
   _locations (element) {
-    const hashes = utils.hashIntAndString(element, this.seed, 16, 64)
+    const hashes = utils.hashIntAndString(element, this.seed, 2, 64)
     const hash = hashes.int
     if (this._fingerprintLength > hashes.string.length) {
       throw new Error('the fingerprint length (' + this._fingerprintLength + ') is higher than the hash length (' + hashes.string.length + '), please reduce the fingerprint length or report if this is an unexpected behavior.')

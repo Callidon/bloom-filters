@@ -24,7 +24,9 @@ SOFTWARE.
 
 'use strict'
 
-require('chai').should()
+const chai = require('chai')
+chai.should()
+chai.expect()
 const CuckooFilter = require('../src/cuckoo-filter.js')
 const utils = require('../src/utils')
 const seed = Math.random()
@@ -35,7 +37,7 @@ describe('CuckooFilter', () => {
       const filter = new CuckooFilter(15, 3, 2, 1)
       filter.seed = (seed)
       const element = 'foo'
-      const hashes = utils.hashIntAndString(element, seed, 16, 64)
+      const hashes = utils.hashIntAndString(element, seed, 2, 64)
       const hash = hashes.int
       const fingerprint = hashes.string.substring(0, 3)
 
@@ -51,7 +53,7 @@ describe('CuckooFilter', () => {
 
   describe('#add', () => {
     it('should add element to the filter with #add', () => {
-      const filter = new CuckooFilter(15, 3, 2)
+      const filter = CuckooFilter.create(15, 0.01)
       filter.seed = (seed)
       let nbElements = 0
       filter.add('alice')
@@ -63,8 +65,8 @@ describe('CuckooFilter', () => {
       nbElements.should.equal(2)
     })
 
-    it('should should store ane element accross two different buckets', () => {
-      const filter = new CuckooFilter(15, 3, 2)
+    it('should store ane element accross two different buckets', () => {
+      const filter = CuckooFilter.create(15, 0.01, 2)
       filter.seed = (seed)
       const element = 'foo'
       let nbElements = 0
@@ -111,7 +113,7 @@ describe('CuckooFilter', () => {
       filter.seed = (seed)
       const element = 'foo'
       filter.add(element)
-      filter.add(element).should.equal(false)
+      filter.add(element, false).should.equal(false)
     })
   })
 
@@ -174,7 +176,7 @@ describe('CuckooFilter', () => {
     })
 
     it('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
-      const filter = new CuckooFilter(15, 3, 2)
+      const filter = CuckooFilter.create(15, 0.01)
       filter.seed = (seed)
       filter.add('alice')
       filter.add('andrew')
@@ -249,23 +251,25 @@ describe('CuckooFilter', () => {
   })
   describe('Performance test', () => {
     const max = 1000
-    const rate = 0.01
-    const bucketSize = 2
+    const rate = 0.0001
+    const bucketSize = 4
     it('should not return an error when inserting and asking for ' + max + ' elements, rate = ' + rate + ', bucketSize = ' + bucketSize, () => {
-      const filter = CuckooFilter.create(max, rate, bucketSize)
-      for (let i = 0; i < max; ++i) {
-        filter.add('' + i)
+      const filter = CuckooFilter.create(max, rate, bucketSize, 500)
+      for (let i = 0; i < max; i++) {
+        filter.add('' + i).should.equal(true)
       }
       let current
       let falsePositive = 0
+      let tries = 0
       for (let i = max; i < max * 2; ++i) {
+        tries++
         current = i
-        const has = filter.has('' + current, true)
+        const has = filter.has('' + current)
         if (has) falsePositive++
       }
-      const currentrate = falsePositive / max
-      console.log('CuckooFilter false positive rate on %d tests: ', max, currentrate)
-      currentrate.should.be.closeTo(currentrate, rate)
+      const currentrate = falsePositive / tries
+      console.log('CuckooFilter false positive rate on %d tests: ', tries, currentrate)
+      currentrate.should.be.closeTo(rate, rate)
     })
   })
 })

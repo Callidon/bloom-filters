@@ -125,14 +125,16 @@ describe('CountingBloomFilter', () => {
       }
       let current
       let falsePositive = 0
-      for (let i = max; i < max * 2; ++i) {
+      let tries = 0
+      for (let i = max; i < max * 11; ++i) {
+        tries++
         current = i
         const has = filter.has('' + current, true)
         if (has) falsePositive++
       }
-      const currentrate = falsePositive / max
-      console.log('CountingBloomFilter false positive rate on %d tests: ', max, currentrate)
-      currentrate.should.be.closeTo(currentrate, targetedRate)
+      const currentrate = falsePositive / tries
+      console.log('CountingBloomFilter false positive rate on %d tests: ', tries, currentrate)
+      currentrate.should.be.closeTo(targetedRate, targetedRate)
     })
   })
 })

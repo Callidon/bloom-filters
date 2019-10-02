@@ -119,14 +119,16 @@ describe('PartitionedBloomFilter', () => {
       }
       let current
       let falsePositive = 0
-      for (let i = max; i < max * 2; ++i) {
+      let tries = 0
+      for (let i = max; i < max * 11; ++i) {
+        tries++
         current = i
         const has = filter.has('' + current)
         if (has) falsePositive++
       }
-      const currentrate = falsePositive / max
-      console.log('PartitionedBloomFilter false positive rate on %d tests = %d (targeted = %d)', max, currentrate, targetRate)
-      currentrate.should.be.closeTo(currentrate, targetRate)
+      const currentrate = falsePositive / tries
+      console.log('PartitionedBloomFilter false positive rate on %d tests = %d (targeted = %d)', tries, currentrate, targetRate)
+      currentrate.should.be.closeTo(targetRate, targetRate)
     })
   })
 })
