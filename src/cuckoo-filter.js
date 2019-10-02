@@ -240,8 +240,8 @@ class CuckooFilter extends Exportable {
    */
   static create (items, rate = 0.001, bucketSize = 4, maxKicks = 500) {
     const fl = CuckooFilter._computeFingerpintLength(bucketSize, rate)
-    // const capacity = Math.ceil(items / bucketSize / 0.955)
-    const capacity = utils.power2(items)
+    const capacity = Math.ceil(items / bucketSize / 0.955)
+    // const capacity = utils.power2(items)
     return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
   }
 

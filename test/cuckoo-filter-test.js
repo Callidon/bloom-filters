@@ -268,7 +268,7 @@ describe('CuckooFilter', () => {
         if (has) falsePositive++
       }
       const currentrate = falsePositive / tries
-      console.log('CuckooFilter false positive rate on %d tests: ', tries, currentrate)
+      console.log('CuckooFilter false positive rate on %d tests: ', tries, currentrate, filter._computeHashTableLoad())
       currentrate.should.be.closeTo(rate, rate)
     })
   })

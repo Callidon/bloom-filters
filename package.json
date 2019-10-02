@@ -5,7 +5,7 @@
   "main": "bloom-filters.js",
   "scripts": {
     "lint": "standard",
-    "test": "mocha test/**/*-test.js --trace-deprecation",
+    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=10000",
     "coverage": "nyc --reporter=lcov npm test",
     "report": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov",
     "doc": "jsdoc -c jsdoc.json README.md src/"
