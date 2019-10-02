@@ -251,7 +251,7 @@ describe('CuckooFilter', () => {
   })
   describe('Performance test', () => {
     const max = 1000
-    const rate = 0.0001
+    const rate = 0.01
     const bucketSize = 4
     it('should not return an error when inserting and asking for ' + max + ' elements, rate = ' + rate + ', bucketSize = ' + bucketSize, () => {
       const filter = CuckooFilter.create(max, rate, bucketSize, 500)
@@ -261,7 +261,7 @@ describe('CuckooFilter', () => {
       let current
       let falsePositive = 0
       let tries = 0
-      for (let i = max; i < max * 2; ++i) {
+      for (let i = max; i < max * 11; ++i) {
         tries++
         current = i
         const has = filter.has('' + current)

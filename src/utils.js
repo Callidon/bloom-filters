@@ -277,21 +277,23 @@ function hashAsString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
   let hash
   switch (length) {
     case 32:
-      hash = XXH.h32(elem, seed).toString(base)
+      hash = XXH.h32(elem, seed)
       break
     case 64:
-      hash = XXH.h64(elem, seed).toString(base)
+      hash = XXH.h64(elem, seed)
       break
     default:
-      hash = XXH.h64(elem, seed).toString(base)
+      hash = XXH.h64(elem, seed)
       break
   }
-  let string = hash
+  let string
   if (base === 16) {
+    string = hash.toString(base)
     if (string.length < (length / 4)) {
       string = '0'.repeat((length / 4) - string.length) + string
     }
   } else if (base === 2) {
+    string = hex2bin(hash.toString(16))
     if (string.length < length) {
       string = '0'.repeat(length - string.length) + string
     }
@@ -321,12 +323,14 @@ function hashIntAndString (elem, seed = getDefaultSeed(), base = 16, length = 64
       hash = XXH.h64(elem, seed)
       break
   }
-  let string = hash.toString(base)
+  let string
   if (base === 16) {
+    string = hash.toString(base)
     if (string.length < (length / 4)) {
       string = '0'.repeat((length / 4) - string.length) + string
     }
   } else if (base === 2) {
+    string = hex2bin(hash.toString(16))
     if (string.length < length) {
       string = '0'.repeat(length - string.length) + string
     }
@@ -350,6 +354,15 @@ function getDefaultSeed () {
  */
 function power2 (x) {
   return Math.ceil(Math.pow(2, Math.floor(Math.log(x) / Math.log(2))))
+}
+
+/**
+ * Convert an hex string into binary
+ * @param  {string} hex base 16 string
+ * @return {string}     base 2 string
+ */
+function hex2bin (hex) {
+  return parseInt(hex, 16).toString(2)
 }
 
 module.exports = {

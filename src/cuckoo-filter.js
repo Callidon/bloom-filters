@@ -133,6 +133,7 @@ class CuckooFilter extends Exportable {
   }
 
   /**
+   * @todo do the recovery if return false or throw error because we altered values
    * Add an element to the filter, if false is returned, it means that the filter is considered as full.
    * @param {*} element - The element to add
    * @return {boolean} True if the insertion is a success, False if the filter is full
