@@ -157,7 +157,7 @@ class CuckooFilter extends Exportable {
       // buckets are full, we must relocate one of them
       let index = this._rng() < 0.5 ? locations.firstIndex : locations.secondIndex
       let movedElement = locations.fingerprint
-      let logs = []
+      const logs = []
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
         const rndIndex = utils.randomInt(0, this._filter[index].length - 1, this._rng)
         const tmp = this._filter[index].at(rndIndex)
@@ -244,7 +244,7 @@ class CuckooFilter extends Exportable {
    * @private
    */
   static _computeFingerpintLength (size, rate) {
-    let f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
+    const f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
     return Math.ceil(f / 4) // because we use base 16 64-bits hashes
   }
 
@@ -263,8 +263,8 @@ class CuckooFilter extends Exportable {
    * @return {Object} load: is the load, size is the number of entries, free is the free number of entries, used is the number of entry used
    */
   _computeHashTableLoad () {
-    let max = this._filter.length * this._bucketSize
-    let used = this._filter.reduce((acc, val) => acc + val.length, 0)
+    const max = this._filter.length * this._bucketSize
+    const used = this._filter.reduce((acc, val) => acc + val.length, 0)
     return {
       used,
       free: max - used,

@@ -39,7 +39,9 @@ const Exportable = require('./exportable.js')
  * const CountMinSketch = require('bloom-filters').CountMinSketch;
  *
  * // create a new count min sketch with epsilon = 0.001 and delta = 0.99
- * const sketch = new CountMinSketch(0.001, 0.99);
+ * const sketch = CountMinSketch.create(0.001, 0.99);
+ * // or create it manually by setting the numbers of rows and columns
+ * sketch = new CountMinSketch(10, 100) // 10 columns and 100 rows
  *
  * // push some occurrences in the sketch
  * sketch.update('alice');
@@ -54,32 +56,52 @@ const Exportable = require('./exportable.js')
 class CountMinSketch extends Exportable {
   /**
    * Constructor. Creates a new Count-Min Sketch whose relative accuracy is within a factor of epsilon with probability delta.
-   * @param {number} epsilon - Factor of relative accuracy
-   * @param {number} delta - Probability of relative accuracy
+   * @param {number} w Number of columns
+   * @param {number} d Number of rows
+   * @param {UINT64} seed the seed
    */
-  constructor (epsilon, delta) {
+  constructor (w = 2048, d = 1, seed = utils.getDefaultSeed()) {
     super()
-    this._epsilon = epsilon
-    this._delta = delta
-    this._columns = Math.ceil(Math.E / epsilon)
-    this._rows = Math.ceil(Math.log(1 / delta))
+    this._columns = w
+    this._rows = d
     this._matrix = utils.allocateArray(this._rows, () => utils.allocateArray(this._columns, 0))
+    this._N = 0
   }
 
   /**
-   * Get the factor of relative accuracy
-   * @return {number} The factor of relative accuracy
+   * Create a count-min sketch given an epsilon and delta (default create(0.001, 0.999))
+   * w = Math.ceil(Math.E / epsilon) and d = Math.ceil(Math.log(1 / delta))
+   * @param  {Number} epsilon the error rate
+   * @param  {Number} delta   probability of accuracy
+   * @return {CountMinSketch}
    */
-  get epsilon () {
-    return this._epsilon
+  static create (epsilon = 0.001, delta = 0.999) {
+    const w = Math.ceil(Math.E / epsilon)
+    const d = Math.ceil(Math.log(1 / delta))
+    return new CountMinSketch(w, d)
   }
 
   /**
-   * Get the probability of relative accuracy
-   * @return {number} The probability of relative accuracy
+   * Return the number of columns of the matrix
+   * @return {Number}
    */
-  get delta () {
-    return this._delta
+  get w () {
+    return this._columns
+  }
+
+  /**
+   * Return the number of rows of the matrix
+   * @return {Number}
+   */
+  get d () {
+    return this._rows
+  }
+
+  /**
+   * Get the sum of all counts
+   */
+  get N () {
+    return this._N
   }
 
   /**
@@ -90,10 +112,11 @@ class CountMinSketch extends Exportable {
    * const sketch = new CountMinSketch(0.001, 0.99);
    * sketch.update('foo');
    */
-  update (element) {
+  update (element, count = 1) {
+    this._N += count
     const indexes = utils.getDistinctIndices(element, this._columns, this._rows, this.seed)
     for (let i = 0; i < this._rows; i++) {
-      this._matrix[i][indexes[i]]++
+      this._matrix[i][indexes[i]] += count
     }
   }
 
@@ -113,7 +136,7 @@ class CountMinSketch extends Exportable {
     let min = Infinity
     const indexes = utils.getDistinctIndices(element, this._columns, this._rows, this.seed)
     for (let i = 0; i < this._rows; i++) {
-      let v = this._matrix[i][indexes[i]]
+      const v = this._matrix[i][indexes[i]]
       min = Math.min(v, min)
     }
 
@@ -126,8 +149,8 @@ class CountMinSketch extends Exportable {
    * @return {void}
    * @throws Error
    * @example
-   * const sketch = new CountMinSketch(0.001, 0.99);
-   * const otherSketch = new CountMinSketch(0.001, 0.99);
+   * const sketch = CountMinSketch.create(0.001, 0.99);
+   * const otherSketch = CountMinSketch.create(0.001, 0.99);
    *
    * sketch.update('foo');
    * otherSketch.update('foo');
@@ -153,14 +176,14 @@ class CountMinSketch extends Exportable {
    * Clone the sketch
    * @return {CountMinSketch} A new cloned sketch
    * @example
-   * const sketch = new CountMinSketch(0.001, 0.99);
+   * const sketch = CountMinSketch.create(0.001, 0.99);
    * sketch.update('foo');
    *
    * const clone = sketch.clone();
    * console.log(clone.count('foo')); // output: 1
    */
   clone () {
-    const sketch = new CountMinSketch(this._epsilon, this._delta)
+    const sketch = new CountMinSketch(this._columns, this._rows)
     sketch.merge(this)
     sketch.seed = this.seed
     return sketch

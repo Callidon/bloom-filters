@@ -1,14 +1,15 @@
 {
   "name": "bloom-filters",
-  "version": "0.7.1",
+  "version": "1.0.0",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "bloom-filters.js",
   "scripts": {
     "lint": "standard",
-    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=10000",
+    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=30000",
     "coverage": "nyc --reporter=lcov npm test",
     "report": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov",
-    "doc": "jsdoc -c jsdoc.json README.md src/"
+    "doc": "jsdoc -c jsdoc.json README.md src/",
+    "all": "npm run lint && npm run doc && npm run report"
   },
   "repository": {
     "type": "git",
@@ -35,19 +36,19 @@
   "homepage": "https://github.com/Callidon/bloom-filters#readme",
   "devDependencies": {
     "chai": "^4.2.0",
-    "codecov": "^3.5.0",
+    "codecov": "^3.6.1",
     "jsdoc": "^3.6.3",
-    "mocha": "^6.1.4",
+    "mocha": "^6.2.2",
     "nyc": "^14.1.1",
     "random": "^2.1.1",
-    "seedrandom": "^3.0.1",
-    "standard": "^12.0.1"
+    "standard": "^14.3.1"
   },
   "dependencies": {
-    "is-buffer": "^2.0.3",
+    "is-buffer": "^2.0.4",
     "lodash.eq": "^4.0.0",
     "lodash.indexof": "^4.0.5",
-    "xxhashjs": "^0.2.2"
+    "xxhashjs": "^0.2.2",
+    "seedrandom": "^3.0.5"
   },
   "standard": {
     "env": [

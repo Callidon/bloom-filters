@@ -28,8 +28,10 @@ require('chai').should()
 const CountMinSketch = require('../src/count-min-sketch.js')
 
 describe('CountMinSketch', () => {
+  const delta = 0.999
+
   it('should support update and point query (count) operations', () => {
-    const sketch = new CountMinSketch(0.001, 0.99)
+    const sketch = CountMinSketch.create(0.001, delta)
     // populate the sketch with some values
     sketch.update('foo')
     sketch.update('foo')
@@ -42,8 +44,8 @@ describe('CountMinSketch', () => {
   })
 
   it('should support a merge between two sketches', () => {
-    const sketch = new CountMinSketch(0.001, 0.99)
-    const otherSketch = new CountMinSketch(0.001, 0.99)
+    const sketch = CountMinSketch.create(0.001, delta)
+    const otherSketch = CountMinSketch.create(0.001, delta)
 
     // populate the sketches with some values
     sketch.update('foo')
@@ -64,8 +66,8 @@ describe('CountMinSketch', () => {
   })
 
   it('should reject an impossible merge', () => {
-    const sketch = new CountMinSketch(0.001, 0.99)
-    const otherSketch = new CountMinSketch(0.001, 0.99)
+    const sketch = CountMinSketch.create(0.001, delta)
+    const otherSketch = CountMinSketch.create(0.001, delta)
 
     otherSketch._columns++;
     (() => sketch.merge(otherSketch)).should.throw(Error)
@@ -76,7 +78,7 @@ describe('CountMinSketch', () => {
   })
 
   it('should the clone operation', () => {
-    const sketch = new CountMinSketch(0.001, 0.99)
+    const sketch = CountMinSketch.create(0.001, delta)
     // populate the sketches with some values
     sketch.update('foo')
     sketch.update('foo')
@@ -91,7 +93,7 @@ describe('CountMinSketch', () => {
   })
 
   describe('#saveAsJSON', () => {
-    const sketch = new CountMinSketch(0.001, 0.99)
+    const sketch = CountMinSketch.create(0.001, delta)
     sketch.update('foo')
     sketch.update('foo')
     sketch.update('foo')
@@ -100,18 +102,18 @@ describe('CountMinSketch', () => {
     it('should export a count-min sketch to a JSON object', () => {
       const exported = sketch.saveAsJSON()
       exported.type.should.equal('CountMinSketch')
-      exported._epsilon.should.equal(sketch.epsilon)
-      exported._delta.should.equal(sketch.delta)
+      exported._rows.should.equal(sketch._rows)
+      exported._columns.should.equal(sketch._columns)
+      exported._N.should.be.equal(sketch._N)
       exported._matrix.should.deep.equal(sketch._matrix)
     })
 
     it('should create a count-min sketch from a JSON export', () => {
       const exported = sketch.saveAsJSON()
       const newSketch = CountMinSketch.fromJSON(exported)
-      newSketch.epsilon.should.equal(sketch.epsilon)
-      newSketch.delta.should.equal(sketch.delta)
-      newSketch._columns.should.equal(sketch._columns)
-      newSketch._rows.should.equal(sketch._rows)
+      newSketch.w.should.equal(sketch.w)
+      newSketch.d.should.equal(sketch.d)
+      newSketch.N.should.be.equal(sketch.N)
       newSketch._matrix.should.deep.equal(sketch._matrix)
     })
 
@@ -119,9 +121,9 @@ describe('CountMinSketch', () => {
       const invalids = [
         { type: 'something' },
         { type: 'CountMinSketch' },
-        { type: 'CountMinSketch', epsilon: 1 },
-        { type: 'CountMinSketch', epsilon: 1, delta: 1 },
-        { type: 'CountMinSketch', epsilon: 1, delta: 1, seed: 1 }
+        { type: 'CountMinSketch', w: 1 },
+        { type: 'CountMinSketch', w: 1, d: 1 },
+        { type: 'CountMinSketch', w: 1, d: 1, seed: 1 }
       ]
 
       invalids.forEach(json => {
@@ -130,18 +132,49 @@ describe('CountMinSketch', () => {
     })
   })
   describe('Performance test', () => {
-    const max = 1000
+    // setup an finite stream of 100 000 elements between [0; 1000)
+    const max = 1000000
+    const rate = 0.00001
+    const range = 10000
+    const random = () => {
+      return Math.floor(Math.random() * range)
+    }
     it('should not return an error when inserting ' + max + ' elements', () => {
-      const filter = new CountMinSketch(0.001, 0.001) // error rate 0.01, probability of wrong answer: 0.001
-      for (let i = 0; i < max; ++i) filter.update('' + i)
-      const m = new Map()
+      const filter = CountMinSketch.create(rate, delta)
+      filter.seed = 1
+      // error rate 0.001, probability of wrong answer: 0.001
+      // console.log('number of rows:', filter._rows)
+      // console.log('number of columns:', filter._columns)
+      // console.log('Probability: ', 1 - delta)
+      // console.log('Error rate: ', errorRate)
+      // console.log('Relative accuracy is: ', 1 + errorRate * max, ' with probability: ', 1 - delta)
+      // add n times max elements so we got a frequency of 10 for each elements
+      let error = 0
+      const map = new Map()
       for (let i = 0; i < max; ++i) {
-        const count = filter.count('' + i)
-        if (!m.has(count)) m.set(count, 1)
-        m.set(filter.count('' + i), m.get(count) + 1)
+        const item = random()
+        // update
+        filter.update('' + item)
+        if (!map.has(item)) {
+          map.set(item, 1)
+        } else {
+          map.set(item, map.get(item) + 1)
+        }
+
+        // check the item
+        const count = filter.count('' + item)
+        const est = map.get(item) + rate * filter.N
+        if (count > est) {
+          error += 1
+          // console.log('[%d] => â: %d, a: %d', item, count, map.get(item), est)
+        }
       }
-      m.size.should.equal(1)
-      m.has(1).should.equal(true)
+
+      const errorRate = error / max
+      const errorProb = 1 - Math.pow(Math.E, -filter.d)
+      console.log('Number of errors: %d/%d with prob = %d', error, max, errorProb)
+      console.log('Rate:  ', errorRate)
+      errorRate.should.be.at.most(errorProb)
     })
   })
 })

@@ -49,7 +49,7 @@ describe('Utils', () => {
       const hashA = Math.random(Number.MIN_VALUE, Number.MAX_VALUE / 2)
       const hashB = Math.random(Number.MAX_VALUE / 2, Number.MAX_VALUE)
       const size = 1000
-      const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+      const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       values.forEach(n => {
         utils.doubleHashing(n, hashA, hashB, size).should.equal((hashA + n * hashB) % size)
       })
@@ -58,7 +58,7 @@ describe('Utils', () => {
 
   describe('#randomInt', () => {
     it('should generate a random int in an interval', () => {
-      const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+      const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       utils.randomInt(values[0], values[9]).should.be.oneOf(values)
     })
   })

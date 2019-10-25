@@ -39,11 +39,13 @@ const Exportable = require('./exportable.js')
  * @example
  * const BloomFilter = require('bloom-filters').BloomFilter;
  *
- * // create a Bloom Filter with capacity = 15 and 1% error rate
- * let filter = new BloomFilter(15, 0.1);
+ * // create a Bloom Filter of size = 15 and 4 hash functions
+ * let filter = new BloomFilter(15, 4);
  *
- * // alternatively, create a Bloom Filter from an array with 1% error rate
- * filter = BloomFilter.from([ 'alice', 'bob' ], 0.1);
+ * // alternatively, create an optimal Bloom Filter from an array with 1% error * rate for the array provided
+ * filter = BloomFilter.from([ 'alice', 'bob' ], 0.01)
+ * // or create an optimal bloom filter with a maximum of items and error rate
+ * filter = BloomFilter.create(1000, 0.001)
  *
  * // add some value in the filter
  * filter.add('alice');
@@ -53,23 +55,38 @@ const Exportable = require('./exportable.js')
  * console.log(filter.has('bob')); // output: true
  * console.log(filter.has('daniel')); // output: false
  *
- * // print false positive rate (around 0.1)
+ * // print false positive rate (around 0.001)
  * console.log(filter.rate());
  */
 class BloomFilter extends Exportable {
   /**
    * Constructor
-   * @param {int} capacity - The filter capacity, i.e. the maximum number of elements it will contains
-   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targeted by the filter
+   * @param {int} size - the number of cells
+   * @param {number} nbHashes - the number of hash functions used
    */
-  constructor (capacity, errorRate) {
+  constructor (size = 1000, nbHashes = 4) {
     super()
-    this._capacity = capacity
-    this._errorRate = errorRate
-    this._size = fm.optimalFilterSize(capacity, errorRate)
-    this._nbHashes = fm.optimalHashes(this._size, capacity)
+    if (nbHashes < 1) {
+      throw new Error('Set a number of hash functions greater than 1, current=' + nbHashes)
+    }
+    this._size = size
+    this._nbHashes = nbHashes
     this._filter = utils.allocateArray(this._size, 0)
     this._length = 0
+  }
+
+  /**
+   * Create an optimal bloom filter providing the maximum of elements stored and the error rate desired
+   * @param  {Number} [items=1000]      the maximum nuber of item to store
+   * @param  {Number} [errorRate=0.001] the error rate desired for a maximum of items inserted
+   * @return {BloomFilter}
+   */
+  static create (items = 1000, errorRate = 0.001, seed = utils.getDefaultSeed()) {
+    const size = fm.optimalFilterSize(items, errorRate)
+    const hashes = fm.optimalHashes(size, items)
+    const filter = new BloomFilter(size, hashes)
+    filter.seed = seed
+    return filter
   }
 
   /**
@@ -83,18 +100,9 @@ class BloomFilter extends Exportable {
    * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
   static from (array, errorRate, seed = utils.getDefaultSeed()) {
-    const filter = new BloomFilter(array.length, errorRate)
-    filter.seed = seed
+    const filter = BloomFilter.create(array.length, errorRate, seed)
     array.forEach(element => filter.add(element))
     return filter
-  }
-
-  /**
-   * Get the filter capacity, i.e. the maximum number of elements it will contains
-   * @return {integer} The filter capacity
-   */
-  get capacity () {
-    return this._capacity
   }
 
   /**

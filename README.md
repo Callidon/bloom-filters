@@ -7,6 +7,8 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 
 **Use non-cryptographic hash internally since (v0.7.0)** [XXHASH](https://cyan4973.github.io/xxHash/)
 
+**Breaking API changes from the 0.7.1 to the 1.0.0 version.**
+
 [Online documentation](https://callidon.github.io/bloom-filters/)
 
 # Table of contents
@@ -46,11 +48,12 @@ that is used to test whether an element is a member of a set. False positive mat
 const { BloomFilter } = require('bloom-filters')
 
 // create a Bloom Filter with size = 15 and 1% error rate
-let filter = new BloomFilter(15, 0.01)
+let filter = BloomFilter.create(15, 0.01)
 
-// alternatively, create a Bloom Filter from an array with 1% error rate
+// alternatively, create an optimal Bloom Filter from an array with 1% error rate for the array provided
 filter = BloomFilter.from([ 'alice', 'bob' ], 0.01)
-
+// or create an optimal bloom filter for specified number of elements and error rate
+filter = BloomFilter.create(1000, 0.001)
 // add some value in the filter
 filter.add('alice')
 filter.add('bob')
@@ -59,7 +62,7 @@ filter.add('bob')
 console.log(filter.has('bob')) // output: true
 console.log(filter.has('daniel')) // output: false
 
-// print false positive rate (around 0.01)
+// print false positive rate (around 0.001)
 console.log(filter.rate())
 ```
 
@@ -105,6 +108,8 @@ Cuckoo filters improve on Bloom filters by supporting deletion, limited counting
 **Reference:** Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). *Cuckoo filter: Practically better than bloom.* In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
 ([Full text article](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf))
 
+**Important**: The error rate can go up to 1.10^-18 = (0.000000000000000001). After this, You will get an error saying that the fingerprint length is higher than the hash length.
+
 ```javascript
 const { CuckooFilter } = require('bloom-filters')
 
@@ -138,7 +143,6 @@ let filter = new CountingBloomFilter(15, 0.1);
 
 // alternatively, create a Counting Bloom Filter from an array with 1% error rate
 filter = CountingBloomFilter.from([ 'alice', 'bob' ], 0.1);
-
 // add some value in the filter
 filter.add('alice');
 filter.add('bob');
@@ -167,11 +171,8 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 ```javascript
 const { CountMinSketch } = require('bloom-filters')
 
-// create a new count min sketch with epsilon = 0.001 and delta = 0.01
-// error rate = 0.01
-// probability of correct response: 1 - 0.01 = 0.99, very strong
-// highest the delta, highest the probability to over-estimate the truth value.
-const sketch = new CountMinSketch(0.001, 0.001)
+// create a new count min sketch with epsilon = 0.001 and delta = 0.99
+const sketch = new CountMinSketch(0.001, 0.99)
 
 // push some occurrences in the sketch
 sketch.update('alice')

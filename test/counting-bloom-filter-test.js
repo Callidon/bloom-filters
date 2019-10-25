@@ -33,7 +33,7 @@ describe('CountingBloomFilter', () => {
 
   describe('construction', () => {
     it('should add element to the filter with #add', () => {
-      const filter = new CountingBloomFilter(15, targetRate)
+      const filter = CountingBloomFilter.create(15, targetRate)
       filter.seed = seed
       filter.add('alice')
       filter.add('bob')
@@ -41,7 +41,7 @@ describe('CountingBloomFilter', () => {
     })
 
     it('should build a new filter using #from', () => {
-      const data = [ 'alice', 'bob', 'carl' ]
+      const data = ['alice', 'bob', 'carl']
       const expectedSize = Math.ceil(-((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)))
       const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
       const filter = CountingBloomFilter.from(data, targetRate, seed)
@@ -53,7 +53,7 @@ describe('CountingBloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = CountingBloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate, seed)
+    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
     it('should return false for elements that are definitively not in the set', () => {
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
@@ -68,7 +68,7 @@ describe('CountingBloomFilter', () => {
 
   describe('#delete', () => {
     it('should allow deletion of items', () => {
-      const filter = CountingBloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate, seed)
+      const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
       filter.delete('bob')
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(false)
@@ -77,7 +77,7 @@ describe('CountingBloomFilter', () => {
   })
 
   describe('#saveAsJSON', () => {
-    const filter = CountingBloomFilter.from([ 'alice', 'bob', 'carl' ], targetRate, seed)
+    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
     it('should export a bloom filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
       exported._seed.should.equal(filter.seed)
@@ -118,7 +118,7 @@ describe('CountingBloomFilter', () => {
     const max = 1000
     const targetedRate = 0.01
     it('should not return an error when inserting ' + max + ' elements', () => {
-      const filter = new CountingBloomFilter(max, targetedRate)
+      const filter = CountingBloomFilter.create(max, targetedRate)
       for (let i = 0; i < max; ++i) filter.add('' + i)
       for (let i = 0; i < max; ++i) {
         filter.has('' + i).should.equal(true)

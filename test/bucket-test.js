@@ -26,7 +26,6 @@ SOFTWARE.
 
 require('chai').should()
 const Bucket = require('../src/bucket.js')
-const utils = require('../src/utils')
 
 describe('Bucket', () => {
   describe('#isFree', () => {
@@ -114,7 +113,7 @@ describe('Bucket', () => {
   describe('#swapRandom', () => {
     it('should randomly swap an element from the inside of the bucket with one from the outside', () => {
       const bucket = new Bucket(5)
-      const values = [ 'foo', 'bar', 'moo' ]
+      const values = ['foo', 'bar', 'moo']
       values.forEach(value => bucket.add(value))
       const expected = 'boo'
       bucket.swapRandom(expected).should.be.oneOf(values)
@@ -126,7 +125,7 @@ describe('Bucket', () => {
     it('should return True when two buckets are equals', () => {
       const b1 = new Bucket(5)
       const b2 = new Bucket(5)
-      const values = [ 'foo', 'bar', 'moo' ]
+      const values = ['foo', 'bar', 'moo']
       values.forEach(value => {
         b1.add(value)
         b2.add(value)
@@ -166,12 +165,11 @@ describe('Bucket', () => {
 
   describe('#saveAsJSON', () => {
     const bucket = new Bucket(5)
-    const values = [ 'foo', 'bar', 'moo' ]
+    const values = ['foo', 'bar', 'moo']
     values.forEach(value => bucket.add(value))
 
     it('should export a bucket to a JSON object', () => {
       const exported = bucket.saveAsJSON()
-      exported._seed.should.equal(utils.getDefaultSeed())
       exported.type.should.equal('Bucket')
       exported._size.should.equal(bucket.size)
       exported._elements.should.deep.equal(bucket._elements)

@@ -26,7 +26,7 @@ SOFTWARE.
 
 const specs = require('./export-import-specs.js')
 const utils = require('./utils')
-
+const seedrandom = require('seedrandom')
 /**
  * An Exportable is a class that can be exported into a JSON object
  * @abstract
@@ -35,7 +35,9 @@ const utils = require('./utils')
 class Exportable {
   constructor () {
     this._seed = utils.getDefaultSeed()
+    this._rng = seedrandom(this._seed)
   }
+
   /**
    * Return the seed used in this structure
    * @return {Number|UINT32|UINT64}
@@ -51,6 +53,7 @@ class Exportable {
    */
   set seed (seed) {
     this._seed = seed
+    this._rng = seedrandom(this._seed)
   }
 
   /**

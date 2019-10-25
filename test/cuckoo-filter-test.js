@@ -100,7 +100,7 @@ describe('CuckooFilter', () => {
 
       filter._filter.forEach(bucket => {
         if (bucket.length > 0) {
-          bucket._elements[0].should.be.oneOf([ 'xyz', 'lol', locations.fingerprint ])
+          bucket._elements[0].should.be.oneOf(['xyz', 'lol', locations.fingerprint])
           nbElements += bucket.length
         }
       })

@@ -2,7 +2,7 @@ const Exportable = require('./exportable.js')
 const utils = require('./utils.js')
 const isBuffer = require('is-buffer')
 const inspect = Symbol.for('nodejs.util.inspect.custom')
-
+const fm = require('./formulas')
 /**
  * Exports an Invertible Bloom Lookup Table.
  *
@@ -20,18 +20,38 @@ class InvertibleBloomFilter extends Exportable {
    * @param {Number} [hashCount=3] The number of hash functions used, empirically studied to be 3 or 4 in most cases
    * @param {Boolean} [verbose] default true, print a warning if size is less than the hashcount
    */
-  constructor (size = 1000, hashCount = 3, verbose = true) {
+  constructor (size = 1000, hashCount = 3, seed = utils.getDefaultSeed(), verbose = false) {
     super()
     if (Buffer === undefined) throw new Error('No native Buffer implementation in the browser please require the buffer package feross/buffer: require("buffer/").Buffer')
     if (typeof hashCount !== 'number' || hashCount <= 0) throw new Error('hashCount need to be a number and higher than 0')
     if (typeof size !== 'number') throw new Error('The size need to be a number')
-    if (verbose && size < hashCount) {
-      console.log('[Warning] the size is less than the number of hash functions')
+    if (verbose) {
+      if (size < hashCount) {
+        console.log('[Warning] the size is less than the number of hash functions')
+      }
+      console.log('[InvertibleBloomFilter] creating an InvertibleBloomFilter of size %d with %d hash functions.', size, hashCount)
     }
+    this.seed = seed
     this._size = size
     this._hashCount = hashCount
     // the number of elements in the array is n = alpha * size
     this._elements = utils.allocateArray(this._size, () => new Cell())
+  }
+
+  /**
+   * Create an Invertible Bloom filter like a classic Bloom Filter.
+   * Dont forget that it creates an optimal filter for the specified size.
+   * The classic contructor of the filter already create an optimal IBLT, which can decode at most of its capacity.
+   * If you plan to only use the set difference, use the classic constructor.
+   * If you want to list all entries of the filter, use this one.
+   * @param  {Number} [items=1000]  [description]
+   * @param  {Number} [rate=0.001] [description]
+   * @return {InvertibleBloomFilter}
+   */
+  static create (items = 1000, rate = 0.001, seed = utils.getDefaultSeed(), verbose = false) {
+    const size = fm.optimalFilterSize(items, rate)
+    const hashes = fm.optimalHashes(size, items)
+    return new InvertibleBloomFilter(size, hashes, seed, verbose)
   }
 
   /**
@@ -50,8 +70,8 @@ class InvertibleBloomFilter extends Exportable {
    * @param {Number} seed set the seed for the filter
    * @return {InvertibleBloomFilter}
    */
-  static from (array = [], size = 1000, hashCount = 4, seed = utils.getDefaultSeed()) {
-    const iblt = new InvertibleBloomFilter(size, hashCount)
+  static from (array = [], size = 1000, hashCount = 4, seed = utils.getDefaultSeed(), verbose = false) {
+    const iblt = new InvertibleBloomFilter(size, hashCount, seed, verbose)
     array.forEach(e => {
       if (isBuffer(e)) {
         iblt.add(e)
@@ -59,7 +79,6 @@ class InvertibleBloomFilter extends Exportable {
         throw new Error('Only buffers are accepted')
       }
     })
-    iblt.seed = seed
     return iblt
   }
 

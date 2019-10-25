@@ -31,7 +31,7 @@ const random = require('random')
 const seedrandom = require('seedrandom')
 
 describe('Invertible Bloom Lookup Tables', () => {
-  let keys = 1000
+  const keys = 1000
   const hashCount = 3
   const alpha = 1.5
   const d = 100
@@ -109,6 +109,18 @@ describe('Invertible Bloom Lookup Tables', () => {
     })
   })
 
+  describe('#create', () => {
+    it('should create correctly an IBLT', () => {
+      const iblt = InvertibleBloomFilter.create(size, 0.001, seed, true)
+      toInsert.forEach(e => {
+        iblt.add(e)
+      })
+      const res = iblt.listEntries()
+      res.success.should.equal(true)
+      res.output.sort().should.eql(toInsert.sort())
+    })
+  })
+
   describe('#saveAsJSON', () => {
     const iblt = InvertibleBloomFilter.from([Buffer.from('meow'), Buffer.from('car')], 100, 4, seed)
 
@@ -160,7 +172,7 @@ describe('Invertible Bloom Lookup Tables', () => {
   describe(`Set differences of [10 to ${d}] with ${keys} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${alpha * d} cells`, () => {
     for (let i = step; i <= d; i += step) {
       it('should decodes correctly element for a set difference of ' + i, () => {
-        let differences = i
+        const differences = i
         commonTest(size, hashCount, keys, '', differences)
       }).timeout(0)
     }
@@ -174,11 +186,11 @@ describe('Invertible Bloom Lookup Tables', () => {
   }
 
   function commonTest (size, hashCount, keys, prefix, differences) {
-    const iblt = new InvertibleBloomFilter(size, hashCount)
+    const iblt = new InvertibleBloomFilter(size, hashCount, seed, true)
     iblt.seed = seed
     const setDiffplus = []
     const setDiffminus = []
-    const remote = new InvertibleBloomFilter(size, hashCount)
+    const remote = new InvertibleBloomFilter(size, hashCount, seed, true)
     remote.seed = seed
     for (let i = 1; i <= keys; ++i) {
       const hash = prefix + i // XXH.h64(prefix + i, seed).toString(16)
@@ -210,7 +222,7 @@ describe('Invertible Bloom Lookup Tables', () => {
       console.log('Should have: ', setDiffplus.length, setDiffminus.length, setDiffminus.length + setDiffplus.length)
       throw e
     }
-    let sum = res.additional.length + res.missing.length
+    const sum = res.additional.length + res.missing.length
     sum.should.equal(differences)
     // console.log('Set diff A:', setDiffplus.map(e => e.toString()))
     // console.log('Set diff B:', setDiffminus.map(e => e.toString()))

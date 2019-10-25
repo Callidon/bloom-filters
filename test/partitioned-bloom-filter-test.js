@@ -39,7 +39,7 @@ describe('PartitionedBloomFilter', () => {
     })
 
     it('should build a new filter using #from', () => {
-      const data = [ 'alice', 'bob', 'carl' ]
+      const data = ['alice', 'bob', 'carl']
       const expectedSize = PartitionedBloomFilter._computeOptimalNumberOfCells(data.length, targetRate)
       const expectedHashes = PartitionedBloomFilter._computeOptimalNumberOfhashes(targetRate)
       const filter = PartitionedBloomFilter.from(data, targetRate)

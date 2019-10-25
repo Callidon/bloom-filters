@@ -38,12 +38,13 @@ const Exportable = require('./exportable.js')
  * @example
  * const CountingBloomFilter = require('bloom-filters').CountingBloomFilter;
  *
- * // create a Bloom Filter with capacity = 15 and 1% error rate
- * let filter = new CountingBloomFilter(15, 0.1);
+ * // create a Bloom Filter with capacity = 15 and 4 hash functions
+ * let filter = new CountingBloomFilter(15, 4);
  *
  * // alternatively, create a Counting Bloom Filter from an array with 1% error rate
  * filter = CountingBloomFilter.from([ 'alice', 'bob' ], 0.1);
- *
+ * // or alternatively create an optimal bloom filter of max capcity 100 and error rate 0.1
+ * filter = CountingBloomFilter.create(100, 0.1)
  * // add some value in the filter
  * filter.add('alice');
  * filter.add('bob');
@@ -63,18 +64,32 @@ const Exportable = require('./exportable.js')
 class CountingBloomFilter extends Exportable {
   /**
    * Constructor
-   * @param {int} capacity - The filter capacity, i.e. the maximum number of elements it will contains
-   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targeted by the filter
+   * @param {int} size - The size of the filter
+   * @param {int} hashes - the number of hash functions
    */
-  constructor (capacity, errorRate) {
+  constructor (size = 100, hashes = 4) {
     super()
-    this._capacity = capacity
-    this._errorRate = errorRate
-    this._size = fm.optimalFilterSize(capacity, errorRate)
-    this._nbHashes = fm.optimalHashes(this._size, capacity)
+    if (hashes < 1) {
+      throw new Error('Set a number of hash functions greater than 1, current=' + hashes)
+    }
+    this._size = size // fm.optimalFilterSize(capacity, errorRate)
+    this._nbHashes = hashes // fm.optimalHashes(this._size, capacity)
     // the filter contains tuples [bit, counter]
     this._filter = utils.allocateArray(this._size, () => [0, 0])
     this._length = 0
+  }
+
+  /**
+   * Return an CountingBloomFilter prodiving the maximum number of elements to insert and the error rate desired
+   * @param  {int} max  the maximum capacity of the filter
+   * @param  {number} rate the error rate desired for this filter
+   * @return {CountingBloomFilter}
+   */
+  static create (max, rate, seed = utils.getDefaultSeed()) {
+    const s = fm.optimalFilterSize(max, rate)
+    const filter = new CountingBloomFilter(s, fm.optimalHashes(s, max))
+    filter.seed = seed
+    return filter
   }
 
   /**
@@ -88,8 +103,7 @@ class CountingBloomFilter extends Exportable {
    * const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
   static from (array, errorRate, seed = utils.getDefaultSeed()) {
-    const filter = new CountingBloomFilter(array.length, errorRate)
-    filter.seed = seed
+    const filter = CountingBloomFilter.create(array.length, errorRate, seed)
     array.forEach(element => filter.add(element))
     return filter
   }

@@ -46,6 +46,7 @@ class Bucket extends Exportable {
     this._size = size
     this._firstNullIndex = 0
     this._length = 0
+    delete this._seed
   }
 
   /**
@@ -147,9 +148,22 @@ class Bucket extends Exportable {
    * @param {*} element - The element to be inserted
    * @return {*} The element that have been swapped with the parameter
    */
-  swapRandom (element) {
-    const index = utils.randomInt(0, this._length - 1)
+  swapRandom (element, random = Math.random) {
+    const index = utils.randomInt(0, this._length - 1, random)
     const tmp = this._elements[index]
+    this._elements[index] = element
+    return tmp
+  }
+
+  /**
+   * Swap an element of the bucket with a given index and element, then return the replaced element
+   * @param  {int} index - The index at where the element should be inserted
+   * @param {*} element - The element to be inserted
+   * @return {*} The element that have been swapped with the parameter
+   */
+  swap (index, element) {
+    const tmp = this._elements[index]
+    console.log('old:', tmp, 'new: ', element)
     this._elements[index] = element
     return tmp
   }

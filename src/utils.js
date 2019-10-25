@@ -57,10 +57,7 @@ const allocateArray = (size, defaultValue) => {
 }
 
 /**
- * Hash a value into two values (in hex or integer format)
- *
- * It uses XXHASH algorithms: xxHash is an extremely fast non-cryptographic hash algorithm, working at speeds close to RAM limits. It is proposed in two flavors, 32 and 64 bits.
- * @see {@link https://cyan4973.github.io/xxHash/} for more details about XXHASH
+ * (64-bits only) Hash a value into two values (in hex or integer format)
  * @param  {string|ArrayBuffer|Buffer} value - The value to hash
  * @param  {boolean} [asInt=false] - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
  * @param {Number} seed the seed used for hashing
@@ -69,17 +66,18 @@ const allocateArray = (size, defaultValue) => {
  * @author Arnaud Grall & Thomas Minier
  */
 const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
-  const length = 64
+  const f = XXH.h64(value, seed + 1)
+  const l = XXH.h64(value, seed + 2)
   if (asInt) {
     return {
-      first: XXH.h64(value, seed + 1).toNumber(),
-      second: XXH.h64(value, seed + 2).toNumber()
+      first: f.toNumber(),
+      second: l.toNumber()
     }
   } else {
-    let one = XXH.h64(value, seed + 1).toString(16)
-    if (one.length < length / 4) one = '0'.repeat(length / 4 - one.length) + one
-    let two = XXH.h64(value, seed + 2).toString(16)
-    if (two.length < length / 4) two = '0'.repeat(length / 4 - two.length) + two
+    let one = f.toString(16)
+    if (one.length < 16) one = '0'.repeat(16 - one.length) + one
+    let two = l.toString(16)
+    if (two.length < 16) two = '0'.repeat(16 - two.length) + two
     return {
       first: one,
       second: two
@@ -88,20 +86,19 @@ const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
 }
 
 /**
- * Same as hashTwice but return Numbers and String equivalent
+ * (64-bits only) Same as hashTwice but return Numbers and String equivalent
  * @param  {string|ArrayBuffer|Buffer} val the value to hash
  * @param  {Number} seed the seed to change when hashing
  * @return {Object} {int: {first: <number>, second: <number>}, string: {first: <hex-string>, second: <hex-string>}
  * @author Arnaud Grall
  */
 const allInOneHashTwice = (val, seed = getDefaultSeed()) => {
-  const length = 64
-  let one = XXH.h64(val, seed + 1)
-  let two = XXH.h64(val, seed + 2)
+  const one = XXH.h64(val, seed + 1)
+  const two = XXH.h64(val, seed + 2)
   let stringOne = one.toString(16)
-  if (stringOne.length < (length / 4)) stringOne = '0'.repeat((length / 4) - stringOne.length) + stringOne
+  if (stringOne.length < 16) stringOne = '0'.repeat(16 - stringOne.length) + stringOne
   let stringTwo = two.toString(16)
-  if (stringTwo.length < (length / 4)) stringTwo = '0'.repeat((length / 4) - stringTwo.length) + stringTwo
+  if (stringTwo.length < 16) stringTwo = '0'.repeat(16 - stringTwo.length) + stringTwo
 
   return {
     int: {
@@ -135,30 +132,30 @@ const doubleHashing = (n, hashA, hashB, size) => {
 /**
  * Generate x distinct indexes on [0, size) using the double hashing technique
  * @param  {*} element   The element to hash
- * @param  {Number} size      [description]
- * @param  {Number} hashcount The number of indexes desired
+ * @param  {Number} size      the range on which we can generate an index [0, size) = size
+ * @param  {Number} number The number of indexes desired
  * @param  {Number} seed the seed used
  * @return {Number[]}           index among [0, size)
  * @author Arnaud Grall
  */
-const getDistinctIndices = (element, size, hashcount, seed = getDefaultSeed()) => {
-  const getDistinctIndicesBis = (n, elem, size, count, indexes = new Map()) => {
-    if (indexes.size === count) {
-      return [...indexes.keys()]
+const getDistinctIndices = (element, size, number, seed = getDefaultSeed()) => {
+  const getDistinctIndicesBis = (n, elem, size, count, indexes = []) => {
+    if (indexes.length === count) {
+      return indexes
     } else {
-      const hashes = hashTwice(n + elem, true, seed)
+      const hashes = hashTwice(elem, true, seed + size % n)
       const ind = doubleHashing(n, hashes.first, hashes.second, size)
-      if (indexes.has(ind)) {
+      if (indexes.includes(ind)) {
         // console.log('generate index: %d for %s', ind, elem)
         return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
       } else {
         // console.log('already found: %d for %s', ind, elem)
-        indexes.set(ind, ind)
+        indexes.push(ind)
         return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
       }
     }
   }
-  return getDistinctIndicesBis(1, element, size, hashcount)
+  return getDistinctIndicesBis(1, element, size, number)
 }
 
 /**
@@ -172,7 +169,7 @@ const getDistinctIndices = (element, size, hashcount, seed = getDefaultSeed()) =
 const getIndices = (element, size, hashCount, seed = getDefaultSeed()) => {
   const arr = []
   for (let i = 1; i <= hashCount; i++) {
-    const hashes = hashTwice(i + element, true, seed)
+    const hashes = hashTwice(element, true, seed + size % i)
     arr.push(doubleHashing(i, hashes.first, hashes.second, size))
   }
   if (arr.length !== hashCount) throw new Error('report this, please, shouldnt be of different size')
@@ -187,10 +184,11 @@ const getIndices = (element, size, hashCount, seed = getDefaultSeed()) => {
  * @memberof Utils
  * @author Thomas Minier
  */
-const randomInt = (min, max) => {
+const randomInt = (min, max, random = Math.random) => {
   min = Math.ceil(min)
   max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min + 1)) + min
+  const rn = random()
+  return Math.floor(rn * (max - min + 1)) + min
 }
 
 /**

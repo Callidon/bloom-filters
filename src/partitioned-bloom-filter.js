@@ -80,10 +80,28 @@ class PartitionedBloomFilter extends Exportable {
    * @param  {Number} [errorRate=0.01]  the desired error rate
    * @return {PartitionedBloomFilter}
    */
-  static create (desiredItem = 100, errorRate = 0.01, loadFactor = 0.5) {
+  static create (desiredItem = 100, errorRate = 0.01, loadFactor = 0.5, seed = utils.getDefaultSeed()) {
     const capacity = PartitionedBloomFilter._computeOptimalNumberOfCells(desiredItem, errorRate, loadFactor)
     const nbHashes = PartitionedBloomFilter._computeOptimalNumberOfhashes(errorRate, loadFactor)
     return new PartitionedBloomFilter(capacity, nbHashes, loadFactor, desiredItem)
+  }
+
+  /**
+   * Build a new Partitioned Bloom Filter from an existing array with a fixed error rate
+   * @param {Array} array - The array used to build the filter
+   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
+   * @param {Number} seed set the seed for the filter
+   * @param  {Number} [loadFactor=0.5] the load factor desired
+   * @return {BloomFilter} A new Bloom Filter filled with iterable's elements
+   * @example
+   * // create a filter with a false positive rate of 0.1
+   * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
+   */
+  static from (array, errorRate, seed = utils.getDefaultSeed(), loadFactor = 0.5) {
+    const filter = PartitionedBloomFilter.create(array.length, errorRate, loadFactor, array.length)
+    filter.seed = seed
+    array.forEach(element => filter.add(element))
+    return filter
   }
 
   /**
@@ -108,24 +126,6 @@ class PartitionedBloomFilter extends Exportable {
    */
   get length () {
     return this._length
-  }
-
-  /**
-   * Build a new Partitioned Bloom Filter from an existing array with a fixed error rate
-   * @param {Array} array - The array used to build the filter
-   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
-   * @param {Number} seed set the seed for the filter
-   * @param  {Number} [loadFactor=0.5] the load factor desired
-   * @return {BloomFilter} A new Bloom Filter filled with iterable's elements
-   * @example
-   * // create a filter with a false positive rate of 0.1
-   * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
-   */
-  static from (array, errorRate, seed = utils.getDefaultSeed(), loadFactor = 0.5) {
-    const filter = PartitionedBloomFilter.create(array.length, errorRate, loadFactor, array.length)
-    filter.seed = seed
-    array.forEach(element => filter.add(element))
-    return filter
   }
 
   /**
