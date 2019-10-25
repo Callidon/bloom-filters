@@ -29,7 +29,7 @@ chai.should()
 chai.expect()
 const CuckooFilter = require('../src/cuckoo-filter.js')
 const utils = require('../src/utils')
-const seed = Math.random()
+const seed = 1
 
 describe('CuckooFilter', () => {
   describe('#_locations', () => {
@@ -37,7 +37,7 @@ describe('CuckooFilter', () => {
       const filter = new CuckooFilter(15, 3, 2, 1)
       filter.seed = (seed)
       const element = 'foo'
-      const hashes = utils.hashIntAndString(element, seed, 2, 64)
+      const hashes = utils.hashIntAndString(element, seed, 16, 64)
       const hash = hashes.int
       const fingerprint = hashes.string.substring(0, 3)
 
@@ -113,7 +113,46 @@ describe('CuckooFilter', () => {
       filter.seed = (seed)
       const element = 'foo'
       filter.add(element)
-      filter.add(element, false).should.equal(false)
+      filter.add(element, false, true).should.equal(false)
+    })
+
+    it('should not rollback to its initial state in case the filter is full with option add(x, false, true)', () => {
+      const filter = new CuckooFilter(10, 3, 1)
+      filter.seed = (seed)
+      filter.add('a').should.equal(true)
+      filter.add('b').should.equal(true)
+      filter.add('c').should.equal(true)
+      filter.add('d').should.equal(true)
+      filter.add('e').should.equal(true)
+      filter.add('f').should.equal(true)
+      filter.add('h').should.equal(true)
+      filter.add('i').should.equal(true)
+      filter.add('j').should.equal(true)
+      filter.add('k').should.equal(true)
+      const snapshot = JSON.stringify(filter.saveAsJSON())
+      filter.add('l', false, true).should.equal(false)
+      const snapshot2 = JSON.stringify(filter.saveAsJSON())
+      snapshot.should.not.be.equal(snapshot2)
+      filter.equals(CuckooFilter.fromJSON(JSON.parse(snapshot))).should.be.equal(false)
+    })
+
+    it('should rollback to its initial state in case the filter is full', () => {
+      const filter = new CuckooFilter(10, 3, 1)
+      filter.seed = (seed)
+      filter.add('a').should.equal(true)
+      filter.add('b').should.equal(true)
+      filter.add('c').should.equal(true)
+      filter.add('d').should.equal(true)
+      filter.add('e').should.equal(true)
+      filter.add('f').should.equal(true)
+      filter.add('h').should.equal(true)
+      filter.add('i').should.equal(true)
+      filter.add('j').should.equal(true)
+      filter.add('k').should.equal(true)
+      const snapshot = JSON.stringify(filter.saveAsJSON())
+      filter.add('l').should.equal(false)
+      const snapshot2 = JSON.stringify(filter.saveAsJSON())
+      snapshot.should.be.equal(snapshot2)
     })
   })
 
@@ -250,11 +289,11 @@ describe('CuckooFilter', () => {
     })
   })
   describe('Performance test', () => {
-    const max = 1000
-    const rate = 0.01
-    const bucketSize = 4
+    const max = 20
+    const rate = 0.000000000000000001
+    const bucketSize = 1
     it('should not return an error when inserting and asking for ' + max + ' elements, rate = ' + rate + ', bucketSize = ' + bucketSize, () => {
-      const filter = CuckooFilter.create(max, rate, bucketSize, 500)
+      const filter = CuckooFilter.create(max, rate, bucketSize, 500, seed)
       for (let i = 0; i < max; i++) {
         filter.add('' + i).should.equal(true)
       }

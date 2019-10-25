@@ -70,6 +70,24 @@ class CuckooFilter extends Exportable {
     this._length = 0
     this._maxKicks = maxKicks
   }
+
+  /**
+   * Return a new optimal CuckooFilter given the number of maximum elements to store and the error rate desired and the bucket size
+   * @param  {Number} items          The number of items to insert
+   * @param  {Number} rate           The desired error rate
+   * @param  {Number} [bucketSize=2] The number of buckets desired per cell
+   * @param  {Number} [maxKicks=10]   the number of kicks done when a collision occurs
+   * @return {CuckooFilter} The CuckoFilter constructed for 'items' items with a provided error rate.
+   */
+  static create (items, rate = 0.001, bucketSize = 4, maxKicks = 500, seed = utils.getDefaultSeed()) {
+    const fl = CuckooFilter._computeFingerpintLength(bucketSize, rate)
+    const capacity = Math.ceil(items / bucketSize / 0.955)
+    // const capacity = utils.power2(items)
+    const f = new CuckooFilter(capacity, fl, bucketSize, maxKicks)
+    f.seed = seed
+    return f
+  }
+
   /**
    * Return the full size, aka the total number of cells
    * @return {Number}
@@ -119,20 +137,6 @@ class CuckooFilter extends Exportable {
   }
 
   /**
-   * Create a new Cuckoo Filter from a JSON export
-   * @param  {Object} json - A JSON export of a Cuckoo Filter
-   * @return {CuckooFilter} A new Cuckoo Filter
-   */
-  static fromJSON (json) {
-    if ((json.type !== 'CuckooFilter') || !('_size' in json) || !('_fingerprintLength' in json) || !('_length' in json) || !('_maxKicks' in json) || !('_filter' in json) || !('_seed' in json)) { throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter') }
-    const filter = new CuckooFilter(json._size, json._fingerprintLength, json._bucketSize, json._maxKicks)
-    filter._length = json._length
-    filter._filter = json._filter.map(json => Bucket.fromJSON(json))
-    filter.seed = json.seed
-    return filter
-  }
-
-  /**
    * @todo do the recovery if return false or throw error because we altered values
    * Add an element to the filter, if false is returned, it means that the filter is considered as full.
    * @param {*} element - The element to add
@@ -142,7 +146,7 @@ class CuckooFilter extends Exportable {
    * filter.add('alice');
    * filter.add('bob');
    */
-  add (element, throwError = false) {
+  add (element, throwError = false, destructive = false) {
     const locations = this._locations(element)
     // store fingerprint in an available empty bucket
     if (this._filter[locations.firstIndex].isFree()) {
@@ -151,10 +155,16 @@ class CuckooFilter extends Exportable {
       this._filter[locations.secondIndex].add(locations.fingerprint)
     } else {
       // buckets are full, we must relocate one of them
-      let index = Math.random() < 0.5 ? locations.firstIndex : locations.secondIndex
+      let index = this._rng() < 0.5 ? locations.firstIndex : locations.secondIndex
       let movedElement = locations.fingerprint
+      let logs = []
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
-        movedElement = this._filter[index].swapRandom(movedElement)
+        const rndIndex = utils.randomInt(0, this._filter[index].length - 1, this._rng)
+        const tmp = this._filter[index].at(rndIndex)
+        logs.push([index, rndIndex, tmp])
+        this._filter[index].set(rndIndex, movedElement)
+        movedElement = tmp
+        // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
         const newHash = utils.hashAsInt(movedElement, this.seed, 64)
         index = Math.abs((index ^ Math.abs(newHash))) % this._filter.length
         // add the moved element to the bucket if possible
@@ -164,8 +174,16 @@ class CuckooFilter extends Exportable {
           return true
         }
       }
+      if (!destructive) {
+        // rollback all modified entries to their initial states
+        for (let i = logs.length - 1; i >= 0; i--) {
+          const log = logs[i]
+          this._filter[log[0]].set(log[1], log[2])
+        }
+      }
       // considered full
       if (throwError) {
+        // rollback all operations
         throw new Error('[CuckooFilter] The filter is considered as full')
       } else {
         return false
@@ -227,22 +245,7 @@ class CuckooFilter extends Exportable {
    */
   static _computeFingerpintLength (size, rate) {
     let f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
-    return Math.ceil(f)
-  }
-
-  /**
-   * Return a new CuckooFilter, everythoing computed for you.
-   * @param  {Number} items          The number of items to insert
-   * @param  {Number} rate           The desired error rate
-   * @param  {Number} [bucketSize=2] The number of buckets desired per cell
-   * @param  {Number} [maxKicks=10]   the number of kicks done when a collision occurs
-   * @return {CuckooFilter} The CuckoFilter constructed for 'items' items with a provided error rate.
-   */
-  static create (items, rate = 0.001, bucketSize = 4, maxKicks = 500) {
-    const fl = CuckooFilter._computeFingerpintLength(bucketSize, rate)
-    const capacity = Math.ceil(items / bucketSize / 0.955)
-    // const capacity = utils.power2(items)
-    return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
+    return Math.ceil(f / 4) // because we use base 16 64-bits hashes
   }
 
   /**
@@ -277,7 +280,7 @@ class CuckooFilter extends Exportable {
    * @private
    */
   _locations (element) {
-    const hashes = utils.hashIntAndString(element, this.seed, 2, 64)
+    const hashes = utils.hashIntAndString(element, this.seed, 16, 64)
     const hash = hashes.int
     if (this._fingerprintLength > hashes.string.length) {
       throw new Error('the fingerprint length (' + this._fingerprintLength + ') is higher than the hash length (' + hashes.string.length + '), please reduce the fingerprint length or report if this is an unexpected behavior.')
@@ -290,6 +293,25 @@ class CuckooFilter extends Exportable {
       fingerprint,
       firstIndex: firstIndex % this._size,
       secondIndex: secondIndex % this._size
+    }
+    return res
+  }
+
+  /**
+   * Check if another cuckoo filter is equal to this one
+   * @param  {CuckooFilter} filter the cuckoo filter to compare to this one
+   * @return {Boolean} True if they are equal, false otherwise
+   */
+  equals (filter = undefined) {
+    if (!filter) return false
+    let i = 0
+    let res = true
+    while (res && i < this._filter.length) {
+      const bucket = this._filter[i]
+      if (!filter._filter[i].equals(bucket)) {
+        res = false
+      }
+      i++
     }
     return res
   }
