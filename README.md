@@ -7,7 +7,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 
 **Use non-cryptographic hash internally since (v0.7.0)** [XXHASH](https://cyan4973.github.io/xxHash/)
 
-**Breaking API changes from the 0.7.1 to the 1.0.0 version.**
+**Breaking API changes from the 0.7.1 to the 0.8.0 version.**
 
 [Online documentation](https://callidon.github.io/bloom-filters/)
 
@@ -46,25 +46,19 @@ that is used to test whether an element is a member of a set. False positive mat
 
 ```javascript
 const { BloomFilter } = require('bloom-filters')
-
 // create a Bloom Filter with size = 15 and 1% error rate
-let filter = BloomFilter.create(15, 0.01)
-
-// alternatively, create an optimal Bloom Filter from an array with 1% error rate for the array provided
-filter = BloomFilter.from([ 'alice', 'bob' ], 0.01)
-// or create an optimal bloom filter for specified number of elements and error rate
-filter = BloomFilter.create(1000, 0.001)
-// add some value in the filter
-filter.add('alice')
-filter.add('bob')
-
+let filter = new BloomFilter(10, 4)
 // lookup for some data
 console.log(filter.has('bob')) // output: true
 console.log(filter.has('daniel')) // output: false
-
-// print false positive rate (around 0.001)
+// print the error rate
 console.log(filter.rate())
 ```
+
+Similar constructors:
+- `BloomFilter.create(max_size, error_rate)`: create an optimal Bloom filter for a maximum of max_size elements with the desired error rate.
+- `BloomFilter.from(array, error_rate)`: same as before, but create an optimal Bloom Filter for the size fo the array provided.
+
 
 ### Partitioned Bloom Filter
 
@@ -84,10 +78,8 @@ Otherwise, a Partitioned Bloom Filter **follows the same API than a [Classic Blo
 ```javascript
 const { PartitionedBloomFilter } = require('bloom-filters')
 
-// create a PartitionedBloomFilter for 10 elements with an error rate of 1% within a load factor of 0.5
-const filter = PartitionedBloomFilter.create(10, 0.01, 0.5)
-// if you want to customize all parameter you can create the Filter manually
-// const filter = new PartitionedBloomFilter(totalBits, hashFunctions, loadFactor)
+// create a PartitionedBloomFilter of size 10 with 5 hash functions
+const filter = new PartitionedBloomFilter(10, 5)
 
 // add some value in the filter
 filter.add('alice')
@@ -101,6 +93,10 @@ console.log(filter.has('daniel')) // output: false
 // ...
 ```
 
+Similar constructors:
+- `PartitionedBloomFilter.create(max_size, error_rate, load_factor)`: create an optimal Partitioned BloomFilter for a maximum of max_size elements with the desired error rate.
+- `PartitionedBloomFilter.from(array, error_rate)`: same as before, but create an optimal Partitioned BloomFilter for the size fo the array provided.
+
 ### Cuckoo Filter
 
 Cuckoo filters improve on Bloom filters by supporting deletion, limited counting, and bounded False positive rate with similar storage efficiency as a standard Bloom Filter.
@@ -108,15 +104,11 @@ Cuckoo filters improve on Bloom filters by supporting deletion, limited counting
 **Reference:** Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). *Cuckoo filter: Practically better than bloom.* In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
 ([Full text article](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf))
 
-**Important**: The error rate can go up to 1.10^-18 = (0.000000000000000001). After this, You will get an error saying that the fingerprint length is higher than the hash length.
-
 ```javascript
 const { CuckooFilter } = require('bloom-filters')
 
 // create a Cuckoo Filter with size = 15, fingerprint length = 3 and bucket size = 2
 const filter = new CuckooFilter(15, 3, 2)
-// or create a CuckooFilter for 2 elements, with an error rate of 0.01 and a bucketSize of 2
-filter = CuckooFilter.create(2, 0.01, 2)
 filter.add('alice')
 filter.add('bob')
 
@@ -128,6 +120,11 @@ console.log(filter.has('daniel')) // output: false
 filter.remove('bob')
 console.log(filter.has('bob')) // output: false
 ```
+
+Similar constructors:
+- `CuckooFilter.create(max_size, error_rate, bucketSize, maxKicks, seed)`: Create an optimal Cuckoo Filter given the max number of elements, the error rate and the number of buckets.
+
+**Important**: The error rate can go up to 1.10^-18 = (0.000000000000000001). After this, You will get an error saying that the fingerprint length is higher than the hash length.
 
 ### Counting Bloom Filter
 
@@ -160,6 +157,10 @@ console.log(filter.has('daniel')); // output: false
 console.log(filter.rate());
 ```
 
+Similar constructors:
+- `CountingBloomFilter.create(max_size, error_rate, load_factor)`: create an optimal Counting Bloom Filter for a maximum of max_size elements with the desired error rate.
+- `CountingBloomFilter.from(array, error_rate)`: same as before, but create an optimal Counting Bloom Filter for the size fo the array provided.
+
 ### Count Min Sketch
 
 The Count Min Sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
@@ -171,9 +172,10 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 ```javascript
 const { CountMinSketch } = require('bloom-filters')
 
-// create a new count min sketch with epsilon = 0.001 and delta = 0.99
-const sketch = new CountMinSketch(0.001, 0.99)
-
+// create a new count min sketch with 2018 columns and 1 row
+const sketch = new CountMinSketch(2048, 1)
+// or create an optimal Count-Min-sketch with epsilon = 0.001 and delta = 0.001
+// or sketck = CountMinSketch.create(0.001, 0.001)
 // push some occurrences in the sketch
 sketch.update('alice')
 sketch.update('alice')
@@ -184,6 +186,10 @@ console.log(sketch.count('alice')) // output: 2
 console.log(sketch.count('bob')) // output: 1
 console.log(sketch.count('daniel')) // output: 0
 ```
+
+Similar constructors:
+- `CountMinSketch.create(epsilon, delta)`: create an optimal Count-min sketch for an epsilon and delta provided
+
 
 ### Invertible Bloom Filters
 
@@ -320,6 +326,8 @@ npm run coverage
 * [Invertible Bloom Filters](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
 
 ## Changelog
+
+**v0.8.0**: Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API use use the `.create()` or `.from()` functions to match the old api.
 
 **v0.7.1**: Add the Counting Bloom Filter.
 

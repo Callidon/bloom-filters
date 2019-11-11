@@ -48,9 +48,6 @@ const Exportable = require('./exportable.js')
  * // creating 3 buckets of 5 bits each. This filter will be considered full after inserting 3 elements
  * let filter = new PartitionedBloomFilter(15, 3, 0.5);
  *
- * // alternatively, create a Partitioned Bloom Filter from an array with 1% error rate
- * filter = PartitionedBloomFilter.from([ 'alice', 'bob' ], 0.1);
- *
  * // add some value in the filter
  * filter.add('alice');
  * filter.add('bob');
@@ -63,6 +60,13 @@ const Exportable = require('./exportable.js')
  * console.log(filter.rate());
  */
 class PartitionedBloomFilter extends Exportable {
+  /**
+   * Constructor
+   * @param {Number} [totalBits=15]   the total number of cells
+   * @param {Number} [nbHashes=3]     the number of hash functions
+   * @param {Number} [loadFactor=0.5] the load factor
+   * @param {Number} [capacity=0] the capacity, by default it is determined by totalBits, the load factor the the number of hash functions.
+   */
   constructor (totalBits = 15, nbHashes = 3, loadFactor = 0.5, capacity = 0) {
     super()
     this._size = totalBits

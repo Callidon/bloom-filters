@@ -42,11 +42,6 @@ const Exportable = require('./exportable.js')
  * // create a Bloom Filter of size = 15 and 4 hash functions
  * let filter = new BloomFilter(15, 4);
  *
- * // alternatively, create an optimal Bloom Filter from an array with 1% error * rate for the array provided
- * filter = BloomFilter.from([ 'alice', 'bob' ], 0.01)
- * // or create an optimal bloom filter with a maximum of items and error rate
- * filter = BloomFilter.create(1000, 0.001)
- *
  * // add some value in the filter
  * filter.add('alice');
  * filter.add('bob');

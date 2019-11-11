@@ -40,11 +40,6 @@ const Exportable = require('./exportable.js')
  *
  * // create a Bloom Filter with capacity = 15 and 4 hash functions
  * let filter = new CountingBloomFilter(15, 4);
- *
- * // alternatively, create a Counting Bloom Filter from an array with 1% error rate
- * filter = CountingBloomFilter.from([ 'alice', 'bob' ], 0.1);
- * // or alternatively create an optimal bloom filter of max capcity 100 and error rate 0.1
- * filter = CountingBloomFilter.create(100, 0.1)
  * // add some value in the filter
  * filter.add('alice');
  * filter.add('bob');
