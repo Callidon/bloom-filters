@@ -46,7 +46,7 @@ that is used to test whether an element is a member of a set. False positive mat
 
 ```javascript
 const { BloomFilter } = require('bloom-filters')
-// create a Bloom Filter with size = 15 and 1% error rate
+// create a Bloom Filter with size = 10 and 4% error rate
 let filter = new BloomFilter(10, 4)
 // lookup for some data
 console.log(filter.has('bob')) // output: true
@@ -135,7 +135,7 @@ A Counting Bloom filter works in a similar manner as a regular Bloom filter; how
 ```javascript
 const CountingBloomFilter = require('bloom-filters').CountingBloomFilter;
 
-// create a Bloom Filter with capacity = 15 and 1% error rate
+// create a Bloom Filter with capacity = 15 and 0.1% error rate
 let filter = new CountingBloomFilter(15, 0.1);
 
 // alternatively, create a Counting Bloom Filter from an array with 1% error rate
@@ -172,7 +172,7 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 ```javascript
 const { CountMinSketch } = require('bloom-filters')
 
-// create a new count min sketch with 2018 columns and 1 row
+// create a new count min sketch with 2048 columns and 1 row
 const sketch = new CountMinSketch(2048, 1)
 // or create an optimal Count-Min-sketch with epsilon = 0.001 and delta = 0.001
 // or sketck = CountMinSketch.create(0.001, 0.001)
@@ -218,8 +218,8 @@ Please respects the method inputs and don't pass JSON exported structures as inp
 ```javascript
 const { InvertibleBloomFilter } = require('bloom-filters')
 
-// IF YOU ARE NODEJS user no need to import Buffer
-// or IF YOU ARE a BROWSER-BASED USER, you must import the package buffer (https://www.npmjs.com/package/buffer)
+// If you are a NODEJS user, no need to import Buffer
+// otherwie, if you are a BROWSER-BASED user, you must import the buffer package (https://www.npmjs.com/package/buffer)
 
 const hashcount = 3
 const size = 50
@@ -262,7 +262,7 @@ console.log('Remaining entries after deletion: ', list.success, list.output.map(
 ```
 The example can be run in tests/iblt-example.js
 
-**Tuning the IBLT** We recommend to use at least a **hashcount** of 3 and an **alpha** of 1.5 for at least 50 differences which equals to 1.5*50 = 75 cells. Then if you insert a huge number of values in there. The decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic on the number of elements  inserted. Even for the listEntries function. For more details we suggest you to read the paper ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
+**Tuning the IBLT** We recommend to use at least a **hashcount** of 3 and an **alpha** of 1.5 for at least 50 differences, which equals to 1.5*50 = 75 cells. Then, if you insert a huge number of values in there, the decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic, based on the number of elements  inserted (Even for the functions like listEntries). For more details, you should read the seminal research paper on IBLTs ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
 
 ## Export and import
 
@@ -327,7 +327,7 @@ npm run coverage
 
 ## Changelog
 
-**v0.8.0**: Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API use use the `.create()` or `.from()` functions to match the old api.
+**v0.8.0**: Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API, use the `.create()` or `.from()` functions to match the old api.
 
 **v0.7.1**: Add the Counting Bloom Filter.
 
