@@ -58,12 +58,12 @@ function assertFields (obj, ...fields) {
 }
 
 const BloomFilterSpecs = {
-  export: cloneObject('BloomFilter', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed'),
+  export: cloneObject('BloomFilter', '_size', '_length', '_nbHashes', '_filter', '_seed'),
   import: (FilterConstructor, json) => {
-    if ((json.type !== 'BloomFilter') || !assertFields(json, '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed')) {
+    if ((json.type !== 'BloomFilter') || !assertFields(json, '_size', '_length', '_nbHashes', '_filter', '_seed')) {
       throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter')
     }
-    const filter = new FilterConstructor(json._capacity, json._errorRate)
+    const filter = new FilterConstructor(json._capacity, json._nbHashes)
     filter.seed = json._seed
     filter._size = json._size
     filter._nbHashes = json._nbHashes

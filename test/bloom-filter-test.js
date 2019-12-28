@@ -79,7 +79,11 @@ describe('BloomFilter', () => {
     })
 
     it('should create a bloom filter from a JSON export', () => {
-      const exported = filter.saveAsJSON()
+      let exported = filter.saveAsJSON()
+      // simulate serialization
+      exported = JSON.stringify(exported)
+      // simulate deserialization
+      exported = JSON.parse(exported)
       const newFilter = BloomFilter.fromJSON(exported)
       newFilter.seed.should.equal(seed)
       newFilter.size.should.equal(filter._size)
