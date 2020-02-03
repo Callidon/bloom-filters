@@ -19,9 +19,9 @@ deploy:
   on:
     tags: true
     repo: Callidon/bloom-filters
-- provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN
-  local_dir: doc
-  on:
-    branch: master
+# - provider: pages
+#   skip_cleanup: true
+#   github_token: $GITHUB_TOKEN
+#   local_dir: doc
+#   on:
+#     branch: master
