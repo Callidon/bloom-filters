@@ -52,7 +52,11 @@ const inspect = Symbol.for('nodejs.util.inspect.custom')
     iblt.seed = json._seed
     iblt._size = json._size
     iblt._hashCount = json._hashCount
-    iblt._elements = json._elements.map(e => new InvertibleBloomFilter.Cell(e._idSum, e._hashSum, e._count))
+    iblt._elements = json._elements.map(e => {
+      const c = new Cell(Buffer.from(e._idSum), Buffer.from(e._hashSum), e._count)
+      c.seed = e._seed
+      return c
+    })
     return iblt
   }
 })
@@ -338,6 +342,21 @@ export class InvertibleBloomFilter extends BaseFilter {
 /**
  * A cell is composed of an idSum which the XOR of all element inserted in that cell, a hashSum which is the XOR of all hashed element in that cell and a counter which is the number of elements inserted in that cell.
  */
+@Exportable({
+  export: (cell: Cell) => ({
+    type: 'Cell',
+    _idSum: cell._idSum.toString(),
+    _hashSum: cell._hashSum.toString(),
+    _count: cell._count,
+    _seed: cell.seed
+  }),
+  import : (json: any) => {
+    // TODO typecheck json...
+    const cell = new Cell(Buffer.from(json._idSum), Buffer.from(json._hashSum), json._count)
+    cell.seed = json._seed
+    return cell
+  }
+})
 export class Cell extends BaseFilter {
   private _idSum: Buffer
   private _hashSum: Buffer
@@ -398,7 +417,7 @@ export class Cell extends BaseFilter {
    * @param  {Cell} cell the cell to compare with
    * @return {Boolean}  true if identical, false otherwise
    */
-  equal (cell) {
+  equal (cell: Cell) {
     return cell.count === this.count && cell.hash.equals(this.hash) && cell.id.equals(this.id)
   }
 
