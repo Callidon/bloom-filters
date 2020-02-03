@@ -5,12 +5,12 @@ notifications:
   email: false
 install: npm install
 script:
-- npm run doc
-- npm run lint
+# - npm run doc
+# - npm run lint
 - npm run test
-after_success:
-- npm run report
-- node_modules/codecov/bin/codecov -t $CODECOV_TOKEN
+# after_success:
+# - npm run report
+# - node_modules/codecov/bin/codecov -t $CODECOV_TOKEN
 before_deploy: npm run doc
 deploy:
 - provider: npm
