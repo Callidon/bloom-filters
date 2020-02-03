@@ -1,7 +1,7 @@
-/* file : count-min-sketch.js
+/* file : count-min-sketch.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,10 @@ SOFTWARE.
 
 'use strict'
 
-const utils = require('./utils.js')
-const Exportable = require('./exportable.js')
+import * as utils from './utils'
+import Exportable from './exportable'
+import { assertFields, cloneObject } from './export-import-specs'
+import BaseFilter from './base-filter'
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
@@ -35,25 +37,26 @@ const Exportable = require('./exportable.js')
  * @see {@link http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf} for more details on Count Min Sketch
  * @extends Exportable
  * @author Thomas Minier & Arnaud Grall
- * @example
- * const CountMinSketch = require('bloom-filters').CountMinSketch;
- *
- * // create a new count min sketch with epsilon = 0.001 and delta = 0.99
- * const sketch = CountMinSketch.create(0.001, 0.99);
- * // or create it manually by setting the numbers of rows and columns
- * sketch = new CountMinSketch(10, 100) // 10 columns and 100 rows
- *
- * // push some occurrences in the sketch
- * sketch.update('alice');
- * sketch.update('alice');
- * sketch.update('bob');
- *
- * // count occurrences
- * console.log(sketch.count('alice')); // output: 2
- * console.log(sketch.count('bob')); // output: 1
  * console.log(sketch.count('daniel')); // output: 0
  */
-class CountMinSketch extends Exportable {
+@Exportable({
+  export: cloneObject('CountMinSketch', '_matrix', '_seed', '_N', '_rows', '_columns'),
+  import: (json: any) => {
+    if ((json.type !== 'CountMinSketch') || !assertFields(json, '_matrix', '_seed', '_N', '_rows', '_columns')) {
+      throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch')
+    }
+    const sketch = new CountMinSketch(json._columns, json._rows)
+    sketch._matrix = json._matrix.slice()
+    sketch._N = json._N
+    sketch.seed = json._seed
+    return sketch
+  }
+})
+export default class CountMinSketch extends BaseFilter{
+  private _columns: number
+  private _rows: number
+  private _matrix: Array<Array<number>>
+  private _N: number
   /**
    * Constructor. Creates a new Count-Min Sketch whose relative accuracy is within a factor of epsilon with probability delta.
    * @param {number} w Number of columns
@@ -107,10 +110,6 @@ class CountMinSketch extends Exportable {
   /**
    * Update the count min sketch with a new occurrence of an element
    * @param {string} element - The new element
-   * @return {void}
-   * @example
-   * const sketch = new CountMinSketch(0.001, 0.99);
-   * sketch.update('foo');
    */
   update (element, count = 1) {
     this._N += count
@@ -124,13 +123,6 @@ class CountMinSketch extends Exportable {
    * Perform a point query, i.e. estimate the number of occurence of an element
    * @param {string} element - The element we want to count
    * @return {int} The estimate number of occurence of the element
-   * @example
-   * const sketch = new CountMinSketch(0.001, 0.99);
-   * sketch.update('foo');
-   * sketch.update('foo');
-   *
-   * console.log(sketch.count('foo')); // output: 2
-   * console.log(sketch.count('bar')); // output: 0
    */
   count (element) {
     let min = Infinity
@@ -144,22 +136,9 @@ class CountMinSketch extends Exportable {
   }
 
   /**
-   * Merge this sketch with another sketch, if they have the same number of columns and rows.
+   * Merge (in place) this sketch with another sketch, if they have the same number of columns and rows.
    * @param {CountMinSketch} sketch - The sketch to merge with
-   * @return {void}
    * @throws Error
-   * @example
-   * const sketch = CountMinSketch.create(0.001, 0.99);
-   * const otherSketch = CountMinSketch.create(0.001, 0.99);
-   *
-   * sketch.update('foo');
-   * otherSketch.update('foo');
-   * otherSketch.update('bar');
-   *
-   * // merge the two sketches
-   * sketch.merge(otherSketch);
-   * console.log(sketch.count('foo')); // output: 2
-   * console.log(sketch.count('bar')); // output: 1
    */
   merge (sketch) {
     if (this._columns !== sketch._columns) throw new Error('Cannot merge two sketches with different number of columns')
@@ -175,12 +154,6 @@ class CountMinSketch extends Exportable {
   /**
    * Clone the sketch
    * @return {CountMinSketch} A new cloned sketch
-   * @example
-   * const sketch = CountMinSketch.create(0.001, 0.99);
-   * sketch.update('foo');
-   *
-   * const clone = sketch.clone();
-   * console.log(clone.count('foo')); // output: 1
    */
   clone () {
     const sketch = new CountMinSketch(this._columns, this._rows)
@@ -189,5 +162,3 @@ class CountMinSketch extends Exportable {
     return sketch
   }
 }
-
-module.exports = CountMinSketch

@@ -1,7 +1,7 @@
-/* file : bloom-filters.js
+/* file : exportable.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,24 @@ SOFTWARE.
 
 'use strict'
 
-// re-exports top-level classes to public API
-const BloomFilter = require('./src/bloom-filter.js')
-const PartitionedBloomFilter = require('./src/partitioned-bloom-filter.js')
-const CuckooFilter = require('./src/cuckoo-filter.js')
-const CountingBloomFilter = require('./src/counting-bloom-filter.js')
-const CountMinSketch = require('./src/count-min-sketch.js')
-const InvertibleBloomFilter = require('./src/invertible-bloom-lookup-tables.js').InvertibleBloomFilter
-const Utils = require('./src/utils')
+interface ImportExportSpecs<T> {
+  export: (instance: T) => Object,
+  import: (json: Object) => T
+}
 
-module.exports = {
-  BloomFilter,
-  PartitionedBloomFilter,
-  CuckooFilter,
-  CountingBloomFilter,
-  CountMinSketch,
-  InvertibleBloomFilter,
-  Utils
+/**
+ * Turn a datastructure into an exportable one, so it can be serialized from/to JSON objects.
+ * @param specs - An object that describes how the datastructure should be exported/imported
+ * @author Thomas Minier
+ */
+export default function Exportable <T> (specs: ImportExportSpecs<T>) {
+  return function (target: any) {
+    target.prototype.saveAsJSON = function (): Object {
+      return specs.export(this)
+    }
+    target.fromJSON = function (json: Object): T {
+      return specs.import(json)
+    }
+    return target
+  }
 }

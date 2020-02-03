@@ -1,7 +1,7 @@
-/* file : utils.js
+/* file : utils.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ SOFTWARE.
 
 'use strict'
 
-const XXH = require('xxhashjs')
+import * as XXH from 'xxhashjs'
 
 /**
  * Utilitaries functions
@@ -39,17 +39,23 @@ const XXH = require('xxhashjs')
  * @property {number} second - The result of the second hashing function applied to a value
  * @memberof Utils
  */
+export interface TwoHashes {
+  first: number,
+  second: number
+}
+
+type HashableInput = string | ArrayBuffer | Buffer
 
 /**
  * Create a new array fill with a base value
- * @param  {int} size - The size of the array
- * @param  {*} defaultValue - The default value used to fill the array. If it's a function, it will be invoked to get the default value.
- * @return {Array} A newly allocated array
+ * @param size - The size of the array
+ * @param defaultValue - The default value used to fill the array. If it's a function, it will be invoked to get the default value.
+ * @return A newly allocated array
  * @memberof Utils
  */
-const allocateArray = (size, defaultValue) => {
-  const array = new Array(size)
-  const getDefault = (typeof defaultValue !== 'function') ? () => defaultValue : defaultValue
+export function allocateArray<T> (size: number, defaultValue: T | (() => T)): Array<T> {
+  const array: Array<T> = new Array(size)
+  const getDefault = (typeof defaultValue === 'function') ? defaultValue as () => T : () => defaultValue
   for (let ind = 0; ind < size; ind++) {
     array[ind] = getDefault()
   }
@@ -58,14 +64,20 @@ const allocateArray = (size, defaultValue) => {
 
 /**
  * (64-bits only) Hash a value into two values (in hex or integer format)
- * @param  {string|ArrayBuffer|Buffer} value - The value to hash
- * @param  {boolean} [asInt=false] - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
- * @param {Number} seed the seed used for hashing
- * @return {TwoHashes} The results of the hash functions applied to the value (in hex or integer)
+ * @param  value - The value to hash
+ * @param  asInt - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
+ * @param seed the seed used for hashing
+ * @return The results of the hash functions applied to the value (in hex or integer)
  * @memberof Utils
  * @author Arnaud Grall & Thomas Minier
  */
-const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
+export function hashTwice (value: HashableInput, asInt?: boolean, seed?: number): TwoHashes {
+  if (asInt === undefined) {
+    asInt = false
+  }
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
   const f = XXH.h64(value, seed + 1)
   const l = XXH.h64(value, seed + 2)
   if (asInt) {
@@ -85,14 +97,33 @@ const hashTwice = (value, asInt = false, seed = getDefaultSeed()) => {
   }
 }
 
+export function hashTwiceAsString (value: HashableInput, seed?: number) {
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
+const f = XXH.h64(value, seed + 1)
+const l = XXH.h64(value, seed + 2)
+  let one = f.toString(16)
+  if (one.length < 16) one = '0'.repeat(16 - one.length) + one
+  let two = l.toString(16)
+  if (two.length < 16) two = '0'.repeat(16 - two.length) + two
+  return {
+    first: one,
+    second: two
+  }
+}
+
 /**
  * (64-bits only) Same as hashTwice but return Numbers and String equivalent
- * @param  {string|ArrayBuffer|Buffer} val the value to hash
- * @param  {Number} seed the seed to change when hashing
- * @return {Object} {int: {first: <number>, second: <number>}, string: {first: <hex-string>, second: <hex-string>}
+ * @param  val the value to hash
+ * @param  seed the seed to change when hashing
+ * @return A object of shape {int: {first: <number>, second: <number>}, string: {first: <hex-string>, second: <hex-string>}
  * @author Arnaud Grall
  */
-const allInOneHashTwice = (val, seed = getDefaultSeed()) => {
+export function allInOneHashTwice (val: HashableInput, seed?: number) {
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
   const one = XXH.h64(val, seed + 1)
   const two = XXH.h64(val, seed + 2)
   let stringOne = one.toString(16)
@@ -117,29 +148,32 @@ const allInOneHashTwice = (val, seed = getDefaultSeed()) => {
  *
  * This implementation used directly the value produced by the two hash functions instead of the functions themselves.
  * @see {@link http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=4060353E67A356EF9528D2C57C064F5A?doi=10.1.1.152.579&rep=rep1&type=pdf} for more details about double hashing.
- * @param  {int} n - The indice of the hash function we want to produce
- * @param  {int} hashA - The result of the first hash function applied to a value.
- * @param  {int} hashB - The result of the second hash function applied to a value.
- * @param  {int} size - The size of the datastructures associated to the hash context (ex: the size of a Bloom Filter)
- * @return {int} - The result of hash_n applied to a value.
+ * @param  n - The indice of the hash function we want to produce
+ * @param  hashA - The result of the first hash function applied to a value.
+ * @param  hashB - The result of the second hash function applied to a value.
+ * @param  size - The size of the datastructures associated to the hash context (ex: the size of a Bloom Filter)
+ * @return The result of hash_n applied to a value.
  * @memberof Utils
  * @author Thomas Minier
  */
-const doubleHashing = (n, hashA, hashB, size) => {
+export function doubleHashing (n: number, hashA: number, hashB: number, size: number): number {
   return Math.abs((hashA + n * hashB) % size)
 }
 
 /**
- * Generate x distinct indexes on [0, size) using the double hashing technique
- * @param  {*} element   The element to hash
- * @param  {Number} size      the range on which we can generate an index [0, size) = size
- * @param  {Number} number The number of indexes desired
- * @param  {Number} seed the seed used
- * @return {Number[]}           index among [0, size)
+ * Generate a set of distinct indexes on interval [0, size) using the double hashing technique
+ * @param  element  - The element to hash
+ * @param  size     - the range on which we can generate an index [0, size) = size
+ * @param  number   - The number of indexes desired
+ * @param  seed     - The seed used
+ * @return A array of indexes
  * @author Arnaud Grall
  */
-const getDistinctIndices = (element, size, number, seed = getDefaultSeed()) => {
-  const getDistinctIndicesBis = (n, elem, size, count, indexes = []) => {
+export function getDistinctIndices (element: HashableInput, size: number, number: number, seed?: number): Array<number> {
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
+  function getDistinctIndicesBis (n: number, elem: HashableInput, size: number, count: number, indexes: Array<number> = []): Array<number> {
     if (indexes.length === count) {
       return indexes
     } else {
@@ -159,14 +193,17 @@ const getDistinctIndices = (element, size, number, seed = getDefaultSeed()) => {
 }
 
 /**
- * generate hashCount indexes, one index per [0, size)
+ * Generate hashCount indexes, one index per [0, size)
  * it uses the double hashing technique to generate the indexes
- * @param  {*} element   the element
- * @param  {Number} size      the range on which we can g-enerate the index, exclusive
- * @param  {Number} hashCount the number of indexes we want
- * @return {Number[]} an array of indexes
+ * @param  element    - The element to hash
+ * @param  size       - The range on which we can g-enerate the index, exclusive
+ * @param  hashCount  - The number of indexes we want
+ * @return An array of indexes
  */
-const getIndices = (element, size, hashCount, seed = getDefaultSeed()) => {
+export function getIndices (element: HashableInput, size: number, hashCount: number, seed?: number): Array<number> {
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
   const arr = []
   for (let i = 1; i <= hashCount; i++) {
     const hashes = hashTwice(element, true, seed + size % i)
@@ -178,13 +215,17 @@ const getIndices = (element, size, hashCount, seed = getDefaultSeed()) => {
 
 /**
  * Generate a random int bewteen two bounds (included)
- * @param {int} min - The lower bound
- * @param {int} max - The upper bound
- * @return {int} A random int bewteen lower and upper bound (included)
+ * @param min - The lower bound
+ * @param max - The upper bound
+ * @param random - Function used to generate random floats
+ * @return A random int bewteen lower and upper bound (included)
  * @memberof Utils
  * @author Thomas Minier
  */
-const randomInt = (min, max, random = Math.random) => {
+export function randomInt (min: number, max: number, random?: () => number): number {
+  if (random === undefined) {
+    random = Math.random
+  }
   min = Math.ceil(min)
   max = Math.floor(max)
   const rn = random()
@@ -192,14 +233,13 @@ const randomInt = (min, max, random = Math.random) => {
 }
 
 /**
- * Return the non-destructive XOR of 2 buffers
- * @param  {Buffer} a                          the buffer to copy, then to xor with b
- * @param  {Buffer} b                          the buffer to xor with
- * @param  {Object} [options={}]               options to pass to the new buffer
- * @return {Buffer} the xor between both buffer a and b
+ * Return the non-destructive XOR of two buffers
+ * @param a - The buffer to copy, then to xor with b
+ * @param b - The buffer to xor with
+ * @return The results of the XOR between the two buffers
  * @author Arnaud Grall
  */
-function xorBuffer (a, b, options = {}, val = true) {
+export function xorBuffer (a: Buffer, b: Buffer): Buffer {
   const length = Math.max(a.length, b.length)
   const buffer = Buffer.allocUnsafe(length).fill(0)
   for (let i = 0; i < length; ++i) {
@@ -211,7 +251,7 @@ function xorBuffer (a, b, options = {}, val = true) {
       buffer[length - i - 1] ^= b[b.length - i - 1]
     }
   }
-  // now need to remove leading zeroes in the buffer if any
+  // now need to remove leading zeros in the buffer if any
   let start = 0
   const it = buffer.values()
   let value = it.next()
@@ -224,34 +264,43 @@ function xorBuffer (a, b, options = {}, val = true) {
 }
 
 /**
- * Return true if the buffer isEmpty, aka all value are equals to 0.
- * @param  {Buffer}  buffer the buffer to inspect
- * @return {Boolean}        true if empty or null or undefined, false otherwise
+ * Return true if the buffer is empty, i.e., all value are equals to 0.
+ * @param  buffer - The buffer to inspect
+ * @return True if the buffer only contains zero, False otherwise
  * @author Arnaud Grall
  */
-function isEmptyBuffer (buffer) {
+export function isEmptyBuffer (buffer: Buffer | null): boolean {
   if (buffer === null || !buffer) return true
-  const json = buffer.toJSON()
-  let i = 0
-  let found = false
-  while (!found && i < json.data.length) {
-    if (json.data[i] !== 0) {
-      found = true
+  for(let value of buffer) {
+    if (value !== 0) {
+      return false
     }
-    i++
   }
-  return !found
+  return true
+  // const json = buffer.toJSON()
+  // let i = 0
+  // let found = false
+  // while (!found && i < json.data.length) {
+  //   if (json.data[i] !== 0) {
+  //     found = true
+  //   }
+  //   i++
+  // }
+  // return !found
 }
 
 /**
- * Return a hash as un unsigned int
- * @param  {string|ArrayBuffer|Buffer} elem        [description]
- * @param  {Number|UINT32|UINT64} [seed=getDefaultSeed()] If the seed is UINT32 make sure to set the length to 32
- * @param  {Number} [length=64] the version used 32 or 64, default: 64
- * @return {Number}  the hash as unsigned int
+ * Hash an item as an unsigned int
+ * @param  elem - Element to hash
+ * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
+ * @param  length - The length of hashes (defaults to 64 bits)
+ * @return The hash value as an unsigned int
  * @author Arnaud Grall
  */
-function hashAsInt (elem, seed = getDefaultSeed(), length = 64) {
+export function hashAsInt (elem: HashableInput, seed?: number, length?: number): number {
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
   switch (length) {
     case 32:
       return XXH.h32(elem, seed).toNumber()
@@ -263,15 +312,21 @@ function hashAsInt (elem, seed = getDefaultSeed(), length = 64) {
 }
 
 /**
- * Return a hash as a string
- * @param  {string|ArrayBuffer|Buffer} elem        [description]
- * @param  {Number|UINT32|UINT64} [seed=getDefaultSeed()] If the seed is UINT32 make sure to set the length to 32
- * @param  {Number} [base=16]   the base in which the string will be returned, default: 16
- * @param  {Number} [length=64] the version used 32 or 64, default: 64
- * @return {string} the hash as string
+ * Hash an item as a string
+ * @param  elem - Element to hash
+ * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
+ * @param  base - The base in which the string will be returned, default: 16
+ * @param  length - The length of hashes (defaults to 64 bits)
+ * @return The hashed value as a string
  * @author Arnaud Grall
  */
-function hashAsString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
+export function hashAsString (elem: HashableInput, seed?: number, base?: number, length?: number): string {
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
+  if (base === undefined) {
+    base = 16
+  }
   let hash
   switch (length) {
     case 32:
@@ -284,7 +339,7 @@ function hashAsString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
       hash = XXH.h64(elem, seed)
       break
   }
-  let string
+  let string: string
   if (base === 16) {
     string = hash.toString(base)
     if (string.length < (length / 4)) {
@@ -296,19 +351,25 @@ function hashAsString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
       string = '0'.repeat(length - string.length) + string
     }
   }
-  return hash
+  return string
 }
 
 /**
- * Return a hash as an unsigned int and as string
- * @param  {string|ArrayBuffer|Buffer} elem        [description]
- * @param  {Number|UINT32|UINT64} [seed=getDefaultSeed()] If the seed is UINT32 make sure to set the length to 32
- * @param  {Number} [base=16]   the base in which the string will be returned, default: 16
- * @param  {Number} [length=64] the version used 32 or 64, default: 64
- * @return {Object}             A hash with its number and string version
+ * Hash an item as a string
+ * @param  elem - Element to hash
+ * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
+ * @param  base - The base in which the string will be returned, default: 16
+ * @param  length - The length of hashes (defaults to 64 bits)
+ * @return The item hased as an int and a string
  * @author Arnaud Grall
  */
-function hashIntAndString (elem, seed = getDefaultSeed(), base = 16, length = 64) {
+export function hashIntAndString (elem: HashableInput, seed?: number, base?: number, length?: number) {
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
+  if (base === undefined) {
+    base = 16
+  }
   let hash
   switch (length) {
     case 32:
@@ -321,7 +382,7 @@ function hashIntAndString (elem, seed = getDefaultSeed(), base = 16, length = 64
       hash = XXH.h64(elem, seed)
       break
   }
-  let string
+  let string: string
   if (base === 16) {
     string = hash.toString(base)
     if (string.length < (length / 4)) {
@@ -337,45 +398,28 @@ function hashIntAndString (elem, seed = getDefaultSeed(), base = 16, length = 64
 }
 
 /**
- * Return the seed used in the package by default
- * @return {Number}
+ * Return the default seed used in the package
+ * @return A ssed as a floating point number
  * @author Arnaud Grall
  */
-function getDefaultSeed () {
+export function getDefaultSeed (): number {
   return 0x1234567890
 }
 
 /**
  * Return the next power of 2 of x
- * @param  {Number} x Number
- * @return {Number} the next power of 2 of x
+ * @param  x - Value
+ * @return The next power of 2 of x
  */
-function power2 (x) {
+export function power2 (x: number): number {
   return Math.ceil(Math.pow(2, Math.floor(Math.log(x) / Math.log(2))))
 }
 
 /**
- * Convert an hex string into binary
- * @param  {string} hex base 16 string
- * @return {string}     base 2 string
+ * Convert an hex string into a binary string
+ * @param  hex  - A base 16 string
+ * @return A base 2 string
  */
-function hex2bin (hex) {
+export function hex2bin (hex: string): string {
   return parseInt(hex, 16).toString(2)
-}
-
-module.exports = {
-  power2,
-  getDefaultSeed,
-  hashAsInt,
-  hashAsString,
-  hashIntAndString,
-  getIndices,
-  getDistinctIndices,
-  allInOneHashTwice,
-  isEmptyBuffer,
-  xorBuffer,
-  allocateArray,
-  hashTwice,
-  doubleHashing,
-  randomInt
 }

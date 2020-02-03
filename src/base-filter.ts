@@ -1,7 +1,7 @@
-/* file : exportable.js
+/* file : base-filter.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,13 @@ SOFTWARE.
 
 'use strict'
 
-const specs = require('./export-import-specs.js')
-const utils = require('./utils')
-const seedrandom = require('seedrandom')
-/**
- * An Exportable is a class that can be exported into a JSON object
- * @abstract
- * @author Thomas Minier
- */
-class Exportable {
+import * as utils from './utils'
+import * as seedrandom from 'seedrandom'
+
+export default abstract class BaseFilter {
+  private _seed: number
+  private _rng: () => number
+
   constructor () {
     this._seed = utils.getDefaultSeed()
     this._rng = seedrandom(this._seed)
@@ -57,40 +55,10 @@ class Exportable {
   }
 
   /**
-   * Register a resolver used to resolve the export of a field
-   * @param  {string} field    - The name of the field associated to this resolver
-   * @param  {function} resolver - The resolver used to export the field
-   * @return {void}
-   * @private
+   * Compute a random integer
+   * @return A random integer
    */
-  _registerResolver (field, resolver) {
-    this.resolvers.set(field, resolver)
-  }
-
-  /**
-   * Save as a JSON object
-   * @return {Object} The exported JSON object
-   */
-  saveAsJSON () {
-    const filterType = this.constructor.name
-    if (!(filterType in specs)) {
-      throw new Error(`Error, a filter of type ${filterType} is not exportable nor importable.`)
-    }
-    return specs[filterType].export(this)
-  }
-
-  /**
-   * Create a new Filter from a JSON export
-   * @param  {Object} json - A JSON export of the Filter
-   * @return {Exportable} A new Filter
-   */
-  static fromJSON (json) {
-    const filterType = this.name
-    if (!(filterType in specs)) {
-      throw new Error(`Error, a filter of type ${filterType} is not exportable nor importable.`)
-    }
-    return specs[filterType].import(this, json)
+  get random (): () => number {
+    return this._rng
   }
 }
-
-module.exports = Exportable

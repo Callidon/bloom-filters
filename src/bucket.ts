@@ -1,7 +1,7 @@
-/* file : bucket.js
+/* file : bucket.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,11 @@ SOFTWARE.
 
 'use strict'
 
-const eq = require('lodash.eq')
-const indexOf = require('lodash.indexof')
-const utils = require('./utils.js')
-const Exportable = require('./exportable.js')
+import * as eq from 'lodash.eq'
+import * as indexOf from 'lodash.indexof'
+import * as utils from './utils'
+import Exportable from './exportable'
+import { assertFields, cloneObject } from './export-import-specs'
 
 /**
  * A Bucket is a container of a fixed number of values, used in various bloom filters.
@@ -35,18 +36,36 @@ const Exportable = require('./exportable.js')
  * @author Thomas Minier
  * @private
  */
-class Bucket extends Exportable {
+@Exportable({
+  export: cloneObject('Bucket', '_size', '_elements'),
+  import: (json: any) => {
+    if ((json.type !== 'Bucket') || !assertFields(json, '_size', '_elements')) {
+      throw new Error('Cannot create a Bucket from a JSON export which does not represent a bucket')
+    }
+    const bucket = new Bucket(json._size)
+    json._elements.forEach((elt, i) => {
+      if (elt !== null) {
+        bucket._elements[i] = elt
+        bucket._length++
+      }
+    })
+    return bucket
+  }
+})
+export default class Bucket<T> {
+  public _elements: Array<T>
+  private _size: number
+  private _firstNullIndex: number
+  public _length: number
   /**
    * Constructor
-   * @param {int} size - The maximum number of elements in the bucket
+   * @param size - The maximum number of elements in the bucket
    */
-  constructor (size) {
-    super()
+  constructor (size: number) {
     this._elements = utils.allocateArray(size, null)
     this._size = size
     this._firstNullIndex = 0
     this._length = 0
-    delete this._seed
   }
 
   /**
@@ -163,7 +182,6 @@ class Bucket extends Exportable {
    */
   swap (index, element) {
     const tmp = this._elements[index]
-    console.log('old:', tmp, 'new: ', element)
     this._elements[index] = element
     return tmp
   }
@@ -178,5 +196,3 @@ class Bucket extends Exportable {
     return this._elements.every((elt, index) => eq(bucket.at(index), elt))
   }
 }
-
-module.exports = Bucket

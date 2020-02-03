@@ -1,4 +1,4 @@
-/* file : bloom-filter.js
+/* file : bloom-filter.ts
 MIT License
 
 Copyright (c) 2017 Thomas Minier & Arnaud Grall
@@ -24,9 +24,11 @@ SOFTWARE.
 
 'use strict'
 
-const fm = require('./formulas.js')
-const utils = require('./utils.js')
-const Exportable = require('./exportable.js')
+import * as fm from './formulas'
+import { allocateArray, getDefaultSeed, getDistinctIndices } from './utils'
+import { assertFields, cloneObject } from './export-import-specs'
+import Exportable from './exportable'
+import BaseFilter from './base-filter'
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -34,39 +36,39 @@ const Exportable = require('./exportable.js')
  *
  * Reference: Bloom, B. H. (1970). Space/time trade-offs in hash coding with allowable errors. Communications of the ACM, 13(7), 422-426.
  * @see {@link http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf} for more details about classic Bloom Filters.
- * @extends Exportable
  * @author Thomas Minier & Arnaud Grall
- * @example
- * const BloomFilter = require('bloom-filters').BloomFilter;
- *
- * // create a Bloom Filter of size = 15 and 4 hash functions
- * let filter = new BloomFilter(15, 4);
- *
- * // add some value in the filter
- * filter.add('alice');
- * filter.add('bob');
- *
- * // lookup for some data
- * console.log(filter.has('bob')); // output: true
- * console.log(filter.has('daniel')); // output: false
- *
- * // print false positive rate (around 0.001)
- * console.log(filter.rate());
  */
-class BloomFilter extends Exportable {
+@Exportable({
+  export: cloneObject('BloomFilter', '_size', '_length', '_seed', '_nbHashes', '_filter'),
+  import: (json: any) => {
+    if ((json.type !== 'BloomFilter') || !assertFields(json, '_size', '_length', '_nbHashes', '_filter', '_seed')) {
+      throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter')
+    }
+    const filter = new BloomFilter(json._size, json._nbHashes)
+    filter.seed = json._seed
+    filter._filter = json._filter.slice(0)
+    filter._length = json._length
+    return filter
+  }
+})
+export default class BloomFilter extends BaseFilter {
+  private _size: number
+  private _nbHashes: number
+  private _filter: Array<number>
+  private _length: number
   /**
    * Constructor
-   * @param {int} size - the number of cells
-   * @param {number} nbHashes - the number of hash functions used
+   * @param size - The number of cells
+   * @param nbHashes - The number of hash functions used
    */
-  constructor (size = 1000, nbHashes = 4) {
+  constructor (size?: number, nbHashes?: number) {
     super()
     if (nbHashes < 1) {
       throw new Error('Set a number of hash functions greater than 1, current=' + nbHashes)
     }
-    this._size = size
-    this._nbHashes = nbHashes
-    this._filter = utils.allocateArray(this._size, 0)
+    this._size = (size === undefined) ? 1000 : size
+    this._nbHashes = (nbHashes === undefined) ? 4 : nbHashes
+    this._filter = allocateArray(this._size, 0)
     this._length = 0
   }
 
@@ -76,7 +78,10 @@ class BloomFilter extends Exportable {
    * @param  {Number} [errorRate=0.001] the error rate desired for a maximum of items inserted
    * @return {BloomFilter}
    */
-  static create (items = 1000, errorRate = 0.001, seed = utils.getDefaultSeed()) {
+  static create (items = 1000, errorRate = 0.001, seed?: number) {
+    if (seed === undefined) {
+      seed = getDefaultSeed()
+    }
     const size = fm.optimalFilterSize(items, errorRate)
     const hashes = fm.optimalHashes(size, items)
     const filter = new BloomFilter(size, hashes)
@@ -94,7 +99,7 @@ class BloomFilter extends Exportable {
    * // create a filter with a false positive rate of 0.1
    * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
-  static from (array, errorRate, seed = utils.getDefaultSeed()) {
+  static from (array, errorRate, seed = getDefaultSeed()) {
     const filter = BloomFilter.create(array.length, errorRate, seed)
     array.forEach(element => filter.add(element))
     return filter
@@ -125,7 +130,7 @@ class BloomFilter extends Exportable {
    * filter.add('foo');
    */
   add (element) {
-    const indexes = utils.getDistinctIndices(element, this._size, this._nbHashes, this.seed)
+    const indexes = getDistinctIndices(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
       this._filter[indexes[i]] = 1
     }
@@ -143,7 +148,7 @@ class BloomFilter extends Exportable {
    * console.log(filter.has('bar')); // output: false
    */
   has (element) {
-    const indexes = utils.getDistinctIndices(element, this._size, this._nbHashes, this.seed)
+    const indexes = getDistinctIndices(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
       if (!this._filter[indexes[i]]) {
         return false
@@ -163,5 +168,3 @@ class BloomFilter extends Exportable {
     return Math.pow(1 - Math.exp((-this._nbHashes * this._length) / this._size), this._nbHashes)
   }
 }
-
-module.exports = BloomFilter

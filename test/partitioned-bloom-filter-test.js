@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const PartitionedBloomFilter = require('../src/partitioned-bloom-filter.js')
+const PartitionedBloomFilter = require('../dist/partitioned-bloom-filter.js').default
 
 describe('PartitionedBloomFilter', () => {
   const targetRate = 0.001

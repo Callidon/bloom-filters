@@ -1,7 +1,7 @@
-/* file : formulas.js
+/* file : api.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,35 +24,9 @@ SOFTWARE.
 
 'use strict'
 
-/**
- * Various formulas used with Bloom Filters
- * @namespace Formulas
- * @private
- */
-
-/**
- * Compute the optimal size of a Bloom Filter
- * @param  {int} setLength - The length of the dataset used to fill the filter
- * @param  {number} errorRate - The targeted false positive rate
- * @return {int} The optimal size of a Bloom Filter
- * @memberof Formulas
- */
-const optimalFilterSize = (setLength, errorRate) => {
-  return Math.ceil(-((setLength * Math.log(errorRate)) / Math.pow(Math.log(2), 2)))
-}
-
-/**
- * Compute the optimal number of hash functions to be used by a Bloom Filter
- * @param  {int} size - The size of the filter
- * @param  {int} setLength - The length of the dataset used to fill the filter
- * @return {int} The optimal number of hash functions to be used by a Bloom Filter
- * @memberof Formulas
- */
-const optimalHashes = (size, setLength) => {
-  return Math.ceil((size / setLength) * Math.log(2))
-}
-
-module.exports = {
-  optimalFilterSize,
-  optimalHashes
-}
+export { default as CountMinSketch } from './count-min-sketch'
+export { default as CountingBloomFilter } from './counting-bloom-filter'
+export { default as CuckooFilter } from './cuckoo-filter'
+export { InvertibleBloomFilter, Cell } from './invertible-bloom-lookup-tables'
+export { default as PartitionedBloomFilter } from './partitioned-bloom-filter'
+export { default as BloomFilter } from './bloom-filter'

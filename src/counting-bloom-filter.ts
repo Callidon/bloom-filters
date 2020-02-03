@@ -1,4 +1,4 @@
-/* file : counting-bloom-filter.js
+/* file : counting-bloom-filter.ts
 MIT License
 
 Copyright (c) 2017 Thomas Minier & Arnaud Grall
@@ -24,39 +24,39 @@ SOFTWARE.
 
 'use strict'
 
-const fm = require('./formulas.js')
-const utils = require('./utils.js')
-const Exportable = require('./exportable.js')
+import * as fm from './formulas'
+import * as utils from './utils'
+import Exportable from './exportable'
+import BaseFilter from './base-filter'
+import { assertFields, cloneObject } from './export-import-specs'
 
 /**
  * A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.
  *
  * Reference: F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, “An Improved Construction for Counting Bloom Filters,” in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.
 684–695.
- * @extends Exportable
  * @author Thomas Minier & Arnaud Grall
- * @example
- * const CountingBloomFilter = require('bloom-filters').CountingBloomFilter;
- *
- * // create a Bloom Filter with capacity = 15 and 4 hash functions
- * let filter = new CountingBloomFilter(15, 4);
- * // add some value in the filter
- * filter.add('alice');
- * filter.add('bob');
- * filter.add('carole');
- *
- * // remove some value
- * filter.remove('carole');
- *
- * // lookup for some data
- * console.log(filter.has('bob')); // output: true
- * console.log(filter.has('carole')); // output: false
- * console.log(filter.has('daniel')); // output: false
- *
- * // print false positive rate (around 0.1)
- * console.log(filter.rate());
  */
-class CountingBloomFilter extends Exportable {
+@Exportable({
+  export: cloneObject('CountingBloomFilter', '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed'),
+  import: (json: any) => {
+    if ((json.type !== 'CountingBloomFilter') || !assertFields(json, '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed')) {
+      throw new Error('Cannot create a CountingBloomFilter from a JSON export which does not represent a bloom filter')
+    }
+    const filter = new CountingBloomFilter(json._capacity, json._errorRate)
+    filter.seed = json._seed
+    filter._size = json._size
+    filter._nbHashes = json._nbHashes
+    filter._filter = json._filter.slice(0)
+    filter._length = json._length
+    return filter
+  }
+})
+export default class CountingBloomFilter extends BaseFilter {
+  private _size: number
+  private _nbHashes: number
+  private _filter: Array<Array<number>>
+  private _length: number
   /**
    * Constructor
    * @param {int} size - The size of the filter
@@ -101,14 +101,6 @@ class CountingBloomFilter extends Exportable {
     const filter = CountingBloomFilter.create(array.length, errorRate, seed)
     array.forEach(element => filter.add(element))
     return filter
-  }
-
-  /**
-   * Get the filter capacity, i.e. the maximum number of elements it will contains
-   * @return {integer} The filter capacity
-   */
-  get capacity () {
-    return this._capacity
   }
 
   /**
@@ -200,5 +192,3 @@ class CountingBloomFilter extends Exportable {
     return Math.pow(1 - Math.exp((-this._nbHashes * this._length) / this._size), this._nbHashes)
   }
 }
-
-module.exports = CountingBloomFilter

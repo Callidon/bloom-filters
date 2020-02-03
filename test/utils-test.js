@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const utils = require('../src/utils.js')
+const utils = require('../dist/utils.js')
 const XXH = require('xxhashjs')
 const seed = utils.getDefaultSeed()
 

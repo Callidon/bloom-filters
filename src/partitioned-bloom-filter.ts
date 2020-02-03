@@ -1,7 +1,7 @@
-/* file : partitioned-bloom-filter.js
+/* file : partitioned-bloom-filter.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,10 @@ SOFTWARE.
 'use strict'
 
 // const fm = require('./formulas.js')
-const utils = require('./utils.js')
-const Exportable = require('./exportable.js')
+import * as utils from './utils'
+import Exportable from './exportable'
+import { assertFields, cloneObject } from './export-import-specs'
+import BaseFilter from './base-filter'
 
 /**
  * A Partitioned Bloom Filter is a variation of a classic Bloom filter.
@@ -39,27 +41,29 @@ const Exportable = require('./exportable.js')
  *
  * Reference: Chang, F., Feng, W. C., & Li, K. (2004, March). Approximate caches for packet classification. In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
  * @see {@link https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf} for more details about Partitioned Bloom Filters
- * @extends Exportable
  * @author Thomas Minier & Arnaud Grall
- * @example
- * const PartitionedBloomFilter = require('bloom-filters').PartitionedBloomFilter;
- *
- * // create a Partitioned Bloom Filter with 15 bits, 3 hash functions, and a load factor of 0.5
- * // creating 3 buckets of 5 bits each. This filter will be considered full after inserting 3 elements
- * let filter = new PartitionedBloomFilter(15, 3, 0.5);
- *
- * // add some value in the filter
- * filter.add('alice');
- * filter.add('bob');
- *
- * // lookup for some data
- * console.log(filter.has('bob')); // output: true
- * console.log(filter.has('daniel')); // output: false
- *
- * // print false positive rate (around 0.1)
- * console.log(filter.rate());
  */
-class PartitionedBloomFilter extends Exportable {
+@Exportable({
+  export: cloneObject('PartitionedBloomFilter', '_capacity', '_size', '_nbHashes', '_loadFactor', '_m', '_length', '_filter', '_seed'),
+  import: (json: any) => {
+    if ((json.type !== 'PartitionedBloomFilter') || !assertFields(json, '_capacity', '_size', '_nbHashes', '_loadFactor', '_m', '_length', '_filter', '_seed')) {
+      throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter')
+    }
+    const filter = new PartitionedBloomFilter(json._size, json._nbHashes, json._loadFactor)
+    filter.seed = json._seed
+    filter._length = json._length
+    filter._filter = json._filter.slice()
+    return filter
+  }
+})
+export default class PartitionedBloomFilter extends BaseFilter {
+  private _size: number
+  private _nbHashes: number
+  private _loadFactor: number
+  private _m: number
+  private _filter: Array<Array<number>>
+  private _capacity: number
+  private _length: number
   /**
    * Constructor
    * @param {Number} [totalBits=15]   the total number of cells
@@ -141,7 +145,7 @@ class PartitionedBloomFilter extends Exportable {
    * filter.add('foo');
    */
   add (element) {
-    const indexes = utils.getIndices(element, this._m, this._nbHashes, this._seed)
+    const indexes = utils.getIndices(element, this._m, this._nbHashes, this.seed)
     for (let i = 0; i < this._nbHashes; i++) {
       this._filter[i][indexes[i]] = 1
     }
@@ -159,7 +163,7 @@ class PartitionedBloomFilter extends Exportable {
    * console.log(filter.has('bar')); // output: false
    */
   has (element) {
-    const indexes = utils.getIndices(element, this._m, this._nbHashes, this._seed)
+    const indexes = utils.getIndices(element, this._m, this._nbHashes, this.seed)
     for (let i = 0; i < this._nbHashes; i++) {
       if (!this._filter[i][indexes[i]]) {
         return false
@@ -182,7 +186,7 @@ class PartitionedBloomFilter extends Exportable {
       // P = p^k
       return Math.pow(p, this._nbHashes)
     } catch (e) {
-      throw new Error('it should have at least one slice', e)
+      throw new Error('it should have at least one slice')
     }
   }
 
@@ -234,5 +238,3 @@ class PartitionedBloomFilter extends Exportable {
     return Math.ceil(totalBits * (Math.log(loadFactor) * Math.log(1 - loadFactor)) / (-(nbHashes * Math.log(loadFactor))))
   }
 }
-
-module.exports = PartitionedBloomFilter

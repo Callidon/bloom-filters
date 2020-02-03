@@ -1,7 +1,7 @@
-/* file : cuckoo-filter.js
+/* file : cuckoo-filter.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,11 @@ SOFTWARE.
 
 'use strict'
 
-const Bucket = require('./bucket.js')
-const Exportable = require('./exportable.js')
-const utils = require('./utils.js')
+import Bucket from './bucket'
+import Exportable from './exportable'
+import * as utils from './utils'
+import { assertFields, cloneObject } from './export-import-specs'
+import BaseFilter from './base-filter'
 
 /**
  * Cuckoo filters improve on Bloom filters by supporting deletion, limited counting,
@@ -35,25 +37,35 @@ const utils = require('./utils.js')
  * Reference: Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). Cuckoo filter: Practically better than bloom.
  * In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
  * @see {@link https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf} for more details about Cuckoo filters
- * @extends Exportable
  * @author Thomas Minier & Arnaud Grall
- * @example
- * const CuckooFilter = require('bloom-filters').CuckooFilter;
- *
- * // create a Cuckoo Filter with size = 15, fingerprint length = 3 and bucket size = 2
- * const filter = new CuckooFilter(15, 3, 2);
- * filter.add('alice');
- * filter.add('bob');
- *
- * // lookup for some data
- * console.log(filter.has('bob')); // output: true
- * console.log(filter.has('daniel')); // output: false
- *
- * // remove something
- * filter.remove('bob');
- * console.log(filter.has('bob')); // output: false
  */
-class CuckooFilter extends Exportable {
+@Exportable({
+  export: cloneObject('CuckooFilter', '_size', '_fingerprintLength', '_length', '_maxKicks', '_filter', '_seed'),
+  import: (json: any) => {
+    if ((json.type !== 'CuckooFilter') || !('_size' in json) || !('_fingerprintLength' in json) || !('_length' in json) || !('_maxKicks' in json) || !('_filter' in json) || !('_seed' in json)) { throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter') }
+    const filter = new CuckooFilter(json._size, json._fingerprintLength, json._bucketSize, json._maxKicks)
+    filter._length = json._length
+    filter._filter = json._filter.map(j => {
+      const bucket = new Bucket<string>(j._size)
+      j._elements.forEach((elt, i) => {
+        if (elt !== null) {
+          bucket._elements[i] = elt
+          bucket._length++
+        }
+      })
+      return bucket
+    })
+    filter.seed = json.seed
+    return filter
+  }
+})
+export default class CuckooFilter extends BaseFilter {
+  private _filter: Array<Bucket<string>>
+  private _size: number
+  private _bucketSize: number
+  private _fingerprintLength: number
+  private _length: number
+  private _maxKicks: number
   /**
    * Constructor
    * @param {int} size - The filter size
@@ -155,11 +167,11 @@ class CuckooFilter extends Exportable {
       this._filter[locations.secondIndex].add(locations.fingerprint)
     } else {
       // buckets are full, we must relocate one of them
-      let index = this._rng() < 0.5 ? locations.firstIndex : locations.secondIndex
+      let index = this.random() < 0.5 ? locations.firstIndex : locations.secondIndex
       let movedElement = locations.fingerprint
       const logs = []
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
-        const rndIndex = utils.randomInt(0, this._filter[index].length - 1, this._rng)
+        const rndIndex = utils.randomInt(0, this._filter[index].length - 1, this.random)
         const tmp = this._filter[index].at(rndIndex)
         logs.push([index, rndIndex, tmp])
         this._filter[index].set(rndIndex, movedElement)
@@ -316,5 +328,3 @@ class CuckooFilter extends Exportable {
     return res
   }
 }
-
-module.exports = CuckooFilter

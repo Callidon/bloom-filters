@@ -6,7 +6,8 @@
   "scripts": {
     "lint": "standard",
     "build": "tsc",
-    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=30000",
+    "pretest": "yarn build",
+    "test": "mocha test/**/iblt-test.js --trace-deprecation --timeout=30000",
     "coverage": "nyc --reporter=lcov npm test",
     "report": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov",
     "doc": "jsdoc -c jsdoc.json README.md src/",
@@ -36,6 +37,7 @@
   },
   "homepage": "https://github.com/Callidon/bloom-filters#readme",
   "devDependencies": {
+    "@types/node": "^13.7.0",
     "chai": "^4.2.0",
     "codecov": "^3.6.1",
     "jsdoc": "^3.6.3",

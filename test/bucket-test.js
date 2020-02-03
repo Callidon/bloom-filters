@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const Bucket = require('../src/bucket.js')
+const Bucket = require('../dist/bucket.js').default
 
 describe('Bucket', () => {
   describe('#isFree', () => {

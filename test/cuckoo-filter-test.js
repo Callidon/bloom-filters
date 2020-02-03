@@ -27,8 +27,8 @@ SOFTWARE.
 const chai = require('chai')
 chai.should()
 chai.expect()
-const CuckooFilter = require('../src/cuckoo-filter.js')
-const utils = require('../src/utils')
+const CuckooFilter = require('../dist/cuckoo-filter.js').default
+const utils = require('../dist/utils')
 const seed = 1
 
 describe('CuckooFilter', () => {

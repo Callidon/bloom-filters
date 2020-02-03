@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const BloomFilter = require('../src/bloom-filter.js')
+const { BloomFilter } = require('../dist/api.js')
 
 describe('BloomFilter', () => {
   const targetRate = 0.1

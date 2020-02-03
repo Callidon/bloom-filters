@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const CountMinSketch = require('../src/count-min-sketch.js')
+const CountMinSketch = require('../dist/count-min-sketch.js').default
 
 describe('CountMinSketch', () => {
   const delta = 0.999
