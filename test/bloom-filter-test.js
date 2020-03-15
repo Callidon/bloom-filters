@@ -44,7 +44,7 @@ describe('BloomFilter', () => {
       const data = ['alice', 'bob', 'carl']
       const expectedSize = Math.ceil(-((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)))
       const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
-      const filter = BloomFilter.from(data, targetRate, seed)
+      const filter = BloomFilter.from(data, targetRate)
       filter.size.should.equal(expectedSize)
       filter._nbHashes.should.equal(expectedHashes)
       filter.length.should.equal(data.length)
@@ -53,7 +53,7 @@ describe('BloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = BloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
+    const filter = BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should return false for elements that are definitively not in the set', () => {
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
@@ -85,7 +85,7 @@ describe('BloomFilter', () => {
       // simulate deserialization
       exported = JSON.parse(exported)
       const newFilter = BloomFilter.fromJSON(exported)
-      newFilter.seed.should.equal(seed)
+      newFilter.seed.should.equal(filter.seed)
       newFilter.size.should.equal(filter._size)
       newFilter.length.should.equal(filter._length)
       newFilter._nbHashes.should.equal(filter._nbHashes)

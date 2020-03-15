@@ -104,16 +104,16 @@ describe('CountMinSketch', () => {
       exported.type.should.equal('CountMinSketch')
       exported._rows.should.equal(sketch._rows)
       exported._columns.should.equal(sketch._columns)
-      exported._N.should.be.equal(sketch._N)
+      exported._allSums.should.be.equal(sketch._allSums)
       exported._matrix.should.deep.equal(sketch._matrix)
     })
 
     it('should create a count-min sketch from a JSON export', () => {
       const exported = sketch.saveAsJSON()
       const newSketch = CountMinSketch.fromJSON(exported)
-      newSketch.w.should.equal(sketch.w)
-      newSketch.d.should.equal(sketch.d)
-      newSketch.N.should.be.equal(sketch.N)
+      newSketch.columns.should.equal(sketch.columns)
+      newSketch.rows.should.equal(sketch.rows)
+      newSketch.sum.should.be.equal(sketch.sum)
       newSketch._matrix.should.deep.equal(sketch._matrix)
     })
 
@@ -121,9 +121,9 @@ describe('CountMinSketch', () => {
       const invalids = [
         { type: 'something' },
         { type: 'CountMinSketch' },
-        { type: 'CountMinSketch', w: 1 },
-        { type: 'CountMinSketch', w: 1, d: 1 },
-        { type: 'CountMinSketch', w: 1, d: 1, seed: 1 }
+        { type: 'CountMinSketch', _columns: 1 },
+        { type: 'CountMinSketch', _columns: 1, _rows: 1 },
+        { type: 'CountMinSketch', _columns: 1, _rows: 1, seed: 1 }
       ]
 
       invalids.forEach(json => {
@@ -141,7 +141,6 @@ describe('CountMinSketch', () => {
     }
     it('should not return an error when inserting ' + max + ' elements', () => {
       const filter = CountMinSketch.create(rate, delta)
-      filter.seed = 1
       // error rate 0.001, probability of wrong answer: 0.001
       // console.log('number of rows:', filter._rows)
       // console.log('number of columns:', filter._columns)
@@ -163,7 +162,7 @@ describe('CountMinSketch', () => {
 
         // check the item
         const count = filter.count('' + item)
-        const est = map.get(item) + rate * filter.N
+        const est = map.get(item) + rate * filter.sum
         if (count > est) {
           error += 1
           // console.log('[%d] => â: %d, a: %d', item, count, map.get(item), est)
@@ -171,7 +170,7 @@ describe('CountMinSketch', () => {
       }
 
       const errorRate = error / max
-      const errorProb = 1 - Math.pow(Math.E, -filter.d)
+      const errorProb = 1 - Math.pow(Math.E, -filter.rows)
       errorRate.should.be.at.most(errorProb)
     })
   })

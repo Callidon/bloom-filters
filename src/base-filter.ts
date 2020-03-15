@@ -27,6 +27,11 @@ SOFTWARE.
 import * as utils from './utils'
 import * as seedrandom from 'seedrandom'
 
+/**
+ * A base class for implementing probailistic filters
+ * @author Thomas Minier
+ * @author Arnaud Grall
+ */
 export default abstract class BaseFilter {
   private _seed: number
   private _rng: () => number
@@ -37,26 +42,24 @@ export default abstract class BaseFilter {
   }
 
   /**
-   * Return the seed used in this structure
-   * @return {Number|UINT32|UINT64}
+   * Get the seed used in this structure
    */
-  get seed () {
+  get seed (): number {
     return this._seed
   }
 
   /**
    * Set the seed for this structure
-   * @param  {Number|UINT32|UINT64} seed the new seed that will be used in this structure
-   * @return {void}
+   * @param  seed the new seed that will be used in this structure
    */
-  set seed (seed) {
+  set seed (seed: number) {
     this._seed = seed
     this._rng = seedrandom(this._seed)
   }
 
   /**
-   * Compute a random integer
-   * @return A random integer
+   * Get a function used to draw random number
+   * @return A factory function used to draw random integer
    */
   get random (): () => number {
     return this._rng

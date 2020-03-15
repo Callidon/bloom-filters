@@ -26,7 +26,7 @@ SOFTWARE.
 
 import BaseFilter from './base-filter'
 import { AutoExportable, Field, Parameter } from './exportable'
-import * as utils from './utils'
+import { allocateArray, getDistinctIndices, HashableInput} from './utils'
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
@@ -46,93 +46,94 @@ export default class CountMinSketch extends BaseFilter {
   @Field()
   private _matrix: Array<Array<number>>
   @Field()
-  private _N: number
+  private _allSums: number
+
   /**
-   * Constructor. Creates a new Count-Min Sketch whose relative accuracy is within a factor of epsilon with probability delta.
-   * @param {number} w Number of columns
-   * @param {number} d Number of rows
-   * @param {UINT64} seed the seed
+   * Constructor
+   * @param columns - Number of columns
+   * @param rows - Number of rows
    */
-  constructor (@Parameter('_columns') columns = 2048, @Parameter('_rows') rows = 1, seed = utils.getDefaultSeed()) {
+  constructor (@Parameter('_columns') columns, @Parameter('_rows') rows) {
     super()
     this._columns = columns
     this._rows = rows
-    this._matrix = utils.allocateArray(this._rows, () => utils.allocateArray(this._columns, 0))
-    this._N = 0
+    this._matrix = allocateArray(this._rows, () => allocateArray(this._columns, 0))
+    this._allSums = 0
   }
 
   /**
-   * Create a count-min sketch given an epsilon and delta (default create(0.001, 0.999))
-   * w = Math.ceil(Math.E / epsilon) and d = Math.ceil(Math.log(1 / delta))
-   * @param  {Number} epsilon the error rate
-   * @param  {Number} delta   probability of accuracy
-   * @return {CountMinSketch}
+   * Create a count-min sketch, with a target epsilon error rate and probability of accuracy
+   * @param  errorRate - The error rate
+   * @param  accuracy  - The probability of accuracy
+   * @return A new {@link CountMinSketch}
    */
-  static create (epsilon = 0.001, delta = 0.999) {
-    const w = Math.ceil(Math.E / epsilon)
-    const d = Math.ceil(Math.log(1 / delta))
-    return new CountMinSketch(w, d)
+  static create (errorRate = 0.001, accuracy = 0.999) {
+    // columns = Math.ceil(Math.E / epsilon) and rows = Math.ceil(Math.log(1 / delta))
+    const columns = Math.ceil(Math.E / errorRate)
+    const rows = Math.ceil(Math.log(1 / accuracy))
+    return new CountMinSketch(columns, rows)
   }
 
   /**
-   * Return the number of columns of the matrix
-   * @return {Number}
+   * Return the number of columns in the sketch
    */
-  get w () {
+  get columns (): number {
     return this._columns
   }
 
   /**
-   * Return the number of rows of the matrix
-   * @return {Number}
+   * Return the number of rows in the sketch
    */
-  get d () {
+  get rows (): number {
     return this._rows
   }
 
   /**
-   * Get the sum of all counts
+   * Get the sum of all counts in the sketch
    */
-  get N () {
-    return this._N
+  get sum (): number {
+    return this._allSums
   }
 
   /**
    * Update the count min sketch with a new occurrence of an element
-   * @param {string} element - The new element
+   * @param element - The new element
+   * @param count - Number of occurences of the elemnt (defauls to one)
    */
-  update (element, count = 1) {
-    this._N += count
-    const indexes = utils.getDistinctIndices(element, this._columns, this._rows, this.seed)
+  update (element: HashableInput, count: number = 1): void {
+    this._allSums += count
+    const indexes = getDistinctIndices(element, this._columns, this._rows, this.seed)
     for (let i = 0; i < this._rows; i++) {
       this._matrix[i][indexes[i]] += count
     }
   }
 
   /**
-   * Perform a point query, i.e. estimate the number of occurence of an element
-   * @param {string} element - The element we want to count
-   * @return {int} The estimate number of occurence of the element
+   * Perform a point query: estimate the number of occurence of an element
+   * @param element - The element we want to count
+   * @return The estimate number of occurence of the element
    */
-  count (element) {
+  count (element: HashableInput): number {
     let min = Infinity
-    const indexes = utils.getDistinctIndices(element, this._columns, this._rows, this.seed)
+    const indexes = getDistinctIndices(element, this._columns, this._rows, this.seed)
     for (let i = 0; i < this._rows; i++) {
       const v = this._matrix[i][indexes[i]]
       min = Math.min(v, min)
     }
-
     return min
   }
 
   /**
    * Merge (in place) this sketch with another sketch, if they have the same number of columns and rows.
-   * @param {CountMinSketch} sketch - The sketch to merge with
-   * @throws Error
+   * @param sketch - The sketch to merge with
    */
-  merge (sketch) {
-    if (this._columns !== sketch._columns) throw new Error('Cannot merge two sketches with different number of columns')
-    if (this._rows !== sketch._rows) throw new Error('Cannot merge two sketches with different number of rows')
+  merge (sketch: CountMinSketch): void {
+    if (this._columns !== sketch._columns) {
+      throw new Error('Cannot merge two sketches with different number of columns')
+    }
+    if (this._rows !== sketch._rows) {
+      throw new Error('Cannot merge two sketches with different number of rows')
+    }
 
     for (let i = 0; i < this._rows; i++) {
       for (let j = 0; j < this._columns; j++) {
@@ -143,9 +144,9 @@ export default class CountMinSketch extends BaseFilter {
 
   /**
    * Clone the sketch
-   * @return {CountMinSketch} A new cloned sketch
+   * @return A new cloned sketch
    */
-  clone () {
+  clone (): CountMinSketch {
     const sketch = new CountMinSketch(this._columns, this._rows)
     sketch.merge(this)
     sketch.seed = this.seed

@@ -44,7 +44,7 @@ export interface TwoHashes {
   second: number
 }
 
-type HashableInput = string | ArrayBuffer | Buffer
+export type HashableInput = string | ArrayBuffer | Buffer
 
 /**
  * Create a new array fill with a base value
