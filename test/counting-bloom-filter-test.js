@@ -109,7 +109,7 @@ describe('CountingBloomFilter', () => {
       ]
 
       invalids.forEach(json => {
-        (() => CountingBloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a CountingBloomFilter from a JSON export which does not represent a bloom filter')
+        (() => CountingBloomFilter.fromJSON(json)).should.throw(Error)
       })
     })
   })
@@ -133,7 +133,6 @@ describe('CountingBloomFilter', () => {
         if (has) falsePositive++
       }
       const currentrate = falsePositive / tries
-      console.log('CountingBloomFilter false positive rate on %d tests: ', tries, currentrate)
       currentrate.should.be.closeTo(targetedRate, targetedRate)
     })
   })

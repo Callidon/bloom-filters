@@ -24,10 +24,9 @@ SOFTWARE.
 
 'use strict'
 
-import * as utils from './utils'
-import { Exportable } from './exportable'
-import { assertFields, cloneObject } from './export-import-specs'
 import BaseFilter from './base-filter'
+import { AutoExportable, Field, Parameter } from './exportable'
+import * as utils from './utils'
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
@@ -37,25 +36,16 @@ import BaseFilter from './base-filter'
  * @see {@link http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf} for more details on Count Min Sketch
  * @extends Exportable
  * @author Thomas Minier & Arnaud Grall
- * console.log(sketch.count('daniel')); // output: 0
  */
-@Exportable({
-  export: cloneObject('CountMinSketch', '_matrix', '_seed', '_N', '_rows', '_columns'),
-  import: (json: any) => {
-    if ((json.type !== 'CountMinSketch') || !assertFields(json, '_matrix', '_seed', '_N', '_rows', '_columns')) {
-      throw new Error('Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch')
-    }
-    const sketch = new CountMinSketch(json._columns, json._rows)
-    sketch._matrix = json._matrix.slice()
-    sketch._N = json._N
-    sketch.seed = json._seed
-    return sketch
-  }
-})
-export default class CountMinSketch extends BaseFilter{
+@AutoExportable<CountMinSketch>('CountMinSketch', ['_seed'])
+export default class CountMinSketch extends BaseFilter {
+  @Field()
   private _columns: number
+  @Field()
   private _rows: number
+  @Field()
   private _matrix: Array<Array<number>>
+  @Field()
   private _N: number
   /**
    * Constructor. Creates a new Count-Min Sketch whose relative accuracy is within a factor of epsilon with probability delta.
@@ -63,10 +53,10 @@ export default class CountMinSketch extends BaseFilter{
    * @param {number} d Number of rows
    * @param {UINT64} seed the seed
    */
-  constructor (w = 2048, d = 1, seed = utils.getDefaultSeed()) {
+  constructor (@Parameter('_columns') columns = 2048, @Parameter('_rows') rows = 1, seed = utils.getDefaultSeed()) {
     super()
-    this._columns = w
-    this._rows = d
+    this._columns = columns
+    this._rows = rows
     this._matrix = utils.allocateArray(this._rows, () => utils.allocateArray(this._columns, 0))
     this._N = 0
   }

@@ -26,9 +26,8 @@ SOFTWARE.
 
 import * as fm from './formulas'
 import * as utils from './utils'
-import { Exportable } from './exportable'
+import { AutoExportable, Field, Parameter } from './exportable'
 import BaseFilter from './base-filter'
-import { assertFields, cloneObject } from './export-import-specs'
 
 /**
  * A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.
@@ -37,32 +36,22 @@ import { assertFields, cloneObject } from './export-import-specs'
 684–695.
  * @author Thomas Minier & Arnaud Grall
  */
-@Exportable({
-  export: cloneObject('CountingBloomFilter', '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed'),
-  import: (json: any) => {
-    if ((json.type !== 'CountingBloomFilter') || !assertFields(json, '_capacity', '_errorRate', '_size', '_length', '_nbHashes', '_filter', '_seed')) {
-      throw new Error('Cannot create a CountingBloomFilter from a JSON export which does not represent a bloom filter')
-    }
-    const filter = new CountingBloomFilter(json._capacity, json._errorRate)
-    filter.seed = json._seed
-    filter._size = json._size
-    filter._nbHashes = json._nbHashes
-    filter._filter = json._filter.slice(0)
-    filter._length = json._length
-    return filter
-  }
-})
+@AutoExportable('CountingBloomFilter', ['_seed'])
 export default class CountingBloomFilter extends BaseFilter {
+  @Field()
   private _size: number
+  @Field()
   private _nbHashes: number
+  @Field()
   private _filter: Array<Array<number>>
+  @Field()
   private _length: number
   /**
    * Constructor
    * @param {int} size - The size of the filter
    * @param {int} hashes - the number of hash functions
    */
-  constructor (size = 100, hashes = 4) {
+  constructor (@Parameter('_size') size = 100, @Parameter('_nbHashes') hashes = 4) {
     super()
     if (hashes < 1) {
       throw new Error('Set a number of hash functions greater than 1, current=' + hashes)

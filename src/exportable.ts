@@ -108,7 +108,7 @@ export function Parameter (fieldName: string) {
  * Augment a TypeScript class to make it exportable/importable, using @Field and @Parameter decorator
  * @param className - Name of the exportable/importable class
  */
-export function AutoExportable<T> (className: string, otherFields: string[]) {
+export function AutoExportable<T> (className: string, otherFields: string[] = []) {
   return function (target: any) {
     Reflect.defineMetadata(METADATA_CLASSNAME, className, target.prototype)
     if (!Reflect.hasMetadata(METADATA_FIELDS, target.prototype) || otherFields.length === 0) {
@@ -139,14 +139,14 @@ export function AutoExportable<T> (className: string, otherFields: string[]) {
       const fields: FieldSpec[] = Reflect.getMetadata(METADATA_FIELDS, target.prototype)
       // validate the input JSON
       if (json.type !== className) {
-        throw new Error(`Cannot create a, object ${className} from a JSON export with invalid type: ${json.type}`)
+        throw new Error(`Cannot create an object ${className} from a JSON export with type "${json.type}"`)
       }
       const constructorArgs = []
       const copyFields = []
       
       fields.map(field => field.name).concat(otherFields).forEach(field => {
         if (!(field in json)) {
-          throw new Error(`Invalid import: required field ${field} not found in JSON import ${json}`)
+          throw new Error(`Invalid import: required field "${field}" not found in JSON export "${json}"`)
         }
         // build constructor/copy arguments
         if (parameters.has(field)) {

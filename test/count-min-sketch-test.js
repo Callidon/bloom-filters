@@ -127,7 +127,7 @@ describe('CountMinSketch', () => {
       ]
 
       invalids.forEach(json => {
-        (() => CountMinSketch.fromJSON(json)).should.throw(Error, 'Cannot create a CountMinSketch from a JSON export which does not represent a count-min sketch')
+        (() => CountMinSketch.fromJSON(json)).should.throw(Error)
       })
     })
   })
@@ -172,8 +172,6 @@ describe('CountMinSketch', () => {
 
       const errorRate = error / max
       const errorProb = 1 - Math.pow(Math.E, -filter.d)
-      console.log('Number of errors: %d/%d with prob = %d', error, max, errorProb)
-      console.log('Rate:  ', errorRate)
       errorRate.should.be.at.most(errorProb)
     })
   })
