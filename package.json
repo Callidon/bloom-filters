@@ -51,6 +51,7 @@
     "is-buffer": "^2.0.4",
     "lodash.eq": "^4.0.0",
     "lodash.indexof": "^4.0.5",
+    "reflect-metadata": "^0.1.13",
     "seedrandom": "^3.0.5",
     "xxhashjs": "^0.2.2"
   },

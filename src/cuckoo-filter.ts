@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 import Bucket from './bucket'
-import Exportable from './exportable'
+import { Exportable } from './exportable'
 import * as utils from './utils'
 import { assertFields, cloneObject } from './export-import-specs'
 import BaseFilter from './base-filter'

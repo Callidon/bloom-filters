@@ -4,6 +4,7 @@
       "allowJs": true,
       "target": "es5",
       "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
       "downlevelIteration": true
   },
   "include": [

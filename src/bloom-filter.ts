@@ -26,8 +26,7 @@ SOFTWARE.
 
 import * as fm from './formulas'
 import { allocateArray, getDefaultSeed, getDistinctIndices } from './utils'
-import { assertFields, cloneObject } from './export-import-specs'
-import Exportable from './exportable'
+import { AutoExportable, Field, Parameter } from './exportable'
 import BaseFilter from './base-filter'
 
 /**
@@ -38,30 +37,25 @@ import BaseFilter from './base-filter'
  * @see {@link http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf} for more details about classic Bloom Filters.
  * @author Thomas Minier & Arnaud Grall
  */
-@Exportable({
-  export: cloneObject('BloomFilter', '_size', '_length', '_seed', '_nbHashes', '_filter'),
-  import: (json: any) => {
-    if ((json.type !== 'BloomFilter') || !assertFields(json, '_size', '_length', '_nbHashes', '_filter', '_seed')) {
-      throw new Error('Cannot create a BloomFilter from a JSON export which does not represent a bloom filter')
-    }
-    const filter = new BloomFilter(json._size, json._nbHashes)
-    filter.seed = json._seed
-    filter._filter = json._filter.slice(0)
-    filter._length = json._length
-    return filter
-  }
-})
+@AutoExportable<BloomFilter>('BloomFilter', ['_seed'])
 export default class BloomFilter extends BaseFilter {
+  @Field()
   private _size: number
+
+  @Field()
   private _nbHashes: number
+
+  @Field()
   private _filter: Array<number>
+
+  @Field()
   private _length: number
   /**
    * Constructor
    * @param size - The number of cells
    * @param nbHashes - The number of hash functions used
    */
-  constructor (size?: number, nbHashes?: number) {
+  constructor (@Parameter('_size') size?: number, @Parameter('_nbHashes') nbHashes?: number) {
     super()
     if (nbHashes < 1) {
       throw new Error('Set a number of hash functions greater than 1, current=' + nbHashes)

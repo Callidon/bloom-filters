@@ -27,7 +27,7 @@ SOFTWARE.
 import * as eq from 'lodash.eq'
 import * as indexOf from 'lodash.indexof'
 import * as utils from './utils'
-import Exportable from './exportable'
+import { Exportable } from './exportable'
 import { assertFields, cloneObject } from './export-import-specs'
 
 /**

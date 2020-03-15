@@ -26,7 +26,7 @@ SOFTWARE.
 
 import * as fm from './formulas'
 import * as utils from './utils'
-import Exportable from './exportable'
+import { Exportable } from './exportable'
 import BaseFilter from './base-filter'
 import { assertFields, cloneObject } from './export-import-specs'
 

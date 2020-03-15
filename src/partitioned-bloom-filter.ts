@@ -26,7 +26,7 @@ SOFTWARE.
 
 // const fm = require('./formulas.js')
 import * as utils from './utils'
-import Exportable from './exportable'
+import { Exportable } from './exportable'
 import { assertFields, cloneObject } from './export-import-specs'
 import BaseFilter from './base-filter'
 
