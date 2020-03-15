@@ -105,7 +105,7 @@ describe('PartitionedBloomFilter', () => {
       ]
 
       invalids.forEach(json => {
-        (() => PartitionedBloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter')
+        (() => PartitionedBloomFilter.fromJSON(json)).should.throw(Error)
       })
     })
   })
@@ -127,7 +127,6 @@ describe('PartitionedBloomFilter', () => {
         if (has) falsePositive++
       }
       const currentrate = falsePositive / tries
-      console.log('PartitionedBloomFilter false positive rate on %d tests = %d (targeted = %d)', tries, currentrate, targetRate)
       currentrate.should.be.closeTo(targetRate, targetRate)
     })
   })

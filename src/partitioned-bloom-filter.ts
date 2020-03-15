@@ -26,8 +26,7 @@ SOFTWARE.
 
 // const fm = require('./formulas.js')
 import * as utils from './utils'
-import { Exportable } from './exportable'
-import { assertFields, cloneObject } from './export-import-specs'
+import { AutoExportable, Field, Parameter } from './exportable'
 import BaseFilter from './base-filter'
 
 /**
@@ -43,37 +42,32 @@ import BaseFilter from './base-filter'
  * @see {@link https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf} for more details about Partitioned Bloom Filters
  * @author Thomas Minier & Arnaud Grall
  */
-@Exportable({
-  export: cloneObject('PartitionedBloomFilter', '_capacity', '_size', '_nbHashes', '_loadFactor', '_m', '_length', '_filter', '_seed'),
-  import: (json: any) => {
-    if ((json.type !== 'PartitionedBloomFilter') || !assertFields(json, '_capacity', '_size', '_nbHashes', '_loadFactor', '_m', '_length', '_filter', '_seed')) {
-      throw new Error('Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter')
-    }
-    const filter = new PartitionedBloomFilter(json._size, json._nbHashes, json._loadFactor)
-    filter.seed = json._seed
-    filter._length = json._length
-    filter._filter = json._filter.slice()
-    return filter
-  }
-})
+@AutoExportable('PartitionedBloomFilter', ['_seed'])
 export default class PartitionedBloomFilter extends BaseFilter {
+  @Field()
   private _size: number
+  @Field()
   private _nbHashes: number
+  @Field()
   private _loadFactor: number
+  @Field()
   private _m: number
+  @Field()
   private _filter: Array<Array<number>>
+  @Field()
   private _capacity: number
+  @Field()
   private _length: number
   /**
    * Constructor
-   * @param {Number} [totalBits=15]   the total number of cells
+   * @param {Number} [size=15]   the total number of cells
    * @param {Number} [nbHashes=3]     the number of hash functions
    * @param {Number} [loadFactor=0.5] the load factor
    * @param {Number} [capacity=0] the capacity, by default it is determined by totalBits, the load factor the the number of hash functions.
    */
-  constructor (totalBits = 15, nbHashes = 3, loadFactor = 0.5, capacity = 0) {
+  constructor (@Parameter('_size') size = 15, @Parameter('_nbHashes') nbHashes = 3, @Parameter('_loadFactor') loadFactor = 0.5, @Parameter('_capacity') capacity = 0) {
     super()
-    this._size = totalBits
+    this._size = size
     this._nbHashes = nbHashes
     this._loadFactor = loadFactor
     this._m = Math.ceil(this._size / this._nbHashes)
