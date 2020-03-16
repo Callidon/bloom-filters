@@ -31,7 +31,7 @@ describe('PartitionedBloomFilter', () => {
   const targetRate = 0.001
 
   describe('construction', () => {
-    it('should add element to the filter with #add', () => {
+    it('should add element to the filter', () => {
       const filter = PartitionedBloomFilter.create(15, targetRate)
       filter.add('alice')
       filter.add('bob')
@@ -40,11 +40,10 @@ describe('PartitionedBloomFilter', () => {
 
     it('should build a new filter using #from', () => {
       const data = ['alice', 'bob', 'carl']
-      const expectedSize = PartitionedBloomFilter._computeOptimalNumberOfCells(data.length, targetRate)
-      const expectedHashes = PartitionedBloomFilter._computeOptimalNumberOfhashes(targetRate)
       const filter = PartitionedBloomFilter.from(data, targetRate)
-      filter.size.should.equal(expectedSize)
-      filter._nbHashes.should.equal(expectedHashes)
+      filter.has('alice').should.equal(true)
+      filter.has('bob').should.equal(true)
+      filter.has('carl').should.equal(true)
       filter.length.should.equal(data.length)
       filter.rate().should.be.closeTo(targetRate, 0.1)
     })
@@ -100,8 +99,8 @@ describe('PartitionedBloomFilter', () => {
       const invalids = [
         { type: 'something' },
         { type: 'PartitionedBloomFilter' },
-        { type: 'PartitionedBloomFilter', capacity: 1 },
-        { type: 'PartitionedBloomFilter', capacity: 1, errorRate: 1 }
+        { type: 'PartitionedBloomFilter', _capacity: 1 },
+        { type: 'PartitionedBloomFilter', _capacity: 1, _errorRate: 1 }
       ]
 
       invalids.forEach(json => {
@@ -111,7 +110,7 @@ describe('PartitionedBloomFilter', () => {
   })
   describe('Performance test', () => {
     const max = 1000
-    it('should not return an error when inserting and querying for ' + max + ' elements', () => {
+    it(`should not return an error when inserting and querying for ${max} elements`, () => {
       const filter = PartitionedBloomFilter.create(max, targetRate, 0.5)
       for (let i = 0; i < max; ++i) filter.add('' + i)
       for (let i = 0; i < max; ++i) {

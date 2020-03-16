@@ -30,6 +30,42 @@ import { AutoExportable, Field, Parameter } from './exportable'
 import BaseFilter from './base-filter'
 
 /**
+ * Return the optimal number of hashes needed for a given error rate and load factor
+ * P = p^k <=> k = ln(P)/ln(p)
+ * @param  errorRate - The provided error rate
+ * @param  loadFactor - The load factor, ideally 0.5
+ * @return The number of hash function to use
+ */
+function computeOptimalNumberOfhashes (errorRate: number, loadFactor: number): number {
+  // P = p^k <=> k = ln(P)/ln(p)
+  return Math.ceil(Math.log(errorRate) / Math.log(loadFactor))
+}
+
+/**
+ * Return the total number of bits needed for this filter
+ * n = M*(ln(p)ln(1-p))/(-ln(P)) <=> M = (n*-ln(P)/(ln(p)ln(1-p))
+ * @param  size - The number of desired items
+ * @param  rate - The error rate desired
+ * @param  loadFactor - The load factor desired
+ * @return The total number of cells this filter will have
+ */
+function computeOptimalNumberOfCells (size: number, rate: number, loadFactor: number): number {
+  // n=M*(ln(p)ln(1-p))/(-ln(P)) <=> M=(n*-ln(P)/(ln(p)ln(1-p))
+  return Math.ceil((size * -Math.log(rate)) / (Math.log(loadFactor) * Math.log(1 - loadFactor)))
+}
+
+/**
+ * Return the maximum number of items this filter can store
+ * @param  totalBits - The total number of cells in the filter
+ * @param  loadFactor - The load factor desired
+ * @param  nbHashes - The number of hash functions used
+ * @return The maximum number of items this filter store
+ */
+function computeNumberOfItems (totalBits: number, loadFactor: number, nbHashes: number): number {
+  return Math.ceil(totalBits * (Math.log(loadFactor) * Math.log(1 - loadFactor)) / (-(nbHashes * Math.log(loadFactor))))
+}
+
+/**
  * A Partitioned Bloom Filter is a variation of a classic Bloom filter.
  *
  * This filter works by partitioning the M-sized bit array into k slices of size m = M/k bits, k = nb of hash functions in the filter.
@@ -60,85 +96,87 @@ export default class PartitionedBloomFilter extends BaseFilter {
   private _length: number
   /**
    * Constructor
-   * @param {Number} [size=15]   the total number of cells
-   * @param {Number} [nbHashes=3]     the number of hash functions
-   * @param {Number} [loadFactor=0.5] the load factor
-   * @param {Number} [capacity=0] the capacity, by default it is determined by totalBits, the load factor the the number of hash functions.
+   * @param size - The total number of cells
+   * @param nbHashes - The number of hash functions
+   * @param loadFactor - The load factor
+   * @param capacity - The filter capacity
    */
-  constructor (@Parameter('_size') size = 15, @Parameter('_nbHashes') nbHashes = 3, @Parameter('_loadFactor') loadFactor = 0.5, @Parameter('_capacity') capacity = 0) {
+  constructor (@Parameter('_size') size, @Parameter('_nbHashes') nbHashes, @Parameter('_loadFactor') loadFactor, @Parameter('_capacity') capacity?) {
     super()
     this._size = size
     this._nbHashes = nbHashes
     this._loadFactor = loadFactor
     this._m = Math.ceil(this._size / this._nbHashes)
     this._filter = utils.allocateArray(this._nbHashes, () => utils.allocateArray(this._m, 0))
-    this._capacity = capacity || PartitionedBloomFilter._computeNumberOfItems(this._size, loadFactor, nbHashes)
+    this._capacity = (capacity !== undefined) ? capacity : computeNumberOfItems(this._size, loadFactor, nbHashes)
     this._length = 0
   }
 
   /**
    * Return a PartitionedBloomFilter for a given number of elements and under a given error rate
-   * @param  {Number} [desiredItem=100] the max allowable number of items to insert
-   * @param  {Number} [errorRate=0.01]  the desired error rate
-   * @return {PartitionedBloomFilter}
+   * @param  size - The max allowable number of items to insert
+   * @param  errorRate - The desired error rate
+   * @return A new PartitionedBloomFilter optimal for the given parameters
    */
-  static create (desiredItem = 100, errorRate = 0.01, loadFactor = 0.5, seed = utils.getDefaultSeed()) {
-    const capacity = PartitionedBloomFilter._computeOptimalNumberOfCells(desiredItem, errorRate, loadFactor)
-    const nbHashes = PartitionedBloomFilter._computeOptimalNumberOfhashes(errorRate, loadFactor)
-    return new PartitionedBloomFilter(capacity, nbHashes, loadFactor, desiredItem)
+  static create (size: number, errorRate: number, loadFactor: number = 0.5): PartitionedBloomFilter {
+    const capacity = computeOptimalNumberOfCells(size, errorRate, loadFactor)
+    const nbHashes = computeOptimalNumberOfhashes(errorRate, loadFactor)
+    return new PartitionedBloomFilter(capacity, nbHashes, loadFactor, size)
   }
 
   /**
-   * Build a new Partitioned Bloom Filter from an existing array with a fixed error rate
-   * @param {Array} array - The array used to build the filter
-   * @param {number} errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
-   * @param {Number} seed set the seed for the filter
-   * @param  {Number} [loadFactor=0.5] the load factor desired
-   * @return {BloomFilter} A new Bloom Filter filled with iterable's elements
+   * Build a new Partitioned Bloom Filter from an existing iterable with a fixed error rate
+   * @param items - The iterable used to populate the filter
+   * @param errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
+   * @param loadFactor - The filter's load factor
+   * @return A new Bloom Filter filled with the iterable's elements
    * @example
    * // create a filter with a false positive rate of 0.1
    * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
-  static from (array, errorRate, seed = utils.getDefaultSeed(), loadFactor = 0.5) {
-    const filter = PartitionedBloomFilter.create(array.length, errorRate, loadFactor, array.length)
-    filter.seed = seed
+  static from (items: Iterable<utils.HashableInput>, errorRate: number, loadFactor: number = 0.5): PartitionedBloomFilter {
+    const array = Array.from(items)
+    const filter = PartitionedBloomFilter.create(array.length, errorRate, loadFactor)
     array.forEach(element => filter.add(element))
     return filter
   }
 
   /**
    * Get the filter capacity, i.e. the maximum number of elements it will contains
-   * @return {integer} The filter capacity, i.e. the maximum number of elements it will contains
    */
-  get capacity () {
+  get capacity (): number {
     return this._capacity
   }
 
   /**
-   * Get the optimal size of the filter
-   * @return {integer} The size of the filter
+   * Get the size of the filter
    */
-  get size () {
+  get size (): number {
     return this._size
   }
 
   /**
    * Get the number of elements currently in the filter
-   * @return {integer} The filter length
    */
-  get length () {
+  get length (): number {
     return this._length
   }
 
   /**
+   * Get the filter's load factor
+   */
+  get loadFactor (): number {
+    return this._loadFactor
+  }
+
+  /**
    * Add an element to the filter
-   * @param {string|Buffer} element - The element to add
-   * @return {void}
+   * @param element - The element to add
    * @example
    * const filter = new PartitionedBloomFilter(15, 0.1);
    * filter.add('foo');
    */
-  add (element) {
+  add (element: utils.HashableInput): void {
     const indexes = utils.getIndices(element, this._m, this._nbHashes, this.seed)
     for (let i = 0; i < this._nbHashes; i++) {
       this._filter[i][indexes[i]] = 1
@@ -148,15 +186,15 @@ export default class PartitionedBloomFilter extends BaseFilter {
 
   /**
    * Test an element for membership
-   * @param {string|Buffer} element - The element to look for in the filter
-   * @return {boolean} False if the element is definitively not in the filter, True is the element might be in the filter
+   * @param element - The element to look for in the filter
+   * @return False if the element is definitively not in the filter, True is the element might be in the filter
    * @example
    * const filter = new PartitionedBloomFilter(15, 0.1);
    * filter.add('foo');
    * console.log(filter.has('foo')); // output: true
    * console.log(filter.has('bar')); // output: false
    */
-  has (element) {
+  has (element: utils.HashableInput): boolean {
     const indexes = utils.getIndices(element, this._m, this._nbHashes, this.seed)
     for (let i = 0; i < this._nbHashes; i++) {
       if (!this._filter[i][indexes[i]]) {
@@ -167,68 +205,28 @@ export default class PartitionedBloomFilter extends BaseFilter {
   }
 
   /**
-   * Get the current false positive rate (or error rate) of the filter
-   * @return {int} The current false positive rate of the filter
+   * Compute the current false positive rate (or error rate) of the filter
+   * @return The current false positive rate of the filter
    * @example
    * const filter = PartitionedBloomFilter.create(15, 0.1);
    * console.log(filter.rate()); // output: something around 0.1
    */
-  rate () {
-    try {
-      // get the error rate for the first bucket (1 - (1 - 1/m)^n), where m is the size of a slice and n is the number of inserted elements
-      const p = this._currentload()
-      // P = p^k
-      return Math.pow(p, this._nbHashes)
-    } catch (e) {
-      throw new Error('it should have at least one slice')
-    }
+  rate (): number {
+    // get the error rate for the first bucket (1 - (1 - 1/m)^n), where m is the size of a slice and n is the number of inserted elements
+    const p = this._currentload()
+    // P = p^k
+    return Math.pow(p, this._nbHashes)
   }
 
   /**
    * Return the current load of this filter, iterate on all buckets
-   * @return {Number} 0 to 1, 0 is free, 1 is full
+   * @return An integer between 0 and 1, where 0 = filter empty and 1 = filter full
    */
-  _currentload () {
+  _currentload (): number {
     const values = this._filter.map(bucket => {
       return bucket.reduce((a, b) => a + b, 0)
     })
     const used = values.reduce((a, b) => a + b, 0)
     return used / this._size
-  }
-
-  /**
-   * Return the optimal number of hashes needed for a given error rate and load factor
-   * P = p^k <=> k = ln(P)/ln(p)
-   * @param  {Number} errorRate  the provided error rate
-   * @param  {Number} [loadFactor=0.5] the load factor, ideally 0.5
-   * @return {Number} the number of hash function to use
-   */
-  static _computeOptimalNumberOfhashes (errorRate, loadFactor = 0.5) {
-    // P = p^k <=> k = ln(P)/ln(p)
-    return Math.ceil(Math.log(errorRate) / Math.log(loadFactor))
-  }
-
-  /**
-   * Return the total number of bits needed for this filter
-   * n = M*(ln(p)ln(1-p))/(-ln(P)) <=> M = (n*-ln(P)/(ln(p)ln(1-p))
-   * @param  {Number} items the number of desired items
-   * @param  {Number} rate the error rate desired
-   * @param  {Number} [loadFactor=0.5] the load factor desired
-   * @return {Number} the total number of cells this filter will have
-   */
-  static _computeOptimalNumberOfCells (items, rate, loadFactor = 0.5) {
-    // n=M*(ln(p)ln(1-p))/(-ln(P)) <=> M=(n*-ln(P)/(ln(p)ln(1-p))
-    return Math.ceil((items * -Math.log(rate)) / (Math.log(loadFactor) * Math.log(1 - loadFactor)))
-  }
-
-  /**
-   * Return the maximum number of items this filter can store
-   * @param  {Number} totalBits  the total number of cells in the filter
-   * @param  {Number} [loadFactor=0.5] the load factor desired
-   * @param  {Number} nbHashes   the number of hash functions used
-   * @return {Number} the maximum number of items this filter store
-   */
-  static _computeNumberOfItems (totalBits, loadFactor, nbHashes) {
-    return Math.ceil(totalBits * (Math.log(loadFactor) * Math.log(1 - loadFactor)) / (-(nbHashes * Math.log(loadFactor))))
   }
 }
