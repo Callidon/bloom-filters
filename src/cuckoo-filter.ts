@@ -27,8 +27,21 @@ SOFTWARE.
 import Bucket from './bucket'
 import { Exportable } from './exportable'
 import * as utils from './utils'
-import { assertFields, cloneObject } from './export-import-specs'
+import { cloneObject } from './export-import-specs'
 import BaseFilter from './base-filter'
+
+/**
+ * Compute the optimal fingerprint length in bytes for a given bucket size
+ * and a false positive rate.
+ * @param  {int} size - The filter bucket size
+ * @param  {int} rate - The error rate, i.e. 'false positive' rate, targetted by the filter
+ * @return {int} The optimal fingerprint length in bytes
+ * @private
+ */
+function computeFingerpintLength (size: number, rate: number): number {
+  const f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
+  return Math.ceil(f / 4) // because we use base 16 64-bits hashes
+}
 
 /**
  * Cuckoo filters improve on Bloom filters by supporting deletion, limited counting,
@@ -68,12 +81,12 @@ export default class CuckooFilter extends BaseFilter {
   private _maxKicks: number
   /**
    * Constructor
-   * @param {int} size - The filter size
-   * @param {int} fLength - The length of the fingerprints
-   * @param {int} bucketSize - The size of the buckets in the filter
-   * @param {int} [maxKicks=500] - (optional) The max number of kicks when resolving collision at insertion, default to 1
+   * @param size - The filter size
+   * @param fLength - The length of the fingerprints
+   * @param bucketSize - The size of the buckets in the filter
+   * @param maxKicks - (optional) The max number of kicks when resolving collision at insertion, default to 1
    */
-  constructor (size = 15, fLength = 3, bucketSize = 2, maxKicks = 500) {
+  constructor (size: number, fLength: number, bucketSize: number, maxKicks: number = 500) {
     super()
     this._filter = utils.allocateArray(size, () => new Bucket(bucketSize))
     this._size = size
@@ -84,81 +97,88 @@ export default class CuckooFilter extends BaseFilter {
   }
 
   /**
-   * Return a new optimal CuckooFilter given the number of maximum elements to store and the error rate desired and the bucket size
-   * @param  {Number} items          The number of items to insert
-   * @param  {Number} rate           The desired error rate
-   * @param  {Number} [bucketSize=2] The number of buckets desired per cell
-   * @param  {Number} [maxKicks=10]   the number of kicks done when a collision occurs
-   * @return {CuckooFilter} The CuckoFilter constructed for 'items' items with a provided error rate.
+   * Return a new optimal CuckooFilter given the number of maximum elements to store and the error rate desired
+   * @param  size - The number of items to store
+   * @param  errorRate - The desired error rate
+   * @param  bucketSize - The number of buckets desired per cell
+   * @param  maxKicks - The number of kicks done when a collision occurs
+   * @return A Cuckoo Filter optimal for these parameters
    */
-  static create (items, rate = 0.001, bucketSize = 4, maxKicks = 500, seed = utils.getDefaultSeed()) {
-    const fl = CuckooFilter._computeFingerpintLength(bucketSize, rate)
-    const capacity = Math.ceil(items / bucketSize / 0.955)
+  static create (size: number, errorRate: number, bucketSize: number = 4, maxKicks: number = 500): CuckooFilter {
+    const fl = computeFingerpintLength(bucketSize, errorRate)
+    const capacity = Math.ceil(size / bucketSize / 0.955)
     // const capacity = utils.power2(items)
-    const f = new CuckooFilter(capacity, fl, bucketSize, maxKicks)
-    f.seed = seed
-    return f
+    return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
   }
 
   /**
-   * Return the full size, aka the total number of cells
-   * @return {Number}
+   * Build a new optimal CuckooFilter from an iterable with a fixed error rate
+   * @param items - Iterable used to populate the filter
+   * @param errorRate - The error rate of the filter
+   * @param  bucketSize - The number of buckets desired per cell
+   * @param  maxKicks - The number of kicks done when a collision occurs
+   * @return A new Cuckoo Filter filled with the iterable's elements
    */
-  get fullSize () {
-    return this.size * this.bucketSize
+  static from (items: Iterable<utils.HashableInput>, errorRate: number, bucketSize: number = 4, maxKicks: number = 500): CuckooFilter {
+    const array = Array.from(items)
+    const filter = CuckooFilter.create(array.length, errorRate, bucketSize, maxKicks)
+    array.forEach(item => filter.add(item))
+    return filter
   }
 
   /**
    * Get the filter size
-   * @return {integer} The filter size
    */
-  get size () {
+  get size (): number {
     return this._size
   }
 
   /**
-   * Get the filter length, i.e. the current number of elements in the filter
-   * @return {integer} The filter length
+   * Get the filter full size, i.e., the total number of cells
    */
-  get length () {
+  get fullSize (): number {
+    return this.size * this.bucketSize
+  }
+
+  /**
+   * Get the filter length, i.e. the current number of elements in the filter
+   */
+  get length (): number {
     return this._length
   }
 
   /**
    * Get the length of the fingerprints in the filter
-   * @return {integer} The length of the fingerprints
    */
-  get fingerprintLength () {
+  get fingerprintLength (): number {
     return this._fingerprintLength
   }
 
   /**
    * Get the size of the buckets in the filter
-   * @return {integer} The size of the buckets in the filter
    */
-  get bucketSize () {
+  get bucketSize (): number {
     return this._bucketSize
   }
 
   /**
    * Get the max number of kicks when resolving collision at insertion
-   * @return {integer} The max number of kicks when resolving collision at insertion
    */
-  get maxKicks () {
+  get maxKicks (): number {
     return this._maxKicks
   }
 
   /**
-   * @todo do the recovery if return false or throw error because we altered values
    * Add an element to the filter, if false is returned, it means that the filter is considered as full.
-   * @param {*} element - The element to add
-   * @return {boolean} True if the insertion is a success, False if the filter is full
+   * @param element - The element to add
+   * @return True if the insertion is a success, False if the filter is full
    * @example
    * const filter = new CuckooFilter(15, 3, 2);
    * filter.add('alice');
    * filter.add('bob');
    */
-  add (element, throwError = false, destructive = false) {
+  add (element: utils.HashableInput, throwError: boolean = false, destructive: boolean = false): boolean {
+    // TODO do the recovery if return false or throw error because we altered values
     const locations = this._locations(element)
     // store fingerprint in an available empty bucket
     if (this._filter[locations.firstIndex].isFree()) {
@@ -196,7 +216,7 @@ export default class CuckooFilter extends BaseFilter {
       // considered full
       if (throwError) {
         // rollback all operations
-        throw new Error('[CuckooFilter] The filter is considered as full')
+        throw new Error(`The Cuckoo Filter is full, cannot insert element "${element}"`)
       } else {
         return false
       }
@@ -207,8 +227,8 @@ export default class CuckooFilter extends BaseFilter {
 
   /**
    * Remove an element from the filter
-   * @param {*} element - The element to remove
-   * @return {boolean} True if the element has been removed from the filter, False if it wasn't in the filter
+   * @param element - The element to remove
+   * @return True if the element has been removed from the filter, False if it wasn't in the filter
    * @example
    * const filter = new CuckooFilter(15, 3, 2);
    * filter.add('alice');
@@ -217,7 +237,7 @@ export default class CuckooFilter extends BaseFilter {
    * // remove an element
    * filter.remove('bob');
    */
-  remove (element) {
+  remove (element: utils.HashableInput): boolean {
     const locations = this._locations(element)
     if (this._filter[locations.firstIndex].has(locations.fingerprint)) {
       this._filter[locations.firstIndex].remove(locations.fingerprint)
@@ -233,8 +253,8 @@ export default class CuckooFilter extends BaseFilter {
 
   /**
    * Test an element for membership
-   * @param {*} element - The element to look for in the filter
-   * @return {boolean} False if the element is definitively not in the filter, True is the element might be in the filter
+   * @param element - The element to look for in the filter
+   * @return False if the element is definitively not in the filter, True is the element might be in the filter
    * @example
    * const filter = new CuckooFilter(15, 3, 2);
    * filter.add('alice');
@@ -242,29 +262,16 @@ export default class CuckooFilter extends BaseFilter {
    * console.log(filter.has('alice')); // output: true
    * console.log(filter.has('bob')); // output: false
    */
-  has (element) {
+  has (element: utils.HashableInput): boolean {
     const locations = this._locations(element)
     return this._filter[locations.firstIndex].has(locations.fingerprint) || this._filter[locations.secondIndex].has(locations.fingerprint)
   }
 
   /**
-   * Compute the optimal fingerprint length in bytes for a given bucket size
-   * and a false positive rate.
-   * @param  {int} size - The filter bucket size
-   * @param  {int} rate - The error rate, i.e. 'false positive' rate, targetted by the filter
-   * @return {int} The optimal fingerprint length in bytes
-   * @private
-   */
-  static _computeFingerpintLength (size, rate) {
-    const f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
-    return Math.ceil(f / 4) // because we use base 16 64-bits hashes
-  }
-
-  /**
    * Return the false positive rate for this cuckoo filter
-   * @return {Number} The false positive rate
+   * @return The false positive rate
    */
-  rate () {
+  rate (): number {
     const load = this._computeHashTableLoad()
     const c = this._fingerprintLength / load.load
     return Math.pow(2, Math.log2(2 * this._bucketSize) - (load.load * c))
@@ -287,15 +294,15 @@ export default class CuckooFilter extends BaseFilter {
 
   /**
    * For a element, compute its fingerprint and the index of its two buckets
-   * @param {*} element - The element to hash
-   * @return {locations} The fingerprint of the element and the index of its two buckets
+   * @param element - The element to hash
+   * @return The fingerprint of the element and the index of its two buckets
    * @private
    */
-  _locations (element) {
+  _locations (element: utils.HashableInput) {
     const hashes = utils.hashIntAndString(element, this.seed, 16, 64)
     const hash = hashes.int
     if (this._fingerprintLength > hashes.string.length) {
-      throw new Error('the fingerprint length (' + this._fingerprintLength + ') is higher than the hash length (' + hashes.string.length + '), please reduce the fingerprint length or report if this is an unexpected behavior.')
+      throw new Error(`the fingerprint length (${this._fingerprintLength}) is higher than the hash length (${hashes.string.length}), please reduce the fingerprint length or report if this is an unexpected behavior.`)
     }
     const fingerprint = hashes.string.substring(0, this._fingerprintLength)
     const firstIndex = Math.abs(hash)
@@ -310,12 +317,11 @@ export default class CuckooFilter extends BaseFilter {
   }
 
   /**
-   * Check if another cuckoo filter is equal to this one
-   * @param  {CuckooFilter} filter the cuckoo filter to compare to this one
-   * @return {Boolean} True if they are equal, false otherwise
+   * Check if another Cuckoo filter is equal to this one
+   * @param  filter - The cuckoo filter to compare to this one
+   * @return True if they are equal, false otherwise
    */
-  equals (filter = undefined) {
-    if (!filter) return false
+  equals (filter: CuckooFilter): boolean {
     let i = 0
     let res = true
     while (res && i < this._filter.length) {
