@@ -111,7 +111,7 @@ describe('Invertible Bloom Lookup Tables', () => {
 
   describe('#create', () => {
     it.skip('should create correctly an IBLT', () => {
-      const iblt = InvertibleBloomFilter.create(size, 0.001, seed, true)
+      const iblt = InvertibleBloomFilter.create(size, 0.001, true)
       toInsert.forEach(e => {
         iblt.add(e)
       })
@@ -153,7 +153,7 @@ describe('Invertible Bloom Lookup Tables', () => {
       invalids.forEach(json => {
         (function () {
           InvertibleBloomFilter.fromJSON(json)
-        }).should.throw(Error, 'Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
+        }).should.throw(Error)
       })
     })
 
@@ -162,7 +162,7 @@ describe('Invertible Bloom Lookup Tables', () => {
         InvertibleBloomFilter.fromJSON({
           type: 'InvertibleBloomFilter', _size: 10, _hashCount: 4, _elements: [], _seed: 1
         })
-      }).should.not.throw(Error, 'Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
+      }).should.not.throw(Error)
     })
   })
 

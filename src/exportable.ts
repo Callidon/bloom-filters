@@ -67,8 +67,9 @@ export function Exportable <T> (specs: ImportExportSpecs<T>) {
   }
 }
 
-interface FieldSpec {
-  name: string
+interface FieldSpec<F> {
+  name: string,
+  importer: (json: any) => F
 }
 
 type ParameterSpecs = Map<String, number>
@@ -79,15 +80,20 @@ const METADATA_PARAMETERS = Symbol('bloom-filters:exportable:constructor-paramet
 
 /**
  * Register a field to be exportable/importable
+ * @param importer - Function invoked on the JSON field to convert it into JavaScript
  */
-export function Field () {
+export function Field<F> (importer?: (json: any) => F) {
+  if (importer === undefined) {
+    importer = v => v
+  }
   return function (target: any, propertyKey: string) {
-    let fields: FieldSpec[] = [] 
+    let fields: FieldSpec<F>[] = [] 
     if (Reflect.hasMetadata(METADATA_FIELDS, target)) {
       fields = Reflect.getMetadata(METADATA_FIELDS, target)
     }
     fields.push({
-      name: propertyKey
+      name: propertyKey,
+      importer
     })
     Reflect.defineMetadata(METADATA_FIELDS, fields, target)
   }
@@ -122,7 +128,7 @@ export function AutoExportable<T> (className: string, otherFields: string[] = []
     target.prototype.saveAsJSON = function (): Object {            
       const json = { 'type': Reflect.getMetadata(METADATA_CLASSNAME, target.prototype) }
       // export fields defined using the @Field decorator
-      const fields: FieldSpec[] = Reflect.getMetadata(METADATA_FIELDS, target.prototype)
+      const fields: FieldSpec<any>[] = Reflect.getMetadata(METADATA_FIELDS, target.prototype)
       fields.forEach(field => {
         json[field.name] = cloneField(this[field.name])
       })
@@ -136,7 +142,7 @@ export function AutoExportable<T> (className: string, otherFields: string[] = []
     target.fromJSON = function (json: any): T {
       const className: string = Reflect.getMetadata(METADATA_CLASSNAME, target.prototype)
       const parameters: ParameterSpecs = Reflect.getMetadata(METADATA_PARAMETERS, target)
-      const fields: FieldSpec[] = Reflect.getMetadata(METADATA_FIELDS, target.prototype)
+      const fields: FieldSpec<any>[] = Reflect.getMetadata(METADATA_FIELDS, target.prototype)
       // validate the input JSON
       if (json.type !== className) {
         throw new Error(`Cannot create an object ${className} from a JSON export with type "${json.type}"`)
@@ -144,17 +150,17 @@ export function AutoExportable<T> (className: string, otherFields: string[] = []
       const constructorArgs = []
       const copyFields = []
       
-      fields.map(field => field.name).concat(otherFields).forEach(field => {
-        if (!(field in json)) {
+      otherFields.map(name => ({ name, importer: v => v })).concat(fields).forEach(field => {
+        if (!(field.name in json)) {
           throw new Error(`Invalid import: required field "${field}" not found in JSON export "${json}"`)
         }
         // build constructor/copy arguments
-        if (parameters.has(field)) {
-          constructorArgs[parameters.get(field)] = json[field]
+        if (parameters.has(field.name)) {
+          constructorArgs[parameters.get(field.name)] = field.importer(json[field.name])
         } else {
           copyFields.push({
-            name: field,
-            value: json[field]
+            name: field.name,
+            value: field.importer(json[field.name])
           })
         }
       })

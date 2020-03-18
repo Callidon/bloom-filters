@@ -26,7 +26,7 @@ SOFTWARE.
 
 import * as utils from './utils'
 import * as fm from './formulas'
-import { Exportable } from './exportable'
+import { Exportable, AutoExportable, Field, Parameter } from './exportable'
 import { assertFields, cloneObject } from './export-import-specs'
 import BaseFilter from './base-filter'
 
@@ -42,35 +42,48 @@ const inspect = Symbol.for('nodejs.util.inspect.custom')
  * @type {InvertibleBloomFilter}
  * @author Arnaud Grall
  */
-@Exportable({
-  export: cloneObject('InvertibleBloomFilter', '_size', '_hashCount', '_elements', '_seed'),
-  import: (json: any) => {
-    if ((json.type !== 'InvertibleBloomFilter') || !assertFields(json, '_size', '_hashCount', '_elements', '_seed')) {
-      throw new Error('Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
-    }
-    const iblt = new InvertibleBloomFilter(json._size, json._hashCount)
-    iblt.seed = json._seed
-    iblt._size = json._size
-    iblt._hashCount = json._hashCount
-    iblt._elements = json._elements.map(e => {
-      const c = new Cell(Buffer.from(e._idSum), Buffer.from(e._hashSum), e._count)
-      c.seed = e._seed
+// @Exportable({
+//   export: cloneObject('InvertibleBloomFilter', '_size', '_hashCount', '_elements', '_seed'),
+//   import: (json: any) => {
+//     if ((json.type !== 'InvertibleBloomFilter') || !assertFields(json, '_size', '_hashCount', '_elements', '_seed')) {
+//       throw new Error('Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
+//     }
+//     const iblt = new InvertibleBloomFilter(json._size, json._hashCount)
+//     iblt.seed = json._seed
+//     iblt._size = json._size
+//     iblt._hashCount = json._hashCount
+//     iblt._elements = json._elements.map(e => {
+//       const c = new Cell(Buffer.from(e._idSum), Buffer.from(e._hashSum), e._count)
+//       c.seed = e._seed
+//       return c
+//     })
+//     return iblt
+//   }
+// })
+@AutoExportable('InvertibleBloomFilter', ['_seed'])
+export class InvertibleBloomFilter extends BaseFilter {
+  @Field()
+  private _size: number
+
+  @Field()
+  private _hashCount: number
+
+  @Field<Array<Cell>>(json => {
+    return json.map(elt => {
+      const c = new Cell(Buffer.from(elt._idSum), Buffer.from(elt._hashSum), elt._count)
+      c.seed = elt._seed
       return c
     })
-    return iblt
-  }
-})
-export class InvertibleBloomFilter extends BaseFilter {
-  private _size: number
-  private _hashCount: number
+  })
   private _elements: Array<Cell>
+
   /**
    * Construct an Invertible Bloom Lookup Table
    * @param {Number} [size=1000] Number of cells in the InvertibleBloomFilter, should be set to d * alpha where d is the number of difference and alpha a constant
    * @param {Number} [hashCount=3] The number of hash functions used, empirically studied to be 3 or 4 in most cases
    * @param {Boolean} [verbose] default true, print a warning if size is less than the hashcount
    */
-  constructor (size = 1000, hashCount = 3, seed = utils.getDefaultSeed(), verbose = false) {
+  constructor (@Parameter('_size') size = 1000, @Parameter('_hashCount') hashCount = 3, verbose = false) {
     super()
     if (Buffer === undefined) throw new Error('No native Buffer implementation in the browser please require the buffer package feross/buffer: require("buffer/").Buffer')
     if (typeof hashCount !== 'number' || hashCount <= 0) throw new Error('hashCount need to be a number and higher than 0')
@@ -81,7 +94,6 @@ export class InvertibleBloomFilter extends BaseFilter {
       }
       console.log('[InvertibleBloomFilter] creating an InvertibleBloomFilter of size %d with %d hash functions.', size, hashCount)
     }
-    this.seed = seed
     this._size = size
     this._hashCount = hashCount
     // the number of elements in the array is n = alpha * size
@@ -98,10 +110,10 @@ export class InvertibleBloomFilter extends BaseFilter {
    * @param  {Number} [rate=0.001] [description]
    * @return {InvertibleBloomFilter}
    */
-  static create (items = 1000, rate = 0.001, seed = utils.getDefaultSeed(), verbose = false) {
+  static create (items = 1000, rate = 0.001, verbose = false) {
     const size = fm.optimalFilterSize(items, rate)
     const hashes = fm.optimalHashes(size, items)
-    return new InvertibleBloomFilter(size, hashes, seed, verbose)
+    return new InvertibleBloomFilter(size, hashes, verbose)
   }
 
   /**
@@ -124,8 +136,8 @@ export class InvertibleBloomFilter extends BaseFilter {
    * @param {Number} seed set the seed for the filter
    * @return {InvertibleBloomFilter}
    */
-  static from (array: Array<Buffer>, size = 1000, hashCount = 4, seed = utils.getDefaultSeed(), verbose = false) {
-    const iblt = new InvertibleBloomFilter(size, hashCount, seed, verbose)
+  static from (array: Array<Buffer>, size = 1000, hashCount = 4, verbose = false) {
+    const iblt = new InvertibleBloomFilter(size, hashCount, verbose)
     array.forEach(e => iblt.add(e))
     return iblt
   }
