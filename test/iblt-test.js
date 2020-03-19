@@ -80,14 +80,12 @@ describe('Invertible Bloom Lookup Tables', () => {
   describe('#has', () => {
     it('should get an element from the iblt with #has', () => {
       const iblt = new InvertibleBloomFilter(size, hashCount)
-      iblt.seed = seed
-      iblt._hashCount.should.equal(hashCount)
-      iblt.size.should.equal(size)
-      iblt.length.should.equal(0)
-      iblt._elements.length.should.equal(size)
       toInsert.forEach(e => {
         iblt.add(e)
-        iblt.has(e).should.equal(true)
+      })
+      toInsert.forEach(e => {
+        const query = iblt.has(e)
+        query.should.equal(true)
       })
     })
   })

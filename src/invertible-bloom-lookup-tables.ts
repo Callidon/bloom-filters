@@ -26,11 +26,9 @@ SOFTWARE.
 
 import * as utils from './utils'
 import * as fm from './formulas'
-import { Exportable, AutoExportable, Field, Parameter } from './exportable'
-import { assertFields, cloneObject } from './export-import-specs'
+import { AutoExportable, Field, Parameter } from './exportable'
 import BaseFilter from './base-filter'
-
-const inspect = Symbol.for('nodejs.util.inspect.custom')
+import Cell from './cell'
 
 /**
  * Exports an Invertible Bloom Lookup Table.
@@ -68,7 +66,7 @@ export class InvertibleBloomFilter extends BaseFilter {
   @Field()
   private _hashCount: number
 
-  @Field<Array<Cell>>(json => {
+  @Field<Array<Cell>>(undefined, json => {
     return json.map(elt => {
       const c = new Cell(Buffer.from(elt._idSum), Buffer.from(elt._hashSum), elt._count)
       c.seed = elt._seed
@@ -176,21 +174,12 @@ export class InvertibleBloomFilter extends BaseFilter {
   }
 
   /**
-   * Convert the Buffer into a string that will be stored in the InvertibleBloomFilter
-   * @param  {Buffer} elem the element to convert
-   * @return {string} data representing the buffer
-   */
-  static _convert (elem) {
-    return JSON.stringify(elem.toJSON())
-  }
-
-  /**
    * Add a Buffer to the InvertibleBloomFilter
    * If the element is not a Buffer it will convert it into a Buffer object
    * @param element - Element to add
    */
   add (element: Buffer) {
-    const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element), this.seed)
+    const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
     const indexes = utils.getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
       this._elements[indexes[i]].add(element, Buffer.from(hashes.string.first))
@@ -202,7 +191,7 @@ export class InvertibleBloomFilter extends BaseFilter {
    * @param  {Buffer} element the element to remove
    */
   delete (element: Buffer) {
-    const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element), this.seed)
+    const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
     const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
       this._elements[indexes[i]].xorm(new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1))
@@ -215,7 +204,7 @@ export class InvertibleBloomFilter extends BaseFilter {
    * @return {Boolean|Error|string} false if the element is not in the set, true if it is, 'perhaps', or an Error if an error appears.
    */
   has (element: Buffer) {
-    const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(element), this.seed)
+    const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
     const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
       if (this._elements[indexes[i]].count === 0) {
@@ -317,7 +306,7 @@ export class InvertibleBloomFilter extends BaseFilter {
         } else {
           throw new Error('Please report, not possible')
         }
-        const hashes = utils.allInOneHashTwice(InvertibleBloomFilter._convert(id), sub.seed)
+        const hashes = utils.allInOneHashTwice(JSON.stringify(id.toJSON()), sub.seed)
         const indexes = utils.getDistinctIndices(hashes.string.first, sub._size, sub._hashCount, sub.seed)
         for (let i = 0; i < indexes.length; ++i) {
           sub._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
@@ -348,107 +337,5 @@ export class InvertibleBloomFilter extends BaseFilter {
         missing: sbma
       }
     }
-  }
-}
-
-/**
- * A cell is composed of an idSum which the XOR of all element inserted in that cell, a hashSum which is the XOR of all hashed element in that cell and a counter which is the number of elements inserted in that cell.
- */
-@Exportable({
-  export: (cell: Cell) => ({
-    type: 'Cell',
-    _idSum: cell._idSum.toString(),
-    _hashSum: cell._hashSum.toString(),
-    _count: cell._count,
-    _seed: cell.seed
-  }),
-  import : (json: any) => {
-    // TODO typecheck json...
-    const cell = new Cell(Buffer.from(json._idSum), Buffer.from(json._hashSum), json._count)
-    cell.seed = json._seed
-    return cell
-  }
-})
-export class Cell extends BaseFilter {
-  private _idSum: Buffer
-  private _hashSum: Buffer
-  private _count: number
-  constructor (id = Buffer.allocUnsafe(0).fill(0), sum = Buffer.allocUnsafe(0).fill(0), count = 0) {
-    super()
-    this._idSum = id
-    this._hashSum = sum
-    this._count = count
-  }
-
-  [inspect] () {
-    return 'Cell:<' + JSON.stringify(this.id.toJSON().data) + ', ' + JSON.stringify(this.hash.toJSON().data) + ', ' + this.count + '>'
-  }
-
-  get id () {
-    return this._idSum
-  }
-
-  get hash () {
-    return this._hashSum
-  }
-
-  get count () {
-    return this._count
-  }
-
-  /**
-   * Add an element in this cell
-   * @param {Buffer} id The element to XOR in this cell
-   * @param {Number} hash The hash of the element to XOR in this cell
-   */
-  add (id, hash) {
-    this._idSum = utils.xorBuffer(this.id, id)
-    this._hashSum = utils.xorBuffer(this.hash, hash)
-    this._count++
-  }
-
-  xorm (cell) {
-    const c = Cell.xorm(this, cell)
-    this._idSum = c.id
-    this._hashSum = c.hash
-    this._count = c.count
-  }
-
-  isEmpty () {
-    return this._idSum.equals(Buffer.from('')) && this._hashSum.equals(Buffer.from('')) && this._count === 0
-  }
-
-  static xorm (cell, remoteCell) {
-    const c = new Cell(utils.xorBuffer(cell.id, remoteCell.id), utils.xorBuffer(cell.hash, remoteCell.hash), cell.count - remoteCell.count)
-    // console.log('xor:', cell, remoteCell)
-    return c
-  }
-
-  /**
-   * Check if another Cell is identical to this one
-   * @param  {Cell} cell the cell to compare with
-   * @return {Boolean}  true if identical, false otherwise
-   */
-  equal (cell: Cell) {
-    return cell.count === this.count && cell.hash.equals(this.hash) && cell.id.equals(this.id)
-  }
-
-  /**
-   * Return true if the cell is considered as "Pure"
-   * A pure cell is a cell with a counter equal to 1 or -1
-   * And with a hash equal to the id hashed
-   * @param {Number} seed the seed used to hash
-   * @return {Boolean} [description]
-   */
-  isPure (seed = utils.getDefaultSeed()) {
-    if (this.id.equals(Buffer.allocUnsafe(0).fill(0)) || this.hash.equals(Buffer.allocUnsafe(0).fill(0))) return false
-    // it must be either 1 or -1
-    if (this.count !== 1 && this.count !== -1) return false
-    const hashes = utils.hashTwiceAsString(InvertibleBloomFilter._convert(this.id), this.seed)
-    // hashed id must be equal to the hash sum
-    if (!this.hash.equals(Buffer.from(hashes.first))) {
-      return false
-    }
-    return true
   }
 }

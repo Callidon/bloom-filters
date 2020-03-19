@@ -69,6 +69,7 @@ export function Exportable <T> (specs: ImportExportSpecs<T>) {
 
 interface FieldSpec<F> {
   name: string,
+  exporter: (elt: F) => any,
   importer: (json: any) => F
 }
 
@@ -82,7 +83,10 @@ const METADATA_PARAMETERS = Symbol('bloom-filters:exportable:constructor-paramet
  * Register a field to be exportable/importable
  * @param importer - Function invoked on the JSON field to convert it into JavaScript
  */
-export function Field<F> (importer?: (json: any) => F) {
+export function Field<F> (exporter?: (elt: F) => any, importer?: (json: any) => F) {
+  if (exporter === undefined) {
+    exporter = v => v
+  }
   if (importer === undefined) {
     importer = v => v
   }
@@ -93,6 +97,7 @@ export function Field<F> (importer?: (json: any) => F) {
     }
     fields.push({
       name: propertyKey,
+      exporter,
       importer
     })
     Reflect.defineMetadata(METADATA_FIELDS, fields, target)

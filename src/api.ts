@@ -27,6 +27,7 @@ SOFTWARE.
 export { default as CountMinSketch } from './count-min-sketch'
 export { default as CountingBloomFilter } from './counting-bloom-filter'
 export { default as CuckooFilter } from './cuckoo-filter'
-export { InvertibleBloomFilter, Cell } from './invertible-bloom-lookup-tables'
+export { InvertibleBloomFilter } from './invertible-bloom-lookup-tables'
+export { default as Cell } from './cell'
 export { default as PartitionedBloomFilter } from './partitioned-bloom-filter'
 export { default as BloomFilter } from './bloom-filter'
