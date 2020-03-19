@@ -207,9 +207,9 @@ Please respects the method inputs and don't pass JSON exported structures as inp
 * `delete(element: Buffer) -> void`: delete an element from the IBLT
 * `has(element: Buffer) -> true|false|'perhaps'`: return whether an element is in the IBLT or not, or perhaphs in
 * `substract(remote: InvertibleBloomFilter)`: this IBLT subtracted from remote, return another IBLT
-* `static InvertibleBloomFilter.decode(subtracted: InvertibleBloomFilter) -> {additional: Buffer[], missing: Buffer[]} `: decode a subtracted IBLT
+* `.decode() -> {additional: Buffer[], missing: Buffer[]} `: decode a subtracted IBLT
 * `listEntries() -> {success: true|false, output: Buffer[]}`: list all entries in the IBLT
-* getters:
+* Getters:
   * `length`: return the number of elements inserted, iterate on all count variables of all cells and return the average (sum/size)
   * `size`: return the number of cells
   * `hashCount`: return the number of times an element is hashed into the structure
@@ -242,8 +242,7 @@ const remoteData = [Buffer.from('alice'),
 
 remoteData.forEach(e => remote.add(e))
 
-const sub = iblt.substract(remote)
-const result = InvertibleBloomFilter.decode(sub)
+const result = iblt.substract(remote).decode()
 console.log('Did we successfully decode the subtracted iblts?', result.success, result.reason)
 console.log('Missing elements for iblt: ', result.missing, result.missing.map(e => e.toString()))
 console.log('Additional elements of iblt and missing elements of the remote iblt: ', result.additional, result.additional.map(e => e.toString()))
@@ -252,7 +251,7 @@ console.log('Verify if Buffer.from("help") is in the iblt: ', iblt.has(Buffer.fr
 // true with high probability if well configured
 
 iblt.delete(Buffer.from('help'))
-// no error ;)
+// no errors =)
 
 console.log('Deleting Buffer.from("help") and rechecking:', iblt.has(Buffer.from('help')))
 
