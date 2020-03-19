@@ -131,7 +131,7 @@ describe('CountMinSketch', () => {
       })
     })
   })
-  describe('Performance test', () => {
+  describe.skip('Performance test', () => {
     // setup an finite stream of 100 000 elements between [0; 1000)
     const max = 1000000
     const rate = 0.00001

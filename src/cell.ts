@@ -129,7 +129,7 @@ export default class Cell extends BaseFilter {
    * @param  cell - The cell to compare with
    * @return True if the two Cells are equals, False otherwise
    */
-  equal (cell: Cell): boolean {
+  equals (cell: Cell): boolean {
     return this._count === cell.count && this._idSum.equals(cell.idSum) && this._hashSum.equals(cell.hashSum)
   }
 

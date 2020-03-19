@@ -7,7 +7,7 @@
     "lint": "standard",
     "build": "tsc",
     "pretest": "yarn build",
-    "test": "mocha test/**/iblt-test.js --trace-deprecation --timeout=30000",
+    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=30000",
     "coverage": "nyc --reporter=lcov npm test",
     "report": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov",
     "doc": "jsdoc -c jsdoc.json README.md src/",

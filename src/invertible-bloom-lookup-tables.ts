@@ -24,8 +24,8 @@ SOFTWARE.
 
 'use strict'
 
-import * as utils from './utils'
-import * as fm from './formulas'
+import { allInOneHashTwice, allocateArray, getDistinctIndices } from './utils'
+import { optimalFilterSize, optimalHashes } from './formulas'
 import { AutoExportable, Field, Parameter } from './exportable'
 import BaseFilter from './base-filter'
 import Cell from './cell'
@@ -89,7 +89,7 @@ export default class InvertibleBloomFilter extends BaseFilter {
     this._size = size
     this._hashCount = hashCount
     // the number of elements in the array is n = alpha * size
-    this._elements = utils.allocateArray(this._size, () => Cell.empty())
+    this._elements = allocateArray(this._size, () => Cell.empty())
   }
 
   /**
@@ -99,8 +99,8 @@ export default class InvertibleBloomFilter extends BaseFilter {
    * @return A new Invertible Bloom filter optimal for the given parameters.
    */
   static create (nbItems: number, errorRate: number): InvertibleBloomFilter {
-    const size = fm.optimalFilterSize(nbItems, errorRate)
-    const nbHashes = fm.optimalHashes(size, nbItems)
+    const size = optimalFilterSize(nbItems, errorRate)
+    const nbHashes = optimalHashes(size, nbItems)
     return new InvertibleBloomFilter(size, nbHashes)
   }
 
@@ -110,7 +110,7 @@ export default class InvertibleBloomFilter extends BaseFilter {
    * @param errorRate - Expected error rate
    * @return A new Invertible Bloom filter filled with the iterable's items.
    */
-  static from(items: Iterable<Buffer>, errorRate: number): InvertibleBloomFilter {
+  static from (items: Iterable<Buffer>, errorRate: number): InvertibleBloomFilter {
     const array = Array.from(items)
     const filter = InvertibleBloomFilter.create(array.length, errorRate)
     array.forEach(item => filter.add(item))
@@ -152,8 +152,8 @@ export default class InvertibleBloomFilter extends BaseFilter {
    * @param element - The element to insert
    */
   add (element: Buffer): void {
-    const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
-    const indexes = utils.getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
+    const hashes = allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
+    const indexes = getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
       this._elements[indexes[i]].add(element, Buffer.from(hashes.string.first))
     }
@@ -164,8 +164,8 @@ export default class InvertibleBloomFilter extends BaseFilter {
    * @param element - The element to remove
    */
   delete (element: Buffer): void {
-    const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
-    const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
+    const hashes = allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
+    const indexes = getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
       this._elements[indexes[i]] = this._elements[indexes[i]].xorm(new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1))
     }
@@ -177,8 +177,8 @@ export default class InvertibleBloomFilter extends BaseFilter {
    * @return False if the element is not in the filter, true if "may be" in the filter.
    */
   has (element: Buffer): boolean {
-    const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
-    const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
+    const hashes = allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
+    const indexes = getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
       if (this._elements[indexes[i]].count === 0) {
         return false
@@ -192,31 +192,31 @@ export default class InvertibleBloomFilter extends BaseFilter {
       return true
     }
   }
-
+  
   /**
-   * List all entries from the Iblt, without destruction
-   * Do a copy of this Iblt before trying to list entries!!
-   * Ref; As long as m is chosen so that m > (ck + epsilon )t for some epsilon >  0 LISTENTRIES fails with probability O(t
-  −k+2) whenever n ≤ t.
-   * @return {Buffer[]|Error} A list of all entries
+   * List all entries from the filter using a Generator.
+   * The generator ends with True if the operation has not failed, False otheriwse.
+   * It is not recommended to modify an IBLT while listing its entries!
+   * @return A generator that yields all filter's entries.
    */
-  // TODO FIX ME
-  // listEntries () {
-  //   const copy = InvertibleBloomFilter.fromJSON(this.saveAsJSON())
-  //   let index
-  //   const output = []
-  //   let wrong = false
-  //   while (!wrong && (index = copy._elements.findIndex(e => e.count === 1)) !== -1) {
-  //     const elem = copy._elements[index].id
-  //     if (copy.has(elem)) {
-  //       output.push(elem)
-  //       copy.delete(elem)
-  //     } else {
-  //       wrong = true
-  //     }
-  //   }
-  //   return { output, success: !wrong }
-  // }
+  listEntries (): Generator<Buffer, boolean> {
+    const that = this
+    const seenBefore: Buffer[] = []
+    return function * () {
+      for(let index = 0; index < that._elements.length - 1; index++) {
+        const localCell = that._elements[index]
+        if (localCell.count > 0 && seenBefore.findIndex((b: Buffer) => b.equals(localCell.idSum)) === -1) {
+          if (that.has(localCell.idSum)) {
+            seenBefore.push(localCell.idSum)
+            yield localCell.idSum
+          } else {
+            return false
+          }
+        }
+      }
+      return true
+    }()
+  }
 
   /**
    * Substract the filter with another {@link InvertibleBloomFilter}, and returns the resulting filter.
@@ -245,7 +245,7 @@ export default class InvertibleBloomFilter extends BaseFilter {
       return false
     } else {
       for (let i = 0; i < iblt._elements.length; ++i) {
-        if (!iblt._elements[i].equal(this._elements[i])) {
+        if (!iblt._elements[i].equals(this._elements[i])) {
           return false
         }
       }
@@ -279,8 +279,8 @@ export default class InvertibleBloomFilter extends BaseFilter {
         } else {
           throw new Error('Please report, not possible')
         }
-        const hashes = utils.allInOneHashTwice(JSON.stringify(id.toJSON()), this.seed)
-        const indexes = utils.getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
+        const hashes = allInOneHashTwice(JSON.stringify(id.toJSON()), this.seed)
+        const indexes = getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
         for (let i = 0; i < indexes.length; ++i) {
           this._elements[indexes[i]] = this._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
           if (this._elements[indexes[i]].isPure()) {
@@ -300,7 +300,6 @@ export default class InvertibleBloomFilter extends BaseFilter {
         missing
       }
     } else {
-      // console.log('TRUE')
       return {
         success: true,
         additional,

@@ -91,31 +91,40 @@ describe('Invertible Bloom Lookup Tables', () => {
   })
 
   describe('#listEntries', () => {
-    it.skip('should get all element from the iblt with #listEntries', () => {
+    it('should get all element from the filter', () => {
       const iblt = new InvertibleBloomFilter(size, hashCount)
-      iblt.seed = seed
-      iblt._hashCount.should.equal(hashCount)
-      iblt.size.should.equal(size)
-      iblt.length.should.equal(0)
-      iblt._elements.length.should.equal(size)
       toInsert.forEach(e => {
         iblt.add(e)
       })
-      const res = iblt.listEntries()
-      res.success.should.equal(true)
-      res.output.sort().should.eql(toInsert.sort())
+      const iterator = iblt.listEntries()
+      const output = []
+      let elt = iterator.next()
+      while(!elt.done) {
+        output.push(elt.value)
+        elt = iterator.next()
+      }
+      elt.value.should.equal(true)
+      output.length.should.equals(toInsert.length)
+      output.sort().should.eqls(toInsert.sort())
     })
   })
 
   describe('#create', () => {
-    it.skip('should create correctly an IBLT', () => {
+    it('should create correctly an IBLT', () => {
       const iblt = InvertibleBloomFilter.create(size, 0.001)
       toInsert.forEach(e => {
         iblt.add(e)
       })
-      const res = iblt.listEntries()
-      res.success.should.equal(true)
-      res.output.sort().should.eql(toInsert.sort())
+      const iterator = iblt.listEntries()
+      const output = []
+      let elt = iterator.next()
+      while(!elt.done) {
+        output.push(elt.value)
+        elt = iterator.next()
+      }
+      elt.value.should.equal(true)
+      output.length.should.equals(toInsert.length)
+      output.sort().should.eqls(toInsert.sort())
     })
   })
 
