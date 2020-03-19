@@ -26,7 +26,7 @@ SOFTWARE.
 
 require('chai').should()
 require('chai').expect()
-const { InvertibleBloomFilter } = require('../dist/invertible-bloom-lookup-tables.js')
+const InvertibleBloomFilter = require('../dist/invertible-bloom-lookup-tables.js').default
 const random = require('random')
 const seedrandom = require('seedrandom')
 
@@ -120,7 +120,7 @@ describe('Invertible Bloom Lookup Tables', () => {
   })
 
   describe('#saveAsJSON', () => {
-    const iblt = InvertibleBloomFilter.from([Buffer.from('meow'), Buffer.from('car')], 100, 4, seed)
+    const iblt = InvertibleBloomFilter.from([Buffer.from('meow'), Buffer.from('car')], 0.001)
 
     it('should export an Invertible Bloom Filter to a JSON object', () => {
       const exported = iblt.saveAsJSON()      
@@ -206,7 +206,7 @@ describe('Invertible Bloom Lookup Tables', () => {
     remote.length.should.equal(keys - setDiffplus.length)
     iblt.length.should.equal(keys - setDiffminus.length)
     const sub = iblt.substract(remote)
-    const res = InvertibleBloomFilter.decode(sub)
+    const res = sub.decode()
     try {
       res.success.should.equal(true)
     } catch (e) {

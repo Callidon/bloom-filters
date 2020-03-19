@@ -31,17 +31,33 @@ import BaseFilter from './base-filter'
 import Cell from './cell'
 
 /**
- * Exports an Invertible Bloom Lookup Table.
- *
+ * The reason why an Invertible Bloom Lookup Table decoding operation has failed
+ */
+export interface IBLTDecodingErrorReason {
+  cell: Cell,
+  iblt: InvertibleBloomFilter
+}
+
+/**
+ * The results of decoding an Invertible Bloom Lookup Table
+ */
+export interface IBLTDecodingResults {
+  success: boolean,
+  reason?: IBLTDecodingErrorReason,
+  additional: Buffer[],
+  missing: Buffer[]
+}
+
+/**
  * An Invertible Bloom Lookup Table is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
  * They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction [6], in that it randomly combines elements using the XOR function
  * Reference: Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). What's the difference?: efficient set reconciliation without prior context. ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
  * @see {@link http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.220.6282&rep=rep1&type=pdf} for more details about Invertible Bloom Lookup Tables
- * @type {InvertibleBloomFilter}
  * @author Arnaud Grall
+ * @author Thomas Minier
  */
 @AutoExportable('InvertibleBloomFilter', ['_seed'])
-export class InvertibleBloomFilter extends BaseFilter {
+export default class InvertibleBloomFilter extends BaseFilter {
   @Field()
   private _size: number
 
@@ -59,15 +75,17 @@ export class InvertibleBloomFilter extends BaseFilter {
 
   /**
    * Construct an Invertible Bloom Lookup Table
-   * @param {Number} [size=1000] Number of cells in the InvertibleBloomFilter, should be set to d * alpha where d is the number of difference and alpha a constant
-   * @param {Number} [hashCount=3] The number of hash functions used, empirically studied to be 3 or 4 in most cases
-   * @param {Boolean} [verbose] default true, print a warning if size is less than the hashcount
+   * @param size - The number of cells in the InvertibleBloomFilter. It should be set to d * alpha, where d is the number of difference and alpha is a constant
+   * @param hashCount - The number of hash functions used (empirically studied to be 3 or 4 in most cases)
    */
-  constructor (@Parameter('_size') size = 1000, @Parameter('_hashCount') hashCount = 3, verbose = false) {
+  constructor (@Parameter('_size') size: number, @Parameter('_hashCount') hashCount: number = 3) {
     super()
-    if (Buffer === undefined) throw new Error('No native Buffer implementation in the browser please require the buffer package feross/buffer: require("buffer/").Buffer')
-    if (typeof hashCount !== 'number' || hashCount <= 0) throw new Error('hashCount need to be a number and higher than 0')
-    if (typeof size !== 'number') throw new Error('The size need to be a number')
+    if (Buffer === undefined) {
+      throw new Error('No native Buffer implementation bound in your JavaScript env. If you are in a Web browser, consider importing the polyfill "feross/buffer" (https://github.com/feross/buffer).')
+    }
+    if (hashCount <= 0) {
+      throw new Error('The hashCount must be a non-zero, positive integer')
+    }
     this._size = size
     this._hashCount = hashCount
     // the number of elements in the array is n = alpha * size
@@ -75,62 +93,28 @@ export class InvertibleBloomFilter extends BaseFilter {
   }
 
   /**
-   * Create an Invertible Bloom filter like a classic Bloom Filter.
-   * Dont forget that it creates an optimal filter for the specified size.
-   * The classic contructor of the filter already create an optimal IBLT, which can decode at most of its capacity.
-   * If you plan to only use the set difference, use the classic constructor.
-   * If you want to list all entries of the filter, use this one.
-   * @param  {Number} [items=1000]  [description]
-   * @param  {Number} [rate=0.001] [description]
-   * @return {InvertibleBloomFilter}
+   * Create an Invertible Bloom filter optimal for an expected size and error rate.
+   * @param nbItems - Number of items expected to insert into the IBLT
+   * @param errorRate - Expected error rate
+   * @return A new Invertible Bloom filter optimal for the given parameters.
    */
-  static create (items = 1000, rate = 0.001, verbose = false) {
-    const size = fm.optimalFilterSize(items, rate)
-    const hashes = fm.optimalHashes(size, items)
-    return new InvertibleBloomFilter(size, hashes, verbose)
+  static create (nbItems: number, errorRate: number): InvertibleBloomFilter {
+    const size = fm.optimalFilterSize(nbItems, errorRate)
+    const nbHashes = fm.optimalHashes(size, nbItems)
+    return new InvertibleBloomFilter(size, nbHashes)
   }
 
   /**
-   * Expose the Cell constructor as statis class of the Invertible Bloom Filter
-   * @type {Array}
+   * Create an Invertible Bloom filter from a set of Buffer and optimal for an error rate.
+   * @param items - An iterable to yield Buffers to be inserted into the filter
+   * @param errorRate - Expected error rate
+   * @return A new Invertible Bloom filter filled with the iterable's items.
    */
-  static get Cell () {
-    return Cell
-  }
-
-  get count () {
-    return this._hashCount
-  }
-
-  /**
-   * Return an InvertibleBloomFilter of size 'size' and a number of hash functions used 'hashCount' with a set of inputs already inserted
-   * @param  array  - The elements to insert
-   * @param  {Number} [size=1000]   The size of the InvertibleBloomFilter
-   * @param  {Number} [hashCount=4] the number of hash functions used
-   * @param {Number} seed set the seed for the filter
-   * @return {InvertibleBloomFilter}
-   */
-  static from (array: Array<Buffer>, size = 1000, hashCount = 4, verbose = false) {
-    const iblt = new InvertibleBloomFilter(size, hashCount, verbose)
-    array.forEach(e => iblt.add(e))
-    return iblt
-  }
-
-  /**
-   * Return the number of cells of the InvertibleBloomFilter
-   * @return {Number} The number of differences allowed
-   */
-  get size () {
-    return this._size
-  }
-
-  /**
-   * Return the number of elements added in the InvertibleBloomFilter
-   * Complexity in time: O(alpha*d)
-   * @return {Number} the number of elements in the InvertibleBloomFilter
-   */
-  get length () {
-    return this._elements.reduce((a, b) => a + b.count, 0) / this._hashCount
+  static from(items: Iterable<Buffer>, errorRate: number): InvertibleBloomFilter {
+    const array = Array.from(items)
+    const filter = InvertibleBloomFilter.create(array.length, errorRate)
+    array.forEach(item => filter.add(item))
+    return filter
   }
 
   /**
@@ -142,19 +126,32 @@ export class InvertibleBloomFilter extends BaseFilter {
   }
 
   /**
-   * Return cells that store elements in this InvertibleBloomFilter
-   * @return {Cell[]}
+   * Get the number of cells of the filter
    */
-  get elements () {
+  get size (): number {
+    return this._size
+  }
+
+  /**
+   * Get the number of elements added in the filter
+   * Complexity in time: O(alpha*d)
+   */
+  get length (): number {
+    return this._elements.reduce((a, b) => a + b.count, 0) / this._hashCount
+  }
+
+  /**
+   * Return the cells used to store elements in this InvertibleBloomFilter
+   */
+  get elements (): Cell[] {
     return this._elements
   }
 
   /**
-   * Add a Buffer to the InvertibleBloomFilter
-   * If the element is not a Buffer it will convert it into a Buffer object
-   * @param element - Element to add
+   * Add an element to the InvertibleBloomFilter
+   * @param element - The element to insert
    */
-  add (element: Buffer) {
+  add (element: Buffer): void {
     const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
     const indexes = utils.getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
@@ -164,9 +161,9 @@ export class InvertibleBloomFilter extends BaseFilter {
 
   /**
    * Delete an element from the Invertible Bloom Filter
-   * @param  {Buffer} element the element to remove
+   * @param element - The element to remove
    */
-  delete (element: Buffer) {
+  delete (element: Buffer): void {
     const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
     const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
@@ -175,11 +172,11 @@ export class InvertibleBloomFilter extends BaseFilter {
   }
 
   /**
-   * Return false if an element is not in the iblt, true if an element is in the iblt with an error rate
-   * @param  {Buffer} element the element to get from the Iblt
-   * @return {Boolean|Error|string} false if the element is not in the set, true if it is, 'perhaps', or an Error if an error appears.
+   * Test if an item is in the filter.
+   * @param  element - The element to test
+   * @return False if the element is not in the filter, true if "may be" in the filter.
    */
-  has (element: Buffer) {
+  has (element: Buffer): boolean {
     const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
     const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
@@ -192,7 +189,7 @@ export class InvertibleBloomFilter extends BaseFilter {
           return false
         }
       }
-      return 'perhaps'
+      return true
     }
   }
 
@@ -222,31 +219,35 @@ export class InvertibleBloomFilter extends BaseFilter {
   // }
 
   /**
-   * XOR 2 Invertible Bloom Filters, local xor remote
-   * @param  {InvertibleBloomFilter} remote The remote to substract
-   * @return {InvertibleBloomFilter} a new InvertibleBloomFilter which is the XOR of the local and remote one
+   * Substract the filter with another {@link InvertibleBloomFilter}, and returns the resulting filter.
+   * @param  remote - The filter to substract with
+   * @return A new InvertibleBloomFilter which is the XOR of the local and remote one
    */
-  substract (remote) {
-    if (this.size !== remote.size) throw new Error('they should be of the same size')
-    const toReturn = new InvertibleBloomFilter(remote._size, remote._hashCount)
-    toReturn.seed = this.seed
-    for (let i = 0; i < this.size; ++i) {
-      toReturn._elements[i] = this._elements[i].xorm(remote._elements[i])
+  substract (iblt: InvertibleBloomFilter): InvertibleBloomFilter {
+    if (this.size !== iblt.size) {
+      throw new Error('The two Invertible Bloom Filters must be of the same size')
     }
-    return toReturn
+    const res = new InvertibleBloomFilter(iblt._size, iblt._hashCount)
+    res.seed = this.seed
+    for (let i = 0; i < this.size; ++i) {
+      res._elements[i] = this._elements[i].xorm(iblt._elements[i])
+    }
+    return res
   }
 
   /**
-   * Check if two InvertibleBloomFilters are equal
-   * @param  {InvertibleBloomFilter} InvertibleBloomFilter the remote InvertibleBloomFilter to compare with our
-   * @return {Boolean} true if identical, false otherwise
+   * Test if two InvertibleBloomFilters are equals
+   * @param iblt - The filter to compare with
+   * @return True if the two filters are equals, False otherwise
    */
-  equal (iblt) {
+  equal (iblt: InvertibleBloomFilter): boolean {
     if (iblt._size !== this._size || iblt._hashCount !== this._hashCount || iblt.seed !== this.seed) {
       return false
     } else {
       for (let i = 0; i < iblt._elements.length; ++i) {
-        if (!iblt._elements[i].equal(this._elements[i])) return false
+        if (!iblt._elements[i].equal(this._elements[i])) {
+          return false
+        }
       }
       return true
     }
@@ -254,60 +255,56 @@ export class InvertibleBloomFilter extends BaseFilter {
 
   /**
    * Decode an InvertibleBloomFilter based on its substracted version
-   * @param  {InvertibleBloomFilter} sub The Iblt to decode after being substracted
-   * @return {Object}
+   * @return The results of the deconding process
    */
-  static decode (sub, samb = [], sbma = []) {
-    const pureList = []
+  decode (additional: Buffer[] = [], missing: Buffer[] = []): IBLTDecodingResults {
+    const pureList: number[] = []
     let cell: Cell
     // checking for all pure cells
-    for (let i = 0; i < sub._elements.length; ++i) {
-      cell = sub._elements[i]
+    for (let i = 0; i < this._elements.length; ++i) {
+      cell = this._elements[i]
       if (cell.isPure()) {
         pureList.push(i)
       }
     }
     while (pureList.length !== 0) {
-      cell = sub._elements[pureList.pop()]
+      cell = this._elements[pureList.pop()]
       const id = cell.idSum
       const c = cell.count
       if (cell.isPure()) {
         if (c === 1) {
-          samb.push(id)
+          additional.push(id)
         } else if (c === -1) {
-          sbma.push(id)
+          missing.push(id)
         } else {
           throw new Error('Please report, not possible')
         }
-        const hashes = utils.allInOneHashTwice(JSON.stringify(id.toJSON()), sub.seed)
-        const indexes = utils.getDistinctIndices(hashes.string.first, sub._size, sub._hashCount, sub.seed)
+        const hashes = utils.allInOneHashTwice(JSON.stringify(id.toJSON()), this.seed)
+        const indexes = utils.getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
         for (let i = 0; i < indexes.length; ++i) {
-          sub._elements[indexes[i]] = sub._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
-          if (sub._elements[indexes[i]].isPure(sub.seed)) {
+          this._elements[indexes[i]] = this._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
+          if (this._elements[indexes[i]].isPure()) {
             pureList.push(indexes[i])
           }
         }
       }
     }
-    if (sub._elements.findIndex(e => {
-      return !e.isEmpty()
-    }) > -1) {
-      // console.log('FALSE')
+    if (this._elements.findIndex(e => !e.isEmpty()) > -1) {
       return {
         success: false,
         reason: {
           cell,
-          iblt: sub
+          iblt: this
         },
-        additional: samb,
-        missing: sbma
+        additional,
+        missing
       }
     } else {
       // console.log('TRUE')
       return {
         success: true,
-        additional: samb,
-        missing: sbma
+        additional,
+        missing
       }
     }
   }
