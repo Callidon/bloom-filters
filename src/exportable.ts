@@ -85,7 +85,7 @@ const METADATA_PARAMETERS = Symbol('bloom-filters:exportable:constructor-paramet
  */
 export function Field<F> (exporter?: (elt: F) => any, importer?: (json: any) => F) {
   if (exporter === undefined) {
-    exporter = v => v
+    exporter = cloneField
   }
   if (importer === undefined) {
     importer = v => v
@@ -135,7 +135,7 @@ export function AutoExportable<T> (className: string, otherFields: string[] = []
       // export fields defined using the @Field decorator
       const fields: FieldSpec<any>[] = Reflect.getMetadata(METADATA_FIELDS, target.prototype)
       fields.forEach(field => {
-        json[field.name] = cloneField(this[field.name])
+        json[field.name] = field.exporter(this[field.name])
       })
       // export fields declared through the otherFields parameter
       otherFields.forEach(field => {

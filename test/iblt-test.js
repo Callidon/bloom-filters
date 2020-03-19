@@ -109,7 +109,7 @@ describe('Invertible Bloom Lookup Tables', () => {
 
   describe('#create', () => {
     it.skip('should create correctly an IBLT', () => {
-      const iblt = InvertibleBloomFilter.create(size, 0.001, true)
+      const iblt = InvertibleBloomFilter.create(size, 0.001)
       toInsert.forEach(e => {
         iblt.add(e)
       })
@@ -210,11 +210,11 @@ describe('Invertible Bloom Lookup Tables', () => {
     try {
       res.success.should.equal(true)
     } catch (e) {
-      console.log('Additional: ', res.additional, ' Missing: ', res.missing)
-      console.log('Additional: ', res.additional.map(e => e.toString()), ' Missing: ', res.missing.map(e => e.toString()))
-      console.log('Additional: ', res.additional.map(e => e.toString()).length, ' Missing: ', res.missing.map(e => e.toString()).length)
-      console.log('Number of differences found: ', res.additional.length + res.missing.length)
-      console.log('Should have: ', setDiffplus.length, setDiffminus.length, setDiffminus.length + setDiffplus.length)
+      // console.log('Additional: ', res.additional, ' Missing: ', res.missing)
+      // console.log('Additional: ', res.additional.map(e => e.toString()), ' Missing: ', res.missing.map(e => e.toString()))
+      // console.log('Additional: ', res.additional.map(e => e.toString()).length, ' Missing: ', res.missing.map(e => e.toString()).length)
+      // console.log('Number of differences found: ', res.additional.length + res.missing.length)
+      // console.log('Should have: ', setDiffplus.length, setDiffminus.length, setDiffminus.length + setDiffplus.length)
       throw e
     }
     const sum = res.additional.length + res.missing.length

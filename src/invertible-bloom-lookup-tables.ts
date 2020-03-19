@@ -40,24 +40,6 @@ import Cell from './cell'
  * @type {InvertibleBloomFilter}
  * @author Arnaud Grall
  */
-// @Exportable({
-//   export: cloneObject('InvertibleBloomFilter', '_size', '_hashCount', '_elements', '_seed'),
-//   import: (json: any) => {
-//     if ((json.type !== 'InvertibleBloomFilter') || !assertFields(json, '_size', '_hashCount', '_elements', '_seed')) {
-//       throw new Error('Cannot create an InvertibleBloomFilter from a JSON export which does not represent an Invertible Bloom Filter')
-//     }
-//     const iblt = new InvertibleBloomFilter(json._size, json._hashCount)
-//     iblt.seed = json._seed
-//     iblt._size = json._size
-//     iblt._hashCount = json._hashCount
-//     iblt._elements = json._elements.map(e => {
-//       const c = new Cell(Buffer.from(e._idSum), Buffer.from(e._hashSum), e._count)
-//       c.seed = e._seed
-//       return c
-//     })
-//     return iblt
-//   }
-// })
 @AutoExportable('InvertibleBloomFilter', ['_seed'])
 export class InvertibleBloomFilter extends BaseFilter {
   @Field()
@@ -86,12 +68,6 @@ export class InvertibleBloomFilter extends BaseFilter {
     if (Buffer === undefined) throw new Error('No native Buffer implementation in the browser please require the buffer package feross/buffer: require("buffer/").Buffer')
     if (typeof hashCount !== 'number' || hashCount <= 0) throw new Error('hashCount need to be a number and higher than 0')
     if (typeof size !== 'number') throw new Error('The size need to be a number')
-    if (verbose) {
-      if (size < hashCount) {
-        console.log('[Warning] the size is less than the number of hash functions')
-      }
-      console.log('[InvertibleBloomFilter] creating an InvertibleBloomFilter of size %d with %d hash functions.', size, hashCount)
-    }
     this._size = size
     this._hashCount = hashCount
     // the number of elements in the array is n = alpha * size
