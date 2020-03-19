@@ -71,7 +71,7 @@ export class InvertibleBloomFilter extends BaseFilter {
     this._size = size
     this._hashCount = hashCount
     // the number of elements in the array is n = alpha * size
-    this._elements = utils.allocateArray(this._size, () => new Cell())
+    this._elements = utils.allocateArray(this._size, () => Cell.empty())
   }
 
   /**
@@ -170,7 +170,7 @@ export class InvertibleBloomFilter extends BaseFilter {
     const hashes = utils.allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
     const indexes = utils.getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
-      this._elements[indexes[i]].xorm(new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1))
+      this._elements[indexes[i]] = this._elements[indexes[i]].xorm(new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1))
     }
   }
 
@@ -186,7 +186,7 @@ export class InvertibleBloomFilter extends BaseFilter {
       if (this._elements[indexes[i]].count === 0) {
         return false
       } else if (this._elements[indexes[i]].count === 1) {
-        if (this._elements[indexes[i]].id.equals(element)) {
+        if (this._elements[indexes[i]].idSum.equals(element)) {
           return true
         } else {
           return false
@@ -231,10 +231,7 @@ export class InvertibleBloomFilter extends BaseFilter {
     const toReturn = new InvertibleBloomFilter(remote._size, remote._hashCount)
     toReturn.seed = this.seed
     for (let i = 0; i < this.size; ++i) {
-      const cell = this._elements[i]
-      const remoteCell = remote._elements[i]
-      const r = Cell.xorm(cell, remoteCell)
-      toReturn._elements[i] = r
+      toReturn._elements[i] = this._elements[i].xorm(remote._elements[i])
     }
     return toReturn
   }
@@ -262,19 +259,19 @@ export class InvertibleBloomFilter extends BaseFilter {
    */
   static decode (sub, samb = [], sbma = []) {
     const pureList = []
-    let cell
+    let cell: Cell
     // checking for all pure cells
     for (let i = 0; i < sub._elements.length; ++i) {
       cell = sub._elements[i]
-      if (cell.isPure(sub.seed)) {
+      if (cell.isPure()) {
         pureList.push(i)
       }
     }
     while (pureList.length !== 0) {
       cell = sub._elements[pureList.pop()]
-      const id = cell.id
+      const id = cell.idSum
       const c = cell.count
-      if (cell.isPure(sub.seed)) {
+      if (cell.isPure()) {
         if (c === 1) {
           samb.push(id)
         } else if (c === -1) {
@@ -285,7 +282,7 @@ export class InvertibleBloomFilter extends BaseFilter {
         const hashes = utils.allInOneHashTwice(JSON.stringify(id.toJSON()), sub.seed)
         const indexes = utils.getDistinctIndices(hashes.string.first, sub._size, sub._hashCount, sub.seed)
         for (let i = 0; i < indexes.length; ++i) {
-          sub._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
+          sub._elements[indexes[i]] = sub._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
           if (sub._elements[indexes[i]].isPure(sub.seed)) {
             pureList.push(indexes[i])
           }
