@@ -4,14 +4,10 @@
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "bloom-filters.js",
   "scripts": {
-    "lint": "standard",
     "build": "tsc",
     "pretest": "yarn build",
     "test": "mocha test/**/*-test.js --trace-deprecation --timeout=30000",
-    "coverage": "nyc --reporter=lcov npm test",
-    "report": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov",
-    "doc": "typedoc --mode file --out docs/ --ignoreCompilerErrors",
-    "all": "npm run lint && npm run doc && npm run report"
+    "doc": "typedoc --mode file --out docs/ --ignoreCompilerErrors"
   },
   "repository": {
     "type": "git",
