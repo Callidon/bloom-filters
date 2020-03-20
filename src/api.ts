@@ -24,10 +24,10 @@ SOFTWARE.
 
 'use strict'
 
-export { default as CountMinSketch } from './count-min-sketch'
-export { default as CountingBloomFilter } from './counting-bloom-filter'
-export { default as CuckooFilter } from './cuckoo-filter'
-export { default as InvertibleBloomFilter } from './invertible-bloom-lookup-tables'
-export { default as Cell } from './cell'
-export { default as PartitionedBloomFilter } from './partitioned-bloom-filter'
-export { default as BloomFilter } from './bloom-filter'
+export { default as BloomFilter } from './bloom/bloom-filter'
+export { default as CountingBloomFilter } from './bloom/counting-bloom-filter'
+export { default as PartitionedBloomFilter } from './bloom/partitioned-bloom-filter'
+export { default as CountMinSketch } from './sketch/count-min-sketch'
+export { default as CuckooFilter } from './cuckoo/cuckoo-filter'
+export { default as InvertibleBloomFilter } from './iblt/invertible-bloom-lookup-tables'
+export { default as Cell } from './iblt/cell'

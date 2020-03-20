@@ -24,10 +24,10 @@ SOFTWARE.
 
 'use strict'
 
-import BaseFilter from './base-filter'
-import ClassicFilter from './interfaces/classic-filter'
-import { AutoExportable, Field, Parameter } from './exportable'
-import { HashableInput, allocateArray, getIndices } from './utils'
+import BaseFilter from '../base-filter'
+import ClassicFilter from '../interfaces/classic-filter'
+import { AutoExportable, Field, Parameter } from '../exportable'
+import { HashableInput, allocateArray, getIndices } from '../utils'
 
 /**
  * Return the optimal number of hashes needed for a given error rate and load factor

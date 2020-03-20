@@ -24,11 +24,11 @@ SOFTWARE.
 
 'use strict'
 
-import ClassicFilter from './interfaces/classic-filter'
-import BaseFilter from './base-filter'
-import { AutoExportable, Field, Parameter } from './exportable'
-import { optimalFilterSize, optimalHashes } from './formulas'
-import { HashableInput, allocateArray, getDistinctIndices } from './utils'
+import ClassicFilter from '../interfaces/classic-filter'
+import BaseFilter from '../base-filter'
+import { AutoExportable, Field, Parameter } from '../exportable'
+import { optimalFilterSize, optimalHashes } from '../formulas'
+import { HashableInput, allocateArray, getDistinctIndices } from '../utils'
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,

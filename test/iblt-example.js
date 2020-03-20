@@ -1,4 +1,4 @@
-const { InvertibleBloomFilter } = require('../dist/invertible-bloom-lookup-tables')
+const { InvertibleBloomFilter } = require('../dist/api.js')
 // the buffer package is auto imported by nodejs
 // create a new Invertible Bloom Filters with 1000 cells and 4 hash functions
 const hashcount = 3

@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const CountingBloomFilter = require('../dist/counting-bloom-filter.js').default
+const { CountingBloomFilter } = require('../dist/api.js')
 
 describe('CountingBloomFilter', () => {
   const targetRate = 0.1

@@ -24,10 +24,10 @@ SOFTWARE.
 
 'use strict'
 
-import BaseFilter from './base-filter'
-import CountingFilter from './interfaces/counting-filter'
-import { AutoExportable, Field, Parameter } from './exportable'
-import { allocateArray, getDistinctIndices, HashableInput} from './utils'
+import BaseFilter from '../base-filter'
+import CountingFilter from '../interfaces/counting-filter'
+import { AutoExportable, Field, Parameter } from '../exportable'
+import { allocateArray, getDistinctIndices, HashableInput} from '../utils'
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.

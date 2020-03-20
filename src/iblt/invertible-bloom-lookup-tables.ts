@@ -24,12 +24,12 @@ SOFTWARE.
 
 'use strict'
 
-import BaseFilter from './base-filter'
-import WritableFilter from './interfaces/writable-filter'
+import BaseFilter from '../base-filter'
+import WritableFilter from '../interfaces/writable-filter'
 import Cell from './cell'
-import { AutoExportable, Field, Parameter } from './exportable'
-import { allInOneHashTwice, allocateArray, getDistinctIndices } from './utils'
-import { optimalFilterSize, optimalHashes } from './formulas'
+import { AutoExportable, Field, Parameter } from '../exportable'
+import { allInOneHashTwice, allocateArray, getDistinctIndices } from '../utils'
+import { optimalFilterSize, optimalHashes } from '../formulas'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed

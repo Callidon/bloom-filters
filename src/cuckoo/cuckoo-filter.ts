@@ -24,12 +24,12 @@ SOFTWARE.
 
 'use strict'
 
-import WritableFilter from './interfaces/writable-filter'
-import BaseFilter from './base-filter'
+import WritableFilter from '../interfaces/writable-filter'
+import BaseFilter from '../base-filter'
 import Bucket from './bucket'
-import { Exportable } from './exportable'
-import { HashableInput, allocateArray, hashAsInt, hashIntAndString, randomInt } from './utils'
-import { cloneObject } from './export-import-specs'
+import { Exportable } from '../exportable'
+import { HashableInput, allocateArray, hashAsInt, hashIntAndString, randomInt } from '../utils'
+import { cloneObject } from '../export-import-specs'
 
 /**
  * Compute the optimal fingerprint length in bytes for a given bucket size

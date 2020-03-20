@@ -26,9 +26,9 @@ SOFTWARE.
 
 import * as eq from 'lodash.eq'
 import * as indexOf from 'lodash.indexof'
-import * as utils from './utils'
-import { Exportable } from './exportable'
-import { assertFields, cloneObject } from './export-import-specs'
+import * as utils from '../utils'
+import { Exportable } from '../exportable'
+import { assertFields, cloneObject } from '../export-import-specs'
 
 /**
  * A Bucket is a container of a fixed number of values, used in various bloom filters.

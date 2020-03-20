@@ -24,11 +24,11 @@ SOFTWARE.
 
 'use strict'
 
-import BaseFilter from './base-filter'
-import WritableFilter from './interfaces/writable-filter'
-import { AutoExportable, Field, Parameter } from './exportable'
-import { optimalFilterSize, optimalHashes } from './formulas'
-import { HashableInput, allocateArray, getDistinctIndices } from './utils'
+import BaseFilter from '../base-filter'
+import WritableFilter from '../interfaces/writable-filter'
+import { AutoExportable, Field, Parameter } from '../exportable'
+import { optimalFilterSize, optimalHashes } from '../formulas'
+import { HashableInput, allocateArray, getDistinctIndices } from '../utils'
 
 /**
  * A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.

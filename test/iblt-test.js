@@ -26,7 +26,7 @@ SOFTWARE.
 
 require('chai').should()
 require('chai').expect()
-const InvertibleBloomFilter = require('../dist/invertible-bloom-lookup-tables.js').default
+const { InvertibleBloomFilter } = require('../dist/api.js')
 const random = require('random')
 const seedrandom = require('seedrandom')
 
