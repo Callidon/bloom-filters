@@ -24,11 +24,12 @@ SOFTWARE.
 
 'use strict'
 
+import BaseFilter from './base-filter'
+import WritableFilter from './interfaces/writable-filter'
+import Cell from './cell'
+import { AutoExportable, Field, Parameter } from './exportable'
 import { allInOneHashTwice, allocateArray, getDistinctIndices } from './utils'
 import { optimalFilterSize, optimalHashes } from './formulas'
-import { AutoExportable, Field, Parameter } from './exportable'
-import BaseFilter from './base-filter'
-import Cell from './cell'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
@@ -57,7 +58,7 @@ export interface IBLTDecodingResults {
  * @author Thomas Minier
  */
 @AutoExportable('InvertibleBloomFilter', ['_seed'])
-export default class InvertibleBloomFilter extends BaseFilter {
+export default class InvertibleBloomFilter extends BaseFilter implements WritableFilter<Buffer> {
   @Field()
   private _size: number
 
@@ -160,15 +161,17 @@ export default class InvertibleBloomFilter extends BaseFilter {
   }
 
   /**
-   * Delete an element from the Invertible Bloom Filter
+   * Remove an element from the filter
    * @param element - The element to remove
+   * @return True if the element has been removed, False otheriwse
    */
-  delete (element: Buffer): void {
+  remove (element: Buffer): boolean {
     const hashes = allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
     const indexes = getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
     for (let i = 0; i < this._hashCount; ++i) {
       this._elements[indexes[i]] = this._elements[indexes[i]].xorm(new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1))
     }
+    return true
   }
 
   /**

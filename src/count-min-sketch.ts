@@ -25,6 +25,7 @@ SOFTWARE.
 'use strict'
 
 import BaseFilter from './base-filter'
+import CountingFilter from './interfaces/counting-filter'
 import { AutoExportable, Field, Parameter } from './exportable'
 import { allocateArray, getDistinctIndices, HashableInput} from './utils'
 
@@ -38,7 +39,7 @@ import { allocateArray, getDistinctIndices, HashableInput} from './utils'
  * @author Thomas Minier & Arnaud Grall
  */
 @AutoExportable<CountMinSketch>('CountMinSketch', ['_seed'])
-export default class CountMinSketch extends BaseFilter {
+export default class CountMinSketch extends BaseFilter implements CountingFilter<HashableInput> {
   @Field()
   private _columns: number
   @Field()

@@ -24,11 +24,12 @@ SOFTWARE.
 
 'use strict'
 
+import WritableFilter from './interfaces/writable-filter'
+import BaseFilter from './base-filter'
 import Bucket from './bucket'
 import { Exportable } from './exportable'
-import * as utils from './utils'
+import { HashableInput, allocateArray, hashAsInt, hashIntAndString, randomInt } from './utils'
 import { cloneObject } from './export-import-specs'
-import BaseFilter from './base-filter'
 
 /**
  * Compute the optimal fingerprint length in bytes for a given bucket size
@@ -72,7 +73,7 @@ function computeFingerpintLength (size: number, rate: number): number {
     return filter
   }
 })
-export default class CuckooFilter extends BaseFilter {
+export default class CuckooFilter extends BaseFilter implements WritableFilter<HashableInput> {
   private _filter: Array<Bucket<string>>
   private _size: number
   private _bucketSize: number
@@ -88,7 +89,7 @@ export default class CuckooFilter extends BaseFilter {
    */
   constructor (size: number, fLength: number, bucketSize: number, maxKicks: number = 500) {
     super()
-    this._filter = utils.allocateArray(size, () => new Bucket(bucketSize))
+    this._filter = allocateArray(size, () => new Bucket(bucketSize))
     this._size = size
     this._bucketSize = bucketSize
     this._fingerprintLength = fLength
@@ -119,7 +120,7 @@ export default class CuckooFilter extends BaseFilter {
    * @param  maxKicks - The number of kicks done when a collision occurs
    * @return A new Cuckoo Filter filled with the iterable's elements
    */
-  static from (items: Iterable<utils.HashableInput>, errorRate: number, bucketSize: number = 4, maxKicks: number = 500): CuckooFilter {
+  static from (items: Iterable<HashableInput>, errorRate: number, bucketSize: number = 4, maxKicks: number = 500): CuckooFilter {
     const array = Array.from(items)
     const filter = CuckooFilter.create(array.length, errorRate, bucketSize, maxKicks)
     array.forEach(item => filter.add(item))
@@ -177,7 +178,7 @@ export default class CuckooFilter extends BaseFilter {
    * filter.add('alice');
    * filter.add('bob');
    */
-  add (element: utils.HashableInput, throwError: boolean = false, destructive: boolean = false): boolean {
+  add (element: HashableInput, throwError: boolean = false, destructive: boolean = false): boolean {
     // TODO do the recovery if return false or throw error because we altered values
     const locations = this._locations(element)
     // store fingerprint in an available empty bucket
@@ -191,13 +192,13 @@ export default class CuckooFilter extends BaseFilter {
       let movedElement = locations.fingerprint
       const logs = []
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
-        const rndIndex = utils.randomInt(0, this._filter[index].length - 1, this.random)
+        const rndIndex = randomInt(0, this._filter[index].length - 1, this.random)
         const tmp = this._filter[index].at(rndIndex)
         logs.push([index, rndIndex, tmp])
         this._filter[index].set(rndIndex, movedElement)
         movedElement = tmp
         // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
-        const newHash = utils.hashAsInt(movedElement, this.seed, 64)
+        const newHash = hashAsInt(movedElement, this.seed, 64)
         index = Math.abs((index ^ Math.abs(newHash))) % this._filter.length
         // add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {
@@ -237,7 +238,7 @@ export default class CuckooFilter extends BaseFilter {
    * // remove an element
    * filter.remove('bob');
    */
-  remove (element: utils.HashableInput): boolean {
+  remove (element: HashableInput): boolean {
     const locations = this._locations(element)
     if (this._filter[locations.firstIndex].has(locations.fingerprint)) {
       this._filter[locations.firstIndex].remove(locations.fingerprint)
@@ -262,7 +263,7 @@ export default class CuckooFilter extends BaseFilter {
    * console.log(filter.has('alice')); // output: true
    * console.log(filter.has('bob')); // output: false
    */
-  has (element: utils.HashableInput): boolean {
+  has (element: HashableInput): boolean {
     const locations = this._locations(element)
     return this._filter[locations.firstIndex].has(locations.fingerprint) || this._filter[locations.secondIndex].has(locations.fingerprint)
   }
@@ -298,15 +299,15 @@ export default class CuckooFilter extends BaseFilter {
    * @return The fingerprint of the element and the index of its two buckets
    * @private
    */
-  _locations (element: utils.HashableInput) {
-    const hashes = utils.hashIntAndString(element, this.seed, 16, 64)
+  _locations (element: HashableInput) {
+    const hashes = hashIntAndString(element, this.seed, 16, 64)
     const hash = hashes.int
     if (this._fingerprintLength > hashes.string.length) {
-      throw new Error(`the fingerprint length (${this._fingerprintLength}) is higher than the hash length (${hashes.string.length}), please reduce the fingerprint length or report if this is an unexpected behavior.`)
+      throw new Error(`The fingerprint length (${this._fingerprintLength}) is higher than the hash length (${hashes.string.length}). Please reduce the fingerprint length or report if it is an unexpected behavior.`)
     }
     const fingerprint = hashes.string.substring(0, this._fingerprintLength)
     const firstIndex = Math.abs(hash)
-    const secondHash = Math.abs(utils.hashAsInt(fingerprint, this.seed, 64))
+    const secondHash = Math.abs(hashAsInt(fingerprint, this.seed, 64))
     const secondIndex = Math.abs(firstIndex ^ secondHash)
     const res = {
       fingerprint,

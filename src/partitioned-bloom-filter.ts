@@ -24,10 +24,10 @@ SOFTWARE.
 
 'use strict'
 
-// const fm = require('./formulas.js')
-import * as utils from './utils'
-import { AutoExportable, Field, Parameter } from './exportable'
 import BaseFilter from './base-filter'
+import ClassicFilter from './interfaces/classic-filter'
+import { AutoExportable, Field, Parameter } from './exportable'
+import { HashableInput, allocateArray, getIndices } from './utils'
 
 /**
  * Return the optimal number of hashes needed for a given error rate and load factor
@@ -79,7 +79,7 @@ function computeNumberOfItems (totalBits: number, loadFactor: number, nbHashes: 
  * @author Thomas Minier & Arnaud Grall
  */
 @AutoExportable('PartitionedBloomFilter', ['_seed'])
-export default class PartitionedBloomFilter extends BaseFilter {
+export default class PartitionedBloomFilter extends BaseFilter implements ClassicFilter<HashableInput> {
   @Field()
   private _size: number
   @Field()
@@ -107,7 +107,7 @@ export default class PartitionedBloomFilter extends BaseFilter {
     this._nbHashes = nbHashes
     this._loadFactor = loadFactor
     this._m = Math.ceil(this._size / this._nbHashes)
-    this._filter = utils.allocateArray(this._nbHashes, () => utils.allocateArray(this._m, 0))
+    this._filter = allocateArray(this._nbHashes, () => allocateArray(this._m, 0))
     this._capacity = (capacity !== undefined) ? capacity : computeNumberOfItems(this._size, loadFactor, nbHashes)
     this._length = 0
   }
@@ -134,7 +134,7 @@ export default class PartitionedBloomFilter extends BaseFilter {
    * // create a filter with a false positive rate of 0.1
    * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
-  static from (items: Iterable<utils.HashableInput>, errorRate: number, loadFactor: number = 0.5): PartitionedBloomFilter {
+  static from (items: Iterable<HashableInput>, errorRate: number, loadFactor: number = 0.5): PartitionedBloomFilter {
     const array = Array.from(items)
     const filter = PartitionedBloomFilter.create(array.length, errorRate, loadFactor)
     array.forEach(element => filter.add(element))
@@ -176,8 +176,8 @@ export default class PartitionedBloomFilter extends BaseFilter {
    * const filter = new PartitionedBloomFilter(15, 0.1);
    * filter.add('foo');
    */
-  add (element: utils.HashableInput): void {
-    const indexes = utils.getIndices(element, this._m, this._nbHashes, this.seed)
+  add (element: HashableInput): void {
+    const indexes = getIndices(element, this._m, this._nbHashes, this.seed)
     for (let i = 0; i < this._nbHashes; i++) {
       this._filter[i][indexes[i]] = 1
     }
@@ -194,8 +194,8 @@ export default class PartitionedBloomFilter extends BaseFilter {
    * console.log(filter.has('foo')); // output: true
    * console.log(filter.has('bar')); // output: false
    */
-  has (element: utils.HashableInput): boolean {
-    const indexes = utils.getIndices(element, this._m, this._nbHashes, this.seed)
+  has (element: HashableInput): boolean {
+    const indexes = getIndices(element, this._m, this._nbHashes, this.seed)
     for (let i = 0; i < this._nbHashes; i++) {
       if (!this._filter[i][indexes[i]]) {
         return false

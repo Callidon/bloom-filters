@@ -24,10 +24,11 @@ SOFTWARE.
 
 'use strict'
 
+import BaseFilter from './base-filter'
+import WritableFilter from './interfaces/writable-filter'
+import { AutoExportable, Field, Parameter } from './exportable'
 import { optimalFilterSize, optimalHashes } from './formulas'
 import { HashableInput, allocateArray, getDistinctIndices } from './utils'
-import { AutoExportable, Field, Parameter } from './exportable'
-import BaseFilter from './base-filter'
 
 /**
  * A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.
@@ -37,7 +38,7 @@ import BaseFilter from './base-filter'
  * @author Thomas Minier & Arnaud Grall
  */
 @AutoExportable('CountingBloomFilter', ['_seed'])
-export default class CountingBloomFilter extends BaseFilter {
+export default class CountingBloomFilter extends BaseFilter implements WritableFilter<HashableInput> {
   @Field()
   private _size: number
   @Field()
@@ -54,7 +55,7 @@ export default class CountingBloomFilter extends BaseFilter {
   constructor (@Parameter('_size') size: number, @Parameter('_nbHashes') nbHashes: number) {
     super()
     if (nbHashes < 1) {
-      throw new Error(`A BloomFilter cannot uses less than one hash function, while you tried to use ${nbHashes}.`)
+      throw new Error(`A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes} functions. Consider increasing it.`)
     }
     this._size = size // fm.optimalFilterSize(capacity, errorRate)
     this._nbHashes = nbHashes // fm.optimalHashes(this._size, capacity)
@@ -125,14 +126,15 @@ export default class CountingBloomFilter extends BaseFilter {
   }
 
   /**
-   * Delete an element from the filter
+   * Remove an element from the filter
    * @param element - The element to delete
    * @example
    * const filter = new CountingBloomFilter(15, 0.1);
-   * filter.delete('foo');
+   * filter.remove('foo');
    */
-  delete (element: HashableInput): void {
+  remove (element: HashableInput): boolean {
     const indexes = getDistinctIndices(element, this._size, this._nbHashes, this.seed)
+    let success = true
     for (let i = 0; i < indexes.length; i++) {
       // decrement counter
       this._filter[indexes[i]][1] -= 1
@@ -141,7 +143,8 @@ export default class CountingBloomFilter extends BaseFilter {
         this._filter[indexes[i]][0] = 0
       }
     }
-    this._length++
+    this._length--
+    return success
   }
 
   /**

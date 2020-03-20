@@ -64,10 +64,10 @@ describe('CountingBloomFilter', () => {
     })
   })
 
-  describe('#delete', () => {
+  describe('#remove', () => {
     it('should allow deletion of items', () => {
       const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
-      filter.delete('bob')
+      filter.remove('bob')
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(false)
       filter.has('carl').should.equal(true)

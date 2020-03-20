@@ -58,8 +58,8 @@ describe('Invertible Bloom Lookup Tables', () => {
     })
   })
 
-  describe('#delete', () => {
-    it('should delete element from the iblt with #delete', () => {
+  describe('#remove', () => {
+    it('should remove element from the iblt', () => {
       const iblt = new InvertibleBloomFilter(size, hashCount)
       iblt.seed = seed
       iblt._hashCount.should.equal(hashCount)
@@ -71,7 +71,7 @@ describe('Invertible Bloom Lookup Tables', () => {
       })
       iblt.length.should.equal(toInsert.length)
       toInsert.forEach(e => {
-        iblt.delete(e)
+        iblt.remove(e)
       })
       iblt.length.should.equal(0)
     })

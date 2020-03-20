@@ -24,10 +24,11 @@ SOFTWARE.
 
 'use strict'
 
-import * as fm from './formulas'
-import { allocateArray, getDistinctIndices, HashableInput } from './utils'
-import { AutoExportable, Field, Parameter } from './exportable'
+import ClassicFilter from './interfaces/classic-filter'
 import BaseFilter from './base-filter'
+import { AutoExportable, Field, Parameter } from './exportable'
+import { optimalFilterSize, optimalHashes } from './formulas'
+import { HashableInput, allocateArray, getDistinctIndices } from './utils'
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -39,7 +40,7 @@ import BaseFilter from './base-filter'
  * @author Arnaud Grall
  */
 @AutoExportable<BloomFilter>('BloomFilter', ['_seed'])
-export default class BloomFilter extends BaseFilter {
+export default class BloomFilter extends BaseFilter implements ClassicFilter<HashableInput> {
   @Field()
   private _size: number
 
@@ -75,8 +76,8 @@ export default class BloomFilter extends BaseFilter {
    * @return A new {@link BloomFilter}
    */
   static create (nbItems: number, errorRate: number): BloomFilter {
-    const size = fm.optimalFilterSize(nbItems, errorRate)
-    const hashes = fm.optimalHashes(size, nbItems)
+    const size = optimalFilterSize(nbItems, errorRate)
+    const hashes = optimalHashes(size, nbItems)
     return new BloomFilter(size, hashes)
   }
 
