@@ -35,12 +35,8 @@
   "devDependencies": {
     "@types/node": "^13.7.0",
     "chai": "^4.2.0",
-    "codecov": "^3.6.1",
-    "jsdoc": "^3.6.3",
     "mocha": "^6.2.2",
-    "nyc": "^14.1.1",
     "random": "^2.1.1",
-    "standard": "^14.3.1",
     "typedoc": "^0.15.0",
     "typescript": "^3.7.5"
   },
