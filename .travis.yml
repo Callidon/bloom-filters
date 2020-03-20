@@ -5,23 +5,17 @@ notifications:
   email: false
 install: npm install
 script:
-# - npm run doc
-# - npm run lint
-- npm run test
-# after_success:
-# - npm run report
-# - node_modules/codecov/bin/codecov -t $CODECOV_TOKEN
+  - npm run test
 before_deploy: npm run doc
 deploy:
-- provider: npm
-  email: tminier01@gmail.com
-  api_key: $NPM_KEY
-  on:
-    tags: true
-    repo: Callidon/bloom-filters
-# - provider: pages
-#   skip_cleanup: true
-#   github_token: $GITHUB_TOKEN
-#   local_dir: doc
-#   on:
-#     branch: master
+  - provider: npm
+    email: tminier01@gmail.com
+    api_key: $NPM_KEY
+    on:
+      tags: true
+  - provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN
+    local_dir: docs
+    on:
+      branch: master
