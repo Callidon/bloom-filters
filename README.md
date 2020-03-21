@@ -247,12 +247,12 @@ sketch = CountMinSketch.from(items, errorRate, accuracy)
 
 ### Invertible Bloom Filters
 
-An Invertible Bloom Lookup Table (IBLT) is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
+An Invertible Bloom Filters (IBLT), also called Invertible Bloom Lookup Table, is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
 They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction, in that it randomly combines elements using the XOR function.
 
 **Reference:** Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229. [full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)
 
-**WARNING*:* An IBLT only accepts [`Buffer`](https://nodejs.org/api/buffer.html) as inputs. If you are using `bloom-filters` in a Web browser, you might consider using the [`feros/buffer`](https://www.npmjs.com/package/buffer) package, which provides a polyfill for `Buffer` in a browser.
+**WARNING**: An IBLT only accepts [`Buffer`](https://nodejs.org/api/buffer.html) as inputs. If you are using `bloom-filters` in a Web browser, you might consider using the [`feros/buffer`](https://www.npmjs.com/package/buffer) package, which provides a polyfill for `Buffer` in a browser.
 
 **Methods**
 * `add(element: Buffer) -> void`: add an element into the filter.
