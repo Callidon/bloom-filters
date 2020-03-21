@@ -44,6 +44,12 @@ that is used to test whether an element is a member of a set. False positive mat
 **Reference:** Bloom, B. H. (1970). *Space/time trade-offs in hash coding with allowable errors*. Communications of the ACM, 13(7), 422-426.
 ([Full text article](http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf))
 
+**Methods**:
+
+* `add(element: string) -> void`: add an element into the filter.
+* `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `rate() -> number`: compute the filter's false positive rate (or error rate).
+
 ```javascript
 const { BloomFilter } = require('bloom-filters')
 // create a Bloom Filter with a size of 10 and 4 hash functions
@@ -82,7 +88,11 @@ Be careful, as a Partitioned Bloom Filter have much higher collison risks that a
 **Reference:** Chang, F., Feng, W. C., & Li, K. (2004, March). *Approximate caches for packet classification.* In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
 ([Full text article](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&rep=rep1&type=pdf))
 
-Otherwise, a Partitioned Bloom Filter **follows the same API than a [Classic Bloom Filter](#classic-bloom-filter)**.
+**Methods**:
+
+* `add(element: string) -> void`: add an element into the filter.
+* `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `rate() -> number`: compute the filter's false positive rate (or error rate).
 
 ```javascript
 const { PartitionedBloomFilter } = require('bloom-filters')
@@ -117,6 +127,13 @@ Cuckoo filters improve on Bloom filters by supporting deletion, limited counting
 **Reference:** Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). *Cuckoo filter: Practically better than bloom.* In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
 ([Full text article](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf))
 
+**Methods**:
+
+* `add(element: string) -> void`: add an element into the filter.
+* `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
+* `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `rate() -> number`: compute the filter's false positive rate (or error rate).
+
 ```javascript
 const { CuckooFilter } = require('bloom-filters')
 
@@ -148,7 +165,14 @@ filter = CuckooFilter.from(items, errorRate)
 
 A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.
 
-**Reference:** F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, “An Improved Construction for Counting Bloom Filters,” in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.
+**Reference:** F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, “An Improved Construction for Counting Bloom Filters,” in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006
+
+**Methods**:
+
+* `add(element: string) -> void`: add an element into the filter.
+* `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
+* `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `rate() -> number`: compute the filter's false positive rate (or error rate).
 
 ```javascript
 const CountingBloomFilter = require('bloom-filters').CountingBloomFilter;
@@ -189,6 +213,11 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 **Reference:** Cormode, G., & Muthukrishnan, S. (2005). *An improved data stream summary: the count-min sketch and its applications.* Journal of Algorithms, 55(1), 58-75.
 ([Full text article](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf))
 
+**Methods**:
+
+* `update(element: string, count = 1) -> void`: add `count` occurences of an element into the sketch.
+* `count(element: string) -> number`: estimate the number of occurences of an element.
+
 ```javascript
 const { CountMinSketch } = require('bloom-filters')
 
@@ -226,11 +255,11 @@ They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This d
 **WARNING*:* An IBLT only accepts [`Buffer`](https://nodejs.org/api/buffer.html) as inputs. If you are using `bloom-filters` in a Web browser, you might consider using the [`feros/buffer`](https://www.npmjs.com/package/buffer) package, which provides a polyfill for `Buffer` in a browser.
 
 **Methods**
-* `add(element: Buffer) -> void`: add an element into the IBLT
-* `delete(element: Buffer) -> void`: delete an element from the IBLT
-* `has(element: Buffer) -> boolean'`: Test an element for membership.
-* `substract(remote: InvertibleBloomFilter)`: this IBLT subtracted from remote, return another IBLT
-* `decode() -> {additional: Buffer[], missing: Buffer[]} `: decode a subtracted IBLT
+* `add(element: Buffer) -> void`: add an element into the filter.
+* `remove(element: Buffer) -> void`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
+* `has(element: Buffer) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `substract(remote: InvertibleBloomFilter)`: peform the XOR substraction of two IBLTs.
+* `decode() -> {additional: Buffer[], missing: Buffer[]} `: decode an IBLT.
 * `listEntries() -> Generator<Buffer, number, void>`: list all entries in the IBLT using a Generator.
 
 ```javascript
@@ -250,7 +279,7 @@ iblt.add(Buffer.from('json'))
 console.log(ilbt.has(Buffer.from('alice'))) // output: true
 console.log(ilbt.has(Buffer.from('daniel'))) // output: false
 
-iblt.delete(Buffer.from('alice'))
+iblt.remove(Buffer.from('alice'))
 console.log(ilbt.has(Buffer.from('alice'))) // output: false
 
 // Now, let's demonstrate the decoding power of IBLT!
