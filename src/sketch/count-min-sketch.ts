@@ -63,16 +63,31 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
   }
 
   /**
-   * Create a count-min sketch, with a target epsilon error rate and probability of accuracy
+   * Create a count-min sketch, with a target error rate and probability of accuracy
    * @param  errorRate - The error rate
    * @param  accuracy  - The probability of accuracy
-   * @return A new {@link CountMinSketch}
+   * @return A new Count Min Sketch optimal for the input parameters
    */
-  static create (errorRate = 0.001, accuracy = 0.999) {
+  static create (errorRate: number, accuracy: number = 0.999): CountMinSketch {
     // columns = Math.ceil(Math.E / epsilon) and rows = Math.ceil(Math.log(1 / delta))
     const columns = Math.ceil(Math.E / errorRate)
     const rows = Math.ceil(Math.log(1 / accuracy))
     return new CountMinSketch(columns, rows)
+  }
+
+  /**
+   * Create a Count Min Sketch from a set of items, with a target error rate and probability of accuracy
+   * @param items - An iterable to yield items to be inserted into the filter
+   * @param  errorRate - The error rate
+   * @param  accuracy  - The probability of accuracy
+   * @return A new Count Min Sketch filled with the iterable's items.
+   */
+  static from(items: Iterable<HashableInput>, errorRate: number, accuracy: number = 0.999): CountMinSketch {
+    const filter = CountMinSketch.create(errorRate, accuracy)
+    for(let item of items) {
+      filter.update(item)
+    }
+    return filter
   }
 
   /**

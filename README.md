@@ -20,7 +20,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Cuckoo Filter](#cuckoo-filter)
 	* [Counting Bloom Filter](#counting-bloom-filter)
 	* [Count Min Sketch](#count-min-sketch)
-  * [Invertible Bloom Filters (Key)](#invertible-bloom-filters)
+  * [Invertible Bloom Filters](#invertible-bloom-filters)
 * [Export and import](#export-and-import)
 * [Documentation](#documentation)
 * [Tests](#tests)
@@ -31,7 +31,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 ## Installation
 
 ```bash
-  npm install bloom-filters --save
+npm install bloom-filters --save
 ```
 
 ## Data structures
@@ -46,18 +46,27 @@ that is used to test whether an element is a member of a set. False positive mat
 
 ```javascript
 const { BloomFilter } = require('bloom-filters')
-// create a Bloom Filter with size = 10 and 4% error rate
+// create a Bloom Filter with a size of 10 and 4 hash functions
 let filter = new BloomFilter(10, 4)
+// insert data
+filter.add('alice')
+filter.add('bob')
+
 // lookup for some data
 console.log(filter.has('bob')) // output: true
 console.log(filter.has('daniel')) // output: false
+
 // print the error rate
 console.log(filter.rate())
-```
 
-Similar constructors:
-- `BloomFilter.create(max_size, error_rate)`: create an optimal Bloom filter for a maximum of max_size elements with the desired error rate.
-- `BloomFilter.from(array, error_rate)`: same as before, but create an optimal Bloom Filter for the size fo the array provided.
+// alternatively, create a bloom filter optimal for a number of items and a desired error rate
+const items = ['alice', 'bob']
+const errorRate = 0.04 // 4 % error rate
+filter = BloomFilter.create(items.length, errorRate)
+
+// or create a bloom filter optimal for a collections of items and a desired error rate
+filter = BloomFilter.from(items, errorRate)
+```
 
 
 ### Partitioned Bloom Filter
@@ -78,8 +87,8 @@ Otherwise, a Partitioned Bloom Filter **follows the same API than a [Classic Blo
 ```javascript
 const { PartitionedBloomFilter } = require('bloom-filters')
 
-// create a PartitionedBloomFilter of size 10 with 5 hash functions
-const filter = new PartitionedBloomFilter(10, 5)
+// create a PartitionedBloomFilter of size 10, with 5 hash functions and a load factor of 0.5
+const filter = new PartitionedBloomFilter(10, 5, 0.5)
 
 // add some value in the filter
 filter.add('alice')
@@ -91,11 +100,15 @@ console.log(filter.has('daniel')) // output: false
 
 // now use it like a classic bloom filter!
 // ...
-```
 
-Similar constructors:
-- `PartitionedBloomFilter.create(max_size, error_rate, load_factor)`: create an optimal Partitioned BloomFilter for a maximum of max_size elements with the desired error rate.
-- `PartitionedBloomFilter.from(array, error_rate)`: same as before, but create an optimal Partitioned BloomFilter for the size fo the array provided.
+// alternatively, create a PartitionedBloomFilter optimal for a number of items and a desired error rate
+const items = ['alice', 'bob']
+const errorRate = 0.04 // 4 % error rate
+filter = PartitionedBloomFilter.create(items.length, errorRate)
+
+// or create a PartitionedBloomFilter optimal for a collections of items and a desired error rate
+filter = PartitionedBloomFilter.from(items, errorRate)
+```
 
 ### Cuckoo Filter
 
@@ -119,12 +132,17 @@ console.log(filter.has('daniel')) // output: false
 // remove something
 filter.remove('bob')
 console.log(filter.has('bob')) // output: false
+
+// alternatively, create a Cuckoo Filter optimal for a number of items and a desired error rate
+const items = ['alice', 'bob']
+const errorRate = 0.04 // 4 % error rate
+filter = CuckooFilter.create(items.length, errorRate)
+
+// or create a Cuckoo Filter optimal for a collections of items and a desired error rate
+filter = CuckooFilter.from(items, errorRate)
 ```
 
-Similar constructors:
-- `CuckooFilter.create(max_size, error_rate, bucketSize, maxKicks, seed)`: Create an optimal Cuckoo Filter given the max number of elements, the error rate and the number of buckets.
-
-**Important**: The error rate can go up to 1.10^-18 = (0.000000000000000001). After this, You will get an error saying that the fingerprint length is higher than the hash length.
+**WARNING**: The error rate cannot be higher than `1 * 10^-18`. After this, You will get an error saying that the fingerprint length is higher than the hash length.
 
 ### Counting Bloom Filter
 
@@ -135,11 +153,9 @@ A Counting Bloom filter works in a similar manner as a regular Bloom filter; how
 ```javascript
 const CountingBloomFilter = require('bloom-filters').CountingBloomFilter;
 
-// create a Bloom Filter with capacity = 15 and 0.1% error rate
-let filter = new CountingBloomFilter(15, 0.1);
+// create a Bloom Filter with capacity = 15 and 4 hash functions
+let filter = new CountingBloomFilter(15, 4);
 
-// alternatively, create a Counting Bloom Filter from an array with 1% error rate
-filter = CountingBloomFilter.from([ 'alice', 'bob' ], 0.1);
 // add some value in the filter
 filter.add('alice');
 filter.add('bob');
@@ -155,11 +171,15 @@ console.log(filter.has('daniel')); // output: false
 
 // print false positive rate (around 0.1)
 console.log(filter.rate());
-```
 
-Similar constructors:
-- `CountingBloomFilter.create(max_size, error_rate, load_factor)`: create an optimal Counting Bloom Filter for a maximum of max_size elements with the desired error rate.
-- `CountingBloomFilter.from(array, error_rate)`: same as before, but create an optimal Counting Bloom Filter for the size fo the array provided.
+// alternatively, create a Counting Bloom Filter optimal for a number of items and a desired error rate
+const items = ['alice', 'bob']
+const errorRate = 0.04 // 4 % error rate
+filter = CountingBloomFilter.create(items.length, errorRate)
+
+// or create a Counting Bloom Filter optimal for a collections of items and a desired error rate
+filter = CountingBloomFilter.from(items, errorRate)
+```
 
 ### Count Min Sketch
 
@@ -172,10 +192,9 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 ```javascript
 const { CountMinSketch } = require('bloom-filters')
 
-// create a new count min sketch with 2048 columns and 1 row
+// create a new Count Min sketch with 2048 columns and 1 row
 const sketch = new CountMinSketch(2048, 1)
-// or create an optimal Count-Min-sketch with epsilon = 0.001 and delta = 0.001
-// or sketck = CountMinSketch.create(0.001, 0.001)
+
 // push some occurrences in the sketch
 sketch.update('alice')
 sketch.update('alice')
@@ -185,81 +204,77 @@ sketch.update('bob')
 console.log(sketch.count('alice')) // output: 2
 console.log(sketch.count('bob')) // output: 1
 console.log(sketch.count('daniel')) // output: 0
+
+// alternatively, create a Count Min sketch optimal for a target error rate and probability of accuracy
+const items = ['alice', 'bob']
+const errorRate = 0.04 // 4 % error rate
+const accuracy = 0.99 // 99% accuracy
+sketch = CountMinSketch.create(errorRate, accuracy)
+
+// or create a Count Min Sketch optimal for a collections of items, 
+// a target error rate and probability of accuracy
+sketch = CountMinSketch.from(items, errorRate, accuracy)
 ```
-
-Similar constructors:
-- `CountMinSketch.create(epsilon, delta)`: create an optimal Count-min sketch for an epsilon and delta provided
-
 
 ### Invertible Bloom Filters
 
-An Invertible Bloom Lookup Table is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
+An Invertible Bloom Lookup Table (IBLT) is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
 They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction, in that it randomly combines elements using the XOR function.
 
 **Reference:** Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229. [full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)
 
-**Inputs:** Only Accept Buffer (node: `require('buffer')` or browser `require('buffer/').Buffer`) as input
+**WARNING*:* An IBLT only accepts [`Buffer`](https://nodejs.org/api/buffer.html) as inputs. If you are using `bloom-filters` in a Web browser, you might consider using the [`feros/buffer`](https://www.npmjs.com/package/buffer) package, which provides a polyfill for `Buffer` in a browser.
 
-**Methods:**
-Please respects the method inputs and don't pass JSON exported structures as inputs. Import them before.
-
+**Methods**
 * `add(element: Buffer) -> void`: add an element into the IBLT
 * `delete(element: Buffer) -> void`: delete an element from the IBLT
-* `has(element: Buffer) -> true|false|'perhaps'`: return whether an element is in the IBLT or not, or perhaphs in
+* `has(element: Buffer) -> boolean'`: Test an element for membership.
 * `substract(remote: InvertibleBloomFilter)`: this IBLT subtracted from remote, return another IBLT
-* `.decode() -> {additional: Buffer[], missing: Buffer[]} `: decode a subtracted IBLT
-* `listEntries() -> {success: true|false, output: Buffer[]}`: list all entries in the IBLT
-* Getters:
-  * `length`: return the number of elements inserted, iterate on all count variables of all cells and return the average (sum/size)
-  * `size`: return the number of cells
-  * `hashCount`: return the number of times an element is hashed into the structure
-  * `elements`: return an array of all cells
+* `decode() -> {additional: Buffer[], missing: Buffer[]} `: decode a subtracted IBLT
+* `listEntries() -> Generator<Buffer, number, void>`: list all entries in the IBLT using a Generator.
 
 ```javascript
 const { InvertibleBloomFilter } = require('bloom-filters')
 
-// If you are a NODEJS user, no need to import Buffer
-// otherwie, if you are a BROWSER-BASED user, you must import the buffer package (https://www.npmjs.com/package/buffer)
-
 const hashcount = 3
 const size = 50
 const iblt = new InvertibleBloomFilter(size, hashcount)
+
+// push some data in the IBLT
+iblt.add(Buffer.from('alice'))
+iblt.add(Buffer.from('42'))
+iblt.add(Buffer.from('help'))
+iblt.add(Buffer.from('meow'))
+iblt.add(Buffer.from('json'))
+
+console.log(ilbt.has(Buffer.from('alice'))) // output: true
+console.log(ilbt.has(Buffer.from('daniel'))) // output: false
+
+iblt.delete(Buffer.from('alice'))
+console.log(ilbt.has(Buffer.from('alice'))) // output: false
+
+// Now, let's demonstrate the decoding power of IBLT!
 const remote = new InvertibleBloomFilter(size, hashcount)
+remote.add(Buffer.from('alice'))
+remote.add(Buffer.from('car'))
+remote.add(Buffer.from('meow'))
+remote.add(Buffer.from('help'))
 
-// push some data in the iblt
-const data = [Buffer.from('alice'),
-  Buffer.from(JSON.stringify(42)),
-  Buffer.from('help'),
-  Buffer.from('meow'),
-  Buffer.from('json')]
-
-data.forEach(e => iblt.add(e))
-
-const remoteData = [Buffer.from('alice'),
-  Buffer.from('car'),
-  Buffer.from('meow'),
-  Buffer.from('help')]
-
-remoteData.forEach(e => remote.add(e))
-
+// decode the difference between the two filters
 const result = iblt.substract(remote).decode()
-console.log('Did we successfully decode the subtracted iblts?', result.success, result.reason)
-console.log('Missing elements for iblt: ', result.missing, result.missing.map(e => e.toString()))
-console.log('Additional elements of iblt and missing elements of the remote iblt: ', result.additional, result.additional.map(e => e.toString()))
-// create the iblt like before
-console.log('Verify if Buffer.from("help") is in the iblt: ', iblt.has(Buffer.from('help')))
-// true with high probability if well configured
 
-iblt.delete(Buffer.from('help'))
-// no errors =)
+console.log(`Did we successfully decode the subtracted iblts? ${result.success}. Why? $${result.reason}`)
+console.log(`Elements of iblt missing elements from remote: ${result.additional}`)
+console.log(`Elements of remote missing elements from iblt: ${result.missing}`)
 
-console.log('Deleting Buffer.from("help") and rechecking:', iblt.has(Buffer.from('help')))
+// alternatively, create an IBLT optimal for a number of items and a desired error rate
+const items = [Buffer.from('alice'), Buffer.from('bob')]
+const errorRate = 0.04 // 4 % error rate
+filter = InvertibleBloomFilter.create(items.length, errorRate)
 
-const list = iblt.listEntries()
-console.log('Remaining entries after deletion: ', list.success, list.output.map(e => e.toString()))
-
+// or create an IBLT optimal for a collections of items and a desired error rate
+filter = InvertibleBloomFilter.from(items, errorRate)
 ```
-The example can be run in tests/iblt-example.js
 
 **Tuning the IBLT** We recommend to use at least a **hashcount** of 3 and an **alpha** of 1.5 for at least 50 differences, which equals to 1.5*50 = 75 cells. Then, if you insert a huge number of values in there, the decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic, based on the number of elements  inserted (Even for the functions like listEntries). For more details, you should read the seminal research paper on IBLTs ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
 
@@ -293,8 +308,8 @@ console.log(filter.has('bob')) // output: false
 By default every hash function is seeded with an internal seed which is equal to `0x1234567890`. If you want to change it:
 
 ```javascript
-const BloomFilter = require('bloom-filter')
-const bl = new BloomFilter.MyBloomFilter(...)
+const { BloomFilter } = require('bloom-filter')
+const bl = new BloomFilter(...)
 console.log(bl.seed) // 78187493520
 bl.seed = 0xABCD
 console.log(bl.seed) // 43981
@@ -310,9 +325,6 @@ Running with Mocha + Chai
 ```bash
 # run tests
 npm test
-
-# generate coverage with istanbul
-npm run coverage
 ```
 
 ## References
@@ -325,6 +337,8 @@ npm run coverage
 * [Invertible Bloom Filters](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
 
 ## Changelog
+
+**v1.0.0**: Rework the whole library using TypeScript, unify the API and fix the documentation.
 
 **v0.8.0**: Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API, use the `.create()` or `.from()` functions to match the old api.
 
