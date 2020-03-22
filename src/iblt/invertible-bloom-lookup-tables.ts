@@ -243,7 +243,7 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * @param iblt - The filter to compare with
    * @return True if the two filters are equals, False otherwise
    */
-  equal (iblt: InvertibleBloomFilter): boolean {
+  equals (iblt: InvertibleBloomFilter): boolean {
     if (iblt._size !== this._size || iblt._hashCount !== this._hashCount || iblt.seed !== this.seed) {
       return false
     } else {
