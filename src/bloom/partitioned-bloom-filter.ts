@@ -219,6 +219,18 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
   }
 
   /**
+   * Check if another Partitioned Bloom Filter is equal to this one
+   * @param  filter - The filter to compare to this one
+   * @return True if they are equal, false otherwise
+   */
+  equals (other: PartitionedBloomFilter): boolean {
+    if (this._size !== other._size || this._nbHashes !== other._nbHashes || this._length !== other._length || this._loadFactor !== other._loadFactor) {
+      return false
+    }
+    return this._filter.every((array, outerIndex) => other._filter[outerIndex].every((item, innerIndex) => array[innerIndex] === item))
+  }
+
+  /**
    * Return the current load of this filter, iterate on all buckets
    * @return An integer between 0 and 1, where 0 = filter empty and 1 = filter full
    */

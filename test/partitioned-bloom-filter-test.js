@@ -67,6 +67,38 @@ describe('PartitionedBloomFilter', () => {
     })
   })
 
+  describe('#equals', () => {
+    it('should returns True when two filters are equals', () => {
+      const first = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
+      const other = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
+      first.equals(other).should.equal(true)
+    })
+
+    it('should returns False when two filters have different sizes', () => {
+      const first = new PartitionedBloomFilter(15, 4, 0.5)
+      const other = new PartitionedBloomFilter(10, 4, 0.5)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different nb. of hash functions', () => {
+      const first = new PartitionedBloomFilter(15, 4, 0.5)
+      const other = new PartitionedBloomFilter(15, 2, 0.5)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different load factor', () => {
+      const first = new PartitionedBloomFilter(15, 4, 0.5)
+      const other = new PartitionedBloomFilter(15, 2, 0.4)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different content', () => {
+      const first = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
+      const other = PartitionedBloomFilter.from(['alice', 'bob', 'daniel'], targetRate, 0.5)
+      first.equals(other).should.equal(false)
+    })
+  })
+
   describe('#saveAsJSON', () => {
     const filter = PartitionedBloomFilter.create(15, targetRate)
     filter.add('alice')
