@@ -222,6 +222,7 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 * `update(element: string, count = 1) -> void`: add `count` occurences of an element into the sketch.
 * `count(element: string) -> number`: estimate the number of occurences of an element.
 * `merge(other: CountMinSketch) -> CountMinSketch`: merge with occurences of two sketches.
+* `equals(other: CountMinSketch) -> boolean`: Test if two sketchs are equals.
 * `clone(): CountMinSketch`: Clone the sketch.
 
 ```javascript

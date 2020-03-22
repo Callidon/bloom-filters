@@ -140,6 +140,25 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
   }
 
   /**
+   * Check if another Count Min Sketch is equal to this one
+   * @param  filter - The filter to compare to this one
+   * @return True if they are equal, false otherwise
+   */
+  equals (other: CountMinSketch): boolean {
+    if (this._columns !== other._columns || this._rows !== other._rows) {
+      return false
+    }
+    for (let i = 0; i < this._rows; i++) {
+      for (let j = 0; j < this._columns; j++) {
+        if (this._matrix[i][j] !== other._matrix[i][j]) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
+  /**
    * Merge (in place) this sketch with another sketch, if they have the same number of columns and rows.
    * @param sketch - The sketch to merge with
    */
