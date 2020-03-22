@@ -158,4 +158,16 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
   rate (): number {
     return Math.pow(1 - Math.exp((-this._nbHashes * this._length) / this._size), this._nbHashes)
   }
+
+  /**
+   * Check if another Bloom Filter filter is equal to this one
+   * @param  filter - The filter to compare to this one
+   * @return True if they are equal, false otherwise
+   */
+  equals (other: BloomFilter): boolean {
+    if (this._size !== other._size || this._nbHashes !== other._nbHashes || this._length !== other._length) {
+      return false
+    }
+    return this._filter.every((value, index) => other._filter[index] === value)
+  }
 }

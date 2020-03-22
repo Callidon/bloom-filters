@@ -66,6 +66,32 @@ describe('BloomFilter', () => {
     })
   })
 
+  describe('#equals', () => {
+    it('should returns True when two bloom filters are equals', () => {
+      const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const other = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      first.equals(other).should.equal(true)
+    })
+
+    it('should returns False when two bloom filters have different sizes', () => {
+      const first = new BloomFilter(15, 4)
+      const other = new BloomFilter(10, 4)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two bloom filters have different nb. of hash functions', () => {
+      const first = new BloomFilter(15, 4)
+      const other = new BloomFilter(15, 2)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two bloom filters have different content', () => {
+      const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const other = BloomFilter.from(['alice', 'bob', 'daniel'], targetRate)
+      first.equals(other).should.equal(false)
+    })
+  })
+
   describe('#saveAsJSON', () => {
     const filter = BloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
     it('should export a bloom filter to a JSON object', () => {
@@ -96,10 +122,10 @@ describe('BloomFilter', () => {
       const invalids = [
         { type: 'something' },
         { type: 'BloomFilter' },
-        { type: 'BloomFilter', size: 1 },
-        { type: 'BloomFilter', size: 1, length: 1 },
-        { type: 'BloomFilter', size: 1, length: 1, nbHashes: 2 },
-        { type: 'BloomFilter', size: 1, length: 1, nbHashes: 2, seed: 1 }
+        { type: 'BloomFilter', _size: 1 },
+        { type: 'BloomFilter', _size: 1, _length: 1 },
+        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2 },
+        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2, seed: 1 }
       ]
 
       invalids.forEach(json => {
@@ -111,7 +137,7 @@ describe('BloomFilter', () => {
   describe('Performance test', () => {
     const max = 1000
     const targetedRate = 0.01
-    it('should not return an error when inserting ' + max + ' elements', () => {
+    it(`should not return an error when inserting ${max} elements`, () => {
       const filter = BloomFilter.create(max, targetedRate)
       for (let i = 0; i < max; ++i) filter.add('' + i)
       for (let i = 0; i < max; ++i) {
