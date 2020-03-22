@@ -48,6 +48,7 @@ that is used to test whether an element is a member of a set. False positive mat
 
 * `add(element: string) -> void`: add an element into the filter.
 * `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `equals(other: BloomFilter) -> boolean`: Test if two filters are equals.
 * `rate() -> number`: compute the filter's false positive rate (or error rate).
 
 ```javascript
@@ -92,6 +93,7 @@ Be careful, as a Partitioned Bloom Filter have much higher collison risks that a
 
 * `add(element: string) -> void`: add an element into the filter.
 * `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `equals(other: PartitionedBloomFilter) -> boolean`: Test if two filters are equals.
 * `rate() -> number`: compute the filter's false positive rate (or error rate).
 
 ```javascript
@@ -132,6 +134,7 @@ Cuckoo filters improve on Bloom filters by supporting deletion, limited counting
 * `add(element: string) -> void`: add an element into the filter.
 * `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
 * `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `equals(other: CuckooFilter) -> boolean`: Test if two filters are equals.
 * `rate() -> number`: compute the filter's false positive rate (or error rate).
 
 ```javascript
@@ -172,6 +175,7 @@ A Counting Bloom filter works in a similar manner as a regular Bloom filter; how
 * `add(element: string) -> void`: add an element into the filter.
 * `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
 * `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `equals(other: CountingBloomFilter) -> boolean`: Test if two filters are equals.
 * `rate() -> number`: compute the filter's false positive rate (or error rate).
 
 ```javascript
@@ -217,6 +221,8 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 
 * `update(element: string, count = 1) -> void`: add `count` occurences of an element into the sketch.
 * `count(element: string) -> number`: estimate the number of occurences of an element.
+* `merge(other: CountMinSketch) -> CountMinSketch`: merge with occurences of two sketches.
+* `clone(): CountMinSketch`: Clone the sketch.
 
 ```javascript
 const { CountMinSketch } = require('bloom-filters')
@@ -258,6 +264,7 @@ They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This d
 * `add(element: Buffer) -> void`: add an element into the filter.
 * `remove(element: Buffer) -> void`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
 * `has(element: Buffer) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `equals(other: InvertibleBloomFilter) -> boolean`: Test if two filters are equals.
 * `substract(remote: InvertibleBloomFilter)`: peform the XOR substraction of two IBLTs.
 * `decode() -> {additional: Buffer[], missing: Buffer[]} `: decode an IBLT.
 * `listEntries() -> Generator<Buffer, number, void>`: list all entries in the IBLT using a Generator.
