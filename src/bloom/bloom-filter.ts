@@ -160,7 +160,7 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
   }
 
   /**
-   * Check if another Bloom Filter filter is equal to this one
+   * Check if another Bloom Filter is equal to this one
    * @param  filter - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */

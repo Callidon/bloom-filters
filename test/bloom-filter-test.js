@@ -67,25 +67,25 @@ describe('BloomFilter', () => {
   })
 
   describe('#equals', () => {
-    it('should returns True when two bloom filters are equals', () => {
+    it('should returns True when two filters are equals', () => {
       const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
       const other = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
       first.equals(other).should.equal(true)
     })
 
-    it('should returns False when two bloom filters have different sizes', () => {
+    it('should returns False when two filters have different sizes', () => {
       const first = new BloomFilter(15, 4)
       const other = new BloomFilter(10, 4)
       first.equals(other).should.equal(false)
     })
 
-    it('should returns False when two bloom filters have different nb. of hash functions', () => {
+    it('should returns False when two filters have different nb. of hash functions', () => {
       const first = new BloomFilter(15, 4)
       const other = new BloomFilter(15, 2)
       first.equals(other).should.equal(false)
     })
 
-    it('should returns False when two bloom filters have different content', () => {
+    it('should returns False when two filters have different content', () => {
       const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
       const other = BloomFilter.from(['alice', 'bob', 'daniel'], targetRate)
       first.equals(other).should.equal(false)

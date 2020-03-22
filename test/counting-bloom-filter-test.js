@@ -74,6 +74,32 @@ describe('CountingBloomFilter', () => {
     })
   })
 
+  describe('#equals', () => {
+    it('should returns True when two filters are equals', () => {
+      const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const other = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      first.equals(other).should.equal(true)
+    })
+
+    it('should returns False when two filters have different sizes', () => {
+      const first = new CountingBloomFilter(15, 4)
+      const other = new CountingBloomFilter(10, 4)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different nb. of hash functions', () => {
+      const first = new CountingBloomFilter(15, 4)
+      const other = new CountingBloomFilter(15, 2)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different content', () => {
+      const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const other = CountingBloomFilter.from(['alice', 'bob', 'daniel'], targetRate)
+      first.equals(other).should.equal(false)
+    })
+  })
+
   describe('#saveAsJSON', () => {
     const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should export a bloom filter to a JSON object', () => {
