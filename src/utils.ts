@@ -24,7 +24,7 @@ SOFTWARE.
 
 'use strict'
 
-import * as XXH from 'xxhashjs'
+import XXH from 'xxhashjs'
 
 /**
  * Utilitaries functions
@@ -87,12 +87,16 @@ export function hashTwice (value: HashableInput, asInt?: boolean, seed?: number)
     }
   } else {
     let one = f.toString(16)
-    if (one.length < 16) one = '0'.repeat(16 - one.length) + one
+    if (one.length < 16) {
+      one = '0'.repeat(16 - one.length) + one
+    }
     let two = l.toString(16)
-    if (two.length < 16) two = '0'.repeat(16 - two.length) + two
+    if (two.length < 16) {
+      two = '0'.repeat(16 - two.length) + two
+    }
     return {
-      first: one,
-      second: two
+      first: Number(one),
+      second: Number(two)
     }
   }
 }
@@ -177,7 +181,7 @@ export function getDistinctIndices (element: HashableInput, size: number, number
     if (indexes.length === count) {
       return indexes
     } else {
-      const hashes = hashTwice(elem, true, seed + size % n)
+      const hashes = hashTwice(elem, true, seed! + size % n)
       const ind = doubleHashing(n, hashes.first, hashes.second, size)
       if (indexes.includes(ind)) {
         // console.log('generate index: %d for %s', ind, elem)
@@ -327,6 +331,9 @@ export function hashAsString (elem: HashableInput, seed?: number, base?: number,
   if (base === undefined) {
     base = 16
   }
+  if (length === undefined) {
+    length = 64
+  }
   let hash
   switch (length) {
     case 32:
@@ -339,19 +346,19 @@ export function hashAsString (elem: HashableInput, seed?: number, base?: number,
       hash = XXH.h64(elem, seed)
       break
   }
-  let string: string
+  let result: string = ''
   if (base === 16) {
-    string = hash.toString(base)
-    if (string.length < (length / 4)) {
-      string = '0'.repeat((length / 4) - string.length) + string
+    result = hash.toString(base)
+    if (result.length < (length / 4)) {
+      result = '0'.repeat((length / 4) - result.length) + result
     }
   } else if (base === 2) {
-    string = hex2bin(hash.toString(16))
-    if (string.length < length) {
-      string = '0'.repeat(length - string.length) + string
+    result = hex2bin(hash.toString(16))
+    if (result.length < length) {
+      result = '0'.repeat(length - result.length) + result
     }
   }
-  return string
+  return result
 }
 
 /**
@@ -370,6 +377,9 @@ export function hashIntAndString (elem: HashableInput, seed?: number, base?: num
   if (base === undefined) {
     base = 16
   }
+  if (length === undefined) {
+    length = 64
+  }
   let hash
   switch (length) {
     case 32:
@@ -382,19 +392,19 @@ export function hashIntAndString (elem: HashableInput, seed?: number, base?: num
       hash = XXH.h64(elem, seed)
       break
   }
-  let string: string
+  let result: string = ''
   if (base === 16) {
-    string = hash.toString(base)
-    if (string.length < (length / 4)) {
-      string = '0'.repeat((length / 4) - string.length) + string
+    result = hash.toString(base)
+    if (result.length < (length / 4)) {
+      result = '0'.repeat((length / 4) - result.length) + result
     }
   } else if (base === 2) {
-    string = hex2bin(hash.toString(16))
-    if (string.length < length) {
-      string = '0'.repeat(length - string.length) + string
+    result = hex2bin(hash.toString(16))
+    if (result.length < length) {
+      result = '0'.repeat(length - result.length) + result
     }
   }
-  return { int: hash.toNumber(), string }
+  return { int: hash.toNumber(), string: result }
 }
 
 /**

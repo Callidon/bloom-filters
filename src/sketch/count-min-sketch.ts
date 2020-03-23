@@ -54,7 +54,7 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * @param columns - Number of columns
    * @param rows - Number of rows
    */
-  constructor (@Parameter('_columns') columns, @Parameter('_rows') rows) {
+  constructor (@Parameter('_columns') columns: number, @Parameter('_rows') rows: number) {
     super()
     this._columns = columns
     this._rows = rows

@@ -35,7 +35,7 @@ import { optimalFilterSize, optimalHashes } from '../formulas'
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
  */
 export interface IBLTDecodingErrorReason {
-  cell: Cell,
+  cell: Cell | null,
   iblt: InvertibleBloomFilter
 }
 
@@ -66,7 +66,7 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
   private _hashCount: number
 
   @Field<Array<Cell>>(undefined, json => {
-    return json.map(elt => {
+    return json.map((elt: any) => {
       const c = new Cell(Buffer.from(elt._idSum), Buffer.from(elt._hashSum), elt._count)
       c.seed = elt._seed
       return c
@@ -192,8 +192,8 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
           return false
         }
       }
-      return true
     }
+    return true
   }
   
   /**
@@ -262,7 +262,7 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    */
   decode (additional: Buffer[] = [], missing: Buffer[] = []): IBLTDecodingResults {
     const pureList: number[] = []
-    let cell: Cell
+    let cell: Cell | null = null
     // checking for all pure cells
     for (let i = 0; i < this._elements.length; ++i) {
       cell = this._elements[i]
@@ -271,7 +271,7 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
       }
     }
     while (pureList.length !== 0) {
-      cell = this._elements[pureList.pop()]
+      cell = this._elements[pureList.pop()!]
       const id = cell.idSum
       const c = cell.count
       if (cell.isPure()) {
@@ -296,7 +296,7 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
       return {
         success: false,
         reason: {
-          cell,
+          cell: cell,
           iblt: this
         },
         additional,

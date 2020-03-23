@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 import * as utils from './utils'
-import * as seedrandom from 'seedrandom'
+import seedrandom from 'seedrandom'
 
 /**
  * A base class for implementing probailistic filters
@@ -38,7 +38,7 @@ export default abstract class BaseFilter {
 
   constructor () {
     this._seed = utils.getDefaultSeed()
-    this._rng = seedrandom(this._seed)
+    this._rng = seedrandom(`${this._seed}`)
   }
 
   /**
@@ -54,7 +54,7 @@ export default abstract class BaseFilter {
    */
   set seed (seed: number) {
     this._seed = seed
-    this._rng = seedrandom(this._seed)
+    this._rng = seedrandom(`${this._seed}`)
   }
 
   /**

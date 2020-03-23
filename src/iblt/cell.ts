@@ -54,7 +54,7 @@ export default class Cell extends BaseFilter {
    * @param hashSum - The XOR of all hashed element in that cell
    * @param count - The number of elements inserted in that cell
    */
-  constructor (@Parameter('_idSum') idSum, @Parameter('_hashSum') hashSum, @Parameter('_count') count) {
+  constructor (@Parameter('_idSum') idSum: Buffer, @Parameter('_hashSum') hashSum: Buffer, @Parameter('_count') count: number) {
     super()
     this._idSum = idSum
     this._hashSum = hashSum

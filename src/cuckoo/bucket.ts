@@ -24,11 +24,11 @@ SOFTWARE.
 
 'use strict'
 
-import * as eq from 'lodash.eq'
-import * as indexOf from 'lodash.indexof'
+import eq from 'lodash.eq'
+import indexOf from 'lodash.indexof'
 import * as utils from '../utils'
 import { Exportable } from '../exportable'
-import { assertFields, cloneObject } from '../export-import-specs'
+import { cloneObject } from '../exportable'
 
 /**
  * A Bucket is a container of a fixed number of values, used in various bloom filters.
@@ -39,11 +39,11 @@ import { assertFields, cloneObject } from '../export-import-specs'
 @Exportable({
   export: cloneObject('Bucket', '_size', '_elements'),
   import: (json: any) => {
-    if ((json.type !== 'Bucket') || !assertFields(json, '_size', '_elements')) {
+    if ((json.type !== 'Bucket') || !('_size' in json), !('_elements' in json)) {
       throw new Error('Cannot create a Bucket from a JSON export which does not represent a bucket')
     }
     const bucket = new Bucket(json._size)
-    json._elements.forEach((elt, i) => {
+    json._elements.forEach((elt: any, i: number) => {
       if (elt !== null) {
         bucket._elements[i] = elt
         bucket._length++
@@ -53,7 +53,7 @@ import { assertFields, cloneObject } from '../export-import-specs'
   }
 })
 export default class Bucket<T> {
-  public _elements: Array<T>
+  public _elements: Array<T | null>
   private _size: number
   public _length: number
 
@@ -102,7 +102,7 @@ export default class Bucket<T> {
    * @param index - The index to access
    * @return The element at the given index
    */
-  at (index: number): T {
+  at (index: number): T | null {
     return this._elements[index]
   }
 
@@ -111,8 +111,8 @@ export default class Bucket<T> {
    * @param element - The element to add in the bucket
    * @return True if the insertion is a success, False if the bucket is full
    */
-  add (element: T): boolean {
-    if (!this.isFree()) {
+  add (element: T | null): boolean {
+    if (element === null || !this.isFree()) {
       return false
     }
     this.set(this.nextEmptySlot(), element)
@@ -148,7 +148,7 @@ export default class Bucket<T> {
    * @param index - The index at where the element should be inserted
    * @param element - The element to insert
    */
-  set (index: number, element: T): void {
+  set (index: number, element: T | null): void {
     this._elements[index] = element
   }
 
@@ -167,7 +167,7 @@ export default class Bucket<T> {
    * @param random - Factory function used to generate random function
    * @return The element that have been swapped with the parameter
    */
-  swapRandom (element: T, random: () => number = Math.random): T {
+  swapRandom (element: T, random: () => number = Math.random): T | null {
     const index = utils.randomInt(0, this._length - 1, random)
     const tmp = this._elements[index]
     this._elements[index] = element
@@ -180,7 +180,7 @@ export default class Bucket<T> {
    * @param element - The element to be inserted
    * @return The element that have been swapped with the parameter
    */
-  swap (index: number, element: T): T {
+  swap (index: number, element: T): T | null {
     const tmp = this._elements[index]
     this._elements[index] = element
     return tmp

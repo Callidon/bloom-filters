@@ -1,13 +1,22 @@
 {
   "compilerOptions": {
-      "outDir": "./dist",
-      "allowJs": true,
       "target": "es5",
+      "outDir": "./dist",
+      "module": "commonjs",
+      "lib": [ "ES2015" ],
+      "declaration": true,
+      "strict": true,
+      "allowJs": true,
+      "esModuleInterop": true,
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
       "downlevelIteration": true
   },
   "include": [
       "./src/**/*"
+  ],
+  "exclude": [
+    "node_modules/",
+    "test/"
   ]
 }

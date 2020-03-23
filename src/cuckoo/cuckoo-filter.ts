@@ -27,9 +27,8 @@ SOFTWARE.
 import WritableFilter from '../interfaces/writable-filter'
 import BaseFilter from '../base-filter'
 import Bucket from './bucket'
-import { Exportable } from '../exportable'
+import { Exportable, cloneObject } from '../exportable'
 import { HashableInput, allocateArray, hashAsInt, hashIntAndString, randomInt } from '../utils'
-import { cloneObject } from '../export-import-specs'
 
 /**
  * Compute the optimal fingerprint length in bytes for a given bucket size
@@ -59,9 +58,9 @@ function computeFingerpintLength (size: number, rate: number): number {
     if ((json.type !== 'CuckooFilter') || !('_size' in json) || !('_fingerprintLength' in json) || !('_length' in json) || !('_maxKicks' in json) || !('_filter' in json) || !('_seed' in json)) { throw new Error('Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter') }
     const filter = new CuckooFilter(json._size, json._fingerprintLength, json._bucketSize, json._maxKicks)
     filter._length = json._length
-    filter._filter = json._filter.map(j => {
+    filter._filter = json._filter.map((j: any) => {
       const bucket = new Bucket<string>(j._size)
-      j._elements.forEach((elt, i) => {
+      j._elements.forEach((elt: any, i: number) => {
         if (elt !== null) {
           bucket._elements[i] = elt
           bucket._length++
@@ -189,16 +188,16 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
     } else {
       // buckets are full, we must relocate one of them
       let index = this.random() < 0.5 ? locations.firstIndex : locations.secondIndex
-      let movedElement = locations.fingerprint
-      const logs = []
+      let movedElement: string = locations.fingerprint
+      const logs: Array<[number, number, string | null]> = []
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
         const rndIndex = randomInt(0, this._filter[index].length - 1, this.random)
         const tmp = this._filter[index].at(rndIndex)
         logs.push([index, rndIndex, tmp])
         this._filter[index].set(rndIndex, movedElement)
-        movedElement = tmp
+        movedElement = tmp!
         // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
-        const newHash = hashAsInt(movedElement, this.seed, 64)
+        const newHash = hashAsInt(movedElement!, this.seed, 64)
         index = Math.abs((index ^ Math.abs(newHash))) % this._filter.length
         // add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {

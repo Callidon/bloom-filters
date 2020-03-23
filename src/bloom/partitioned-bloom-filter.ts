@@ -101,7 +101,7 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
    * @param loadFactor - The load factor
    * @param capacity - The filter capacity
    */
-  constructor (@Parameter('_size') size, @Parameter('_nbHashes') nbHashes, @Parameter('_loadFactor') loadFactor, @Parameter('_capacity') capacity?) {
+  constructor (@Parameter('_size') size: number, @Parameter('_nbHashes') nbHashes: number, @Parameter('_loadFactor') loadFactor: number, @Parameter('_capacity') capacity?: number) {
     super()
     this._size = size
     this._nbHashes = nbHashes
