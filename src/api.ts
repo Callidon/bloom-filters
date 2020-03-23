@@ -1,6 +1,7 @@
+/* file : api.ts
 MIT License
 
-Copyright (c) 2017-2020 Thomas Minier
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +20,14 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+*/
+
+'use strict'
+
+export { default as BloomFilter } from './bloom/bloom-filter'
+export { default as CountingBloomFilter } from './bloom/counting-bloom-filter'
+export { default as PartitionedBloomFilter } from './bloom/partitioned-bloom-filter'
+export { default as CountMinSketch } from './sketch/count-min-sketch'
+export { default as CuckooFilter } from './cuckoo/cuckoo-filter'
+export { default as InvertibleBloomFilter } from './iblt/invertible-bloom-lookup-tables'
+export { default as Cell } from './iblt/cell'

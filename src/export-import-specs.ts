@@ -1,7 +1,7 @@
-/* file : export-import-specs.js
+/* file : export-import-specs.ts
 MIT License
 
-Copyright (c) 2017-2018 Thomas Minier & Arnaud Grall
+Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ SOFTWARE.
  * @param  {*} v - Value to clone
  * @return {*} Cloned value
  */
-function cloneField (v) {
+export function cloneField (v) {
   if (v === null || v === undefined) {
     return v
   } if (Array.isArray(v)) {
@@ -43,7 +43,7 @@ function cloneField (v) {
   return v
 }
 
-function cloneObject (type, ...fields) {
+export function cloneObject (type, ...fields) {
   return function (obj) {
     const json = { type }
     fields.forEach(field => {
@@ -53,7 +53,7 @@ function cloneObject (type, ...fields) {
   }
 }
 
-function assertFields (obj, ...fields) {
+export function assertFields (obj, ...fields) {
   return fields.every(field => field in obj)
 }
 
@@ -159,14 +159,4 @@ const InvertibleBloomFilterSpecs = {
     iblt._elements = json._elements.map(e => new InvertibleBloomFilterConstructor.Cell(e._idSum, e._hashSum, e._count))
     return iblt
   }
-}
-
-module.exports = {
-  BloomFilter: BloomFilterSpecs,
-  Bucket: BucketSpecs,
-  CountMinSketch: CountMinSketchSpecs,
-  CuckooFilter: CuckooFilterSpecs,
-  PartitionedBloomFilter: PartitionedBloomFilterSpecs,
-  InvertibleBloomFilter: InvertibleBloomFilterSpecs,
-  CountingBloomFilter: CountingBloomFilterSpecs
 }

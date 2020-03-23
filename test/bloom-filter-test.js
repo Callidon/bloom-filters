@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const BloomFilter = require('../src/bloom-filter.js')
+const { BloomFilter } = require('../dist/api.js')
 
 describe('BloomFilter', () => {
   const targetRate = 0.1
@@ -44,7 +44,7 @@ describe('BloomFilter', () => {
       const data = ['alice', 'bob', 'carl']
       const expectedSize = Math.ceil(-((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)))
       const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
-      const filter = BloomFilter.from(data, targetRate, seed)
+      const filter = BloomFilter.from(data, targetRate)
       filter.size.should.equal(expectedSize)
       filter._nbHashes.should.equal(expectedHashes)
       filter.length.should.equal(data.length)
@@ -53,7 +53,7 @@ describe('BloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = BloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
+    const filter = BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should return false for elements that are definitively not in the set', () => {
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
@@ -63,6 +63,32 @@ describe('BloomFilter', () => {
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)
+    })
+  })
+
+  describe('#equals', () => {
+    it('should returns True when two filters are equals', () => {
+      const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const other = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      first.equals(other).should.equal(true)
+    })
+
+    it('should returns False when two filters have different sizes', () => {
+      const first = new BloomFilter(15, 4)
+      const other = new BloomFilter(10, 4)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different nb. of hash functions', () => {
+      const first = new BloomFilter(15, 4)
+      const other = new BloomFilter(15, 2)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different content', () => {
+      const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const other = BloomFilter.from(['alice', 'bob', 'daniel'], targetRate)
+      first.equals(other).should.equal(false)
     })
   })
 
@@ -85,7 +111,7 @@ describe('BloomFilter', () => {
       // simulate deserialization
       exported = JSON.parse(exported)
       const newFilter = BloomFilter.fromJSON(exported)
-      newFilter.seed.should.equal(seed)
+      newFilter.seed.should.equal(filter.seed)
       newFilter.size.should.equal(filter._size)
       newFilter.length.should.equal(filter._length)
       newFilter._nbHashes.should.equal(filter._nbHashes)
@@ -96,14 +122,14 @@ describe('BloomFilter', () => {
       const invalids = [
         { type: 'something' },
         { type: 'BloomFilter' },
-        { type: 'BloomFilter', size: 1 },
-        { type: 'BloomFilter', size: 1, length: 1 },
-        { type: 'BloomFilter', size: 1, length: 1, nbHashes: 2 },
-        { type: 'BloomFilter', size: 1, length: 1, nbHashes: 2, seed: 1 }
+        { type: 'BloomFilter', _size: 1 },
+        { type: 'BloomFilter', _size: 1, _length: 1 },
+        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2 },
+        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2, seed: 1 }
       ]
 
       invalids.forEach(json => {
-        (() => BloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a BloomFilter from a JSON export which does not represent a bloom filter')
+        (() => BloomFilter.fromJSON(json)).should.throw(Error)
       })
     })
   })
@@ -111,7 +137,7 @@ describe('BloomFilter', () => {
   describe('Performance test', () => {
     const max = 1000
     const targetedRate = 0.01
-    it('should not return an error when inserting ' + max + ' elements', () => {
+    it(`should not return an error when inserting ${max} elements`, () => {
       const filter = BloomFilter.create(max, targetedRate)
       for (let i = 0; i < max; ++i) filter.add('' + i)
       for (let i = 0; i < max; ++i) {
@@ -127,7 +153,6 @@ describe('BloomFilter', () => {
         if (has) falsePositive++
       }
       const currentrate = falsePositive / tries
-      console.log('BloomFilter false positive rate on %d tests: ', tries, currentrate)
       currentrate.should.be.closeTo(targetedRate, targetedRate)
     })
   })

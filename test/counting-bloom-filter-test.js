@@ -25,16 +25,14 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const CountingBloomFilter = require('../src/counting-bloom-filter.js')
+const { CountingBloomFilter } = require('../dist/api.js')
 
 describe('CountingBloomFilter', () => {
   const targetRate = 0.1
-  const seed = Math.random()
 
   describe('construction', () => {
     it('should add element to the filter with #add', () => {
       const filter = CountingBloomFilter.create(15, targetRate)
-      filter.seed = seed
       filter.add('alice')
       filter.add('bob')
       filter.length.should.equal(2)
@@ -44,7 +42,7 @@ describe('CountingBloomFilter', () => {
       const data = ['alice', 'bob', 'carl']
       const expectedSize = Math.ceil(-((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)))
       const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
-      const filter = CountingBloomFilter.from(data, targetRate, seed)
+      const filter = CountingBloomFilter.from(data, targetRate)
       filter.size.should.equal(expectedSize)
       filter._nbHashes.should.equal(expectedHashes)
       filter.length.should.equal(data.length)
@@ -53,7 +51,7 @@ describe('CountingBloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
+    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should return false for elements that are definitively not in the set', () => {
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
@@ -66,18 +64,44 @@ describe('CountingBloomFilter', () => {
     })
   })
 
-  describe('#delete', () => {
+  describe('#remove', () => {
     it('should allow deletion of items', () => {
-      const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
-      filter.delete('bob')
+      const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+      filter.remove('bob')
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(false)
       filter.has('carl').should.equal(true)
     })
   })
 
+  describe('#equals', () => {
+    it('should returns True when two filters are equals', () => {
+      const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const other = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      first.equals(other).should.equal(true)
+    })
+
+    it('should returns False when two filters have different sizes', () => {
+      const first = new CountingBloomFilter(15, 4)
+      const other = new CountingBloomFilter(10, 4)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different nb. of hash functions', () => {
+      const first = new CountingBloomFilter(15, 4)
+      const other = new CountingBloomFilter(15, 2)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different content', () => {
+      const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const other = CountingBloomFilter.from(['alice', 'bob', 'daniel'], targetRate)
+      first.equals(other).should.equal(false)
+    })
+  })
+
   describe('#saveAsJSON', () => {
-    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
+    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should export a bloom filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
       exported._seed.should.equal(filter.seed)
@@ -91,7 +115,7 @@ describe('CountingBloomFilter', () => {
     it('should create a bloom filter from a JSON export', () => {
       const exported = filter.saveAsJSON()
       const newFilter = CountingBloomFilter.fromJSON(exported)
-      newFilter.seed.should.equal(seed)
+      newFilter.seed.should.equal(filter.seed)
       newFilter.size.should.equal(filter._size)
       newFilter.length.should.equal(filter._length)
       newFilter._nbHashes.should.equal(filter._nbHashes)
@@ -102,14 +126,14 @@ describe('CountingBloomFilter', () => {
       const invalids = [
         { type: 'something' },
         { type: 'CountingBloomFilter' },
-        { type: 'CountingBloomFilter', size: 1 },
-        { type: 'CountingBloomFilter', size: 1, length: 1 },
-        { type: 'CountingBloomFilter', size: 1, length: 1, nbHashes: 2 },
-        { type: 'CountingBloomFilter', size: 1, length: 1, nbHashes: 2, seed: 1 }
+        { type: 'CountingBloomFilter', _size: 1 },
+        { type: 'CountingBloomFilter', _size: 1, _length: 1 },
+        { type: 'CountingBloomFilter', size: 1, length: 1, _nbHashes: 2 },
+        { type: 'CountingBloomFilter', _size: 1, _length: 1, _nbHashes: 2, _seed: 1 }
       ]
 
       invalids.forEach(json => {
-        (() => CountingBloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a CountingBloomFilter from a JSON export which does not represent a bloom filter')
+        (() => CountingBloomFilter.fromJSON(json)).should.throw(Error)
       })
     })
   })
@@ -133,7 +157,6 @@ describe('CountingBloomFilter', () => {
         if (has) falsePositive++
       }
       const currentrate = falsePositive / tries
-      console.log('CountingBloomFilter false positive rate on %d tests: ', tries, currentrate)
       currentrate.should.be.closeTo(targetedRate, targetedRate)
     })
   })

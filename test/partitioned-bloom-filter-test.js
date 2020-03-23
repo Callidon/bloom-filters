@@ -25,13 +25,13 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const PartitionedBloomFilter = require('../src/partitioned-bloom-filter.js')
+const { PartitionedBloomFilter } = require('../dist/api.js')
 
 describe('PartitionedBloomFilter', () => {
   const targetRate = 0.001
 
   describe('construction', () => {
-    it('should add element to the filter with #add', () => {
+    it('should add element to the filter', () => {
       const filter = PartitionedBloomFilter.create(15, targetRate)
       filter.add('alice')
       filter.add('bob')
@@ -40,11 +40,10 @@ describe('PartitionedBloomFilter', () => {
 
     it('should build a new filter using #from', () => {
       const data = ['alice', 'bob', 'carl']
-      const expectedSize = PartitionedBloomFilter._computeOptimalNumberOfCells(data.length, targetRate)
-      const expectedHashes = PartitionedBloomFilter._computeOptimalNumberOfhashes(targetRate)
       const filter = PartitionedBloomFilter.from(data, targetRate)
-      filter.size.should.equal(expectedSize)
-      filter._nbHashes.should.equal(expectedHashes)
+      filter.has('alice').should.equal(true)
+      filter.has('bob').should.equal(true)
+      filter.has('carl').should.equal(true)
       filter.length.should.equal(data.length)
       filter.rate().should.be.closeTo(targetRate, 0.1)
     })
@@ -65,6 +64,38 @@ describe('PartitionedBloomFilter', () => {
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)
+    })
+  })
+
+  describe('#equals', () => {
+    it('should returns True when two filters are equals', () => {
+      const first = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
+      const other = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
+      first.equals(other).should.equal(true)
+    })
+
+    it('should returns False when two filters have different sizes', () => {
+      const first = new PartitionedBloomFilter(15, 4, 0.5)
+      const other = new PartitionedBloomFilter(10, 4, 0.5)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different nb. of hash functions', () => {
+      const first = new PartitionedBloomFilter(15, 4, 0.5)
+      const other = new PartitionedBloomFilter(15, 2, 0.5)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different load factor', () => {
+      const first = new PartitionedBloomFilter(15, 4, 0.5)
+      const other = new PartitionedBloomFilter(15, 2, 0.4)
+      first.equals(other).should.equal(false)
+    })
+
+    it('should returns False when two filters have different content', () => {
+      const first = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
+      const other = PartitionedBloomFilter.from(['alice', 'bob', 'daniel'], targetRate, 0.5)
+      first.equals(other).should.equal(false)
     })
   })
 
@@ -100,18 +131,18 @@ describe('PartitionedBloomFilter', () => {
       const invalids = [
         { type: 'something' },
         { type: 'PartitionedBloomFilter' },
-        { type: 'PartitionedBloomFilter', capacity: 1 },
-        { type: 'PartitionedBloomFilter', capacity: 1, errorRate: 1 }
+        { type: 'PartitionedBloomFilter', _capacity: 1 },
+        { type: 'PartitionedBloomFilter', _capacity: 1, _errorRate: 1 }
       ]
 
       invalids.forEach(json => {
-        (() => PartitionedBloomFilter.fromJSON(json)).should.throw(Error, 'Cannot create a PartitionedBloomFilter from a JSON export which does not represent a Partitioned Bloom Filter')
+        (() => PartitionedBloomFilter.fromJSON(json)).should.throw(Error)
       })
     })
   })
   describe('Performance test', () => {
     const max = 1000
-    it('should not return an error when inserting and querying for ' + max + ' elements', () => {
+    it(`should not return an error when inserting and querying for ${max} elements`, () => {
       const filter = PartitionedBloomFilter.create(max, targetRate, 0.5)
       for (let i = 0; i < max; ++i) filter.add('' + i)
       for (let i = 0; i < max; ++i) {
@@ -127,7 +158,6 @@ describe('PartitionedBloomFilter', () => {
         if (has) falsePositive++
       }
       const currentrate = falsePositive / tries
-      console.log('PartitionedBloomFilter false positive rate on %d tests = %d (targeted = %d)', tries, currentrate, targetRate)
       currentrate.should.be.closeTo(targetRate, targetRate)
     })
   })

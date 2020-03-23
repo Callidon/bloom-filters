@@ -27,22 +27,20 @@ SOFTWARE.
 const chai = require('chai')
 chai.should()
 chai.expect()
-const CuckooFilter = require('../src/cuckoo-filter.js')
-const utils = require('../src/utils')
-const seed = 1
+const { CuckooFilter } = require('../dist/api.js')
+const utils = require('../dist/utils')
 
 describe('CuckooFilter', () => {
   describe('#_locations', () => {
     it('should compute the fingerprint and indexes for an element', () => {
       const filter = new CuckooFilter(15, 3, 2, 1)
-      filter.seed = (seed)
       const element = 'foo'
-      const hashes = utils.hashIntAndString(element, seed, 16, 64)
+      const hashes = utils.hashIntAndString(element, filter.seed, 16, 64)
       const hash = hashes.int
       const fingerprint = hashes.string.substring(0, 3)
 
       const firstIndex = Math.abs(hash)
-      const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, seed, 64)))
+      const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, filter.seed, 64)))
 
       const locations = filter._locations(element)
       locations.fingerprint.should.equal(fingerprint)
@@ -54,7 +52,6 @@ describe('CuckooFilter', () => {
   describe('#add', () => {
     it('should add element to the filter with #add', () => {
       const filter = CuckooFilter.create(15, 0.01)
-      filter.seed = (seed)
       let nbElements = 0
       filter.add('alice')
       filter.add('bob')
@@ -67,7 +64,6 @@ describe('CuckooFilter', () => {
 
     it('should store ane element accross two different buckets', () => {
       const filter = CuckooFilter.create(15, 0.01, 2)
-      filter.seed = (seed)
       const element = 'foo'
       let nbElements = 0
 
@@ -88,7 +84,6 @@ describe('CuckooFilter', () => {
 
     it('should perform random kicks when both buckets are full', () => {
       const filter = new CuckooFilter(15, 3, 1, 1)
-      filter.seed = (seed)
       const element = 'foo'
       let nbElements = 0
       const locations = filter._locations(element)
@@ -110,7 +105,6 @@ describe('CuckooFilter', () => {
 
     it('should reject elements that can\'t be inserted when filter is full', () => {
       const filter = new CuckooFilter(1, 3, 1)
-      filter.seed = (seed)
       const element = 'foo'
       filter.add(element)
       filter.add(element, false, true).should.equal(false)
@@ -118,7 +112,6 @@ describe('CuckooFilter', () => {
 
     it('should not rollback to its initial state in case the filter is full with option add(x, false, true)', () => {
       const filter = new CuckooFilter(10, 3, 1)
-      filter.seed = (seed)
       filter.add('a').should.equal(true)
       filter.add('b').should.equal(true)
       filter.add('c').should.equal(true)
@@ -138,7 +131,6 @@ describe('CuckooFilter', () => {
 
     it('should rollback to its initial state in case the filter is full', () => {
       const filter = new CuckooFilter(10, 3, 1)
-      filter.seed = (seed)
       filter.add('a').should.equal(true)
       filter.add('b').should.equal(true)
       filter.add('c').should.equal(true)
@@ -159,7 +151,6 @@ describe('CuckooFilter', () => {
   describe('#remove', () => {
     it('should remove exisiting elements from the filter', () => {
       const filter = new CuckooFilter(15, 3, 1)
-      filter.seed = (seed)
       const element = 'foo'
       const locations = filter._locations(element)
 
@@ -170,7 +161,6 @@ describe('CuckooFilter', () => {
 
     it('should look inside every possible bucket', () => {
       const filter = new CuckooFilter(15, 3, 1)
-      filter.seed = (seed)
       const element = 'foo'
       const locations = filter._locations(element)
 
@@ -184,7 +174,6 @@ describe('CuckooFilter', () => {
 
     it('should fail to remove elements that are not in the filter', () => {
       const filter = new CuckooFilter(15, 3, 1)
-      filter.seed = (seed)
       filter.add('foo')
       filter.remove('moo').should.equal(false)
     })
@@ -193,21 +182,18 @@ describe('CuckooFilter', () => {
   describe('#has', () => {
     it('should return True when an element may be in the filter', () => {
       const filter = new CuckooFilter(15, 3, 1)
-      filter.seed = (seed)
       filter.add('foo')
       filter.has('foo').should.equal(true)
     })
 
     it('should return False when an element is definitively not in the filter', () => {
       const filter = new CuckooFilter(15, 3, 1)
-      filter.seed = (seed)
       filter.add('foo')
       filter.has('moo').should.equal(false)
     })
 
     it('should look inside every possible bucket', () => {
       const filter = new CuckooFilter(15, 3, 1)
-      filter.seed = (seed)
       filter.add('foo')
       filter.add('foo')
       filter.remove('foo')
@@ -216,7 +202,6 @@ describe('CuckooFilter', () => {
 
     it('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
       const filter = CuckooFilter.create(15, 0.01)
-      filter.seed = (seed)
       filter.add('alice')
       filter.add('andrew')
       filter.add('bob')
@@ -228,27 +213,20 @@ describe('CuckooFilter', () => {
       filter.add('sam')
       // lookup for some data
       const one = filter.has('samx') // output: false [ok]
-      // console.log(one)
       one.should.equal(false)
       const two = filter.has('samy') // output: true [?]
-      // console.log(two)
-      // filter._filter.forEach(b => console.log(b._elements))
       two.should.equal(false)
       const three = filter.has('alice') // output: true [ok]
-      // console.log(three)
       three.should.equal(true)
       const four = filter.has('joe') // output: true [?]
-      // console.log(four)
       four.should.equal(false)
       const five = filter.has('joe') // output: true [?]
-      // console.log(five)
       five.should.equal(false)
     })
   })
 
   describe('#saveAsJSON', () => {
     const filter = new CuckooFilter(15, 3, 2)
-    filter.seed = (seed)
     filter.add('alice')
     filter.add('bob')
 
@@ -276,11 +254,11 @@ describe('CuckooFilter', () => {
       const invalids = [
         { type: 'something' },
         { type: 'CuckooFilter' },
-        { type: 'CuckooFilter', size: 1 },
-        { type: 'CuckooFilter', size: 1, fingerprintLength: 1 },
-        { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2 },
-        { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2, maxKicks: 1 },
-        { type: 'CuckooFilter', size: 1, fingerprintLength: 1, length: 2, maxKicks: 1, seed: 1 }
+        { type: 'CuckooFilter', _size: 1 },
+        { type: 'CuckooFilter', _size: 1, _fingerprintLength: 1 },
+        { type: 'CuckooFilter', _size: 1, _fingerprintLength: 1, _length: 2 },
+        { type: 'CuckooFilter', _size: 1, _fingerprintLength: 1, _length: 2, _maxKicks: 1 },
+        { type: 'CuckooFilter', _size: 1, _fingerprintLength: 1, _length: 2, _maxKicks: 1, _seed: 1 }
       ]
 
       invalids.forEach(json => {
@@ -293,7 +271,7 @@ describe('CuckooFilter', () => {
     const rate = 0.000000000000000001
     const bucketSize = 1
     it('should not return an error when inserting and asking for ' + max + ' elements, rate = ' + rate + ', bucketSize = ' + bucketSize, () => {
-      const filter = CuckooFilter.create(max, rate, bucketSize, 500, seed)
+      const filter = CuckooFilter.create(max, rate, bucketSize, 500)
       for (let i = 0; i < max; i++) {
         filter.add('' + i).should.equal(true)
       }
@@ -307,7 +285,6 @@ describe('CuckooFilter', () => {
         if (has) falsePositive++
       }
       const currentrate = falsePositive / tries
-      console.log('CuckooFilter false positive rate on %d tests: ', tries, currentrate, filter._computeHashTableLoad())
       currentrate.should.be.closeTo(rate, rate)
     })
   })
