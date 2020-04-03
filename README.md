@@ -20,6 +20,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Cuckoo Filter](#cuckoo-filter)
 	* [Counting Bloom Filter](#counting-bloom-filter)
 	* [Count Min Sketch](#count-min-sketch)
+	* [HyperLogLog](#hyperloglog)
   * [Invertible Bloom Filters](#invertible-bloom-filters)
 * [Export and import](#export-and-import)
 * [Documentation](#documentation)
@@ -221,7 +222,7 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 
 * `update(element: string, count = 1) -> void`: add `count` occurences of an element into the sketch.
 * `count(element: string) -> number`: estimate the number of occurences of an element.
-* `merge(other: CountMinSketch) -> CountMinSketch`: merge with occurences of two sketches.
+* `merge(other: CountMinSketch) -> CountMinSketch`: merge occurences of two sketches.
 * `equals(other: CountMinSketch) -> boolean`: Test if two sketchs are equals.
 * `clone(): CountMinSketch`: Clone the sketch.
 
@@ -252,12 +253,45 @@ sketch = CountMinSketch.create(errorRate, accuracy)
 sketch = CountMinSketch.from(items, errorRate, accuracy)
 ```
 
+### HyperLogLog
+
+HyperLogLog is an algorithm for the count-distinct problem, approximating the number of distinct elements in a multiset. Calculating the exact cardinality of a multiset requires an amount of memory proportional to the cardinality, which is impractical for very large data sets. Probabilistic cardinality estimators, such as the HyperLogLog algorithm, use significantly less memory than this, at the cost of obtaining only an approximation of the cardinality. 
+
+**Reference:** Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). *"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"*. Discrete Mathematics and Theoretical Computer Science Proceedings.
+([Full text article](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf))
+
+**Methods**:
+
+* `update(element: string) -> void`: add a new occurence of an element ot the sketch.
+* `count() -> number`: estimate the number of distinct elements in the sketch.
+* `merge(other: HyperLogLog) -> HyperLogLog`: merge occurences of two sketches.
+* `equals(other: HyperLogLog) -> boolean`: Test if two sketchs are equals.
+
+```javascript
+const { HyperLogLog } = require('bloom-filters')
+
+// create a new HyperLogLog with 100 registers
+const sketch = new HyperLogLog(100)
+
+// push some occurrences in the sketch
+sketch.update('alice')
+sketch.update('alice')
+sketch.update('bob')
+
+// count occurrences
+console.log(sketch.count())
+
+// print accuracy
+console.log(sketch.accuracy())
+```
+
 ### Invertible Bloom Filters
 
 An Invertible Bloom Filters (IBLT), also called Invertible Bloom Lookup Table, is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
 They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction, in that it randomly combines elements using the XOR function.
 
-**Reference:** Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229. [full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)
+**Reference:** Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229. 
+([Full text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf))
 
 **WARNING**: An IBLT only accepts [`Buffer`](https://nodejs.org/api/buffer.html) as inputs. If you are using `bloom-filters` in a Web browser, you might consider using the [`feros/buffer`](https://www.npmjs.com/package/buffer) package, which provides a polyfill for `Buffer` in a browser.
 
@@ -371,9 +405,12 @@ npm test
 * [Cuckoo Filter](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf): Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). *Cuckoo filter: Practically better than bloom.* In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
 * [Counting Bloom Filter](http://www.eecs.harvard.edu/~michaelm/postscripts/esa2006b.pdf): F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, *An Improved Construction for Counting Bloom Filters*, in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.
 * [Count Min Sketch](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf): Cormode, G., & Muthukrishnan, S. (2005). *An improved data stream summary: the count-min sketch and its applications.* Journal of Algorithms, 55(1), 58-75.
+* [HyperLogLog](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf): Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). *"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"*. Discrete Mathematics and Theoretical Computer Science Proceedings.
 * [Invertible Bloom Filters](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
 
 ## Changelog
+
+**v1.1.0**: Added the HyperLogLog sketch.
 
 **v1.0.0**: Rework the whole library using TypeScript, unify the API and fix the documentation.
 
