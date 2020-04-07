@@ -118,43 +118,65 @@ describe('TopK', () => {
     })
   })
 
-  // describe('#saveAsJSON', () => {
-  //   const sketch = CountMinSketch.create(0.001, delta)
-  //   sketch.update('foo')
-  //   sketch.update('foo')
-  //   sketch.update('foo')
-  //   sketch.update('bar')
+  describe('#saveAsJSON', () => {
+    const topk = new TopK(3, 0.001, 0.999)
+    topk.add('alice')
+    topk.add('bob')
+    topk.add('alice')
+    topk.add('carol')
+    topk.add('bob')
+    topk.add('alice')
 
-  //   it('should export a TopK to a JSON object', () => {
-  //     const exported = sketch.saveAsJSON()
-  //     exported.type.should.equal('CountMinSketch')
-  //     exported._rows.should.equal(sketch._rows)
-  //     exported._columns.should.equal(sketch._columns)
-  //     exported._allSums.should.be.equal(sketch._allSums)
-  //     exported._matrix.should.deep.equal(sketch._matrix)
-  //   })
+    it('should export a TopK to a JSON object', () => {
+      const exported = topk.saveAsJSON()
 
-  //   it('should create a TopK from a JSON export', () => {
-  //     const exported = sketch.saveAsJSON()
-  //     const newSketch = CountMinSketch.fromJSON(exported)
-  //     newSketch.columns.should.equal(sketch.columns)
-  //     newSketch.rows.should.equal(sketch.rows)
-  //     newSketch.sum.should.be.equal(sketch.sum)
-  //     newSketch._matrix.should.deep.equal(sketch._matrix)
-  //   })
+      exported.type.should.equal('TopK')
+      exported._k.should.equal(topk._k)
+      exported._errorRate.should.equal(topk._errorRate)
+      exported._accuracy.should.equal(topk._accuracy)
+      exported._seed.should.equal(topk._seed)
+      // inner count min sketch
+      exported._sketch.type.should.equal('CountMinSketch')
+      exported._sketch._columns.should.equal(topk._sketch._columns)
+      exported._sketch._rows.should.equal(topk._sketch._rows)
+      exported._sketch._allSums.should.equal(topk._sketch._allSums)
+      exported._sketch._seed.should.equal(topk._sketch._seed)
+      exported._sketch._matrix.should.deep.equal(topk._sketch._matrix)
+      // inner MinHeap
+      exported._heap.should.deep.equal(topk._heap._content)
+    })
 
-  //   it('should reject imports from invalid JSON objects', () => {
-  //     const invalids = [
-  //       { type: 'something' },
-  //       { type: 'CountMinSketch' },
-  //       { type: 'CountMinSketch', _columns: 1 },
-  //       { type: 'CountMinSketch', _columns: 1, _rows: 1 },
-  //       { type: 'CountMinSketch', _columns: 1, _rows: 1, seed: 1 }
-  //     ]
+    it('should create a TopK from a JSON export', () => {
+      const exported = topk.saveAsJSON()
+      const newSketch = TopK.fromJSON(exported)
 
-  //     invalids.forEach(json => {
-  //       (() => CountMinSketch.fromJSON(json)).should.throw(Error)
-  //     })
-  //   })
-  // })
+      newSketch._k.should.equal(topk._k)
+      newSketch._errorRate.should.equal(topk._errorRate)
+      newSketch._accuracy.should.equal(topk._accuracy)
+      newSketch._seed.should.equal(topk._seed)
+      // inner count min sketch
+      newSketch._sketch._columns.should.equal(topk._sketch._columns)
+      newSketch._sketch._rows.should.equal(topk._sketch._rows)
+      newSketch._sketch._allSums.should.equal(topk._sketch._allSums)
+      newSketch._sketch._seed.should.equal(topk._sketch._seed)
+      newSketch._sketch._matrix.should.deep.equal(topk._sketch._matrix)
+      // inner MinHeap
+      newSketch._heap._content.should.deep.equal(topk._heap._content)
+    })
+
+    it('should reject imports from invalid JSON objects', () => {
+      const invalids = [
+        { type: 'something' },
+        { type: 'TopK' },
+        { type: 'TopK', _k: 1 },
+        { type: 'TopK', _k: 1, _errorRate: 1 },
+        { type: 'TopK', _k: 1, _errorRate: 1, _accuracy: 1 },
+        { type: 'TopK', _k: 1, _errorRate: 1, _accuracy: 1, _content: [] }
+      ]
+
+      invalids.forEach(json => {
+        (() => TopK.fromJSON(json)).should.throw(Error)
+      })
+    })
+  })
 })

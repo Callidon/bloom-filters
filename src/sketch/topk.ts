@@ -24,6 +24,7 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import CountMinSketch from './count-min-sketch'
+import { AutoExportable, Field, Parameter } from '../exportable'
 import { sortedIndexBy } from 'lodash'
 
 /**
@@ -51,6 +52,14 @@ class MinHeap {
    */
   get length () {
     return this._content.length
+  }
+
+  get content () {
+    return this._content
+  }
+
+  set content (value: HeapElement[]) {
+    this._content = value
   }
 
   /**
@@ -115,11 +124,25 @@ class MinHeap {
  * A TopK uses a Count-Min Sketch to calculate the top-K frequent elements in a stream.
  * @author Thomas Minier
  */
+@AutoExportable('TopK', ['_seed'])
 export default class TopK extends BaseFilter {
+  @Field()
   private _k: number
+
+  @Field()
   private _errorRate: number
+
+  @Field()
   private _accuracy: number
+
+  @Field()
   private _sketch: CountMinSketch
+
+  @Field<MinHeap>((heap: MinHeap) => heap.content, (json: any) => {
+    const heap = new MinHeap()
+    heap.content = json
+    return heap
+  })
   private _heap: MinHeap
 
   /**
@@ -128,7 +151,7 @@ export default class TopK extends BaseFilter {
    * @param errorRate - The error rate
    * @param accuracy  - The probability of accuracy
    */
-  constructor (k: number, errorRate: number, accuracy: number) {
+  constructor (@Parameter('_k') k: number, @Parameter('_errorRate') errorRate: number, @Parameter('_accuracy') accuracy: number) {
     super()
     this._k = k
     this._errorRate = errorRate
