@@ -21,6 +21,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Counting Bloom Filter](#counting-bloom-filter)
 	* [Count Min Sketch](#count-min-sketch)
 	* [HyperLogLog](#hyperloglog)
+	* [Top-K](#top-k)
   * [Invertible Bloom Filters](#invertible-bloom-filters)
 * [Export and import](#export-and-import)
 * [Documentation](#documentation)
@@ -255,14 +256,15 @@ sketch = CountMinSketch.from(items, errorRate, accuracy)
 
 ### HyperLogLog
 
-HyperLogLog is an algorithm for the count-distinct problem, approximating the number of distinct elements in a multiset. Calculating the exact cardinality of a multiset requires an amount of memory proportional to the cardinality, which is impractical for very large data sets. Probabilistic cardinality estimators, such as the HyperLogLog algorithm, use significantly less memory than this, at the cost of obtaining only an approximation of the cardinality. 
+HyperLogLog is an algorithm for the count-distinct problem, approximating the number of distinct elements in a multiset. Calculating the exact cardinality of a multiset requires an amount of memory proportional to the cardinality, which is impractical for very large data sets. Probabilistic cardinality estimators, such as the HyperLogLog algorithm, use significantly less memory than this, at the cost of obtaining only an approximation of the cardinality.
+The HyperLogLog algorithm is able to estimate cardinalities greather than `10e9` with a typical accuracy (standard error) of `2%`, using around 1.5 kB of memory (see reference).
 
 **Reference:** Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). *"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"*. Discrete Mathematics and Theoretical Computer Science Proceedings.
 ([Full text article](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf))
 
 **Methods**:
 
-* `update(element: string) -> void`: add a new occurence of an element ot the sketch.
+* `update(element: string) -> void`: add a new occurence of an element to the sketch.
 * `count() -> number`: estimate the number of distinct elements in the sketch.
 * `merge(other: HyperLogLog) -> HyperLogLog`: merge occurences of two sketches.
 * `equals(other: HyperLogLog) -> boolean`: Test if two sketchs are equals.
@@ -283,6 +285,39 @@ console.log(sketch.count())
 
 // print accuracy
 console.log(sketch.accuracy())
+```
+
+### Top-K
+
+Given a multiset of elements, the Top-K problem is to compute the ranking of these elements (by an arbitrary score) and returns the `k` results with the highest scores.
+This package provides an implementation of the TopK problem that sort items based on their estimated cardinality in the multiset. It is based on a Count Min Sketch, for estimating the cardinality of items, and a MinHeap, for implementing a sliding window over the `k` results with the highest scores.
+
+**Methods**:
+
+* `add(element: string) -> void`: add a new occurence of an element to the sketch.
+* `values() -> Array<{value: string, frequency: number}>`: get the top-k values as an array of objects `{value: string, frequency: number}`.
+* `iterator() -> Iterator<{value: string, frequency: number}>`: get the top-k values as an iterator that yields objects `{value: string, frequency: number}`.
+
+```javascript
+const { TopK } = require('bloom-filters')
+
+// create a new TopK with k = 10, an error rate of 0.001 and an accuracy of 0.99
+const topk = new TopK(10, 0.001, 0.99)
+
+// push some occurrences in the multiset
+topk.add('alice')
+topk.add('bob')
+topk.add('alice')
+
+// print the topk
+let pos = 1
+for(let item of topk.values()) {
+	console.log(`Item "${item.value}" is in position ${pos} with an estimated frequency of ${item.frequency}`)
+	pos++
+}
+// Output:
+// Item "alice" is in position 1 with an estimated frequency of 2
+// Item "bob" is in position 2 with an estimated frequency of 1
 ```
 
 ### Invertible Bloom Filters

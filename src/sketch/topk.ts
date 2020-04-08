@@ -195,8 +195,8 @@ export default class TopK extends BaseFilter {
   }
 
   /**
-   * Get the top-k values as an array of object {value: string, frequency: number}
-   * @return The top-k values as an array of object {value: string, frequency: number}
+   * Get the top-k values as an array of objects {value: string, frequency: number}
+   * @return The top-k values as an array of objects {value: string, frequency: number}
    */
   values (): HeapElement[] {
     const res = []
@@ -207,7 +207,7 @@ export default class TopK extends BaseFilter {
   }
   
   /**
-   * Get the top-k values as an iterator of object {value: string, frequency: number}.
+   * Get the top-k values as an iterator that yields objects {value: string, frequency: number}.
    * WARNING: With this method, values are produced on-the-fly, hence you should not modify the TopK
    * while the iteration is not done, otherwise the generated values may not respect the TopK properties.
    * @return The top-k values as an iterator of object {value: string, frequency: number}
