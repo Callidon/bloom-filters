@@ -312,8 +312,8 @@ topk.add('alice')
 // print the topk
 let pos = 1
 for(let item of topk.values()) {
-	console.log(`Item "${item.value}" is in position ${pos} with an estimated frequency of ${item.frequency}`)
-	pos++
+  console.log(`Item "${item.value}" is in position ${pos} with an estimated frequency of ${item.frequency}`)
+  pos++
 }
 // Output:
 // Item "alice" is in position 1 with an estimated frequency of 2
