@@ -135,8 +135,8 @@ export default class MinHash extends BaseFilter {
    * @param other - MinHash to compare with
    * @return The estimated Jaccard similarity between the two sets
    */
-  estimateSimilary (other: MinHash): number {
-    return intersection(this._signature, other._signature).length
+  compareWith (other: MinHash): number {
+    return intersection(this._signature, other._signature).length / this._nbHashes
   }
 
 }
