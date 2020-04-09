@@ -23,80 +23,59 @@ SOFTWARE.
 */
 
 import BaseFilter from '../base-filter'
+import { allocateArray } from '../utils'
 import { intersection, random } from 'lodash'
 
-type HashFunction = (elt: number) => number
-
 /**
- * An exception throw when we try to ingest numbers into a MinHash whose signature
- * has already been computed.
+ * An error thrown when we try to compute the Jaccard Similarity with an empty MinHash
  * @author Thomas Minier
  */
-class NonWritableMinHashError extends Error {}
+class EmptyMinHashError extends Error {}
 
 /**
- * Test if a number is a prime number
- * @param x - Number to test
- * @return True if the input is a prime number, False otherwise
+ * The parameters of a Hash function used in the MinHash algorithm
+ * @author Thomas Minier
  */
-function isPrime (x: number): boolean {
-  if (x !== 2 && x % 2 === 0) {
-    return false
-  }
-  for (let i = 2; i < Math.sqrt(x); i++) {
-    if (x % i === 0) {
-      return false
-    }
-  }
-  return true
+export interface HashFunction {
+  a: number,
+  b: number,
+  c: number
 }
 
 /**
- * Find the fist prime number superior to a number
- * @param x - Input number
- * @return The fist prime number superior to the input number
+ * Apply a hash function to a number to produce a hash
+ * @param x - Value to hash
+ * @param fn - HashFunction to apply
+ * @return The hashed value
  */
-function closestPrime (x: number): number {
-  let i = 0
-  while (true) {
-    if (isPrime(x + i)) {
-      return x + i
-    }
-    i++
-  }
+function applyHashFunction (x: number, fn: HashFunction): number {
+  return (fn.a * x + fn.b) % fn.c
 }
 
 /**
  * MinHash (or the min-wise independent permutations locality sensitive hashing scheme) is a technique for quickly estimating how similar two sets are.
  * It is able to estimate the Jaccard similarity between two large sets of numbers using random hashing.
  * 
+ * **WARNING**: Only the MinHash produced by the same {@link MinHashFactory} can be compared between them.
+ * 
  * @see "On the resemblance and containment of documents", by Andrei Z. Broder, in Compression and Complexity of Sequences: Proceedings, Positano, Amalfitan Coast, Salerno, Italy, June 11-13, 1997.
  * @author Thomas Minier
  */
-export default class MinHash extends BaseFilter {
+export class MinHash extends BaseFilter {
   private _nbHashes: number
-  private _maxValue: number
   private _hashFunctions: HashFunction[]
   private _signature: number[]
 
   /**
    * Constructor
    * @param nbHashes - Number of hash functions to use for comouting the MinHash signature
-   * @param maxValue - The maximum integer value in the set
+   * @param hashFunctions - Hash functions used to compute the signature
    */
-  constructor (nbHashes: number, maxValue: number) {
+  constructor (nbHashes: number, hashFunctions: HashFunction[]) {
     super()
     this._nbHashes = nbHashes
-    this._maxValue = maxValue
-    this._hashFunctions = []
-    this._signature = []
-    // generate hash functions
-    const c = closestPrime(this._maxValue)
-    for (let i = 0; i < this._nbHashes; i++) {
-      const a = random(0, this._maxValue, false)
-      const b = random(0, this._maxValue, false)
-      this._hashFunctions.push((x: number) => (a * x + b) % c)
-    }
+    this._hashFunctions = hashFunctions
+    this._signature = allocateArray(this._nbHashes, Infinity)
   }
 
   /**
@@ -107,26 +86,31 @@ export default class MinHash extends BaseFilter {
   }
 
   /**
-   * Test if the MinHash can be modified, i.e., its signature has not been computed yet
+   * Test if the signature of the MinHash is empty
+   * @return True if the MinHash is empty, False otherwise
    */
-  get isWritable (): boolean {
-    return this._signature.length === 0
+  isEmpty (): boolean {
+    return this._signature[0] === Infinity
   }
 
   /**
-   * Ingest a set of integers/floats into the Minhash and compute its signaure.
-   * 
-   * **WARNING:** After calling this method, the MinHash **cannot be modified** any further.
-   * @param values - Values to ingest in order to compute the MinHash signature
+   * Insert a value into the MinHash and update its signature.
+   * @param value - Value to insert
    */
-  ingestNumbers (values: number[]): void {
-    if (!this.isWritable) {
-      throw new NonWritableMinHashError('The MinHash has already been populated with items and cannot be modified furthermore.')
+  add (value: number): void {
+    for(let i = 0; i < this._nbHashes; i++) {
+      this._signature[i] = Math.min(this._signature[i], applyHashFunction(value, this._hashFunctions[i]))
     }
-    // generate the signature
-    for(let hashFunction of this._hashFunctions) {
-      const candidateSignatures = values.map((value: number) => hashFunction(value))
-      this._signature.push(Math.min(...candidateSignatures))
+  }
+
+  /**
+   * Ingest a set of values into the MinHash and update its signature.
+   * @param values - Set of values to ingest
+   */
+  bulkLoad (values: number[]): void {
+    for(let i = 0; i < this._nbHashes; i++) {
+      const candidateSignatures = values.map((value: number) => applyHashFunction(value, this._hashFunctions[i]))
+      this._signature[i] = Math.min(this._signature[i], ...candidateSignatures)
     }
   }
 
@@ -136,6 +120,9 @@ export default class MinHash extends BaseFilter {
    * @return The estimated Jaccard similarity between the two sets
    */
   compareWith (other: MinHash): number {
+    if (this.isEmpty() || other.isEmpty()) {
+      throw new EmptyMinHashError('Cannot compute a Jaccard similairty with a MinHash that contains no values')
+    }
     return intersection(this._signature, other._signature).length / this._nbHashes
   }
 

@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { MinHash } = require('../dist/api.js')
+const { MinHashFactory } = require('../dist/api.js')
 const { range, intersection, union } = require('lodash')
 
 // Compute the exact Jaccard similairty between two sets
@@ -34,40 +34,37 @@ function jaccard(a, b) {
 }
 
 describe('MinHash', () => {
-  describe('#isWritable', () => {
-    it('should returns True when the MinHash has no signature', () => {
-      const firstSet = new MinHash(10, 1)
-      firstSet.isWritable.should.equal(true)
-    })
-    it('should returns False when the MinHash has a signature', () => {
-      const firstSet = new MinHash(10, 1)
-      firstSet.ingestNumbers([1, 2, 3])
-      firstSet.isWritable.should.equal(false)
+  const setA = range(1, 500)
+  const setB = range(1, 500).map(x => x % 2 === 0 ? x : x * 2)
+  const maxValue = Math.max(...setA, ...setB)
+  const nbHashes = 10
+  const factory = new MinHashFactory(nbHashes, maxValue)
+
+  describe('#isEmpty', () => {
+
+  })
+
+  describe('#add', () => {
+    it('should insert values and compute the Jaccard similarity between two sets', () => {
+      const firstSet = factory.create()
+      const secondSet = factory.create()
+      setA.forEach(value => firstSet.add(value))
+      setB.forEach(value => secondSet.add(value))
+      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.1)
     })
   })
 
-  describe('#ingestNumbers', () => {
-    it('should ingest numbers and compute the Jaccard similarity between two sets', () => {
-      const setA = range(1, 500)
-      const setB = range(1, 500).map(x => x % 2 === 0 ? x : x * 2)
-      const maxValue = Math.max(...setA, ...setB)
-      const nbHashes = 10
-      const firstSet = new MinHash(nbHashes, maxValue)
-      firstSet.ingestNumbers(setA)
-      const secondSet = new MinHash(nbHashes, maxValue)
-      secondSet.ingestNumbers(setB)
-      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.5)      
+  describe('#bulkLoad', () => {
+    it('should ingest a set of numbers and compute the Jaccard similarity between two sets', () => {
+      const firstSet = factory.create()
+      const secondSet = factory.create()
+      firstSet.bulkLoad(setA)
+      secondSet.bulkLoad(setB)
+      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.1)      
     })
+  })
 
-    it('should reject ingestion into a MinHash that is no longer writable', done => {
-      const firstSet = new MinHash(10, 1)
-      firstSet.ingestNumbers([1, 2, 3])
-      try {
-        firstSet.ingestNumbers([1, 2, 3])
-        done(new Error('You shouldn\'t be able to ingest numbers twice with the same MinHash'))
-      } catch (error) {
-        done()
-      }
-    })
+  describe('#compareWith', () => {
+
   })
 })
