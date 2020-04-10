@@ -287,6 +287,49 @@ console.log(sketch.count())
 console.log(sketch.accuracy())
 ```
 
+### MinHash
+
+**MinHash** (or the min-wise independent permutations locality sensitive hashing scheme) is a technique for quickly estimating how similar two sets are.
+The goal of MinHash is to estimate the *Jaccard similarity coefficient*, a commonly used indicator of the similarity between two sets, without explicitly computing the intersection and union of the two sets.
+It does so by computing fixed sized signatures for a set of numbers using randomly generated hash functions.
+
+❗️**WARNINGS**❗
+* A `MinHash` class only accepts `numbers` (integers and floats) as inputs.
+* Two MinHash can be compared **only if they share the same set of randomly generated hash functions**. To ease the creation of MinHash sets, we introduce a `MinHashFactory` class that is able to create MinHash structures that *share the same set of hash functions*. We recommend most users **to rely on the factory**, but the `MinHash` class remains importable for advanced usage.
+
+**Reference:** Andrei Z. Broder, *"On the resemblance and containment of documents"*, in Compression and Complexity of Sequences: Proceedings (1997).
+([Full text article](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&rep=rep1&type=pdf))
+
+**Methods**:
+
+* `add(element: number) -> void`: add a new element to the set.
+* `bulkLoad(elements: number[]) -> void`: add several new elements to the set in an efficient manner.
+* `isEmpty() -> boolean`: test if the signature of the MinHash is empty.
+* `compareWith(other: MinHash) -> number`: estimate the Jaccard similarity coefficient with another MinHash set.
+
+```javascript
+const { MinHashFactory } = require('bloom-filters')
+
+// create the MinHashFactory, to create several comparable MinHash sets
+// it uses 10 random hash functions and expect to see a maximum value of 999
+const sketch = new MinHasFactory(10, 999)
+
+// create two empty MinHash
+const fistSet = factory.create()
+const secondSet = factory.create()
+
+// push some occurrences in the first set
+fistSet.add(1)
+fistSet.add(2)
+
+// the MinHash also supports bulk loading
+secondSet.bulkLoad([1, 3, 4])
+
+// estimate the jaccard similarity between the two sets
+const jaccardSim = fistSet.compareWith(secondSet)
+console.Log(`The estimated Jaccard similarity is ${jaccardSim}`)
+```
+
 ### Top-K
 
 Given a multiset of elements, the Top-K problem is to compute the ranking of these elements (by an arbitrary score) and returns the `k` results with the highest scores.
@@ -325,10 +368,10 @@ for(let item of topk.values()) {
 An Invertible Bloom Filters (IBLT), also called Invertible Bloom Lookup Table, is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
 They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction, in that it randomly combines elements using the XOR function.
 
+❗️**WARNING**❗️ An IBLT only accepts [`Buffer`](https://nodejs.org/api/buffer.html) as inputs. If you are using `bloom-filters` in a Web browser, you might consider using the [`feros/buffer`](https://www.npmjs.com/package/buffer) package, which provides a polyfill for `Buffer` in a browser.
+
 **Reference:** Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229. 
 ([Full text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf))
-
-**WARNING**: An IBLT only accepts [`Buffer`](https://nodejs.org/api/buffer.html) as inputs. If you are using `bloom-filters` in a Web browser, you might consider using the [`feros/buffer`](https://www.npmjs.com/package/buffer) package, which provides a polyfill for `Buffer` in a browser.
 
 **Methods**
 * `add(element: Buffer) -> void`: add an element into the filter.
@@ -441,6 +484,7 @@ npm test
 * [Counting Bloom Filter](http://www.eecs.harvard.edu/~michaelm/postscripts/esa2006b.pdf): F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, *An Improved Construction for Counting Bloom Filters*, in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.
 * [Count Min Sketch](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf): Cormode, G., & Muthukrishnan, S. (2005). *An improved data stream summary: the count-min sketch and its applications.* Journal of Algorithms, 55(1), 58-75.
 * [HyperLogLog](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf): Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). *"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"*. Discrete Mathematics and Theoretical Computer Science Proceedings.
+* [MinHash](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&rep=rep1&type=pdf): Andrei Z. Broder, *"On the resemblance and containment of documents"*, in Compression and Complexity of Sequences: Proceedings (1997).
 * [Invertible Bloom Filters](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
 
 ## Changelog

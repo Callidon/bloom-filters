@@ -111,8 +111,8 @@ export class MinHash extends BaseFilter {
   }
 
   /**
-   * Ingest a set of values into the MinHash and update its signature.
-   * @param values - Set of values to ingest
+   * Ingest a set of values into the MinHash, in an efficient manner, and update its signature.
+   * @param values - Set of values to load
    */
   bulkLoad (values: number[]): void {
     for(let i = 0; i < this._nbHashes; i++) {
@@ -122,9 +122,9 @@ export class MinHash extends BaseFilter {
   }
 
   /**
-   * Estimate the Jaccard similarity with another MinHash signature
+   * Estimate the Jaccard similarity coefficient with another MinHash signature
    * @param other - MinHash to compare with
-   * @return The estimated Jaccard similarity between the two sets
+   * @return The estimated Jaccard similarity coefficient between the two sets
    */
   compareWith (other: MinHash): number {
     if (this.isEmpty() || other.isEmpty()) {
