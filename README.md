@@ -490,17 +490,16 @@ npm test
 
 ## Changelog
 
-**v1.1.0**: Added the HyperLogLog sketch.
-
-**v1.0.0**: Rework the whole library using TypeScript, unify the API and fix the documentation.
-
-**v0.8.0**: Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API, use the `.create()` or `.from()` functions to match the old api.
-
-**v0.7.1**: Add the Counting Bloom Filter.
-
-**v0.7.0** Move to [XXHASH](https://cyan4973.github.io/xxHash/) for hashing elements in the library. One property has been added into the exported json `_seed` which is used to seed every hash of every elements. Update Invertible Bloom Filters with #add, #has, #delete, #listEntries, #substract, #Static.decode methods. Updated the way to get distinct indices which could have collisions in many cases.
-
-**v0.6.1** Add Invertible Bloom Filters (only #encode/#substract/#Static.decode methods)
+| **Version** | **Release date** | **Major changes** |
+|---|---|---|
+| `v1.3.0` | 10/04/2020 | Added the MinHash set |
+| `v1.2.0` | 08/04/2020 | Add the TopK class |
+| `v1.1.0` | 03/04/2020 | Add the HyperLogLog sketch |
+| `v1.0.0` | 23/03/2020 | Rework the whole library using TypeScript, unify the API and fix the documentation |
+| `v0.8.0` | 11/11/2019 | Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API, use the `.create()` or `.from()` functions to match the old api. |
+| `v0.7.1` | 11/09/2019 | Add the Counting Bloom Filter |
+| `v0.7.0` | 01/07/2019 | Move to [XXHASH](https://cyan4973.github.io/xxHash/) for hashing elements in the library. One property has been added into the exported json `_seed` which is used to seed every hash of every elements. Update Invertible Bloom Filters with #add, #has, #delete, #listEntries, #substract, #Static.decode methods. Updated the way to get distinct indices which could have collisions in many cases. |
+| `v0.6.1` | 18/06/2019 | Add Invertible Bloom Filters (only #encode/#substract/#Static.decode methods) |
 
 ## License
 [MIT License](https://github.com/Callidon/bloom-filters/blob/master/LICENSE)
