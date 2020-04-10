@@ -30,6 +30,7 @@ export { default as PartitionedBloomFilter } from './bloom/partitioned-bloom-fil
 export { default as CountMinSketch } from './sketch/count-min-sketch'
 export { default as HyperLogLog } from './sketch/hyperloglog'
 export { default as TopK } from './sketch/topk'
+export { MinHash } from './sketch/min-hash'
 export { default as MinHashFactory } from './sketch/min-hash-factory'
 export { default as CuckooFilter } from './cuckoo/cuckoo-filter'
 export { default as InvertibleBloomFilter } from './iblt/invertible-bloom-lookup-tables'

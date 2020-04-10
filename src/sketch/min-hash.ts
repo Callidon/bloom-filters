@@ -23,8 +23,9 @@ SOFTWARE.
 */
 
 import BaseFilter from '../base-filter'
+import { AutoExportable, Field, Parameter } from '../exportable'
 import { allocateArray } from '../utils'
-import { intersection, random } from 'lodash'
+import { intersection } from 'lodash'
 
 /**
  * An error thrown when we try to compute the Jaccard Similarity with an empty MinHash
@@ -61,9 +62,15 @@ function applyHashFunction (x: number, fn: HashFunction): number {
  * @see "On the resemblance and containment of documents", by Andrei Z. Broder, in Compression and Complexity of Sequences: Proceedings, Positano, Amalfitan Coast, Salerno, Italy, June 11-13, 1997.
  * @author Thomas Minier
  */
+@AutoExportable('MinHash', ['_seed'])
 export class MinHash extends BaseFilter {
+  @Field()
   private _nbHashes: number
+
+  @Field()
   private _hashFunctions: HashFunction[]
+
+  @Field()
   private _signature: number[]
 
   /**
@@ -71,7 +78,7 @@ export class MinHash extends BaseFilter {
    * @param nbHashes - Number of hash functions to use for comouting the MinHash signature
    * @param hashFunctions - Hash functions used to compute the signature
    */
-  constructor (nbHashes: number, hashFunctions: HashFunction[]) {
+  constructor (@Parameter('_nbHashes') nbHashes: number, @Parameter('_hashFunctions') hashFunctions: HashFunction[]) {
     super()
     this._nbHashes = nbHashes
     this._hashFunctions = hashFunctions

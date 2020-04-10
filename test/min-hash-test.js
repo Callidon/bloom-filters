@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { MinHashFactory } = require('../dist/api.js')
+const { MinHashFactory, MinHash } = require('../dist/api.js')
 const { range, intersection, union } = require('lodash')
 
 // Compute the exact Jaccard similairty between two sets
@@ -96,6 +96,40 @@ describe('MinHash', () => {
       } catch (error) {
         done()
       }
+    })
+  })
+
+  describe('#saveAsJSON', () => {
+    const mySet = factory.create()
+    mySet.bulkLoad(setA)
+
+    it('should export a MinHash to a JSON object', () => {
+      const exported = mySet.saveAsJSON()
+      exported.type.should.equal('MinHash')
+      exported._nbHashes.should.equal(mySet._nbHashes)
+      exported._hashFunctions.should.deep.equal(mySet._hashFunctions)
+      exported._signature.should.deep.equal(mySet._signature)
+    })
+
+    it('should create a MinHash from a JSON export', () => {
+      const exported = mySet.saveAsJSON()
+      const newSet = MinHash.fromJSON(exported)
+      newSet._nbHashes.should.equal(mySet._nbHashes)
+      newSet._hashFunctions.should.deep.equal(mySet._hashFunctions)
+      newSet._signature.should.deep.equal(mySet._signature)
+    })
+
+    it('should reject imports from invalid JSON objects', () => {
+      const invalids = [
+        { type: 'something' },
+        { type: 'MinHash' },
+        { type: 'MinHash', _nbHashes: 1 },
+        { type: 'MinHash', _nbHashes: 1, _hashFunctions: [] }
+      ]
+
+      invalids.forEach(json => {
+        (() => MinHash.fromJSON(json)).should.throw(Error)
+      })
     })
   })
 })
