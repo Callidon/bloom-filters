@@ -41,7 +41,16 @@ describe('MinHash', () => {
   const factory = new MinHashFactory(nbHashes, maxValue)
 
   describe('#isEmpty', () => {
+    it('should return True when the MinHash signeture is empty', () => {
+      const set = factory.create()
+      set.isEmpty().should.equal(true)
+    })
 
+    it('should return False when the MinHash signeture is not empty', () => {
+      const set = factory.create()
+      set.add(1)
+      set.isEmpty().should.equal(false)
+    })
   })
 
   describe('#add', () => {
@@ -65,6 +74,28 @@ describe('MinHash', () => {
   })
 
   describe('#compareWith', () => {
+    it('should throw an Error when we try to compare an empty MinHash with anoter MinHash', done => {
+      const firstSet = factory.create()
+      const secondSet = factory.create()
+      secondSet.add(1)
+      try {
+        firstSet.compareWith(secondSet)
+        done(new Error('compareWith should throw an error when we try to compare an empty set with another MinHash'))
+      } catch (error) {
+        done()
+      }
+    })
 
+    it('should throw an Error when we try to compare a MinHash with an empty MinHash', done => {
+      const firstSet = factory.create()
+      firstSet.add(1)
+      const secondSet = factory.create()
+      try {
+        firstSet.compareWith(secondSet)
+        done(new Error('compareWith should throw an error when we try to compare with an empty MinHash'))
+      } catch (error) {
+        done()
+      }
+    })
   })
 })
