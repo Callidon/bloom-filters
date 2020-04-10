@@ -21,6 +21,7 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 	* [Counting Bloom Filter](#counting-bloom-filter)
 	* [Count Min Sketch](#count-min-sketch)
 	* [HyperLogLog](#hyperloglog)
+	* [MinHash](#minhash)
 	* [Top-K](#top-k)
   * [Invertible Bloom Filters](#invertible-bloom-filters)
 * [Export and import](#export-and-import)
