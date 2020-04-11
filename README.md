@@ -50,7 +50,7 @@ that is used to test whether an element is a member of a set. False positive mat
 **Methods**:
 
 * `add(element: string) -> void`: add an element into the filter.
-* `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 * `equals(other: BloomFilter) -> boolean`: Test if two filters are equals.
 * `rate() -> number`: compute the filter's false positive rate (or error rate).
 
@@ -95,7 +95,7 @@ Be careful, as a Partitioned Bloom Filter have much higher collison risks that a
 **Methods**:
 
 * `add(element: string) -> void`: add an element into the filter.
-* `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 * `equals(other: PartitionedBloomFilter) -> boolean`: Test if two filters are equals.
 * `rate() -> number`: compute the filter's false positive rate (or error rate).
 
@@ -136,7 +136,7 @@ Cuckoo filters improve on Bloom filters by supporting deletion, limited counting
 
 * `add(element: string) -> void`: add an element into the filter.
 * `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
-* `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 * `equals(other: CuckooFilter) -> boolean`: Test if two filters are equals.
 * `rate() -> number`: compute the filter's false positive rate (or error rate).
 
@@ -177,7 +177,7 @@ A Counting Bloom filter works in a similar manner as a regular Bloom filter; how
 
 * `add(element: string) -> void`: add an element into the filter.
 * `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
-* `has(element: string) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 * `equals(other: CountingBloomFilter) -> boolean`: Test if two filters are equals.
 * `rate() -> number`: compute the filter's false positive rate (or error rate).
 
@@ -377,7 +377,7 @@ They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This d
 **Methods**
 * `add(element: Buffer) -> void`: add an element into the filter.
 * `remove(element: Buffer) -> void`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
-* `has(element: Buffer) -> boolean'`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+* `has(element: Buffer) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 * `equals(other: InvertibleBloomFilter) -> boolean`: Test if two filters are equals.
 * `substract(remote: InvertibleBloomFilter)`: peform the XOR substraction of two IBLTs.
 * `decode() -> {additional: Buffer[], missing: Buffer[]} `: decode an IBLT.
