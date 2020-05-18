@@ -345,12 +345,12 @@ This package provides an implementation of the Top-K problem that sort items bas
 Items produced by the `TopK` class are JavaScript objects with the following content (shown in Typescript notation).
 ```typescript
 interface TopkElement {
-	// The element's value
-	value: string,
-	// The element's frequency
-	frequency: number,
-	// The element's rank in the TopK, ranging from 1 to k
-	rank: number
+  // The element's value
+  value: string,
+  // The element's frequency
+  frequency: number,
+  // The element's rank in the TopK, ranging from 1 to k
+  rank: number
 }
 ```
 
