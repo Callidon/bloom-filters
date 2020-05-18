@@ -34,7 +34,7 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 npm install bloom-filters --save
 ```
 
-**Supported platforms:**
+**Supported platforms**
 * [Node.js](https://nodejs.org): *v4.0.0* or higher
 * [Google Chrome](https://www.google.com/intl/en/chrome/): *v41* or higher
 * [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/): *v34* or higher
