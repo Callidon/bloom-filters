@@ -310,7 +310,7 @@ It does so by computing fixed sized signatures for a set of numbers using random
 #### `MinHash` methods
 
 * `add(element: number) -> void`: add a new element to the set.
-* `bulkLoad(elements: number[]) -> void`: add several new elements to the set in an efficient manner.
+* `bulkLoad(elements: number[]) -> void`: efficently add several new elements to the set.
 * `isEmpty() -> boolean`: test if the signature of the MinHash is empty.
 * `compareWith(other: MinHash) -> number`: estimate the Jaccard similarity coefficient with another MinHash set.
 
@@ -319,7 +319,7 @@ const { MinHashFactory } = require('bloom-filters')
 
 // create the MinHashFactory, to create several comparable MinHash sets
 // it uses 10 random hash functions and expect to see a maximum value of 999
-const sketch = new MinHasFactory(10, 999)
+const factory = new MinHashFactory(10, 999)
 
 // create two empty MinHash
 const fistSet = factory.create()
@@ -329,12 +329,12 @@ const secondSet = factory.create()
 fistSet.add(1)
 fistSet.add(2)
 
-// the MinHash also supports bulk loading
+// the MinHash class also supports bulk loading
 secondSet.bulkLoad([1, 3, 4])
 
 // estimate the jaccard similarity between the two sets
 const jaccardSim = fistSet.compareWith(secondSet)
-console.Log(`The estimated Jaccard similarity is ${jaccardSim}`)
+console.log(`The estimated Jaccard similarity is ${jaccardSim}`)
 ```
 
 ### Top-K
