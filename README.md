@@ -1,15 +1,12 @@
 # Bloom-Filters
 [![Build Status](https://travis-ci.com/Callidon/bloom-filters.svg?branch=master)](https://travis-ci.com/Callidon/bloom-filters)
 
-**Keywords:** bloom, filter, bloom filter, probabilistic, datastructure
+JavaScript/TypeScript implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash.
+**This package rely on [non-cryptographic hash functions](https://cyan4973.github.io/xxHash/)**.
 
-JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash
+📕[Online documentation](https://callidon.github.io/bloom-filters/)
 
-**Use non-cryptographic hash internally since (v0.7.0)** [XXHASH](https://cyan4973.github.io/xxHash/)
-
-**Breaking API changes from the 0.7.1 to the 0.8.0 version.**
-
-[Online documentation](https://callidon.github.io/bloom-filters/)
+**Keywords:** *bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures.*
 
 # Table of contents
 
@@ -37,6 +34,12 @@ JS implementation of probabilistic data structures: Bloom Filter (and its derive
 npm install bloom-filters --save
 ```
 
+**Supported platforms:**
+* [Node.js](https://nodejs.org): *v4.0.0* or higher
+* [Google Chrome](https://www.google.com/intl/en/chrome/): *v41* or higher
+* [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/): *v34* or higher
+* [Microsoft Edge](https://www.microsoft.com/en-US/edge): *v12* or higher
+
 ## Data structures
 
 ### Classic Bloom Filter
@@ -47,7 +50,7 @@ that is used to test whether an element is a member of a set. False positive mat
 **Reference:** Bloom, B. H. (1970). *Space/time trade-offs in hash coding with allowable errors*. Communications of the ACM, 13(7), 422-426.
 ([Full text article](http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf))
 
-**Methods**:
+#### Methods
 
 * `add(element: string) -> void`: add an element into the filter.
 * `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
@@ -92,7 +95,7 @@ Be careful, as a Partitioned Bloom Filter have much higher collison risks that a
 **Reference:** Chang, F., Feng, W. C., & Li, K. (2004, March). *Approximate caches for packet classification.* In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
 ([Full text article](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&rep=rep1&type=pdf))
 
-**Methods**:
+#### Methods
 
 * `add(element: string) -> void`: add an element into the filter.
 * `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
@@ -132,7 +135,7 @@ Cuckoo filters improve on Bloom filters by supporting deletion, limited counting
 **Reference:** Fan, B., Andersen, D. G., Kaminsky, M., & Mitzenmacher, M. D. (2014, December). *Cuckoo filter: Practically better than bloom.* In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
 ([Full text article](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf))
 
-**Methods**:
+#### Methods
 
 * `add(element: string) -> void`: add an element into the filter.
 * `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
@@ -165,7 +168,7 @@ filter = CuckooFilter.create(items.length, errorRate)
 filter = CuckooFilter.from(items, errorRate)
 ```
 
-**WARNING**: The error rate cannot be higher than `1 * 10^-18`. After this, You will get an error saying that the fingerprint length is higher than the hash length.
+**WARNING**: The error rate cannot be higher than `1 * 10^-18`. Above this value, you will get an exception stating that the fingerprint length is higher than the hash length.
 
 ### Counting Bloom Filter
 
@@ -173,7 +176,7 @@ A Counting Bloom filter works in a similar manner as a regular Bloom filter; how
 
 **Reference:** F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, “An Improved Construction for Counting Bloom Filters,” in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006
 
-**Methods**:
+#### Methods
 
 * `add(element: string) -> void`: add an element into the filter.
 * `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
@@ -220,7 +223,7 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 **Reference:** Cormode, G., & Muthukrishnan, S. (2005). *An improved data stream summary: the count-min sketch and its applications.* Journal of Algorithms, 55(1), 58-75.
 ([Full text article](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf))
 
-**Methods**:
+#### Methods
 
 * `update(element: string, count = 1) -> void`: add `count` occurences of an element into the sketch.
 * `count(element: string) -> number`: estimate the number of occurences of an element.
@@ -263,7 +266,7 @@ The HyperLogLog algorithm is able to estimate cardinalities greather than `10e9`
 **Reference:** Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). *"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"*. Discrete Mathematics and Theoretical Computer Science Proceedings.
 ([Full text article](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf))
 
-**Methods**:
+#### Methods
 
 * `update(element: string) -> void`: add a new occurence of an element to the sketch.
 * `count() -> number`: estimate the number of distinct elements in the sketch.
@@ -301,7 +304,10 @@ It does so by computing fixed sized signatures for a set of numbers using random
 **Reference:** Andrei Z. Broder, *"On the resemblance and containment of documents"*, in Compression and Complexity of Sequences: Proceedings (1997).
 ([Full text article](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&rep=rep1&type=pdf))
 
-**Methods**:
+#### `MinHashFactory` methods
+* `create() -> MinHash`: create a new empty MinHash structure, using the parameters of the factory.
+
+#### `MinHash` methods
 
 * `add(element: number) -> void`: add a new element to the set.
 * `bulkLoad(elements: number[]) -> void`: add several new elements to the set in an efficient manner.
@@ -333,14 +339,26 @@ console.Log(`The estimated Jaccard similarity is ${jaccardSim}`)
 
 ### Top-K
 
-Given a multiset of elements, the Top-K problem is to compute the ranking of these elements (by an arbitrary score) and returns the `k` results with the highest scores.
-This package provides an implementation of the TopK problem that sort items based on their estimated cardinality in the multiset. It is based on a Count Min Sketch, for estimating the cardinality of items, and a MinHeap, for implementing a sliding window over the `k` results with the highest scores.
+Given a multiset of elements, the **Top-K problem** is to compute the ranking of these elements (by an arbitrary score) and returns the `k` results with the highest scores.
+This package provides an implementation of the Top-K problem that sort items based on their estimated cardinality in the multiset. It is based on a Count Min Sketch, for estimating the cardinality of items, and a MinHeap, for implementing a sliding window over the `k` results with the highest scores.
 
-**Methods**:
+Items produced by the `TopK` class are JavaScript objects with the following content (shown in Typescript notation).
+```typescript
+interface TopkElement {
+	// The element's value
+	value: string,
+	// The element's frequency
+	frequency: number,
+	// The element's rank in the TopK, ranging from 1 to k
+	rank: number
+}
+```
+
+#### Methods
 
 * `add(element: string) -> void`: add a new occurence of an element to the sketch.
-* `values() -> Array<{value: string, frequency: number}>`: get the top-k values as an array of objects `{value: string, frequency: number}`.
-* `iterator() -> Iterator<{value: string, frequency: number}>`: get the top-k values as an iterator that yields objects `{value: string, frequency: number}`.
+* `values() -> Array<TopkElement>`: get the top-k values as an array of objects.
+* `iterator() -> Iterator<TopkElement>`: get the top-k values as an iterator that yields objects.
 
 ```javascript
 const { TopK } = require('bloom-filters')
@@ -353,11 +371,9 @@ topk.add('alice')
 topk.add('bob')
 topk.add('alice')
 
-// print the topk
-let pos = 1
+// print the top k values
 for(let item of topk.values()) {
-  console.log(`Item "${item.value}" is in position ${pos} with an estimated frequency of ${item.frequency}`)
-  pos++
+  console.log(`Item "${item.value}" is in position ${item.rank} with an estimated frequency of ${item.frequency}`)
 }
 // Output:
 // Item "alice" is in position 1 with an estimated frequency of 2
@@ -374,7 +390,8 @@ They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This d
 **Reference:** Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). *What's the difference?: efficient set reconciliation without prior context.* ACM SIGCOMM Computer Communication Review, 41(4), 218-229. 
 ([Full text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf))
 
-**Methods**
+#### Methods
+
 * `add(element: Buffer) -> void`: add an element into the filter.
 * `remove(element: Buffer) -> void`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
 * `has(element: Buffer) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.

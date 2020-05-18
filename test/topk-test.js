@@ -45,6 +45,7 @@ describe('TopK', () => {
       for (let current of topk.iterator()) {
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
+        current.rank.should.equal(i + 1)
         prev = current
         i++
       }
@@ -66,8 +67,10 @@ describe('TopK', () => {
       let prev = { frequency: Infinity }
       let i = 0
       for (let current of topk.values()) {
+        current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
+        current.rank.should.equal(i + 1)
         prev = current
         i++
       }
@@ -87,8 +90,10 @@ describe('TopK', () => {
       let i = 0
       let prev = { frequency: Infinity }
       for (let current of topk.iterator()) {
+        current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
+        current.rank.should.equal(i + 1)
         prev = current
         i++
       }
@@ -110,8 +115,10 @@ describe('TopK', () => {
       let i = 0
       let prev = { frequency: Infinity }
       for (let current of topk.iterator()) {
+        current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
+        current.rank.should.equal(i + 1)
         prev = current
         i++
       }

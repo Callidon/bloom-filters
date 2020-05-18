@@ -37,7 +37,15 @@ interface HeapElement {
 }
 
 /**
- * A Minheap stores items sorted by ascending frequency
+ * An element in a TopK
+ * @author Thomas Minier
+ */
+interface TopkElement extends HeapElement {
+  rank: number
+}
+
+/**
+ * A MinHeap stores items sorted by ascending frequency
  * @author Thomas Minier
  */
 class MinHeap {
@@ -121,8 +129,11 @@ class MinHeap {
 }
 
 /**
- * A TopK uses a Count-Min Sketch to calculate the top-K frequent elements in a stream.
+ * A TopK computes the ranking of elements in a multiset (by an arbitrary score) and returns the `k` results with the highest scores.
+ * This implementation of the TopK problem sorts items based on their estimated cardinality in the multiset.
+ * It is based on a Count Min Sketch, for estimating the cardinality of items, and a MinHeap, for implementing a sliding window over the `k` results with the highest scores.
  * @author Thomas Minier
+ * @author Arnaud Grall
  */
 @AutoExportable('TopK', ['_seed'])
 export default class TopK extends BaseFilter {
@@ -195,28 +206,38 @@ export default class TopK extends BaseFilter {
   }
 
   /**
-   * Get the top-k values as an array of objects {value: string, frequency: number}
-   * @return The top-k values as an array of objects {value: string, frequency: number}
+   * Get the top-k values as an array of objects {value: string, frequency: number, rank: number}
+   * @return The top-k values as an array of objects {value: string, frequency: number, rank: number}
    */
-  values (): HeapElement[] {
+  values (): TopkElement[] {
     const res = []
     for (let i = this._heap.length - 1; i > 0; i--) {
-      res.push(this._heap.get(i)!)
+      const elt = this._heap.get(i)!
+      res.push({
+        value: elt.value,
+        frequency: elt.frequency,
+        rank: this._heap.length - i
+      })
     }
     return res
   }
   
   /**
-   * Get the top-k values as an iterator that yields objects {value: string, frequency: number}.
+   * Get the top-k values as an iterator that yields objects {value: string, frequency: number, rank: number}.
    * WARNING: With this method, values are produced on-the-fly, hence you should not modify the TopK
-   * while the iteration is not done, otherwise the generated values may not respect the TopK properties.
-   * @return The top-k values as an iterator of object {value: string, frequency: number}
+   * while the iteration is not completed, otherwise the generated values may not respect the TopK properties.
+   * @return The top-k values as an iterator of object {value: string, frequency: number, rank: number}
    */
-  iterator (): Iterator<HeapElement> {
+  iterator (): Iterator<TopkElement> {
     const heap = this._heap
     return function *() {
       for (let i = heap.length - 1; i > 0; i--) {
-        yield heap.get(i)!
+        const elt = heap.get(i)!
+        yield {
+          value: elt.value,
+          frequency: elt.frequency,
+          rank: heap.length - i
+        }
       }
     }()
   }
