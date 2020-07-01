@@ -235,7 +235,7 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 const { CountMinSketch } = require('bloom-filters')
 
 // create a new Count Min sketch with 2048 columns and 1 row
-const sketch = new CountMinSketch(2048, 1)
+let sketch = new CountMinSketch(2048, 1)
 
 // push some occurrences in the sketch
 sketch.update('alice')
