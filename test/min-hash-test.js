@@ -59,7 +59,7 @@ describe('MinHash', () => {
       const secondSet = factory.create()
       setA.forEach(value => firstSet.add(value))
       setB.forEach(value => secondSet.add(value))
-      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.1)
+      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.2)
     })
   })
 
@@ -69,7 +69,7 @@ describe('MinHash', () => {
       const secondSet = factory.create()
       firstSet.bulkLoad(setA)
       secondSet.bulkLoad(setB)
-      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.1)      
+      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.2)      
     })
   })
 
