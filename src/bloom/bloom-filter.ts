@@ -55,7 +55,7 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
 
   /**
    * Constructor
-   * @param size - The number of cells
+   * @param filter - The filter as an array of 1s & 0s
    * @param nbHashes - The number of hash functions used
    */
   constructor (@Parameter('_filter') filter: Array<number>, @Parameter('_nbHashes') nbHashes: number) {
@@ -108,6 +108,13 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
     array.forEach(element => filter.add(element))
     return filter
   }
+
+  /**
+   * Import an existing bloom filter from an ArrayBuffer
+   * @param buf - The existing bloom filter as ArrayBuffer
+   * @param nbHashes - The number of hash functions used
+   * @return A {@link BloomFilter} from the buffer
+   */
 
   static fromBuffer(buf: ArrayBuffer, nbHashes: number) {
     const arr = new Uint8Array(buf)
@@ -193,6 +200,10 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
     return this._filter.every((value, index) => other._filter[index] === value)
   }
 
+  /**
+   * Exports to an ArrayBuffer
+   * @return ArrayBuffer of filter
+   */
   toBuffer (): ArrayBuffer {
     const arr = new Uint8Array(Math.ceil(this._size / 8))
     for(let i=0; i < arr.length; i++) {
