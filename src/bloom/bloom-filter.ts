@@ -28,7 +28,7 @@ import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter from '../base-filter'
 import { AutoExportable, Field, Parameter } from '../exportable'
 import { optimalFilterSize, optimalHashes } from '../formulas'
-import { HashableInput, allocateArray, getDistinctIndices } from '../utils'
+import { HashableInput, allocateArray, getDistinctIndices, uint8ToBits, bitsToUint8 } from '../utils'
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -58,15 +58,26 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * @param size - The number of cells
    * @param nbHashes - The number of hash functions used
    */
-  constructor (@Parameter('_size') size: number, @Parameter('_nbHashes') nbHashes: number) {
+  constructor (@Parameter('_filter') filter: Array<number>, @Parameter('_nbHashes') nbHashes: number) {
     super()
     if (nbHashes < 1) {
       throw new Error(`A BloomFilter cannot uses less than one hash function, while you tried to use ${nbHashes}.`)
     }
-    this._size = size
+    this._size = filter.length
     this._nbHashes = nbHashes
-    this._filter = allocateArray(this._size, 0)
+    this._filter = filter
     this._length = 0
+  }
+
+  /**
+   * Create an optimal bloom filter providing the maximum of elements stored and the error rate desired
+   * @param size - The number of cells
+   * @param nbHashes - The number of hash functions used
+   * @return A new {@link BloomFilter}
+   */
+  static empty (size: number, nbHashes: number): BloomFilter {
+    const filter = allocateArray(size, 0)
+    return new BloomFilter(filter, nbHashes)
   }
 
   /**
@@ -78,7 +89,8 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
   static create (nbItems: number, errorRate: number): BloomFilter {
     const size = optimalFilterSize(nbItems, errorRate)
     const hashes = optimalHashes(size, nbItems)
-    return new BloomFilter(size, hashes)
+    const filter = allocateArray(size, 0)
+    return new BloomFilter(filter, hashes)
   }
 
   /**
@@ -95,6 +107,16 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
     const filter = BloomFilter.create(array.length, errorRate)
     array.forEach(element => filter.add(element))
     return filter
+  }
+
+  static fromBuffer(buf: ArrayBuffer, nbHashes: number) {
+    const arr = new Uint8Array(buf)
+    let filter = [] as number[]
+    for(let i = 0; i < arr.length; i++) {
+      const bits = uint8ToBits(arr[i])
+      filter = filter.concat(bits)
+    }
+    return new BloomFilter(filter, nbHashes)
   }
 
   /**
@@ -165,9 +187,18 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * @return True if they are equal, false otherwise
    */
   equals (other: BloomFilter): boolean {
-    if (this._size !== other._size || this._nbHashes !== other._nbHashes || this._length !== other._length) {
+    if (this._size !== other._size || this._nbHashes !== other._nbHashes) {
       return false
     }
     return this._filter.every((value, index) => other._filter[index] === value)
+  }
+
+  toBuffer (): ArrayBuffer {
+    const arr = new Uint8Array(Math.ceil(this._size / 8))
+    for(let i=0; i < arr.length; i++) {
+      const bits = this._filter.slice(i*8, i*8 + 8)
+      arr[i] = bitsToUint8(bits)
+    }
+    return arr.buffer
   }
 }
