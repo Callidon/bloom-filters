@@ -77,7 +77,7 @@ export default abstract class BaseFilter {
    * @param json the JSON object to load
    * @return Return the Object loaded from the provided JSON object 
    */
-  fromJSON(json: any) {
+  static fromJSON(json: any) {
     throw new Error('Not Implemented')
   }
 }
