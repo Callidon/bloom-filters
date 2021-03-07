@@ -64,4 +64,20 @@ export default abstract class BaseFilter {
   get random (): () => number {
     return this._rng
   }
+
+  /**
+   * Save the current structure as a JSON object
+   */
+  saveAsJSON() {
+    throw new Error('Not Implemented')
+  }
+
+  /**
+   * Load an Object from a provided JSON object
+   * @param json the JSON object to load
+   * @return Return the Object loaded from the provided JSON object 
+   */
+  fromJSON(json: any) {
+    throw new Error('Not Implemented')
+  }
 }
