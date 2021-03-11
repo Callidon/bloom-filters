@@ -68,7 +68,7 @@ export default abstract class BaseFilter {
   /**
    * Save the current structure as a JSON object
    */
-  saveAsJSON() {
+  saveAsJSON(): Object {
     throw new Error('Not Implemented')
   }
 
@@ -77,7 +77,7 @@ export default abstract class BaseFilter {
    * @param json the JSON object to load
    * @return Return the Object loaded from the provided JSON object 
    */
-  static fromJSON(json: any) {
+  static fromJSON(json: any): BaseFilter {
     throw new Error('Not Implemented')
   }
 }
