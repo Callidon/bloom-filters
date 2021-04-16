@@ -113,10 +113,10 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * Import an existing bloom filter from a Uint8Array
    * @param bytes - The existing bloom filter as Uint8Array
    * @param nbHashes - The number of hash functions used
-   * @return A {@link BloomFilter} from the buffer
+   * @return A {@link BloomFilter} from the bytes array
    */
 
-  static fromBuffer(bytes: Uint8Array, nbHashes: number) {
+  static fromBytes(bytes: Uint8Array, nbHashes: number) {
     let filter = [] as number[]
     for(let i = 0; i < bytes.length; i++) {
       const bits = uint8ToBits(bytes[i])
@@ -203,7 +203,7 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * Exports to a Uint8Array
    * @return Uint8Array of filter
    */
-  toBuffer (): Uint8Array {
+  toBytes (): Uint8Array {
     const arr = new Uint8Array(Math.ceil(this._size / 8))
     for(let i=0; i < arr.length; i++) {
       const bits = this._filter.slice(i*8, i*8 + 8)

@@ -140,8 +140,8 @@ describe('BloomFilter', () => {
     filter.add('test')
     filter.add('another')
     filter.add('one more')
-    const buf = filter.toBuffer()
-    const recreated = BloomFilter.fromBuffer(buf, 8)
+    const bytes = filter.toBytes()
+    const recreated = BloomFilter.fromBytes(bytes, 8)
 
     it('should equal itself when exported to a buffer and re-created', () => {
       filter.equals(recreated).should.equal(true)
