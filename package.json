@@ -1,6 +1,6 @@
 {
   "name": "fission-bloom-filters",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Callidon/bloom-filters.git"
+    "url": "https://github.com/fission-suite/bloom-filters"
   },
   "keywords": [
     "bloom",
@@ -23,8 +23,9 @@
     "count min sketch",
     "cuckoo"
   ],
-  "author": "Thomas Minier <thomas.minier@protonmail.com>",
+  "author": "Daniel Holmgren <daniel@fission.codes",
   "contributors": [
+    "Thomas Minier <thomas.minier@protonmail.com>",
     "Arnaud Grall <dev.arnaudgrall@gmail.com>"
   ],
   "license": "MIT",

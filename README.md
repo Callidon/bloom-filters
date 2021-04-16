@@ -1,32 +1,45 @@
 # Bloom-Filters
-[![Build Status](https://travis-ci.com/Callidon/bloom-filters.svg?branch=master)](https://travis-ci.com/Callidon/bloom-filters)
-
 JavaScript/TypeScript implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash.
 **This package rely on [non-cryptographic hash functions](https://cyan4973.github.io/xxHash/)**.
 
 📕[Online documentation](https://callidon.github.io/bloom-filters/)
 
+A fork of [bloom-filters](https://github.com/Callidon/bloom-filters) that adds the ability to import/export filters from a buffer.
+
 **Keywords:** *bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures.*
 
 # Table of contents
 
-* [Installation](#installation)
-* [Data structures](#data-structures)
-	* [Classic Bloom Filter](#classic-bloom-filter)
-	* [Partitioned Bloom Filter](#partitioned-bloom-filter)
-	* [Cuckoo Filter](#cuckoo-filter)
-	* [Counting Bloom Filter](#counting-bloom-filter)
-	* [Count Min Sketch](#count-min-sketch)
-	* [HyperLogLog](#hyperloglog)
-	* [MinHash](#minhash)
-	* [Top-K](#top-k)
-  * [Invertible Bloom Filters](#invertible-bloom-filters)
-* [Export and import](#export-and-import)
-* [Documentation](#documentation)
-* [Tests](#tests)
-* [References](#references)
-* [Changelog](#changelog)
-* [License](#license)
+- [Bloom-Filters](#bloom-filters)
+- [Table of contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Data structures](#data-structures)
+    - [Classic Bloom Filter](#classic-bloom-filter)
+      - [Methods](#methods)
+    - [Partitioned Bloom Filter](#partitioned-bloom-filter)
+      - [Methods](#methods-1)
+    - [Cuckoo Filter](#cuckoo-filter)
+      - [Methods](#methods-2)
+    - [Counting Bloom Filter](#counting-bloom-filter)
+      - [Methods](#methods-3)
+    - [Count Min Sketch](#count-min-sketch)
+      - [Methods](#methods-4)
+    - [HyperLogLog](#hyperloglog)
+      - [Methods](#methods-5)
+    - [MinHash](#minhash)
+      - [`MinHashFactory` methods](#minhashfactory-methods)
+      - [`MinHash` methods](#minhash-methods)
+    - [Top-K](#top-k)
+      - [Methods](#methods-6)
+    - [Invertible Bloom Filters](#invertible-bloom-filters)
+      - [Methods](#methods-7)
+  - [Export and import](#export-and-import)
+  - [Every hash function is seeded](#every-hash-function-is-seeded)
+  - [Documentation](#documentation)
+  - [Tests](#tests)
+  - [References](#references)
+  - [Changelog](#changelog)
+  - [License](#license)
 
 ## Installation
 
