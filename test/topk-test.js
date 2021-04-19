@@ -24,48 +24,33 @@ SOFTWARE.
 
 'use strict'
 
+
 require('chai').should()
 const { TopK } = require('../dist/api.js')
 
 describe('TopK', () => {
+  const lessThanOrEqualTestCaseItems = [
+    'alice', 'bob', 'alice', 'carol',
+    'bob', 'alice'
+  ]
+
+  const moreThanTestCaseItems = [
+    'alice', 'daniel', 'esther', 'bob',
+    'alice', 'bob', 'alice', 'carol',
+    'carol', 'alice', 'bob'
+  ]
+
   const expectedTop = ['alice', 'bob', 'carol']
 
   describe('#values', () => {
-    it('should produce valid TopK estimations', () => {
-      const topk = new TopK(3, 0.001, 0.999)
-      topk.add('alice')
-      topk.add('bob')
-      topk.add('alice')
-      topk.add('carol')
-      topk.add('bob')
-      topk.add('alice')
-
-      let i = 0
-      let prev = { frequency: Infinity }
-      for (let current of topk.iterator()) {
-        current.value.should.equal(expectedTop[i])
-        current.frequency.should.be.below(prev.frequency)
-        current.rank.should.equal(i + 1)
-        prev = current
-        i++
+    it('should produce valid TopK estimations when there are fewer than K items', () => {
+      const topk = new TopK(10, 0.001, 0.999)
+      for (let item of lessThanOrEqualTestCaseItems) {
+        topk.add(item)
       }
-    })
 
-    it('should produce valid estimations when there are more than K items', () => {
-      const topk = new TopK(3, 0.001, 0.999)
-      topk.add('alice')
-      topk.add('daniel')
-      topk.add('esther')
-      topk.add('bob')
-      topk.add('alice')
-      topk.add('bob')
-      topk.add('alice')
-      topk.add('carol')
-      topk.add('carol')
-      topk.add('alice')
-
-      let prev = { frequency: Infinity }
       let i = 0
+      let prev = { frequency: Infinity }
       for (let current of topk.values()) {
         current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
@@ -74,18 +59,57 @@ describe('TopK', () => {
         prev = current
         i++
       }
+
+      i.should.equal(expectedTop.length)
+    })
+
+    it('should produce valid TopK estimations when there are exactly K items', () => {
+      const topk = new TopK(3, 0.001, 0.999)
+      for (let item of lessThanOrEqualTestCaseItems) {
+        topk.add(item)
+      }
+
+      let i = 0
+      let prev = { frequency: Infinity }
+      for (let current of topk.values()) {
+        current.should.have.all.keys('value', 'rank', 'frequency')
+        current.value.should.equal(expectedTop[i])
+        current.frequency.should.be.below(prev.frequency)
+        current.rank.should.equal(i + 1)
+        prev = current
+        i++
+      }
+
+      i.should.equal(expectedTop.length)
+    })
+
+    it('should produce valid TopK estimations when there are more than K items', () => {
+      const topk = new TopK(3, 0.001, 0.999)
+      for (let item of moreThanTestCaseItems) {
+        topk.add(item)
+      }
+
+      let i = 0
+      let prev = { frequency: Infinity }
+      for (let current of topk.values()) {
+        current.should.have.all.keys('value', 'rank', 'frequency')
+        current.value.should.equal(expectedTop[i])
+        current.frequency.should.be.below(prev.frequency)
+        current.rank.should.equal(i + 1)
+        prev = current
+        i++
+      }
+
+      i.should.equal(expectedTop.length)
     })
   })
 
   describe('#iterator', () => {
-    it('should produce valid TopK estimations', () => {
-      const topk = new TopK(3, 0.001, 0.999)
-      topk.add('alice')
-      topk.add('bob')
-      topk.add('alice')
-      topk.add('carol')
-      topk.add('bob')
-      topk.add('alice')
+    it('should produce valid TopK estimations when there are fewer than K items', () => {
+      const topk = new TopK(10, 0.001, 0.999)
+      for (let item of lessThanOrEqualTestCaseItems) {
+        topk.add(item)
+      }
 
       let i = 0
       let prev = { frequency: Infinity }
@@ -97,20 +121,35 @@ describe('TopK', () => {
         prev = current
         i++
       }
+
+      i.should.equal(expectedTop.length)
+    })
+
+    it('should produce valid TopK estimations when there are exactly K items', () => {
+      const topk = new TopK(3, 0.001, 0.999)
+      for (let item of lessThanOrEqualTestCaseItems) {
+        topk.add(item)
+      }
+
+      let i = 0
+      let prev = { frequency: Infinity }
+      for (let current of topk.iterator()) {
+        current.should.have.all.keys('value', 'rank', 'frequency')
+        current.value.should.equal(expectedTop[i])
+        current.frequency.should.be.below(prev.frequency)
+        current.rank.should.equal(i + 1)
+        prev = current
+        i++
+      }
+
+      i.should.equal(expectedTop.length)
     })
 
     it('should produce valid estimations when there are more than K items', () => {
       const topk = new TopK(3, 0.001, 0.999)
-      topk.add('alice')
-      topk.add('daniel')
-      topk.add('esther')
-      topk.add('bob')
-      topk.add('alice')
-      topk.add('bob')
-      topk.add('alice')
-      topk.add('carol')
-      topk.add('carol')
-      topk.add('alice')
+      for (let item of moreThanTestCaseItems) {
+        topk.add(item)
+      }
 
       let i = 0
       let prev = { frequency: Infinity }
@@ -122,6 +161,8 @@ describe('TopK', () => {
         prev = current
         i++
       }
+
+      i.should.equal(expectedTop.length)
     })
   })
 

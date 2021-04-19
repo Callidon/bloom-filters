@@ -211,7 +211,7 @@ export default class TopK extends BaseFilter {
    */
   values (): TopkElement[] {
     const res = []
-    for (let i = this._heap.length - 1; i > 0; i--) {
+    for (let i = this._heap.length - 1; i >= 0; i--) {
       const elt = this._heap.get(i)!
       res.push({
         value: elt.value,
@@ -231,7 +231,7 @@ export default class TopK extends BaseFilter {
   iterator (): Iterator<TopkElement> {
     const heap = this._heap
     return function *() {
-      for (let i = heap.length - 1; i > 0; i--) {
+      for (let i = heap.length - 1; i >= 0; i--) {
         const elt = heap.get(i)!
         yield {
           value: elt.value,
