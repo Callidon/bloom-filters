@@ -1,6 +1,6 @@
 {
   "name": "bloom-filters",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
   "scripts": {
@@ -25,7 +25,8 @@
   ],
   "author": "Thomas Minier <thomas.minier@protonmail.com>",
   "contributors": [
-    "Arnaud Grall <dev.arnaudgrall@gmail.com>"
+    "Arnaud Grall <dev.arnaudgrall@gmail.com>",
+    "Jonah H. Harris <jonah.harris@gmail.com>"
   ],
   "license": "MIT",
   "bugs": {
