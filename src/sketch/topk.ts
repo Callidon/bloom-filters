@@ -176,6 +176,9 @@ export default class TopK extends BaseFilter {
    * @param element - Element to add
    */
   add (element: string, count: number = 1): void {
+    if (0 >= count) {
+      throw (`count must be > 0 (was ${count})`)
+    }
     this._sketch.update(element, count)
     const frequency = this._sketch.count(element)
 
