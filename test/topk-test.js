@@ -67,14 +67,14 @@ describe('TopK', () => {
         function (acc, curr) {
 
         if (!Object.hasOwnProperty.call(acc, curr)) {
-          acc[curr] = 1;
+          acc[`${curr}`] = 1
         } else {
-          ++acc[curr];
+          ++acc[`${curr}`]
         }
 
-        return acc;
+        return acc
       }, {})
-      freqTable.should.to.deep.equal(expectedFreqTable);
+      freqTable.should.to.deep.equal(expectedFreqTable)
 
       /* Build a version of TopK using the frequency as count */
       const topkAllAtOnce = new TopK(k, errorRate, accuracy)
@@ -93,8 +93,8 @@ describe('TopK', () => {
       topkAllAtOnceKeys.should.to.have.lengthOf(topkOneAtATimeKeys.length)
 
       /* Make sure all expected keys match */
-      topkOneAtATimeKeys.should.to.deep.equal(expectedTop);
-      topkAllAtOnceKeys.should.to.deep.equal(topkOneAtATimeKeys);
+      topkOneAtATimeKeys.should.to.deep.equal(expectedTop)
+      topkAllAtOnceKeys.should.to.deep.equal(topkOneAtATimeKeys)
 
       /* Make sure the objects themselves match */
       topkAllAtOnceValues.should.to.deep.equal(topkOneAtATimeValues)
