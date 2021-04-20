@@ -42,6 +42,65 @@ describe('TopK', () => {
 
   const expectedTop = ['alice', 'bob', 'carol']
 
+  describe('#add', () => {
+    it('should produce equivalent TopK estimations when using count parameter', () => {
+      const k = 3
+      const errorRate = 0.001
+      const accuracy = 0.999
+      let freqTable = {}
+
+      /*
+       * Add items to the traditional one-at-a-time variant while concurrently
+       * building a frequency table to be used for the all-at-once variant.
+       */
+      const topkOneAtATime = new TopK(k, errorRate, accuracy)
+      for (const item of lessThanOrEqualTestCaseItems) {
+        topkOneAtATime.add(item)
+        if (!Object.hasOwnProperty.call(freqTable, item)) {
+          freqTable[`${item}`] = 0
+        }
+        ++freqTable[`${item}`]
+      }
+
+      /* Ensure the built frequency table is correct. */
+      const expectedFreqTable = lessThanOrEqualTestCaseItems.reduce(
+        function (acc, curr) {
+
+        if (!Object.hasOwnProperty.call(acc, curr)) {
+          acc[curr] = 1;
+        } else {
+          ++acc[curr];
+        }
+
+        return acc;
+      }, {})
+      freqTable.should.to.deep.equal(expectedFreqTable);
+
+      /* Build a version of TopK using the frequency as count */
+      const topkAllAtOnce = new TopK(k, errorRate, accuracy)
+      for (const [item, freq] of Object.entries(freqTable)) {
+        topkAllAtOnce.add(item, freq)
+      }
+
+      const topkOneAtATimeValues = topkOneAtATime.values()
+      const topkOneAtATimeKeys = topkOneAtATimeValues.map(({value}) => value)
+      const topkAllAtOnceValues = topkAllAtOnce.values()
+      const topkAllAtOnceKeys = topkAllAtOnceValues.map(({value}) => value)
+
+      /* Make sure all expected lengths match */
+      expectedTop.should.to.have.lengthOf(k)
+      topkOneAtATimeKeys.should.to.have.lengthOf(expectedTop.length)
+      topkAllAtOnceKeys.should.to.have.lengthOf(topkOneAtATimeKeys.length)
+
+      /* Make sure all expected keys match */
+      topkOneAtATimeKeys.should.to.deep.equal(expectedTop);
+      topkAllAtOnceKeys.should.to.deep.equal(topkOneAtATimeKeys);
+
+      /* Make sure the objects themselves match */
+      topkAllAtOnceValues.should.to.deep.equal(topkOneAtATimeValues)
+    })
+  })
+
   describe('#values', () => {
     it('should produce valid TopK estimations when there are fewer than K items', () => {
       const topk = new TopK(10, 0.001, 0.999)

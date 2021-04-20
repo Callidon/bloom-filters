@@ -175,8 +175,8 @@ export default class TopK extends BaseFilter {
    * Add an element to the TopK
    * @param element - Element to add
    */
-  add (element: string): void {
-    this._sketch.update(element)
+  add (element: string, count: number = 1): void {
+    this._sketch.update(element, count)
     const frequency = this._sketch.count(element)
 
     if (this._heap.length < this._k || frequency >= this._heap.get(0)!.frequency) {
