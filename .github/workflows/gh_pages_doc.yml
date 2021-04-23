@@ -1,0 +1,24 @@
+name: 📘 Publish gh-pages doc
+on:
+  push:
+    branches: [ master ]
+jobs:
+  publish_doc:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 15.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: "15.x"
+      - name: Install package
+        run: npm install
+      - name: Build TS
+        run: npm run build
+      - name: Generate documentation
+        run: npm run doc
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
