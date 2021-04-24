@@ -1,4 +1,4 @@
-name: 📦 Release Node.js Package
+name: 🚀 Publish to npm
 on:
   release:
     types: [created]
