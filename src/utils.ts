@@ -433,3 +433,29 @@ export function power2 (x: number): number {
 export function hex2bin (hex: string): string {
   return parseInt(hex, 16).toString(2)
 }
+
+/**
+ * Convert an uint8 to an array of 1s and 0s
+ * @param  uint8  - A uint8 number
+ * @return An array of 1s and 0s
+ */
+export function uint8ToBits (uint8: number): number[] {
+  return [128,64,32,16,8,4,2,1].map(x => (x & uint8) > 0 ? 1 : 0)
+}
+
+/**
+ * Convert an array of 1s and 0s to a uint8
+ * @param  bits  - An array of 1s and 0s
+ * @return A uint8 number
+ */
+export function bitsToUint8 (bits: number[]): number {
+  return bits.reduce((acc, cur, i) => {
+    if(cur === 0){
+      return acc
+    }else if (cur === 1){
+      return acc + Math.pow(2, 7-i)
+    }else {
+      throw new Error("Not binary")
+    }
+  }, 0)
+}

@@ -28,7 +28,7 @@ import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter from '../base-filter'
 import { AutoExportable, Field, Parameter } from '../exportable'
 import { optimalFilterSize, optimalHashes } from '../formulas'
-import { HashableInput, allocateArray, getDistinctIndices } from '../utils'
+import { HashableInput, allocateArray, getDistinctIndices, uint8ToBits, bitsToUint8 } from '../utils'
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -94,6 +94,24 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
     const array = Array.from(items)
     const filter = BloomFilter.create(array.length, errorRate)
     array.forEach(element => filter.add(element))
+    return filter
+  }
+
+  /**
+   * Import an existing bloom filter from a Uint8Array
+   * @param bytes - The existing bloom filter as Uint8Array
+   * @param nbHashes - The number of hash functions used
+   * @return A {@link BloomFilter} from the bytes array
+   */
+
+  static fromBytes(bytes: Uint8Array, nbHashes: number) {
+    let bits = [] as number[]
+    for(let i = 0; i < bytes.length; i++) {
+      const slice = uint8ToBits(bytes[i])
+      bits = bits.concat(slice)
+    }
+    const filter = new BloomFilter(bits.length, nbHashes)
+    filter._filter = bits
     return filter
   }
 
@@ -165,9 +183,22 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * @return True if they are equal, false otherwise
    */
   equals (other: BloomFilter): boolean {
-    if (this._size !== other._size || this._nbHashes !== other._nbHashes || this._length !== other._length) {
+    if (this._size !== other._size || this._nbHashes !== other._nbHashes) {
       return false
     }
     return this._filter.every((value, index) => other._filter[index] === value)
+  }
+
+  /**
+   * Exports to a Uint8Array
+   * @return Uint8Array of filter
+   */
+  toBytes (): Uint8Array {
+    const arr = new Uint8Array(Math.ceil(this._size / 8))
+    for(let i=0; i < arr.length; i++) {
+      const bits = this._filter.slice(i*8, i*8 + 8)
+      arr[i] = bitsToUint8(bits)
+    }
+    return arr
   }
 }

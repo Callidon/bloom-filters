@@ -134,6 +134,19 @@ describe('BloomFilter', () => {
     })
   })
 
+  describe('Import/Export from bytes', () => {
+    const filter = new BloomFilter(128, 8)
+    filter.add('test')
+    filter.add('another')
+    filter.add('one more')
+    const bytes = filter.toBytes()
+    const recreated = BloomFilter.fromBytes(bytes, 8)
+
+    it('should equal itself when exported to a buffer and re-created', () => {
+      filter.equals(recreated).should.equal(true)
+    }) 
+  })
+
   describe('Performance test', () => {
     const max = 1000
     const targetedRate = 0.01
