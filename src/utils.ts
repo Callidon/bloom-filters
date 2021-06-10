@@ -25,6 +25,7 @@ SOFTWARE.
 'use strict'
 
 import XXH from 'xxhashjs'
+import { Buffer } from 'buffer'
 
 /**
  * Utilitaries functions

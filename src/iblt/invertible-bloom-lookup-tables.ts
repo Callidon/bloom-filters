@@ -24,6 +24,7 @@ SOFTWARE.
 
 'use strict'
 
+import { Buffer } from 'buffer'
 import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import Cell from './cell'

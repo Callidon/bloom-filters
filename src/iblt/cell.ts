@@ -24,6 +24,7 @@ SOFTWARE.
 
 'use strict'
 
+import { Buffer } from 'buffer'
 import { hashTwiceAsString, xorBuffer } from '../utils'
 import { AutoExportable, Field, Parameter } from '../exportable'
 import BaseFilter from '../base-filter'

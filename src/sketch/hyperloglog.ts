@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import { Buffer } from 'buffer'
 import BaseFilter from '../base-filter'
 import { AutoExportable, Field, Parameter } from '../exportable'
 import { HashableInput, allocateArray, hashAsInt } from '../utils'
