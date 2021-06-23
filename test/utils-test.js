@@ -26,7 +26,9 @@ SOFTWARE.
 
 require('chai').should()
 const utils = require('../dist/utils.js')
+const { BloomFilter } = require('../dist/api.js')
 const XXH = require('xxhashjs')
+const { range } = require('lodash')
 const seed = utils.getDefaultSeed()
 
 describe('Utils', () => {
@@ -109,6 +111,30 @@ describe('Utils', () => {
     })
     it('should return false if a buffer is not empty', () => {
       utils.isEmptyBuffer(Buffer.allocUnsafe(10).fill(1)).should.equal(false)
+    })
+  })
+
+  describe('#getDistinctIndices', () => {
+    const key = "da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82"
+    it('should return <number> distinct indices on the interval [0, size)', () => {
+      const desiredIndices = 10000
+      const result = range(0, desiredIndices, 1)
+      try{
+        const indices = utils.getDistinctIndices(key, desiredIndices, desiredIndices).sort((a, b) => a - b)
+        indices.should.deep.equal(result)
+      } catch (e) {
+        throw Error("it should not throw: " + e)
+      }
+    })
+    it('should the issue be fixed', () => {
+      try{
+        const filter = new BloomFilter(39, 28);
+        filter.add(key);
+        filter.has(key).should.be.true
+      } catch (e) {
+        throw Error("it should not throw: " + e)
+      }
+      
     })
   })
 })
