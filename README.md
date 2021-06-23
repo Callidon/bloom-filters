@@ -356,7 +356,7 @@ interface TopkElement {
 
 #### Methods
 
-* `add(element: string) -> void`: add a new occurence of an element to the sketch.
+* `add(element: string, count: number = 1) -> void`: add one or more new occurences of an element to the sketch.
 * `values() -> Array<TopkElement>`: get the top-k values as an array of objects.
 * `iterator() -> Iterator<TopkElement>`: get the top-k values as an iterator that yields objects.
 
@@ -366,10 +366,14 @@ const { TopK } = require('bloom-filters')
 // create a new TopK with k = 10, an error rate of 0.001 and an accuracy of 0.99
 const topk = new TopK(10, 0.001, 0.99)
 
-// push some occurrences in the multiset
+// push occurrences one-at-a-time in the multiset
 topk.add('alice')
 topk.add('bob')
 topk.add('alice')
+
+// or, equally, push multiple occurrences at-once in the multiset
+// topk.add('alice', 2)
+// topk.add('bob', 1)
 
 // print the top k values
 for(let item of topk.values()) {
