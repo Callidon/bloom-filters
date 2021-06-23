@@ -177,23 +177,17 @@ export function getDistinctIndices (element: HashableInput, size: number, number
   if (seed === undefined) {
     seed = getDefaultSeed()
   }
-  function getDistinctIndicesBis (n: number, elem: HashableInput, size: number, count: number, indexes: Array<number> = []): Array<number> {
-    if (indexes.length === count) {
-      return indexes
-    } else {
-      const hashes = hashTwice(elem, true, seed! + size % n)
-      const ind = doubleHashing(n, hashes.first, hashes.second, size)
-      if (indexes.includes(ind)) {
-        // console.log('generate index: %d for %s', ind, elem)
-        return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
-      } else {
-        // console.log('already found: %d for %s', ind, elem)
-        indexes.push(ind)
-        return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
-      }
+  const indexes: Array<number> = []
+  let n = 1
+  while (indexes.length < number) {
+    const hashes = hashTwice(element, true, seed! + size + n)
+    const ind = doubleHashing(n, hashes.first, hashes.second, size)
+    if (!indexes.includes(ind)) {
+      indexes.push(ind)
     }
+    n++
   }
-  return getDistinctIndicesBis(1, element, size, number)
+  return indexes
 }
 
 /**
