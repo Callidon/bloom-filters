@@ -5,6 +5,7 @@
   "main": "dist/api.js",
   "scripts": {
     "build": "tsc",
+    "prepare": "tsc",
     "pretest": "yarn build",
     "test": "mocha test/**/*-test.js --trace-deprecation --timeout=30000",
     "doc": "typedoc --mode file --out docs/ --ignoreCompilerErrors"
