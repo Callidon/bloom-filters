@@ -146,7 +146,10 @@ export default class TopK extends BaseFilter {
   @Field()
   private _accuracy: number
 
-  @Field()
+  @Field<CountMinSketch>(
+    (sketch: CountMinSketch) => sketch.saveAsJSON(),
+    (json: any) => CountMinSketch.fromJSON(json)
+  )
   private _sketch: CountMinSketch
 
   @Field<MinHeap>((heap: MinHeap) => heap.content, (json: any) => {

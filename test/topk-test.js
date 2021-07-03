@@ -285,5 +285,26 @@ describe('TopK', () => {
         (() => TopK.fromJSON(json)).should.throw(Error)
       })
     })
+
+    it('should update an imported TopK', ()=>{
+      const exported = topk.saveAsJSON()
+      const newSketch = TopK.fromJSON(exported)
+      
+      newSketch.add("alice")
+      topk.add("alice")
+      
+      newSketch._k.should.equal(topk._k)
+      newSketch._errorRate.should.equal(topk._errorRate)
+      newSketch._accuracy.should.equal(topk._accuracy)
+      newSketch._seed.should.equal(topk._seed)
+      // inner count min sketch
+      newSketch._sketch._columns.should.equal(topk._sketch._columns)
+      newSketch._sketch._rows.should.equal(topk._sketch._rows)
+      newSketch._sketch._allSums.should.equal(topk._sketch._allSums)
+      newSketch._sketch._seed.should.equal(topk._sketch._seed)
+      newSketch._sketch._matrix.should.deep.equal(topk._sketch._matrix)
+      // inner MinHeap
+      newSketch._heap._content.should.deep.equal(topk._heap._content)
+    })
   })
 })
