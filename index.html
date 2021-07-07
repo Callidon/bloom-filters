@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>bloom-filters - v1.3.4</title>
+	<title>bloom-filters - v1.3.6</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="index.html" class="title">bloom-filters - v1.3.4</a>
+					<a href="index.html" class="title">bloom-filters - v1.3.6</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -56,7 +56,7 @@
 					<a href="globals.html">Globals</a>
 				</li>
 			</ul>
-			<h1> bloom-filters - v1.3.4</h1>
+			<h1> bloom-filters - v1.3.6</h1>
 		</div>
 	</div>
 </header>
@@ -411,7 +411,7 @@ secondSet.bulkLoad([<span class="hljs-number">1</span>, <span class="hljs-number
 					<h4>Methods</h4>
 				</a>
 				<ul>
-					<li><code>add(element: string) -&gt; void</code>: add a new occurence of an element to the sketch.</li>
+					<li><code>add(element: string, count: number = 1) -&gt; void</code>: add one or more new occurences of an element to the sketch.</li>
 					<li><code>values() -&gt; Array&lt;TopkElement&gt;</code>: get the top-k values as an array of objects.</li>
 					<li><code>iterator() -&gt; Iterator&lt;TopkElement&gt;</code>: get the top-k values as an iterator that yields objects.</li>
 				</ul>
@@ -420,10 +420,14 @@ secondSet.bulkLoad([<span class="hljs-number">1</span>, <span class="hljs-number
 <span class="hljs-comment">// create a new TopK with k = 10, an error rate of 0.001 and an accuracy of 0.99</span>
 <span class="hljs-keyword">const</span> topk = <span class="hljs-keyword">new</span> TopK(<span class="hljs-number">10</span>, <span class="hljs-number">0.001</span>, <span class="hljs-number">0.99</span>)
 
-<span class="hljs-comment">// push some occurrences in the multiset</span>
+<span class="hljs-comment">// push occurrences one-at-a-time in the multiset</span>
 topk.add(<span class="hljs-string">'alice'</span>)
 topk.add(<span class="hljs-string">'bob'</span>)
 topk.add(<span class="hljs-string">'alice'</span>)
+
+<span class="hljs-comment">// or, equally, push multiple occurrences at-once in the multiset</span>
+<span class="hljs-comment">// topk.add('alice', 2)</span>
+<span class="hljs-comment">// topk.add('bob', 1)</span>
 
 <span class="hljs-comment">// print the top k values</span>
 <span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> item <span class="hljs-keyword">of</span> topk.values()) {
