@@ -1,6 +1,6 @@
 {
   "name": "bloom-filters",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
   "scripts": {
