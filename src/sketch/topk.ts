@@ -28,12 +28,21 @@ import { AutoExportable, Field, Parameter } from '../exportable'
 import { sortedIndexBy } from 'lodash'
 
 /**
+ * An element metadata
+ * @author Justine Romero
+ */
+interface ElementMetadata{
+  [key: string]: any
+}
+
+/**
  * An element in a MinHeap
  * @author Thomas Minier
  */
 interface HeapElement {
   value: string,
   frequency: number
+  metadata?: ElementMetadata
 }
 
 /**
@@ -178,7 +187,7 @@ export default class TopK extends BaseFilter {
    * Add an element to the TopK
    * @param element - Element to add
    */
-  add (element: string, count: number = 1): void {
+  add (element: string, count: number = 1, metadata?: ElementMetadata): void {
     if (0 >= count) {
       throw (`count must be > 0 (was ${count})`)
     }
@@ -194,7 +203,8 @@ export default class TopK extends BaseFilter {
       // add the new entry
       this._heap.add({
         value: element,
-        frequency
+        frequency,
+        metadata
       })
       // if there is more items than K, then remove the smallest item in the heap
       if (this._heap.length > this._k) {
@@ -242,6 +252,7 @@ export default class TopK extends BaseFilter {
         yield {
           value: elt.value,
           frequency: elt.frequency,
+          metadata: elt.metadata,
           rank: heap.length - i
         }
       }
