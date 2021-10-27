@@ -106,7 +106,7 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
   }
 
   /**
-   * Get the number of elements currently in the filter
+   * Get the number of bits currently set in the filter
    * @return The filter length
    */
   get length (): number {
@@ -123,9 +123,11 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
   add (element: HashableInput): void {
     const indexes = getDistinctIndices(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
+      if (!this._filter[indexes[i]]) {
+        this._length++
+      }
       this._filter[indexes[i]] = 1
     }
-    this._length++
   }
 
   /**
@@ -156,7 +158,7 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * console.log(filter.rate()); // output: something around 0.1
    */
   rate (): number {
-    return Math.pow(1 - Math.exp((-this._nbHashes * this._length) / this._size), this._nbHashes)
+    return Math.pow(1 - Math.exp(-this._length / this._size), this._nbHashes)
   }
 
   /**
