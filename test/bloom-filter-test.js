@@ -37,7 +37,9 @@ describe('BloomFilter', () => {
       filter.seed = seed
       filter.add('alice')
       filter.add('bob')
-      filter.length.should.equal(2)
+      filter.add('alice') // duplicate item
+      filter.length.should.greaterThan(0)
+      filter.length.should.be.at.most(filter._nbHashes * 2)
     })
 
     it('should build a new filter using #from', () => {
@@ -47,7 +49,8 @@ describe('BloomFilter', () => {
       const filter = BloomFilter.from(data, targetRate)
       filter.size.should.equal(expectedSize)
       filter._nbHashes.should.equal(expectedHashes)
-      filter.length.should.equal(data.length)
+      filter.length.should.greaterThan(0)
+      filter.length.should.be.at.most(filter._nbHashes * data.length)
       filter.rate().should.be.closeTo(targetRate, 0.1)
     })
   })
