@@ -1,7 +1,7 @@
-/* file : api.ts
+/* file : bit-set-test.js
 MIT License
 
-Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
+Copyright (c) 2021 David Leppik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
 
-export { default as BloomFilter } from './bloom/bloom-filter'
-export { default as CountingBloomFilter } from './bloom/counting-bloom-filter'
-export { default as PartitionedBloomFilter } from './bloom/partitioned-bloom-filter'
-export { default as BitSet } from './bloom/bit-set'
-export { default as CountMinSketch } from './sketch/count-min-sketch'
-export { default as HyperLogLog } from './sketch/hyperloglog'
-export { default as TopK } from './sketch/topk'
-export { MinHash } from './sketch/min-hash'
-export { default as MinHashFactory } from './sketch/min-hash-factory'
-export { default as CuckooFilter } from './cuckoo/cuckoo-filter'
-export { default as InvertibleBloomFilter } from './iblt/invertible-bloom-lookup-tables'
-export { default as Cell } from './iblt/cell'
+require('chai').should()
+const { BitSet } = require('../dist/api')
+
+describe('BitSet', () => {
+    it('is initially clear', () => {
+        const set = new BitSet(50)
+        set.size.should.equal(50)
+        for (let i=0; i<set.size; i++) {
+            set.has(i).should.equal(false)
+        }
+    })
+
+    it('reads and clears set values', () => {
+        const set = new BitSet(50)
+        set.size.should.equal(50)
+        for (let i=0; i<set.size; i++) {
+            set.has(i).should.equal(false)
+            set.add(i)
+            set.has(i).should.equal(true)
+        }
+        for (let i=0; i<set.size; i++) {
+            set.has(i).should.equal(true)
+            set.remove(i)
+            set.has(i).should.equal(false)
+        }
+    })
+
+    it('finds the high bit', () => {
+        const set = new BitSet(150)
+        set.size.should.equal(150)
+        for (let i=0; i<set.size; i++) {
+            set.add(i)
+            set.max().should.equal(i)
+        }
+    })
+})
