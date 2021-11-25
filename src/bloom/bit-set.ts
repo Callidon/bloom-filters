@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import {encode, decode} from "base64-arraybuffer";
+
 /** A memory-efficient Boolean array. Contains just the minimal operations needed for our Bloom filter implementation.
  *
  * @author David Leppik
@@ -33,7 +35,7 @@ export default class BitSet {
     public readonly size: number;
 
     // Uint32Array may be slightly faster due to memory alignment, but this avoids endianness when serializing
-    private readonly array: Uint8Array;
+    private array: Uint8Array;
 
     constructor(size: number) {
         this.size = size
@@ -41,21 +43,21 @@ export default class BitSet {
     }
 
     has(index: number): boolean {
-        const word = Math.floor(index / bitsPerWord)
+        const wordIndex = Math.floor(index / bitsPerWord)
         const mask = 1 << (index % bitsPerWord)
-        return (this.array[word] & mask) !== 0
+        return (this.array[wordIndex] & mask) !== 0
     }
 
     add(index: number) {
-        const word = Math.floor(index / bitsPerWord)
+        const wordIndex = Math.floor(index / bitsPerWord)
         const mask = 1 << (index % bitsPerWord)
-        this.array[word] = this.array[word] | mask
+        this.array[wordIndex] = this.array[wordIndex] | mask
     }
 
     remove(index: number) {
-        const word = Math.floor(index / bitsPerWord)
+        const wordIndex = Math.floor(index / bitsPerWord)
         const mask = 1 << (index % bitsPerWord)
-        this.array[word] = this.array[word] ^ mask
+        this.array[wordIndex] = this.array[wordIndex] ^ mask
     }
 
     /** Returns the maximum set bit. */
@@ -69,6 +71,43 @@ export default class BitSet {
         return 0;
     }
 
+    bitCount(): number {
+        let result = 0
+        for (let i = 0; i < this.array.length; i++) {
+            result += BitSet.countBits(this.array[i]) // Assumes we never have bits set beyond the end
+        }
+        return result
+    }
+
+    public equals(other: BitSet): boolean {
+        if (other.size !== this.size) {
+            return false
+        }
+        for (let i = 0; i < this.array.length; i++) {
+            if (this.array[i] !== other.array[i]) {
+                return false
+            }
+        }
+        return true
+    }
+
+    public export(): BitSetData {
+        return {
+            size: this.size,
+            base64: encode(this.array)
+        }
+    }
+
+    public static import(data: any): BitSet {
+        if (typeof data.size !== "number") {
+            throw Error("BitSet missing size")
+        }
+        const result = new BitSet(data.size)
+        const buffer = decode(data.base64)
+        result.array = new Uint8Array(buffer)
+        return result
+    }
+
     private static highBit(bits : number) : number {
         let result = bitsPerWord - 1;
         let mask = 1 << result;
@@ -78,4 +117,18 @@ export default class BitSet {
         }
         return result;
     }
+
+    private static countBits(bits: number): number {
+        let result = bits & 1;
+        while (bits !== 0) {
+            bits = bits >>> 1;
+            result += (bits & 1)
+        }
+        return result
+    }
+}
+
+interface BitSetData {
+    size: number
+    base64: string
 }

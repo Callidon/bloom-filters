@@ -102,9 +102,7 @@ describe('BloomFilter', () => {
       exported._seed.should.equal(filter.seed)
       exported.type.should.equal('BloomFilter')
       exported._size.should.equal(filter.size)
-      exported._length.should.equal(filter.length)
-      exported._nbHashes.should.equal(filter._nbHashes)
-      exported._filter.should.deep.equal(filter._filter)
+      exported._filter.should.deep.equal(filter._filter.export())
     })
 
     it('should create a bloom filter from a JSON export', () => {
@@ -116,8 +114,6 @@ describe('BloomFilter', () => {
       const newFilter = BloomFilter.fromJSON(exported)
       newFilter.seed.should.equal(filter.seed)
       newFilter.size.should.equal(filter._size)
-      newFilter.length.should.equal(filter._length)
-      newFilter._nbHashes.should.equal(filter._nbHashes)
       newFilter._filter.should.deep.equal(filter._filter)
     })
 
@@ -126,9 +122,10 @@ describe('BloomFilter', () => {
         { type: 'something' },
         { type: 'BloomFilter' },
         { type: 'BloomFilter', _size: 1 },
-        { type: 'BloomFilter', _size: 1, _length: 1 },
-        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2 },
-        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2, seed: 1 }
+        { type: 'BloomFilter', _size: 1, _seed: 1 },
+        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {} },
+        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {size: 1, base64: "error, not actually base64"} },
+        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {size: 1, base64: "error, not actually base64"} },
       ]
 
       invalids.forEach(json => {

@@ -47,6 +47,7 @@
     "typescript": "^3.7.5"
   },
   "dependencies": {
+    "base64-arraybuffer": "^1.0.1",
     "is-buffer": "^2.0.4",
     "lodash": "^4.17.15",
     "lodash.eq": "^4.0.0",

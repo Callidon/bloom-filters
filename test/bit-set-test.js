@@ -50,12 +50,69 @@ describe('BitSet', () => {
         }
     })
 
-    it('finds the high bit', () => {
-        const set = new BitSet(150)
-        set.size.should.equal(150)
-        for (let i=0; i<set.size; i++) {
+    describe('#max', () => {
+        it('finds the high bit', () => {
+            const set = new BitSet(150)
+            set.size.should.equal(150)
+            for (let i=0; i<set.size; i++) {
+                set.add(i)
+                set.max().should.equal(i)
+            }
+        })
+    })
+
+    it('imports what it exports', () => {
+        const set = new BitSet(50)
+        for (let i=0; i < set.size; i += 3) { // 3 is relatively prime to 8, so should hit all edge cases
             set.add(i)
-            set.max().should.equal(i)
         }
+        const exported = set.export()
+        const imported = BitSet.import(exported)
+        imported.size.should.equal(set.size)
+        for (i=0; i < set.size; i++) {
+            let expected = i % 3 === 0;
+            set.has(i).should.equal(expected)
+        }
+    })
+
+    describe('#equals', () => {
+        it('returns true on identical size and data', () => {
+            let a = new BitSet(50)
+            let b = new BitSet(50)
+            a.equals(b).should.equal(true)
+            for (let i=0; i < a.size; i += 3) {  // 3 is relatively prime to 8, so should hit all edge cases
+                a.add(i)
+                b.add(i)
+                a.equals(b).should.equal(true)
+            }
+        })
+
+        it('returns false on different size', () => {
+            new BitSet(50).equals(new BitSet(150)).should.equal(false)
+        })
+
+        it('returns false on different data', () => {
+            let a = new BitSet(50)
+            let b = new BitSet(50)
+            a.add(3)
+            a.equals(b).should.equal(false)
+            a.remove(3)
+            a.equals(b).should.equal(true)
+            a.add(49)
+            a.equals(b).should.equal(false)
+        })
+    })
+
+    describe('#bitCount', () => {
+        it('counts the number of bits', () => {
+            let set = new BitSet(50)
+            let expectedCount = 0
+            set.bitCount().should.equal(expectedCount)
+            for (let i = 0; i < set.size; i += 3) {
+                set.add(i)
+                expectedCount++
+                set.bitCount().should.equal(expectedCount)
+            }
+        })
     })
 })
