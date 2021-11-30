@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { BloomFilter } = require('../dist/api.js')
+const {BloomFilter} = require('../dist/api.js')
 
 describe('BloomFilter', () => {
   const targetRate = 0.1
@@ -44,8 +44,12 @@ describe('BloomFilter', () => {
 
     it('should build a new filter using #from', () => {
       const data = ['alice', 'bob', 'carl']
-      const expectedSize = Math.ceil(-((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)))
-      const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
+      const expectedSize = Math.ceil(
+        -((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2))
+      )
+      const expectedHashes = Math.ceil(
+        (expectedSize / data.length) * Math.log(2)
+      )
       const filter = BloomFilter.from(data, targetRate)
       filter.size.should.equal(expectedSize)
       filter._nbHashes.should.equal(expectedHashes)
@@ -123,16 +127,16 @@ describe('BloomFilter', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'BloomFilter' },
-        { type: 'BloomFilter', _size: 1 },
-        { type: 'BloomFilter', _size: 1, _length: 1 },
-        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2 },
-        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2, seed: 1 }
+        {type: 'something'},
+        {type: 'BloomFilter'},
+        {type: 'BloomFilter', _size: 1},
+        {type: 'BloomFilter', _size: 1, _length: 1},
+        {type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2},
+        {type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2, seed: 1},
       ]
 
       invalids.forEach(json => {
-        (() => BloomFilter.fromJSON(json)).should.throw(Error)
+        ;(() => BloomFilter.fromJSON(json)).should.throw(Error)
       })
     })
   })

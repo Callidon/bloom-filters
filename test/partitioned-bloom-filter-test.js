@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { PartitionedBloomFilter } = require('../dist/api.js')
+const {PartitionedBloomFilter} = require('../dist/api.js')
 
 describe('PartitionedBloomFilter', () => {
   const targetRate = 0.001
@@ -69,8 +69,16 @@ describe('PartitionedBloomFilter', () => {
 
   describe('#equals', () => {
     it('should returns True when two filters are equals', () => {
-      const first = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
-      const other = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
+      const first = PartitionedBloomFilter.from(
+        ['alice', 'bob', 'carol'],
+        targetRate,
+        0.5
+      )
+      const other = PartitionedBloomFilter.from(
+        ['alice', 'bob', 'carol'],
+        targetRate,
+        0.5
+      )
       first.equals(other).should.equal(true)
     })
 
@@ -93,8 +101,16 @@ describe('PartitionedBloomFilter', () => {
     })
 
     it('should returns False when two filters have different content', () => {
-      const first = PartitionedBloomFilter.from(['alice', 'bob', 'carol'], targetRate, 0.5)
-      const other = PartitionedBloomFilter.from(['alice', 'bob', 'daniel'], targetRate, 0.5)
+      const first = PartitionedBloomFilter.from(
+        ['alice', 'bob', 'carol'],
+        targetRate,
+        0.5
+      )
+      const other = PartitionedBloomFilter.from(
+        ['alice', 'bob', 'daniel'],
+        targetRate,
+        0.5
+      )
       first.equals(other).should.equal(false)
     })
   })
@@ -129,14 +145,14 @@ describe('PartitionedBloomFilter', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'PartitionedBloomFilter' },
-        { type: 'PartitionedBloomFilter', _capacity: 1 },
-        { type: 'PartitionedBloomFilter', _capacity: 1, _errorRate: 1 }
+        {type: 'something'},
+        {type: 'PartitionedBloomFilter'},
+        {type: 'PartitionedBloomFilter', _capacity: 1},
+        {type: 'PartitionedBloomFilter', _capacity: 1, _errorRate: 1},
       ]
 
       invalids.forEach(json => {
-        (() => PartitionedBloomFilter.fromJSON(json)).should.throw(Error)
+        ;(() => PartitionedBloomFilter.fromJSON(json)).should.throw(Error)
       })
     })
   })

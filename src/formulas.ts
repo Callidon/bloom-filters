@@ -37,7 +37,7 @@ SOFTWARE.
  * @return The optimal size of a Bloom Filter
  * @memberof Formulas
  */
-export function optimalFilterSize (length: number, errorRate: number): number {
+export function optimalFilterSize(length: number, errorRate: number): number {
   return Math.ceil(-((length * Math.log(errorRate)) / Math.pow(Math.log(2), 2)))
 }
 
@@ -48,6 +48,6 @@ export function optimalFilterSize (length: number, errorRate: number): number {
  * @return The optimal number of hash functions to be used by a Bloom Filter
  * @memberof Formulas
  */
-export function optimalHashes (size: number, length: number): number {
+export function optimalHashes(size: number, length: number): number {
   return Math.ceil((size / length) * Math.log(2))
 }

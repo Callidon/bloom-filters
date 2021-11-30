@@ -24,15 +24,15 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import CountMinSketch from './count-min-sketch'
-import { AutoExportable, Field, Parameter } from '../exportable'
-import { sortedIndexBy } from 'lodash'
+import {AutoExportable, Field, Parameter} from '../exportable'
+import {sortedIndexBy} from 'lodash'
 
 /**
  * An element in a MinHeap
  * @author Thomas Minier
  */
 interface HeapElement {
-  value: string,
+  value: string
   frequency: number
 }
 
@@ -51,22 +51,22 @@ interface TopkElement extends HeapElement {
 class MinHeap {
   private _content: HeapElement[]
 
-  constructor () {
+  constructor() {
     this._content = []
   }
 
   /**
    * Get the number of items in the heap
    */
-  get length () {
+  get length() {
     return this._content.length
   }
 
-  get content () {
+  get content() {
     return this._content
   }
 
-  set content (value: HeapElement[]) {
+  set content(value: HeapElement[]) {
     this._content = value
   }
 
@@ -75,7 +75,7 @@ class MinHeap {
    * @param index - Index of the item
    * @return The item or `undefined` if the index is out of the array
    */
-  get (index: number): HeapElement | undefined {
+  get(index: number): HeapElement | undefined {
     return this._content[index]
   }
 
@@ -83,9 +83,13 @@ class MinHeap {
    * Add a new element to the heap and keep items sorted by ascending frequency
    * @param element - Element to insert
    */
-  add (element: HeapElement) {
+  add(element: HeapElement) {
     // kepp items sorted by frequency
-    const index = sortedIndexBy(this._content, element, heapElement => heapElement.frequency)
+    const index = sortedIndexBy(
+      this._content,
+      element,
+      heapElement => heapElement.frequency
+    )
     this._content.splice(index, 0, element)
   }
 
@@ -93,24 +97,24 @@ class MinHeap {
    * Remove an item at a given index and keep items sorted by ascending frequency
    * @param index - Index of the item to remove
    */
-  remove (index: number): void {
+  remove(index: number): void {
     this._content.splice(index, 1)
   }
 
   /**
    * Remove and returns the element with the smallest frequency in the heap
-   * @return The element with the smallest frequency in the heap 
+   * @return The element with the smallest frequency in the heap
    */
-  popMin (): HeapElement | undefined {
+  popMin(): HeapElement | undefined {
     return this._content.shift()
   }
-  
+
   /**
    * Get the index of an element by its value
    * @param value - Value of the element to search for
    * @return Index of the element or -1 if it is not in the heap
    */
-  indexOf (value: string): number {
+  indexOf(value: string): number {
     // TODO optimize
     return this._content.findIndex(heapElement => heapElement.value === value)
     // const index = sortedIndexBy(this._content, {value, frequency: 0}, heapElement => heapElement.value)
@@ -123,7 +127,7 @@ class MinHeap {
   /**
    * Clear the content of the heap
    */
-  clear () {
+  clear() {
     this._content = []
   }
 }
@@ -148,15 +152,18 @@ export default class TopK extends BaseFilter {
 
   @Field<CountMinSketch>(
     (sketch: CountMinSketch) => sketch.saveAsJSON(),
-    (json: any) => CountMinSketch.fromJSON(json)
+    (json: JSON) => CountMinSketch.fromJSON(json)
   )
   private _sketch: CountMinSketch
 
-  @Field<MinHeap>((heap: MinHeap) => heap.content, (json: any) => {
-    const heap = new MinHeap()
-    heap.content = json
-    return heap
-  })
+  @Field<MinHeap>(
+    (heap: MinHeap) => heap.content,
+    (json: HeapElement[]) => {
+      const heap = new MinHeap()
+      heap.content = json
+      return heap
+    }
+  )
   private _heap: MinHeap
 
   /**
@@ -165,7 +172,11 @@ export default class TopK extends BaseFilter {
    * @param errorRate - The error rate
    * @param accuracy  - The probability of accuracy
    */
-  constructor (@Parameter('_k') k: number, @Parameter('_errorRate') errorRate: number, @Parameter('_accuracy') accuracy: number) {
+  constructor(
+    @Parameter('_k') k: number,
+    @Parameter('_errorRate') errorRate: number,
+    @Parameter('_accuracy') accuracy: number
+  ) {
     super()
     this._k = k
     this._errorRate = errorRate
@@ -178,14 +189,17 @@ export default class TopK extends BaseFilter {
    * Add an element to the TopK
    * @param element - Element to add
    */
-  add (element: string, count: number = 1): void {
+  add(element: string, count = 1): void {
     if (0 >= count) {
-      throw (`count must be > 0 (was ${count})`)
+      throw `count must be > 0 (was ${count})`
     }
     this._sketch.update(element, count)
     const frequency = this._sketch.count(element)
 
-    if (this._heap.length < this._k || frequency >= this._heap.get(0)!.frequency) {
+    if (
+      this._heap.length < this._k ||
+      frequency >= this._heap.get(0)!.frequency
+    ) {
       const index = this._heap.indexOf(element)
       // remove the entry if it is already in the MinHeap
       if (index > -1) {
@@ -194,7 +208,7 @@ export default class TopK extends BaseFilter {
       // add the new entry
       this._heap.add({
         value: element,
-        frequency
+        frequency,
       })
       // if there is more items than K, then remove the smallest item in the heap
       if (this._heap.length > this._k) {
@@ -206,7 +220,7 @@ export default class TopK extends BaseFilter {
   /**
    * Clear the content of the TopK
    */
-  clear (): void {
+  clear(): void {
     this._sketch = CountMinSketch.create(this._errorRate, this._accuracy)
     this._heap.clear()
   }
@@ -215,36 +229,36 @@ export default class TopK extends BaseFilter {
    * Get the top-k values as an array of objects {value: string, frequency: number, rank: number}
    * @return The top-k values as an array of objects {value: string, frequency: number, rank: number}
    */
-  values (): TopkElement[] {
+  values(): TopkElement[] {
     const res = []
     for (let i = this._heap.length - 1; i >= 0; i--) {
       const elt = this._heap.get(i)!
       res.push({
         value: elt.value,
         frequency: elt.frequency,
-        rank: this._heap.length - i
+        rank: this._heap.length - i,
       })
     }
     return res
   }
-  
+
   /**
    * Get the top-k values as an iterator that yields objects {value: string, frequency: number, rank: number}.
    * WARNING: With this method, values are produced on-the-fly, hence you should not modify the TopK
    * while the iteration is not completed, otherwise the generated values may not respect the TopK properties.
    * @return The top-k values as an iterator of object {value: string, frequency: number, rank: number}
    */
-  iterator (): Iterator<TopkElement> {
+  iterator(): Iterator<TopkElement> {
     const heap = this._heap
-    return function *() {
+    return (function* () {
       for (let i = heap.length - 1; i >= 0; i--) {
         const elt = heap.get(i)!
         yield {
           value: elt.value,
           frequency: elt.frequency,
-          rank: heap.length - i
+          rank: heap.length - i,
         }
       }
-    }()
+    })()
   }
 }

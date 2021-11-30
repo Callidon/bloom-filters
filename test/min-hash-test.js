@@ -25,8 +25,8 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { MinHashFactory, MinHash } = require('../dist/api.js')
-const { range, intersection, union } = require('lodash')
+const {MinHashFactory, MinHash} = require('../dist/api.js')
+const {range, intersection, union} = require('lodash')
 
 // Compute the exact Jaccard similairty between two sets
 function jaccard(a, b) {
@@ -35,7 +35,7 @@ function jaccard(a, b) {
 
 describe('MinHash', () => {
   const setA = range(1, 500)
-  const setB = range(1, 500).map(x => x % 2 === 0 ? x : x * 2)
+  const setB = range(1, 500).map(x => (x % 2 === 0 ? x : x * 2))
   const maxValue = Math.max(...setA, ...setB)
   const nbHashes = 10
   const factory = new MinHashFactory(nbHashes, maxValue)
@@ -59,7 +59,9 @@ describe('MinHash', () => {
       const secondSet = factory.create()
       setA.forEach(value => firstSet.add(value))
       setB.forEach(value => secondSet.add(value))
-      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.2)
+      firstSet
+        .compareWith(secondSet)
+        .should.be.closeTo(jaccard(setA, setB), 0.2)
     })
   })
 
@@ -69,7 +71,9 @@ describe('MinHash', () => {
       const secondSet = factory.create()
       firstSet.bulkLoad(setA)
       secondSet.bulkLoad(setB)
-      firstSet.compareWith(secondSet).should.be.closeTo(jaccard(setA, setB), 0.2)      
+      firstSet
+        .compareWith(secondSet)
+        .should.be.closeTo(jaccard(setA, setB), 0.2)
     })
   })
 
@@ -80,7 +84,11 @@ describe('MinHash', () => {
       secondSet.add(1)
       try {
         firstSet.compareWith(secondSet)
-        done(new Error('compareWith should throw an error when we try to compare an empty set with another MinHash'))
+        done(
+          new Error(
+            'compareWith should throw an error when we try to compare an empty set with another MinHash'
+          )
+        )
       } catch (error) {
         done()
       }
@@ -92,7 +100,11 @@ describe('MinHash', () => {
       const secondSet = factory.create()
       try {
         firstSet.compareWith(secondSet)
-        done(new Error('compareWith should throw an error when we try to compare with an empty MinHash'))
+        done(
+          new Error(
+            'compareWith should throw an error when we try to compare with an empty MinHash'
+          )
+        )
       } catch (error) {
         done()
       }
@@ -121,14 +133,14 @@ describe('MinHash', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'MinHash' },
-        { type: 'MinHash', _nbHashes: 1 },
-        { type: 'MinHash', _nbHashes: 1, _hashFunctions: [] }
+        {type: 'something'},
+        {type: 'MinHash'},
+        {type: 'MinHash', _nbHashes: 1},
+        {type: 'MinHash', _nbHashes: 1, _hashFunctions: []},
       ]
 
       invalids.forEach(json => {
-        (() => MinHash.fromJSON(json)).should.throw(Error)
+        ;(() => MinHash.fromJSON(json)).should.throw(Error)
       })
     })
   })

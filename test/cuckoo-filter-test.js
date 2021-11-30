@@ -27,7 +27,7 @@ SOFTWARE.
 const chai = require('chai')
 chai.should()
 chai.expect()
-const { CuckooFilter } = require('../dist/api.js')
+const {CuckooFilter} = require('../dist/api.js')
 const utils = require('../dist/utils')
 
 describe('CuckooFilter', () => {
@@ -40,7 +40,9 @@ describe('CuckooFilter', () => {
       const fingerprint = hashes.string.substring(0, 3)
 
       const firstIndex = Math.abs(hash)
-      const secondIndex = Math.abs(firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, filter.seed, 64)))
+      const secondIndex = Math.abs(
+        firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, filter.seed, 64))
+      )
 
       const locations = filter._locations(element)
       locations.fingerprint.should.equal(fingerprint)
@@ -78,7 +80,9 @@ describe('CuckooFilter', () => {
       filter._filter[locations.firstIndex].isFree().should.equal(false)
       filter._filter[locations.secondIndex].isFree().should.equal(false)
 
-      nbElements += filter._filter[locations.firstIndex].length + filter._filter[locations.secondIndex].length
+      nbElements +=
+        filter._filter[locations.firstIndex].length +
+        filter._filter[locations.secondIndex].length
       nbElements.should.equal(4)
     })
 
@@ -95,7 +99,11 @@ describe('CuckooFilter', () => {
 
       filter._filter.forEach(bucket => {
         if (bucket.length > 0) {
-          bucket._elements[0].should.be.oneOf(['xyz', 'lol', locations.fingerprint])
+          bucket._elements[0].should.be.oneOf([
+            'xyz',
+            'lol',
+            locations.fingerprint,
+          ])
           nbElements += bucket.length
         }
       })
@@ -103,7 +111,7 @@ describe('CuckooFilter', () => {
       nbElements.should.equal(3)
     })
 
-    it('should reject elements that can\'t be inserted when filter is full', () => {
+    it("should reject elements that can't be inserted when filter is full", () => {
       const filter = new CuckooFilter(1, 3, 1)
       const element = 'foo'
       filter.add(element)
@@ -126,7 +134,9 @@ describe('CuckooFilter', () => {
       filter.add('l', false, true).should.equal(false)
       const snapshot2 = JSON.stringify(filter.saveAsJSON())
       snapshot.should.not.be.equal(snapshot2)
-      filter.equals(CuckooFilter.fromJSON(JSON.parse(snapshot))).should.be.equal(false)
+      filter
+        .equals(CuckooFilter.fromJSON(JSON.parse(snapshot)))
+        .should.be.equal(false)
     })
 
     it('should rollback to its initial state in case the filter is full', () => {
@@ -237,7 +247,9 @@ describe('CuckooFilter', () => {
       exported._fingerprintLength.should.equal(filter.fingerprintLength)
       exported._length.should.equal(filter.length)
       exported._maxKicks.should.deep.equal(filter.maxKicks)
-      exported._filter.should.deep.equal(filter._filter.map(b => b.saveAsJSON()))
+      exported._filter.should.deep.equal(
+        filter._filter.map(b => b.saveAsJSON())
+      )
     })
 
     it('should create a cuckoo filter from a JSON export', () => {
@@ -247,22 +259,40 @@ describe('CuckooFilter', () => {
       newFilter.fingerprintLength.should.equal(filter.fingerprintLength)
       newFilter.length.should.equal(filter.length)
       newFilter.maxKicks.should.deep.equal(filter.maxKicks)
-      newFilter._filter.every((b, index) => filter._filter[index].equals(b)).should.equal(true)
+      newFilter._filter
+        .every((b, index) => filter._filter[index].equals(b))
+        .should.equal(true)
     })
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'CuckooFilter' },
-        { type: 'CuckooFilter', _size: 1 },
-        { type: 'CuckooFilter', _size: 1, _fingerprintLength: 1 },
-        { type: 'CuckooFilter', _size: 1, _fingerprintLength: 1, _length: 2 },
-        { type: 'CuckooFilter', _size: 1, _fingerprintLength: 1, _length: 2, _maxKicks: 1 },
-        { type: 'CuckooFilter', _size: 1, _fingerprintLength: 1, _length: 2, _maxKicks: 1, _seed: 1 }
+        {type: 'something'},
+        {type: 'CuckooFilter'},
+        {type: 'CuckooFilter', _size: 1},
+        {type: 'CuckooFilter', _size: 1, _fingerprintLength: 1},
+        {type: 'CuckooFilter', _size: 1, _fingerprintLength: 1, _length: 2},
+        {
+          type: 'CuckooFilter',
+          _size: 1,
+          _fingerprintLength: 1,
+          _length: 2,
+          _maxKicks: 1,
+        },
+        {
+          type: 'CuckooFilter',
+          _size: 1,
+          _fingerprintLength: 1,
+          _length: 2,
+          _maxKicks: 1,
+          _seed: 1,
+        },
       ]
 
       invalids.forEach(json => {
-        (() => CuckooFilter.fromJSON(json)).should.throw(Error, 'Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter')
+        ;(() => CuckooFilter.fromJSON(json)).should.throw(
+          Error,
+          'Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter'
+        )
       })
     })
   })
@@ -270,22 +300,30 @@ describe('CuckooFilter', () => {
     const max = 20
     const rate = 0.000000000000000001
     const bucketSize = 1
-    it('should not return an error when inserting and asking for ' + max + ' elements, rate = ' + rate + ', bucketSize = ' + bucketSize, () => {
-      const filter = CuckooFilter.create(max, rate, bucketSize, 500)
-      for (let i = 0; i < max; i++) {
-        filter.add('' + i).should.equal(true)
+    it(
+      'should not return an error when inserting and asking for ' +
+        max +
+        ' elements, rate = ' +
+        rate +
+        ', bucketSize = ' +
+        bucketSize,
+      () => {
+        const filter = CuckooFilter.create(max, rate, bucketSize, 500)
+        for (let i = 0; i < max; i++) {
+          filter.add('' + i).should.equal(true)
+        }
+        let current
+        let falsePositive = 0
+        let tries = 0
+        for (let i = max; i < max * 11; ++i) {
+          tries++
+          current = i
+          const has = filter.has('' + current)
+          if (has) falsePositive++
+        }
+        const currentrate = falsePositive / tries
+        currentrate.should.be.closeTo(rate, rate)
       }
-      let current
-      let falsePositive = 0
-      let tries = 0
-      for (let i = max; i < max * 11; ++i) {
-        tries++
-        current = i
-        const has = filter.has('' + current)
-        if (has) falsePositive++
-      }
-      const currentrate = falsePositive / tries
-      currentrate.should.be.closeTo(rate, rate)
-    })
+    )
   })
 })

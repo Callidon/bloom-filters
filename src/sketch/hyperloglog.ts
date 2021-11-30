@@ -23,8 +23,8 @@ SOFTWARE.
 */
 
 import BaseFilter from '../base-filter'
-import { AutoExportable, Field, Parameter } from '../exportable'
-import { HashableInput, allocateArray, hashAsInt } from '../utils'
+import {AutoExportable, Field, Parameter} from '../exportable'
+import {HashableInput, allocateArray, hashAsInt} from '../utils'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
 const TWO_POW_32 = Math.pow(2, 32)
@@ -35,7 +35,7 @@ const TWO_POW_32 = Math.pow(2, 32)
  * @param m - Number of registers in the HyperLogLog algorithm
  * @return The estimated bias-correction constant
  */
-function computeAlpha (m: number): number {
+function computeAlpha(m: number): number {
   switch (m) {
     case 16:
       return 0.673
@@ -44,7 +44,7 @@ function computeAlpha (m: number): number {
     case 64:
       return 0.709
     default:
-      return 0.7213 / (1.0 + 1.079/m)
+      return 0.7213 / (1.0 + 1.079 / m)
   }
 }
 
@@ -83,7 +83,7 @@ export default class HyperLogLog extends BaseFilter {
    * Constructor
    * @param nbRegisters - The number of registers to use
    */
-  constructor (@Parameter('_nbRegisters') nbRegisters: number) {
+  constructor(@Parameter('_nbRegisters') nbRegisters: number) {
     super()
     this._nbRegisters = nbRegisters
     this._nbBytesPerHash = Math.round(Math.log2(nbRegisters))
@@ -94,7 +94,7 @@ export default class HyperLogLog extends BaseFilter {
   /**
    * Get the number of registers used by the HyperLogLog
    */
-  get nbRegisters (): number {
+  get nbRegisters(): number {
     return this._nbRegisters
   }
 
@@ -102,28 +102,39 @@ export default class HyperLogLog extends BaseFilter {
    * Update The multiset with a new element
    * @param element - Element to add
    */
-  update (element: HashableInput): void {
+  update(element: HashableInput): void {
     // const hashedValue = Buffer.from(hashAsString(element, this.seed))
     const hashedValue = hashAsInt(element, this.seed).toString(2)
-    const registerIndex = 1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
-    // find the left most 1-bit in the second part of the buffer    
+    const registerIndex =
+      1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
+    // find the left most 1-bit in the second part of the buffer
     const secondPart = hashedValue.slice(this._nbBytesPerHash)
     let posLeftMost = 0
-    while (secondPart[posLeftMost] !== '1' && posLeftMost < secondPart.length - 1) {
+    while (
+      secondPart[posLeftMost] !== '1' &&
+      posLeftMost < secondPart.length - 1
+    ) {
       posLeftMost++
     }
     // update the register
-    this._registers[registerIndex] = Math.max(this._registers[registerIndex], posLeftMost)
+    this._registers[registerIndex] = Math.max(
+      this._registers[registerIndex],
+      posLeftMost
+    )
   }
 
   /**
    * Estimate the cardinality of the multiset
    * @return The estimated cardinality of the multiset
    */
-  count (round = false): number {
+  count(round = false): number {
     // Use the standard HyperLogLog estimator
-    const harmonicMean = this._registers.reduce((acc: number, value: number) => acc + Math.pow(2, -value), 0)
-    let estimation = (this._correctionBias * Math.pow(this._nbRegisters, 2)) / harmonicMean
+    const harmonicMean = this._registers.reduce(
+      (acc: number, value: number) => acc + Math.pow(2, -value),
+      0
+    )
+    let estimation =
+      (this._correctionBias * Math.pow(this._nbRegisters, 2)) / harmonicMean
 
     // use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
     /*if (estimation < ((5/2) * this._nbRegisters) && this._registers.some(value => value === 0)) {
@@ -132,8 +143,8 @@ export default class HyperLogLog extends BaseFilter {
     }*/
 
     // correct the estimation for very large registers
-    if (estimation > (TWO_POW_32 / 30)) {
-      estimation = -TWO_POW_32 * Math.log(1 - (estimation / TWO_POW_32))
+    if (estimation > TWO_POW_32 / 30) {
+      estimation = -TWO_POW_32 * Math.log(1 - estimation / TWO_POW_32)
     }
     // round if required
     if (round) {
@@ -146,7 +157,7 @@ export default class HyperLogLog extends BaseFilter {
    * Compute the accuracy of the cardinality estimation produced by this HyperLogLog
    * @return The accuracy of the cardinality estimation
    */
-  accuracy (): number {
+  accuracy(): number {
     return 1.04 / Math.sqrt(this._nbRegisters)
   }
 
@@ -155,13 +166,18 @@ export default class HyperLogLog extends BaseFilter {
    * @param other - Multiset ot merge with
    * @return The union of the two multisets
    */
-  merge (other: HyperLogLog): HyperLogLog {
+  merge(other: HyperLogLog): HyperLogLog {
     if (this.nbRegisters !== other.nbRegisters) {
-      throw new Error(`Two HyperLogLog must have the same number of registers to be merged. Tried to merge two HyperLogLog with m = ${this.nbRegisters} and m = ${other.nbRegisters}`)
+      throw new Error(
+        `Two HyperLogLog must have the same number of registers to be merged. Tried to merge two HyperLogLog with m = ${this.nbRegisters} and m = ${other.nbRegisters}`
+      )
     }
     const newSketch = new HyperLogLog(this.nbRegisters)
     for (let i = 0; i < this.nbRegisters - 1; i++) {
-      newSketch._registers[i] = Math.max(this._registers[i], other._registers[i])
+      newSketch._registers[i] = Math.max(
+        this._registers[i],
+        other._registers[i]
+      )
     }
     return newSketch
   }
@@ -171,7 +187,7 @@ export default class HyperLogLog extends BaseFilter {
    * @param  other - The HyperLogLog to compare to this one
    * @return True if they are equal, false otherwise
    */
-  equals (other: HyperLogLog): boolean {
+  equals(other: HyperLogLog): boolean {
     if (this.nbRegisters !== other.nbRegisters) {
       return false
     }

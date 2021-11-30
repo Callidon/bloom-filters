@@ -26,9 +26,9 @@ SOFTWARE.
 
 require('chai').should()
 const utils = require('../dist/utils.js')
-const { BloomFilter } = require('../dist/api.js')
+const {BloomFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
-const { range } = require('lodash')
+const {range} = require('lodash')
 const seed = utils.getDefaultSeed()
 
 describe('Utils', () => {
@@ -53,7 +53,9 @@ describe('Utils', () => {
       const size = 1000
       const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       values.forEach(n => {
-        utils.doubleHashing(n, hashA, hashB, size).should.equal((hashA + n * hashB) % size)
+        utils
+          .doubleHashing(n, hashA, hashB, size)
+          .should.equal((hashA + n * hashB) % size)
       })
     })
   })
@@ -72,15 +74,42 @@ describe('Utils', () => {
       const res = Buffer.allocUnsafe(10).fill(0)
       res[res.length - 1] = 1
       // xor(a, b) = <Buffer 00 00 00 00 00 00 00 00 00 01>
-      utils.xorBuffer(Buffer.from(a), Buffer.from(b)).toString().should.equal(b.toString())
+      utils
+        .xorBuffer(Buffer.from(a), Buffer.from(b))
+        .toString()
+        .should.equal(b.toString())
       // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
-      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(b)).toString().should.equal(Buffer.from('').toString())
+      utils
+        .xorBuffer(
+          utils.xorBuffer(Buffer.from(a), Buffer.from(b)),
+          Buffer.from(b)
+        )
+        .toString()
+        .should.equal(Buffer.from('').toString())
       // xor(xor(a, b), a) === b
-      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(a)).toString().should.equal(Buffer.from(b).toString())
+      utils
+        .xorBuffer(
+          utils.xorBuffer(Buffer.from(a), Buffer.from(b)),
+          Buffer.from(a)
+        )
+        .toString()
+        .should.equal(Buffer.from(b).toString())
       // xor(xor(a, a), a) === a
-      utils.xorBuffer(utils.xorBuffer(Buffer.from(a), Buffer.from(a)), Buffer.from(a)).toString().should.equal(Buffer.from('').toString())
+      utils
+        .xorBuffer(
+          utils.xorBuffer(Buffer.from(a), Buffer.from(a)),
+          Buffer.from(a)
+        )
+        .toString()
+        .should.equal(Buffer.from('').toString())
       // xor(xor(b, b), b) === a
-      utils.xorBuffer(utils.xorBuffer(Buffer.from(b), Buffer.from(b)), Buffer.from(b)).toString().should.equal(Buffer.from(b).toString())
+      utils
+        .xorBuffer(
+          utils.xorBuffer(Buffer.from(b), Buffer.from(b)),
+          Buffer.from(b)
+        )
+        .toString()
+        .should.equal(Buffer.from(b).toString())
     })
     it('should xor correctly', () => {
       let a = Buffer.allocUnsafe(1).fill(1)
@@ -91,7 +120,7 @@ describe('Utils', () => {
         const s = XXH.h64('' + i, seed).toString(16)
         const buf = Buffer.from(s)
         a = utils.xorBuffer(a, buf)
-        if (i !== (max - 1)) {
+        if (i !== max - 1) {
           b = utils.xorBuffer(buf, b)
         } else {
           last = buf
@@ -115,26 +144,28 @@ describe('Utils', () => {
   })
 
   describe('#getDistinctIndices', () => {
-    const key = "da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82"
+    const key =
+      'da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82'
     it('should return <number> distinct indices on the interval [0, size)', () => {
       const desiredIndices = 10000
       const result = range(0, desiredIndices, 1)
-      try{
-        const indices = utils.getDistinctIndices(key, desiredIndices, desiredIndices).sort((a, b) => a - b)
+      try {
+        const indices = utils
+          .getDistinctIndices(key, desiredIndices, desiredIndices)
+          .sort((a, b) => a - b)
         indices.should.deep.equal(result)
       } catch (e) {
-        throw Error("it should not throw: " + e)
+        throw Error('it should not throw: ' + e)
       }
     })
     it('should the issue be fixed', () => {
-      try{
-        const filter = new BloomFilter(39, 28);
-        filter.add(key);
+      try {
+        const filter = new BloomFilter(39, 28)
+        filter.add(key)
         filter.has(key).should.be.true
       } catch (e) {
-        throw Error("it should not throw: " + e)
+        throw Error('it should not throw: ' + e)
       }
-      
     })
   })
 })

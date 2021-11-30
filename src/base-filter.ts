@@ -36,7 +36,7 @@ export default abstract class BaseFilter {
   private _seed: number
   private _rng: () => number
 
-  constructor () {
+  constructor() {
     this._seed = utils.getDefaultSeed()
     this._rng = seedrandom(`${this._seed}`)
   }
@@ -44,7 +44,7 @@ export default abstract class BaseFilter {
   /**
    * Get the seed used in this structure
    */
-  get seed (): number {
+  get seed(): number {
     return this._seed
   }
 
@@ -52,7 +52,7 @@ export default abstract class BaseFilter {
    * Set the seed for this structure
    * @param  seed the new seed that will be used in this structure
    */
-  set seed (seed: number) {
+  set seed(seed: number) {
     this._seed = seed
     this._rng = seedrandom(`${this._seed}`)
   }
@@ -61,7 +61,7 @@ export default abstract class BaseFilter {
    * Get a function used to draw random number
    * @return A factory function used to draw random integer
    */
-  get random (): () => number {
+  get random(): () => number {
     return this._rng
   }
 
@@ -75,9 +75,10 @@ export default abstract class BaseFilter {
   /**
    * Load an Object from a provided JSON object
    * @param json the JSON object to load
-   * @return Return the Object loaded from the provided JSON object 
+   * @return Return the Object loaded from the provided JSON object
    */
-  static fromJSON(json: any): any {
-    throw new Error('not-implemented')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static fromJSON(json: JSON): any {
+    throw new Error(`not-implemented: ${json}`)
   }
 }

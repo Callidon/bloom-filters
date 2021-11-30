@@ -26,8 +26,8 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import CountingFilter from '../interfaces/counting-filter'
-import { AutoExportable, Field, Parameter } from '../exportable'
-import { allocateArray, getDistinctIndices, HashableInput} from '../utils'
+import {AutoExportable, Field, Parameter} from '../exportable'
+import {allocateArray, getDistinctIndices, HashableInput} from '../utils'
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
@@ -39,7 +39,10 @@ import { allocateArray, getDistinctIndices, HashableInput} from '../utils'
  * @author Thomas Minier & Arnaud Grall
  */
 @AutoExportable<CountMinSketch>('CountMinSketch', ['_seed'])
-export default class CountMinSketch extends BaseFilter implements CountingFilter<HashableInput> {
+export default class CountMinSketch
+  extends BaseFilter
+  implements CountingFilter<HashableInput>
+{
   @Field()
   private _columns: number
   @Field()
@@ -54,11 +57,16 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * @param columns - Number of columns
    * @param rows - Number of rows
    */
-  constructor (@Parameter('_columns') columns: number, @Parameter('_rows') rows: number) {
+  constructor(
+    @Parameter('_columns') columns: number,
+    @Parameter('_rows') rows: number
+  ) {
     super()
     this._columns = columns
     this._rows = rows
-    this._matrix = allocateArray(this._rows, () => allocateArray(this._columns, 0))
+    this._matrix = allocateArray(this._rows, () =>
+      allocateArray(this._columns, 0)
+    )
     this._allSums = 0
   }
 
@@ -68,7 +76,7 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * @param  accuracy  - The probability of accuracy
    * @return A new Count Min Sketch optimal for the input parameters
    */
-  static create (errorRate: number, accuracy: number = 0.999): CountMinSketch {
+  static create(errorRate: number, accuracy = 0.999): CountMinSketch {
     // columns = Math.ceil(Math.E / epsilon) and rows = Math.ceil(Math.log(1 / delta))
     const columns = Math.ceil(Math.E / errorRate)
     const rows = Math.ceil(Math.log(1 / accuracy))
@@ -82,9 +90,13 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * @param  accuracy  - The probability of accuracy
    * @return A new Count Min Sketch filled with the iterable's items.
    */
-  static from(items: Iterable<HashableInput>, errorRate: number, accuracy: number = 0.999): CountMinSketch {
+  static from(
+    items: Iterable<HashableInput>,
+    errorRate: number,
+    accuracy = 0.999
+  ): CountMinSketch {
     const filter = CountMinSketch.create(errorRate, accuracy)
-    for(let item of items) {
+    for (const item of items) {
       filter.update(item)
     }
     return filter
@@ -93,21 +105,21 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
   /**
    * Return the number of columns in the sketch
    */
-  get columns (): number {
+  get columns(): number {
     return this._columns
   }
 
   /**
    * Return the number of rows in the sketch
    */
-  get rows (): number {
+  get rows(): number {
     return this._rows
   }
 
   /**
    * Get the sum of all counts in the sketch
    */
-  get sum (): number {
+  get sum(): number {
     return this._allSums
   }
 
@@ -116,9 +128,14 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * @param element - The new element
    * @param count - Number of occurences of the elemnt (defauls to one)
    */
-  update (element: HashableInput, count: number = 1): void {
+  update(element: HashableInput, count = 1): void {
     this._allSums += count
-    const indexes = getDistinctIndices(element, this._columns, this._rows, this.seed)
+    const indexes = getDistinctIndices(
+      element,
+      this._columns,
+      this._rows,
+      this.seed
+    )
     for (let i = 0; i < this._rows; i++) {
       this._matrix[i][indexes[i]] += count
     }
@@ -129,9 +146,14 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * @param element - The element we want to count
    * @return The estimate number of occurence of the element
    */
-  count (element: HashableInput): number {
+  count(element: HashableInput): number {
     let min = Infinity
-    const indexes = getDistinctIndices(element, this._columns, this._rows, this.seed)
+    const indexes = getDistinctIndices(
+      element,
+      this._columns,
+      this._rows,
+      this.seed
+    )
     for (let i = 0; i < this._rows; i++) {
       const v = this._matrix[i][indexes[i]]
       min = Math.min(v, min)
@@ -144,7 +166,7 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * @param  filter - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */
-  equals (other: CountMinSketch): boolean {
+  equals(other: CountMinSketch): boolean {
     if (this._columns !== other._columns || this._rows !== other._rows) {
       return false
     }
@@ -162,9 +184,11 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * Merge (in place) this sketch with another sketch, if they have the same number of columns and rows.
    * @param sketch - The sketch to merge with
    */
-  merge (sketch: CountMinSketch): void {
+  merge(sketch: CountMinSketch): void {
     if (this._columns !== sketch._columns) {
-      throw new Error('Cannot merge two sketches with different number of columns')
+      throw new Error(
+        'Cannot merge two sketches with different number of columns'
+      )
     }
     if (this._rows !== sketch._rows) {
       throw new Error('Cannot merge two sketches with different number of rows')
@@ -181,7 +205,7 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
    * Clone the sketch
    * @return A new cloned sketch
    */
-  clone (): CountMinSketch {
+  clone(): CountMinSketch {
     const sketch = new CountMinSketch(this._columns, this._rows)
     sketch.merge(this)
     sketch.seed = this.seed
