@@ -35,13 +35,13 @@ describe('CuckooFilter', () => {
     it('should compute the fingerprint and indexes for an element', () => {
       const filter = new CuckooFilter(15, 3, 2, 1)
       const element = 'foo'
-      const hashes = utils.hashIntAndString(element, filter.seed, 16, 64)
+      const hashes = utils.hashIntAndString(element, filter.seed, 16, 32)
       const hash = hashes.int
       const fingerprint = hashes.string.substring(0, 3)
 
       const firstIndex = Math.abs(hash)
       const secondIndex = Math.abs(
-        firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, filter.seed, 64))
+        firstIndex ^ Math.abs(utils.hashAsInt(fingerprint, filter.seed, 32))
       )
 
       const locations = filter._locations(element)

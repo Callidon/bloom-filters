@@ -27,7 +27,7 @@ SOFTWARE.
 import BaseFilter from '../base-filter'
 import CountingFilter from '../interfaces/counting-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
-import {allocateArray, getDistinctIndices, HashableInput} from '../utils'
+import {allocateArray, getIndices, HashableInput} from '../utils'
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
@@ -130,12 +130,7 @@ export default class CountMinSketch
    */
   update(element: HashableInput, count = 1): void {
     this._allSums += count
-    const indexes = getDistinctIndices(
-      element,
-      this._columns,
-      this._rows,
-      this.seed
-    )
+    const indexes = getIndices(element, this._columns, this._rows, this.seed)
     for (let i = 0; i < this._rows; i++) {
       this._matrix[i][indexes[i]] += count
     }
@@ -148,12 +143,7 @@ export default class CountMinSketch
    */
   count(element: HashableInput): number {
     let min = Infinity
-    const indexes = getDistinctIndices(
-      element,
-      this._columns,
-      this._rows,
-      this.seed
-    )
+    const indexes = getIndices(element, this._columns, this._rows, this.seed)
     for (let i = 0; i < this._rows; i++) {
       const v = this._matrix[i][indexes[i]]
       min = Math.min(v, min)

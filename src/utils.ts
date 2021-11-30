@@ -199,11 +199,16 @@ export function getDistinctIndices(
   if (seed === undefined) {
     seed = getDefaultSeed()
   }
+  let n = 0
   const indexes: Array<number> = []
-  let n = 1
   while (indexes.length < number) {
     const hashes = hashTwice(element, true, seed! + size + n)
-    const ind = doubleHashing(n, hashes.first, hashes.second, size)
+    const ind = doubleHashing(
+      n,
+      hashes.first % size,
+      (hashes.second % size) + 1,
+      size
+    )
     if (!indexes.includes(ind)) {
       indexes.push(ind)
     }
@@ -216,7 +221,7 @@ export function getDistinctIndices(
  * Generate hashCount indexes, one index per [0, size)
  * it uses the double hashing technique to generate the indexes
  * @param  element    - The element to hash
- * @param  size       - The range on which we can g-enerate the index, exclusive
+ * @param  size       - The range on which we can generate the index, exclusive
  * @param  hashCount  - The number of indexes we want
  * @return An array of indexes
  */
@@ -230,9 +235,11 @@ export function getIndices(
     seed = getDefaultSeed()
   }
   const arr = []
-  for (let i = 1; i <= hashCount; i++) {
-    const hashes = hashTwice(element, true, seed + (size % i))
-    arr.push(doubleHashing(i, hashes.first, hashes.second, size))
+  const hashes = hashTwice(element, true, seed)
+  for (let i = 0; i < hashCount; i++) {
+    arr.push(
+      doubleHashing(i, hashes.first % size, (hashes.second % size) + 1, size)
+    )
   }
   if (arr.length !== hashCount)
     throw new Error('report this, please, shouldnt be of different size')
@@ -313,93 +320,30 @@ export function isEmptyBuffer(buffer: Buffer | null): boolean {
  * Hash an item as an unsigned int
  * @param  elem - Element to hash
  * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
- * @param  length - The length of hashes (defaults to 64 bits)
+ * @param  length - The length of hashes (defaults to 32 bits)
  * @return The hash value as an unsigned int
  * @author Arnaud Grall
  */
-export function hashAsInt(
-  elem: HashableInput,
-  seed?: number,
-  length?: number
-): number {
+export function hashAsInt(elem: HashableInput, seed?: number): number {
   if (seed === undefined) {
     seed = getDefaultSeed()
   }
-  switch (length) {
-    case 32:
-      return XXH.h32(elem, seed).toNumber()
-    case 64:
-      return XXH.h64(elem, seed).toNumber()
-    default:
-      return XXH.h64(elem, seed).toNumber()
-  }
+  return XXH.h64(elem, seed).toNumber()
 }
 
 /**
- * Hash an item as a string
+ * Hash an item and return its number and string (b16) representation
  * @param  elem - Element to hash
  * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
  * @param  base - The base in which the string will be returned, default: 16
- * @param  length - The length of hashes (defaults to 64 bits)
- * @return The hashed value as a string
- * @author Arnaud Grall
- */
-export function hashAsString(
-  elem: HashableInput,
-  seed?: number,
-  base?: number,
-  length?: number
-): string {
-  if (seed === undefined) {
-    seed = getDefaultSeed()
-  }
-  if (base === undefined) {
-    base = 16
-  }
-  if (length === undefined) {
-    length = 64
-  }
-  let hash
-  switch (length) {
-    case 32:
-      hash = XXH.h32(elem, seed)
-      break
-    case 64:
-      hash = XXH.h64(elem, seed)
-      break
-    default:
-      hash = XXH.h64(elem, seed)
-      break
-  }
-  let result = ''
-  if (base === 16) {
-    result = hash.toString(base)
-    if (result.length < length / 4) {
-      result = '0'.repeat(length / 4 - result.length) + result
-    }
-  } else if (base === 2) {
-    result = hex2bin(hash.toString(16))
-    if (result.length < length) {
-      result = '0'.repeat(length - result.length) + result
-    }
-  }
-  return result
-}
-
-/**
- * Hash an item as a string
- * @param  elem - Element to hash
- * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
- * @param  base - The base in which the string will be returned, default: 16
- * @param  length - The length of hashes (defaults to 64 bits)
+ * @param  length - The length of hashes (defaults to 32 bits)
  * @return The item hased as an int and a string
  * @author Arnaud Grall
  */
 export function hashIntAndString(
   elem: HashableInput,
   seed?: number,
-  base?: number,
-  length?: number
+  base?: number
 ) {
   if (seed === undefined) {
     seed = getDefaultSeed()
@@ -407,31 +351,18 @@ export function hashIntAndString(
   if (base === undefined) {
     base = 16
   }
-  if (length === undefined) {
-    length = 64
-  }
-  let hash
-  switch (length) {
-    case 32:
-      hash = XXH.h32(elem, seed)
-      break
-    case 64:
-      hash = XXH.h64(elem, seed)
-      break
-    default:
-      hash = XXH.h64(elem, seed)
-      break
-  }
+  const hash = XXH.h64(elem, seed)
+  const plat = 64
   let result = ''
   if (base === 16) {
     result = hash.toString(base)
-    if (result.length < length / 4) {
-      result = '0'.repeat(length / 4 - result.length) + result
+    if (result.length < plat / 4) {
+      result = '0'.repeat(plat / 4 - result.length) + result
     }
   } else if (base === 2) {
     result = hex2bin(hash.toString(16))
-    if (result.length < length) {
-      result = '0'.repeat(length - result.length) + result
+    if (result.length < plat) {
+      result = '0'.repeat(plat - result.length) + result
     }
   }
   return {int: hash.toNumber(), string: result}

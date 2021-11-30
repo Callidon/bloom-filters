@@ -6,15 +6,13 @@
   "scripts": {
     "build": "tsc",
     "gts": "gts",
-    "pretest": "yarn lint && yarn build",
+    "pretest": "yarn build",
     "test": "mocha test/**/*-test.js --trace-deprecation --timeout=30000",
-    "doc": "typedoc --mode file --out docs/ --ignoreCompilerErrors",
+    "doc": "typedoc --out docs/ --emit both --includeVersion src/api.ts",
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc",
-    "fix": "gts fix",
-    "prepare": "yarn.cmd run compile",
-    "posttest": "yarn.cmd run lint"
+    "fix": "gts fix"
   },
   "repository": {
     "type": "git",
@@ -54,6 +52,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "gts": "^3.1.0",
     "mocha": "^9.1.3",
+    "prettier": "^2.5.0",
     "random": "^3.0.6",
     "typedoc": "^0.22.10",
     "typescript": "^4.5.2"
@@ -77,9 +76,16 @@
       "describe": "readonly"
     },
     "rules": {
-      "node/no-unpublished-require": ["error", {
-        "allowModules": ["mocha", "chai", "random"]
-      }]
+      "node/no-unpublished-require": [
+        "error",
+        {
+          "allowModules": [
+            "mocha",
+            "chai",
+            "random"
+          ]
+        }
+      ]
     }
   },
   "standard": {

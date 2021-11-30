@@ -248,7 +248,7 @@ describe('Invertible Bloom Lookup Tables', () => {
     const sub = iblt.substract(remote)
     const res = sub.decode()
 
-    res.success.should.equal(true)
+    res.success.should.equal(true, JSON.stringify(res.reason))
 
     const sum = res.additional.length + res.missing.length
     sum.should.equal(differences)
