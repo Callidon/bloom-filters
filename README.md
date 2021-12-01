@@ -221,7 +221,7 @@ The Count Min Sketch (CM sketch) is a probabilistic data structure that serves a
 It uses hash functions to map events to frequencies, but unlike a hash table uses only sub-linear space, at the expense of overcounting some events due to collisions.
 
 **Reference:** Cormode, G., & Muthukrishnan, S. (2005). *An improved data stream summary: the count-min sketch and its applications.* Journal of Algorithms, 55(1), 58-75.
-([Full text article](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf))
+([Full text article](http://dimacs.rutgers.edu/~graham/pubs/papers/cm-full.pdf))
 
 #### Methods
 
