@@ -30,6 +30,7 @@ const {BloomFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
 const {range} = require('lodash')
 const seed = utils.getDefaultSeed()
+const assert = require('assert')
 
 describe('Utils', () => {
   describe('#allocateArray', () => {
@@ -143,15 +144,15 @@ describe('Utils', () => {
     })
   })
 
-  describe('#getDistinctIndices', () => {
+  describe('#getDistinctIndexes', () => {
     const key =
-      'da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82'
-    it('should return <number> distinct indices on the interval [0, size)', () => {
-      const desiredIndices = 10000
-      const result = range(0, desiredIndices, 1)
+    'da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82'
+    const desiredIndices = 10000
+    const result = range(0, desiredIndices, 1)
+    it(`should return ${desiredIndices} distinct indices on the interval [0, ${desiredIndices})`, () => {
       try {
         const indices = utils
-          .getDistinctIndices(key, desiredIndices, desiredIndices)
+          .getDistinctIndexes(key, desiredIndices, desiredIndices)
           .sort((a, b) => a - b)
         indices.should.deep.equal(result)
       } catch (e) {
@@ -166,6 +167,49 @@ describe('Utils', () => {
       } catch (e) {
         throw Error('it should not throw: ' + e)
       }
+    })
+    it('hash on each loop instead of once for getting distinct indices', () => {
+
+      function getDistinctIndexesWithOneHash(
+        element,
+        size,
+        number,
+        seed
+      ) {
+        if (seed === undefined) {
+          seed = utils.getDefaultSeed()
+        }
+        let n = 0
+        const indexes = new Set()
+        const hashes = utils.hashTwice(element, true, seed)
+        while (indexes.size < number) {
+          const ind = utils.doubleHashing(
+            n,
+            hashes.first % size,
+            (hashes.second % size) + 1,
+            size
+          )
+          if (!indexes.has(ind)) {
+            indexes.add(ind)
+          }
+          n++
+          if (n % 10000000 === 0) {
+            console.log(`Only ${indexes.size} generated after ${n} loop. Stopping`)
+            throw Error('it must not take so much time to get our 7 indices !!')
+          }
+        }
+        return [...indexes.values()]
+      }
+
+      const elem = '44'
+      const hashcount = 7
+      const size = 9586
+      let start = new Date().getTime()
+      const indexes_a = utils.getDistinctIndexes(elem, 7, hashcount, size, seed)
+      console.log(`${indexes_a.length} distinct indices generated in ${new Date().getTime() - start} ms`)
+
+      start = new Date().getTime()
+      assert.throws(() => getDistinctIndexesWithOneHash(elem, 7, hashcount, size, seed), Error, 'it must raise because computing once the hashes is not efficient at all.')
     })
   })
 })
