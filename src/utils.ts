@@ -183,6 +183,10 @@ export function doubleHashing(
 
 /**
  * Generate a set of distinct indexes on interval [0, size) using the double hashing technique
+ * For generating efficiently distinct indexes we re-hash each time the value twice by changing slightly the seed.
+ * It has the effect of generating different hash and therefore to decrease the number of modulo collisions.
+ * But we hash twice the value on each iteration generating more CPU consumption.
+ * USE ONLY THIS FUNCTION IF YOU WANT DISTINCT INDEXES.
  * @param  element  - The element to hash
  * @param  size     - the range on which we can generate an index [0, size) = size
  * @param  number   - The number of indexes desired
@@ -190,7 +194,7 @@ export function doubleHashing(
  * @return A array of indexes
  * @author Arnaud Grall
  */
-export function getDistinctIndices(
+export function getDistinctIndexes(
   element: HashableInput,
   size: number,
   number: number,
@@ -200,8 +204,8 @@ export function getDistinctIndices(
     seed = getDefaultSeed()
   }
   let n = 0
-  const indexes: Array<number> = []
-  while (indexes.length < number) {
+  const indexes: Set<number> = new Set()
+  while (indexes.size < number) {
     const hashes = hashTwice(element, true, seed! + size + n)
     const ind = doubleHashing(
       n,
@@ -209,23 +213,25 @@ export function getDistinctIndices(
       (hashes.second % size) + 1,
       size
     )
-    if (!indexes.includes(ind)) {
-      indexes.push(ind)
+    if (!indexes.has(ind)) {
+      indexes.add(ind)
     }
     n++
   }
-  return indexes
+  return [...indexes.values()]
 }
 
 /**
- * Generate hashCount indexes, one index per [0, size)
- * it uses the double hashing technique to generate the indexes
+ * Generate N indexes on range [0, size)
+ * It uses the double hashing technique to generate the indexes.
+ * It hash twice the value only once before generating the indexes.
+ * Warning: you can have a lot of modulo collisions.
  * @param  element    - The element to hash
  * @param  size       - The range on which we can generate the index, exclusive
  * @param  hashCount  - The number of indexes we want
- * @return An array of indexes
+ * @return An array of indexes on range [0, size)
  */
-export function getIndices(
+export function getIndexes(
   element: HashableInput,
   size: number,
   hashCount: number,
