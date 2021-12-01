@@ -28,7 +28,7 @@ import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {optimalFilterSize, optimalHashes} from '../formulas'
-import {HashableInput, allocateArray, getIndices} from '../utils'
+import {HashableInput, allocateArray, getIndexes} from '../utils'
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -129,7 +129,7 @@ export default class BloomFilter
    * filter.add('foo');
    */
   add(element: HashableInput): void {
-    const indexes = getIndices(element, this._size, this._nbHashes, this.seed)
+    const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
       if (!this._filter[indexes[i]]) {
         this._length++
@@ -149,7 +149,7 @@ export default class BloomFilter
    * console.log(filter.has('bar')); // output: false
    */
   has(element: HashableInput): boolean {
-    const indexes = getIndices(element, this._size, this._nbHashes, this.seed)
+    const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
       if (!this._filter[indexes[i]]) {
         return false

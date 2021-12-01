@@ -28,7 +28,7 @@ import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {optimalFilterSize, optimalHashes} from '../formulas'
-import {HashableInput, allocateArray, getIndices} from '../utils'
+import {HashableInput, allocateArray, getIndexes} from '../utils'
 
 /**
  * A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.
@@ -124,7 +124,7 @@ export default class CountingBloomFilter
    * filter.add('foo');
    */
   add(element: HashableInput): void {
-    const indexes = getIndices(element, this._size, this._nbHashes, this.seed)
+    const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
       // increment counter
       this._filter[indexes[i]][1] += 1
@@ -144,7 +144,7 @@ export default class CountingBloomFilter
    * filter.remove('foo');
    */
   remove(element: HashableInput): boolean {
-    const indexes = getIndices(element, this._size, this._nbHashes, this.seed)
+    const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
     const success = true
     for (let i = 0; i < indexes.length; i++) {
       // decrement counter
@@ -169,7 +169,7 @@ export default class CountingBloomFilter
    * console.log(filter.has('bar')); // output: false
    */
   has(element: HashableInput): boolean {
-    const indexes = getIndices(element, this._size, this._nbHashes, this.seed)
+    const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
       if (!this._filter[indexes[i]][0]) {
         return false

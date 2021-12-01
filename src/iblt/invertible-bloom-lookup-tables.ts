@@ -28,7 +28,7 @@ import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import Cell from './cell'
 import {AutoExportable, Field, Parameter} from '../exportable'
-import {allInOneHashTwice, allocateArray, getDistinctIndices} from '../utils'
+import {allInOneHashTwice, allocateArray, getDistinctIndexes} from '../utils'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 
 /**
@@ -173,7 +173,7 @@ export default class InvertibleBloomFilter
       JSON.stringify(element.toJSON()),
       this.seed
     )
-    const indexes = getDistinctIndices(
+    const indexes = getDistinctIndexes(
       hashes.string.first,
       this._size,
       this._hashCount,
@@ -194,7 +194,7 @@ export default class InvertibleBloomFilter
       JSON.stringify(element.toJSON()),
       this.seed
     )
-    const indexes = getDistinctIndices(
+    const indexes = getDistinctIndexes(
       hashes.string.first,
       this.size,
       this._hashCount,
@@ -218,7 +218,7 @@ export default class InvertibleBloomFilter
       JSON.stringify(element.toJSON()),
       this.seed
     )
-    const indexes = getDistinctIndices(
+    const indexes = getDistinctIndexes(
       hashes.string.first,
       this.size,
       this._hashCount,
@@ -338,7 +338,7 @@ export default class InvertibleBloomFilter
           throw new Error('Please report, not possible')
         }
         const hashes = allInOneHashTwice(JSON.stringify(id.toJSON()), this.seed)
-        const indexes = getDistinctIndices(
+        const indexes = getDistinctIndexes(
           hashes.string.first,
           this._size,
           this._hashCount,

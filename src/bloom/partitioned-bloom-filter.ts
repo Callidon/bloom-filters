@@ -27,7 +27,7 @@ SOFTWARE.
 import BaseFilter from '../base-filter'
 import ClassicFilter from '../interfaces/classic-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
-import {HashableInput, allocateArray, getIndices} from '../utils'
+import {HashableInput, allocateArray, getIndexes} from '../utils'
 
 /**
  * Return the optimal number of hashes needed for a given error rate and load factor
@@ -218,7 +218,7 @@ export default class PartitionedBloomFilter
    * filter.add('foo');
    */
   add(element: HashableInput): void {
-    const indexes = getIndices(element, this._m, this._nbHashes, this.seed)
+    const indexes = getIndexes(element, this._m, this._nbHashes, this.seed)
     for (let i = 0; i < this._nbHashes; i++) {
       this._filter[i][indexes[i]] = 1
     }
@@ -236,7 +236,7 @@ export default class PartitionedBloomFilter
    * console.log(filter.has('bar')); // output: false
    */
   has(element: HashableInput): boolean {
-    const indexes = getIndices(element, this._m, this._nbHashes, this.seed)
+    const indexes = getIndexes(element, this._m, this._nbHashes, this.seed)
     for (let i = 0; i < this._nbHashes; i++) {
       if (!this._filter[i][indexes[i]]) {
         return false
