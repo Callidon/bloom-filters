@@ -28,7 +28,7 @@ import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import Cell from './cell'
 import {AutoExportable, Field, Parameter} from '../exportable'
-import {allInOneHashTwice, allocateArray, getDistinctIndexes} from '../utils'
+import {allocateArray, getDistinctIndexes, hashTwiceAsString} from '../utils'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 
 /**
@@ -169,18 +169,18 @@ export default class InvertibleBloomFilter
    * @param element - The element to insert
    */
   add(element: Buffer): void {
-    const hashes = allInOneHashTwice(
+    const hashes = hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
     )
     const indexes = getDistinctIndexes(
-      hashes.string.first,
+      hashes.first,
       this._size,
       this._hashCount,
       this.seed
     )
     for (let i = 0; i < this._hashCount; ++i) {
-      this._elements[indexes[i]].add(element, Buffer.from(hashes.string.first))
+      this._elements[indexes[i]].add(element, Buffer.from(hashes.first))
     }
   }
 
@@ -190,19 +190,19 @@ export default class InvertibleBloomFilter
    * @return True if the element has been removed, False otheriwse
    */
   remove(element: Buffer): boolean {
-    const hashes = allInOneHashTwice(
+    const hashes = hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
     )
     const indexes = getDistinctIndexes(
-      hashes.string.first,
-      this.size,
+      hashes.first,
+      this._size,
       this._hashCount,
       this.seed
     )
     for (let i = 0; i < this._hashCount; ++i) {
       this._elements[indexes[i]] = this._elements[indexes[i]].xorm(
-        new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1)
+        new Cell(Buffer.from(element), Buffer.from(hashes.first), 1)
       )
     }
     return true
@@ -214,13 +214,13 @@ export default class InvertibleBloomFilter
    * @return False if the element is not in the filter, true if "may be" in the filter.
    */
   has(element: Buffer): boolean {
-    const hashes = allInOneHashTwice(
+    const hashes = hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
     )
     const indexes = getDistinctIndexes(
-      hashes.string.first,
-      this.size,
+      hashes.first,
+      this._size,
       this._hashCount,
       this.seed
     )
@@ -337,16 +337,16 @@ export default class InvertibleBloomFilter
         } else {
           throw new Error('Please report, not possible')
         }
-        const hashes = allInOneHashTwice(JSON.stringify(id.toJSON()), this.seed)
+        const hashes = hashTwiceAsString(JSON.stringify(id.toJSON()), this.seed)
         const indexes = getDistinctIndexes(
-          hashes.string.first,
+          hashes.first,
           this._size,
           this._hashCount,
           this.seed
         )
         for (let i = 0; i < indexes.length; ++i) {
           this._elements[indexes[i]] = this._elements[indexes[i]].xorm(
-            new Cell(id, Buffer.from(hashes.string.first), c)
+            new Cell(id, Buffer.from(hashes.first), c)
           )
           if (this._elements[indexes[i]].isPure()) {
             pureList.push(indexes[i])

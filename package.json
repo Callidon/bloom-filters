@@ -7,7 +7,7 @@
     "build": "tsc",
     "gts": "gts",
     "pretest": "yarn build",
-    "test": "mocha --parallel test/**/*-test.js --trace-deprecation --timeout=30000",
+    "test": "mocha --parallel test/**/*-test.js --trace-deprecation --timeout=60000",
     "doc": "typedoc --out docs/ --emit both --includeVersion src/api.ts",
     "lint": "gts lint",
     "clean": "gts clean",

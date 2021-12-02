@@ -30,7 +30,6 @@ const {BloomFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
 const {range} = require('lodash')
 const seed = utils.getDefaultSeed()
-const assert = require('assert')
 
 describe('Utils', () => {
   describe('#allocateArray', () => {
@@ -56,7 +55,7 @@ describe('Utils', () => {
       values.forEach(n => {
         utils
           .doubleHashing(n, hashA, hashB, size)
-          .should.equal((hashA + n * hashB + ((n**3 - n)/6)) % size)
+          .should.equal((hashA + n * hashB + (n ** 3 - n) / 6) % size)
       })
     })
   })
@@ -145,9 +144,10 @@ describe('Utils', () => {
   })
 
   describe('#getDistinctIndexes', () => {
+    utils.switchSerializationType(32) // switch to 32 for faster execution
     const key =
-    'da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82'
-    const desiredIndices = 1000
+      'da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82'
+    const desiredIndices = 10000
     const result = range(0, desiredIndices, 1)
     it(`should return ${desiredIndices} distinct indices on the interval [0, ${desiredIndices})`, () => {
       try {
@@ -156,10 +156,17 @@ describe('Utils', () => {
           .getDistinctIndexes(key, desiredIndices, desiredIndices)
           .sort((a, b) => a - b)
         indices.should.deep.equal(result)
-        console.log(`Generated ${indices.length} distinct indices on the interval [0, ${desiredIndices}) in ${new Date().getTime() - start} ms`)
+        console.log(
+          `Generated ${
+            indices.length
+          } distinct indices on the interval [0, ${desiredIndices}) in ${
+            new Date().getTime() - start
+          } ms`
+        )
       } catch (e) {
         throw Error('it should not throw: ' + e)
       }
+      utils.switchSerializationType(64) // switch back to 64
     })
     it('should the issue be fixed', () => {
       try {

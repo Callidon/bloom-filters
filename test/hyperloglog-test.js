@@ -25,20 +25,23 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const {HyperLogLog} = require('../dist/api.js')
+const { HyperLogLog } = require('../dist/api.js')
+const utils = require('../dist/utils.js')
 
 describe('HyperLogLog', () => {
   describe('#update', () => {
     it('should support update and cardinality estimations (count) operations', () => {
+      utils.switchSerializationType(32)
       const nbDistinct = 100
       const sketch = new HyperLogLog(110)
       // populate the sketch with some values
-      for (let i = 0; i < 10e5; i++) {
+      for (let i = 0; i < 10e3; i++) {
         sketch.update(`${i % nbDistinct}`)
       }
       sketch
         .count(true)
         .should.be.closeTo(nbDistinct, nbDistinct * sketch.accuracy())
+      utils.switchSerializationType(64)
     })
   })
 

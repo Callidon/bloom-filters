@@ -44,7 +44,56 @@ export interface TwoHashes {
   second: number
 }
 
+/**
+ * Templated TwoHashes type
+ */
+export interface TwoHashesTemplated<T> {
+  first: T
+  second: T
+}
+
+/**
+ * TwoHashes type in number and int format
+ */
+export interface TwoHashesIntAndString {
+  int: TwoHashesTemplated<number>
+  string: TwoHashesTemplated<string>
+}
+
 export type HashableInput = string | ArrayBuffer | Buffer
+
+/**
+ * Internal variable for switching XXH hash function from/to 32/64 bits type.
+ */
+const serialize_function: XXH.HashInterface = switchSerializationType(64)
+
+/**
+ * Allow to switch the hash between 32 or 64 bits
+ * @param base 32 or 64
+ * @returns
+ */
+export function switchSerializationType(base = 64): XXH.HashInterface {
+  switch (base) {
+    case 64:
+      return XXH.h64
+    case 32:
+      return XXH.h32
+  }
+  return XXH.h64
+}
+
+/**
+ * Hash an element into a 64 bits Number
+ * @param element
+ * @param seed
+ * @returns
+ */
+function serialize(element: HashableInput, seed?: number) {
+  if (!seed) {
+    seed = getDefaultSeed()
+  }
+  return Number(serialize_function(element, seed).toNumber())
+}
 
 /**
  * Create a new array fill with a base value
@@ -69,6 +118,19 @@ export function allocateArray<T>(
 }
 
 /**
+ * Return a number to its Hex format by padding zeroes if length mod 4 != 0
+ * @param elem the element to transform in HEX
+ * @returns the HEX number padded of zeroes
+ */
+function numberToHex(elem: number): string {
+  let e = Number(elem).toString(16)
+  if (e.length % 4 !== 0) {
+    e = '0'.repeat(4 - (e.length % 4)) + e
+  }
+  return e
+}
+
+/**
  * (64-bits only) Hash a value into two values (in hex or integer format)
  * @param  value - The value to hash
  * @param  asInt - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
@@ -77,53 +139,30 @@ export function allocateArray<T>(
  * @memberof Utils
  * @author Arnaud Grall & Thomas Minier
  */
-export function hashTwice(
-  value: HashableInput,
-  asInt?: boolean,
-  seed?: number
-): TwoHashes {
-  if (asInt === undefined) {
-    asInt = false
-  }
+export function hashTwice(value: HashableInput, seed?: number): TwoHashes {
   if (seed === undefined) {
     seed = getDefaultSeed()
   }
-  const f = XXH.h64(value, seed + 1)
-  const l = XXH.h64(value, seed + 2)
-  if (asInt) {
-    return {
-      first: f.toNumber(),
-      second: l.toNumber(),
-    }
-  } else {
-    let one = f.toString(16)
-    if (one.length < 16) {
-      one = '0'.repeat(16 - one.length) + one
-    }
-    let two = l.toString(16)
-    if (two.length < 16) {
-      two = '0'.repeat(16 - two.length) + two
-    }
-    return {
-      first: Number(one),
-      second: Number(two),
-    }
+  return {
+    first: serialize(value, seed + 1),
+    second: serialize(value, seed + 2),
   }
 }
 
-export function hashTwiceAsString(value: HashableInput, seed?: number) {
-  if (seed === undefined) {
-    seed = getDefaultSeed()
-  }
-  const f = XXH.h64(value, seed + 1)
-  const l = XXH.h64(value, seed + 2)
-  let one = f.toString(16)
-  if (one.length < 16) one = '0'.repeat(16 - one.length) + one
-  let two = l.toString(16)
-  if (two.length < 16) two = '0'.repeat(16 - two.length) + two
+/**
+ * Hash twice an element into their HEX string representations
+ * @param value
+ * @param seed
+ * @returns TwoHashesTemplated<string>
+ */
+export function hashTwiceAsString(
+  value: HashableInput,
+  seed?: number
+): TwoHashesTemplated<string> {
+  const {first, second} = hashTwice(value, seed)
   return {
-    first: one,
-    second: two,
+    first: numberToHex(first),
+    second: numberToHex(second),
   }
 }
 
@@ -131,39 +170,62 @@ export function hashTwiceAsString(value: HashableInput, seed?: number) {
  * (64-bits only) Same as hashTwice but return Numbers and String equivalent
  * @param  val the value to hash
  * @param  seed the seed to change when hashing
- * @return A object of shape {int: {first: <number>, second: <number>}, string: {first: <hex-string>, second: <hex-string>}
+ * @return TwoHashesIntAndString
  * @author Arnaud Grall
  */
-export function allInOneHashTwice(val: HashableInput, seed?: number) {
+export function HashTwiceIntAndString(
+  val: HashableInput,
+  seed?: number
+): TwoHashesIntAndString {
   if (seed === undefined) {
     seed = getDefaultSeed()
   }
-  const one = XXH.h64(val, seed + 1)
-  const two = XXH.h64(val, seed + 2)
-  let stringOne = one.toString(16)
-  if (stringOne.length < 16)
-    stringOne = '0'.repeat(16 - stringOne.length) + stringOne
-  let stringTwo = two.toString(16)
-  if (stringTwo.length < 16)
-    stringTwo = '0'.repeat(16 - stringTwo.length) + stringTwo
-
+  const one = hashIntAndString(val, seed + 1)
+  const two = hashIntAndString(val, seed + 2)
   return {
     int: {
-      first: one.toNumber(),
-      second: two.toNumber(),
+      first: one.int,
+      second: two.int,
     },
     string: {
-      first: stringOne,
-      second: stringTwo,
+      first: one.string,
+      second: two.string,
     },
   }
 }
 
 /**
+ * Hash an item as an unsigned int
+ * @param  elem - Element to hash
+ * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
+ * @param  length - The length of hashes (defaults to 32 bits)
+ * @return The hash value as an unsigned int
+ * @author Arnaud Grall
+ */
+export function hashAsInt(elem: HashableInput, seed?: number): number {
+  if (seed === undefined) {
+    seed = getDefaultSeed()
+  }
+  return serialize(elem, seed)
+}
+
+/**
+ * Hash an item and return its number and HEX string representation
+ * @param  elem - Element to hash
+ * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
+ * @param  base - The base in which the string will be returned, default: 16
+ * @param  length - The length of hashes (defaults to 32 bits)
+ * @return The item hased as an int and a string
+ * @author Arnaud Grall
+ */
+export function hashIntAndString(elem: HashableInput, seed?: number) {
+  const hash = hashAsInt(elem, seed)
+  return {int: hash, string: numberToHex(hash)}
+}
+
+/**
  * Apply enhanced Double Hashing to produce a n-hash
- * Originally, this implementation used directly the value produced by the two hash functions instead of the functions themselves.
- * @see {@link http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=4060353E67A356EF9528D2C57C064F5A?doi=10.1.1.152.579&rep=rep1&type=pdf} for more details about double hashing.
- * A enhanced version (currently used) is available at: http://peterd.org/pcd-diss.pdf s6.5.4
+ * @see {@link http://peterd.org/pcd-diss.pdf} s6.5.4
  * @param  n - The indice of the hash function we want to produce
  * @param  hashA - The result of the first hash function applied to a value.
  * @param  hashB - The result of the second hash function applied to a value.
@@ -194,8 +256,9 @@ export function doubleHashing(
  * @param  size     - the range on which we can generate an index [0, size) = size
  * @param  number   - The number of indexes desired
  * @param  seed     - The seed used
- * @return A array of indexes
+ * @return Array<number>
  * @author Arnaud Grall
+ * @author Simon Woolf (SimonWoolf)
  */
 export function getDistinctIndexes(
   element: HashableInput,
@@ -208,20 +271,25 @@ export function getDistinctIndexes(
   }
   let n = 0
   const indexes: Set<number> = new Set()
-  let hashes = hashTwice(element, true, seed)
-  let cycle = 0
+  let hashes = hashTwice(element, seed)
+  // let cycle = 0
   while (indexes.size < number) {
-    const ind = doubleHashing(n, hashes.first, hashes.second, size)
+    const ind = hashes.first % size
     if (!indexes.has(ind)) {
       indexes.add(ind)
-    } else {
-      if (cycle > number) {
-        cycle = 0
-        hashes = hashTwice(element, true, seed + n)
-      }
-      cycle++
     }
+    hashes.first = (hashes.first + hashes.second) % size
+    hashes.second = (hashes.second + n) % size
     n++
+
+    if (n > size) {
+      // Enhanced double hashing stops cycles of length less than `size` in the case where
+      // size is coprime with the second hash. But you still get cycles of length `size`.
+      // So if we reach there and haven't finished, append a prime to the input and
+      // rehash.
+      seed++
+      hashes = hashTwice(element, seed)
+    }
   }
   return [...indexes.values()]
 }
@@ -246,7 +314,7 @@ export function getIndexes(
     seed = getDefaultSeed()
   }
   const arr = []
-  const hashes = hashTwice(element, true, seed)
+  const hashes = hashTwice(element, seed)
   for (let i = 0; i < hashCount; i++) {
     arr.push(doubleHashing(i, hashes.first, hashes.second, size))
   }
@@ -303,8 +371,7 @@ export function xorBuffer(a: Buffer, b: Buffer): Buffer {
     start++
     value = it.next()
   }
-  const buf2 = buffer.slice(start)
-  return buf2
+  return buffer.slice(start)
 }
 
 /**
@@ -324,80 +391,10 @@ export function isEmptyBuffer(buffer: Buffer | null): boolean {
 }
 
 /**
- * Hash an item as an unsigned int
- * @param  elem - Element to hash
- * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
- * @param  length - The length of hashes (defaults to 32 bits)
- * @return The hash value as an unsigned int
- * @author Arnaud Grall
- */
-export function hashAsInt(elem: HashableInput, seed?: number): number {
-  if (seed === undefined) {
-    seed = getDefaultSeed()
-  }
-  return XXH.h64(elem, seed).toNumber()
-}
-
-/**
- * Hash an item and return its number and string (b16) representation
- * @param  elem - Element to hash
- * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
- * @param  base - The base in which the string will be returned, default: 16
- * @param  length - The length of hashes (defaults to 32 bits)
- * @return The item hased as an int and a string
- * @author Arnaud Grall
- */
-export function hashIntAndString(
-  elem: HashableInput,
-  seed?: number,
-  base?: number
-) {
-  if (seed === undefined) {
-    seed = getDefaultSeed()
-  }
-  if (base === undefined) {
-    base = 16
-  }
-  const hash = XXH.h64(elem, seed)
-  const plat = 64
-  let result = ''
-  if (base === 16) {
-    result = hash.toString(base)
-    if (result.length < plat / 4) {
-      result = '0'.repeat(plat / 4 - result.length) + result
-    }
-  } else if (base === 2) {
-    result = hex2bin(hash.toString(16))
-    if (result.length < plat) {
-      result = '0'.repeat(plat - result.length) + result
-    }
-  }
-  return {int: hash.toNumber(), string: result}
-}
-
-/**
  * Return the default seed used in the package
- * @return A ssed as a floating point number
+ * @return A seed as a floating point number
  * @author Arnaud Grall
  */
 export function getDefaultSeed(): number {
   return 0x1234567890
-}
-
-/**
- * Return the next power of 2 of x
- * @param  x - Value
- * @return The next power of 2 of x
- */
-export function power2(x: number): number {
-  return Math.ceil(Math.pow(2, Math.floor(Math.log(x) / Math.log(2))))
-}
-
-/**
- * Convert an hex string into a binary string
- * @param  hex  - A base 16 string
- * @return A base 2 string
- */
-export function hex2bin(hex: string): string {
-  return parseInt(hex, 16).toString(2)
 }

@@ -29,6 +29,8 @@ require('chai').expect()
 const {InvertibleBloomFilter} = require('../dist/api.js')
 const random = require('random')
 const seedrandom = require('seedrandom')
+const utils = require('../dist/utils.js')
+utils.switchSerializationType(32)
 
 describe('Invertible Bloom Lookup Tables', () => {
   const keys = 1000
@@ -109,7 +111,6 @@ describe('Invertible Bloom Lookup Tables', () => {
         output.push(elt.value)
         elt = iterator.next()
       }
-      elt.value.should.equal(true)
       output.length.should.equals(toInsert.length)
       output.sort().should.eqls(toInsert.sort())
     })
@@ -128,7 +129,6 @@ describe('Invertible Bloom Lookup Tables', () => {
         output.push(elt.value)
         elt = iterator.next()
       }
-      elt.value.should.equal(true)
       output.length.should.equals(toInsert.length)
       output.sort().should.eqls(toInsert.sort())
     })
@@ -196,7 +196,7 @@ describe('Invertible Bloom Lookup Tables', () => {
 
   describe(`Set differences of [10 to ${d}] with ${keys} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${
     alpha * d
-  } cells`, () => {
+    } cells`, () => {
     for (let i = step; i <= d; i += step) {
       it(
         'should decodes correctly element for a set difference of ' + i,

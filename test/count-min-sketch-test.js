@@ -25,7 +25,9 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
+const { utils } = require('mocha')
 const {CountMinSketch} = require('../dist/api.js')
+const butils = require('../dist/utils.js')
 
 describe('CountMinSketch', () => {
   const delta = 0.999
@@ -131,11 +133,12 @@ describe('CountMinSketch', () => {
       })
     })
   })
-  describe.skip('Performance test', () => {
+  describe('Performance test', () => {
+    butils.switchSerializationType(32)
     // setup an finite stream of 100 000 elements between [0; 1000)
-    const max = 1000000
+    const max = 100000
     const rate = 0.00001
-    const range = 10000
+    const range = 1000
     const random = () => {
       return Math.floor(Math.random() * range)
     }
@@ -173,5 +176,6 @@ describe('CountMinSketch', () => {
       const errorProb = 1 - Math.pow(Math.E, -filter.rows)
       errorRate.should.be.at.most(errorProb)
     })
+    butils.switchSerializationType(64)
   })
 })

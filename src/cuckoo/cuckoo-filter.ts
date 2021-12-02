@@ -46,7 +46,7 @@ import {
  */
 function computeFingerpintLength(size: number, rate: number): number {
   const f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
-  return Math.ceil(f / 8) // because we use base 16 64-bits hashes
+  return Math.ceil(f / 8) // because we use 64-bits hashes
 }
 
 /**
@@ -154,7 +154,6 @@ export default class CuckooFilter
   ): CuckooFilter {
     const fl = computeFingerpintLength(bucketSize, errorRate)
     const capacity = Math.ceil(size / bucketSize / 0.955)
-    // const capacity = utils.power2(items)
     return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
   }
 
@@ -370,7 +369,7 @@ export default class CuckooFilter
    * @private
    */
   _locations(element: HashableInput) {
-    const hashes = hashIntAndString(element, this.seed, 16)
+    const hashes = hashIntAndString(element, this.seed)
     const hash = hashes.int
     if (this._fingerprintLength > hashes.string.length) {
       throw new Error(
