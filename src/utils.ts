@@ -160,10 +160,10 @@ export function allInOneHashTwice(val: HashableInput, seed?: number) {
 }
 
 /**
- * Apply Double Hashing to produce a n-hash
- *
- * This implementation used directly the value produced by the two hash functions instead of the functions themselves.
+ * Apply enhanced Double Hashing to produce a n-hash
+ * Originally, this implementation used directly the value produced by the two hash functions instead of the functions themselves.
  * @see {@link http://citeseer.ist.psu.edu/viewdoc/download;jsessionid=4060353E67A356EF9528D2C57C064F5A?doi=10.1.1.152.579&rep=rep1&type=pdf} for more details about double hashing.
+ * A enhanced version (currently used) is available at: http://peterd.org/pcd-diss.pdf s6.5.4
  * @param  n - The indice of the hash function we want to produce
  * @param  hashA - The result of the first hash function applied to a value.
  * @param  hashB - The result of the second hash function applied to a value.
@@ -171,6 +171,7 @@ export function allInOneHashTwice(val: HashableInput, seed?: number) {
  * @return The result of hash_n applied to a value.
  * @memberof Utils
  * @author Thomas Minier
+ * @author Arnaud Grall
  */
 export function doubleHashing(
   n: number,
@@ -178,15 +179,17 @@ export function doubleHashing(
   hashB: number,
   size: number
 ): number {
-  return Math.abs((hashA + n * hashB) % size)
+  return Math.abs((hashA + n * hashB + Math.floor((n ** 3 - n) / 6)) % size)
 }
 
 /**
  * Generate a set of distinct indexes on interval [0, size) using the double hashing technique
- * For generating efficiently distinct indexes we re-hash each time the value twice by changing slightly the seed.
- * It has the effect of generating different hash and therefore to decrease the number of modulo collisions.
- * But we hash twice the value on each iteration generating more CPU consumption.
- * USE ONLY THIS FUNCTION IF YOU WANT DISTINCT INDEXES.
+ * For generating efficiently distinct indexes we re-hash after detecting a cycle by changing slightly the seed.
+ * It has the effect of generating faster distinct indexes without loosing entirely the utility of the double hashing.
+ * For small number of indexes it will work perfectly. For a number close to the size, and size very large
+ * Advise: do not generate `size` indexes for a large interval. In practice, size should be equal
+ * to the number of hash functions used and is often low.
+ *
  * @param  element  - The element to hash
  * @param  size     - the range on which we can generate an index [0, size) = size
  * @param  number   - The number of indexes desired
@@ -205,16 +208,18 @@ export function getDistinctIndexes(
   }
   let n = 0
   const indexes: Set<number> = new Set()
+  let hashes = hashTwice(element, true, seed)
+  let cycle = 0
   while (indexes.size < number) {
-    const hashes = hashTwice(element, true, seed! + size + n)
-    const ind = doubleHashing(
-      n,
-      hashes.first % size,
-      (hashes.second % size) + 1,
-      size
-    )
+    const ind = doubleHashing(n, hashes.first, hashes.second, size)
     if (!indexes.has(ind)) {
       indexes.add(ind)
+    } else {
+      if (cycle > number) {
+        cycle = 0
+        hashes = hashTwice(element, true, seed + n)
+      }
+      cycle++
     }
     n++
   }
@@ -243,17 +248,13 @@ export function getIndexes(
   const arr = []
   const hashes = hashTwice(element, true, seed)
   for (let i = 0; i < hashCount; i++) {
-    arr.push(
-      doubleHashing(i, hashes.first % size, (hashes.second % size) + 1, size)
-    )
+    arr.push(doubleHashing(i, hashes.first, hashes.second, size))
   }
-  if (arr.length !== hashCount)
-    throw new Error('report this, please, shouldnt be of different size')
   return arr
 }
 
 /**
- * Generate a random int bewteen two bounds (included)
+ * Generate a random int between two bounds (included)
  * @param min - The lower bound
  * @param max - The upper bound
  * @param random - Function used to generate random floats
