@@ -30,7 +30,7 @@ describe('BitSet', () => {
     it('is initially clear', () => {
         const set = new BitSet(50)
         set.size.should.equal(50)
-        for (let i=0; i<set.size; i++) {
+        for (let i = 0; i < set.size; i++) {
             set.has(i).should.equal(false)
         }
     })
@@ -38,12 +38,12 @@ describe('BitSet', () => {
     it('reads and clears set values', () => {
         const set = new BitSet(50)
         set.size.should.equal(50)
-        for (let i=0; i<set.size; i++) {
+        for (let i = 0; i < set.size; i++) {
             set.has(i).should.equal(false)
             set.add(i)
             set.has(i).should.equal(true)
         }
-        for (let i=0; i<set.size; i++) {
+        for (let i = 0; i < set.size; i++) {
             set.has(i).should.equal(true)
             set.remove(i)
             set.has(i).should.equal(false)
@@ -54,7 +54,7 @@ describe('BitSet', () => {
         it('finds the high bit', () => {
             const set = new BitSet(150)
             set.size.should.equal(150)
-            for (let i=0; i<set.size; i++) {
+            for (let i = 0; i < set.size; i++) {
                 set.add(i)
                 set.max().should.equal(i)
             }
@@ -82,10 +82,9 @@ describe('BitSet', () => {
                     {size: 1},
                     {content: 'Ag=='},
                     {size: 'cow', content: 'Ag=='}
-                ].forEach(json => {
-                    console.log(json)
-                    ;(() => BitSet.import(json)).should.throw(Error)
-                })
+                ].forEach(json =>
+                    (() => BitSet.import(json)).should.throw(Error)
+                )
             })
         })
     })
@@ -95,7 +94,7 @@ describe('BitSet', () => {
             let a = new BitSet(50)
             let b = new BitSet(50)
             a.equals(b).should.equal(true)
-            for (let i=0; i < a.size; i += 3) {  // 3 is relatively prime to 8, so should hit all edge cases
+            for (let i = 0; i < a.size; i += 3) {  // 3 is relatively prime to 8, so should hit all edge cases
                 a.add(i)
                 b.add(i)
                 a.equals(b).should.equal(true)

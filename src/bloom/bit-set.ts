@@ -24,43 +24,55 @@ SOFTWARE.
 
 import {encode, decode} from "base64-arraybuffer";
 
+const bitsPerWord = 8;
+
 /** A memory-efficient Boolean array. Contains just the minimal operations needed for our Bloom filter implementation.
  *
  * @author David Leppik
  */
-
-const bitsPerWord = 8;
-
 export default class BitSet {
     readonly size: number;
 
     // Uint32Array may be slightly faster due to memory alignment, but this avoids endianness when serializing
     private array: Uint8Array;
 
+    /**
+     * Constructor. All bits are initially set to false.
+     * @param size the number of bits that can be stored. (This is NOT required to be a multiple of 8.)
+     */
     constructor(size: number) {
         this.size = size
         this.array = new Uint8Array(Math.ceil(size / bitsPerWord))
     }
 
+    /** Returns the value of the bit at the given index
+     * @param index position of the bit, zero-indexed
+     */
     has(index: number): boolean {
         const wordIndex = Math.floor(index / bitsPerWord)
         const mask = 1 << (index % bitsPerWord)
         return (this.array[wordIndex] & mask) !== 0
     }
 
+    /** Set the bit to true
+     * @param index position of the bit, zero-indexed
+     */
     add(index: number) {
         const wordIndex = Math.floor(index / bitsPerWord)
         const mask = 1 << (index % bitsPerWord)
         this.array[wordIndex] = this.array[wordIndex] | mask
     }
 
+    /** Set the bit to false
+     * @param index position of the bit, zero-indexed
+     */
     remove(index: number) {
         const wordIndex = Math.floor(index / bitsPerWord)
         const mask = 1 << (index % bitsPerWord)
         this.array[wordIndex] = this.array[wordIndex] ^ mask
     }
 
-    /** Returns the maximum set bit. */
+    /** Returns the maximum true bit. */
     max(): number {
         for (let i = this.array.length - 1; i >= 0; i--) {
             let bits = this.array[i];
@@ -71,6 +83,7 @@ export default class BitSet {
         return 0;
     }
 
+    /** Returns the number of true bits. */
     bitCount(): number {
         let result = 0
         for (let i = 0; i < this.array.length; i++) {
@@ -79,7 +92,11 @@ export default class BitSet {
         return result
     }
 
-    public equals(other: BitSet): boolean {
+    /**
+     * Returns true if the size and contents are identical.
+     * @param other another BitSet
+     */
+    equals(other: BitSet): boolean {
         if (other.size !== this.size) {
             return false
         }
@@ -91,14 +108,19 @@ export default class BitSet {
         return true
     }
 
-    public export(): BitSetData {
+    /** Returns a JSON-encodable object readable by {@link import}. */
+    export(): { size: number, content: string } {
         return {
             size: this.size,
             content: encode(this.array)
         }
     }
 
-    public static import(data: any): BitSet {
+    /**
+     * Returns an object written by {@link export}.
+     * @param data an object written by {@link export}
+     */
+    static import(data: any): BitSet {
         if (typeof data.size !== "number") {
             throw Error("BitSet missing size")
         }
@@ -111,7 +133,14 @@ export default class BitSet {
         return result
     }
 
-    private static highBit(bits : number) : number {
+    /**
+     * Returns the index of the maximum bit in the number, or -1 for 0
+     * @bits an unsigned 8-bit number
+     * @example
+     * BitSet.highBit(0) // returns -1
+     * BitSet.highBit(5) // returns 2
+     */
+    private static highBit(bits: number): number {
         let result = bitsPerWord - 1;
         let mask = 1 << result;
         while (result >= 0 && ((mask & bits) !== mask)) {
@@ -121,6 +150,13 @@ export default class BitSet {
         return result;
     }
 
+    /**
+     * Returns the number of true bits in the number
+     * @bits an unsigned 8-bit number
+     * @example
+     * BitSet.countBits(0) // returns 0
+     * BitSet.countBits(3) // returns 2
+     */
     private static countBits(bits: number): number {
         let result = bits & 1;
         while (bits !== 0) {
@@ -129,9 +165,4 @@ export default class BitSet {
         }
         return result
     }
-}
-
-interface BitSetData {
-    size: number
-    content: string
 }
