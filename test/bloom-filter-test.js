@@ -149,11 +149,11 @@ describe('BloomFilter', () => {
       for (let i = max; i < max * 11; ++i) {
         tries++
         current = i
-        const has = filter.has('' + current, true)
+        const has = filter.has('' + current)
         if (has) falsePositive++
       }
-      const currentrate = falsePositive / tries
-      currentrate.should.be.closeTo(targetedRate, targetedRate)
+      const currentRate = falsePositive / tries
+      currentRate.should.be.closeTo(targetedRate, targetedRate)
     })
   })
 })
