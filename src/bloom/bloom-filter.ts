@@ -82,14 +82,18 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * Build a new Bloom Filter from an existing iterable with a fixed error rate
    * @param items - The iterable used to populate the filter
    * @param errorRate - The error rate, i.e. 'false positive' rate, targeted by the filter
+   * @param seed - The random number seed (optional)
    * @return A new Bloom Filter filled with the iterable's elements
    * @example
    * // create a filter with a false positive rate of 0.1
    * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
-  static from (items: Iterable<HashableInput>, errorRate: number): BloomFilter {
+  static from (items: Iterable<HashableInput>, errorRate: number, seed?: number): BloomFilter {
     const array = Array.from(items)
     const filter = BloomFilter.create(array.length, errorRate)
+    if (typeof seed === 'number') {
+      filter.seed = seed
+    }
     array.forEach(element => filter.add(element))
     return filter
   }

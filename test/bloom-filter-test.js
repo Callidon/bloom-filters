@@ -52,6 +52,7 @@ describe('BloomFilter', () => {
       filter.length.should.greaterThan(0)
       filter.length.should.be.at.most(filter._nbHashes * data.length)
       filter.rate().should.be.closeTo(targetRate, 0.1)
+      filter.seed.should.equal(0x1234567890) // utils.getDefaultSeed()
     })
   })
 
