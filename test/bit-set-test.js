@@ -61,18 +61,33 @@ describe('BitSet', () => {
         })
     })
 
-    it('imports what it exports', () => {
-        const set = new BitSet(50)
-        for (let i=0; i < set.size; i += 3) { // 3 is relatively prime to 8, so should hit all edge cases
-            set.add(i)
-        }
-        const exported = set.export()
-        const imported = BitSet.import(exported)
-        imported.size.should.equal(set.size)
-        for (i=0; i < set.size; i++) {
-            let expected = i % 3 === 0;
-            set.has(i).should.equal(expected)
-        }
+    describe("#import, #export", () => {
+        it('imports what it exports', () => {
+            const set = new BitSet(50)
+            for (let i = 0; i < set.size; i += 3) { // 3 is relatively prime to 8, so should hit all edge cases
+                set.add(i)
+            }
+            const exported = set.export()
+            const imported = BitSet.import(exported)
+            imported.size.should.equal(set.size)
+            for (let i = 0; i < set.size; i++) {
+                let expected = i % 3 === 0;
+                set.has(i).should.equal(expected)
+            }
+        })
+
+        describe('#import', () => {
+            it('Throws an Error on bad data', () => {
+                [
+                    {size: 1},
+                    {content: 'Ag=='},
+                    {size: 'cow', content: 'Ag=='}
+                ].forEach(json => {
+                    console.log(json)
+                    ;(() => BitSet.import(json)).should.throw(Error)
+                })
+            })
+        })
     })
 
     describe('#equals', () => {

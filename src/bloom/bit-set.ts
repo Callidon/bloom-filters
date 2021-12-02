@@ -32,7 +32,7 @@ import {encode, decode} from "base64-arraybuffer";
 const bitsPerWord = 8;
 
 export default class BitSet {
-    public readonly size: number;
+    readonly size: number;
 
     // Uint32Array may be slightly faster due to memory alignment, but this avoids endianness when serializing
     private array: Uint8Array;
@@ -94,7 +94,7 @@ export default class BitSet {
     public export(): BitSetData {
         return {
             size: this.size,
-            base64: encode(this.array)
+            content: encode(this.array)
         }
     }
 
@@ -102,8 +102,11 @@ export default class BitSet {
         if (typeof data.size !== "number") {
             throw Error("BitSet missing size")
         }
+        if (typeof data.content !== "string") {
+            throw Error("BitSet: missing content")
+        }
         const result = new BitSet(data.size)
-        const buffer = decode(data.base64)
+        const buffer = decode(data.content)
         result.array = new Uint8Array(buffer)
         return result
     }
@@ -130,5 +133,5 @@ export default class BitSet {
 
 interface BitSetData {
     size: number
-    base64: string
+    content: string
 }
