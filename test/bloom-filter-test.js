@@ -102,6 +102,7 @@ describe('BloomFilter', () => {
       exported._seed.should.equal(filter.seed)
       exported.type.should.equal('BloomFilter')
       exported._size.should.equal(filter.size)
+      exported._nbHashes.should.equal(filter._nbHashes)
       exported._filter.should.deep.equal(filter._filter.export())
     })
 
@@ -119,13 +120,11 @@ describe('BloomFilter', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'BloomFilter' },
-        { type: 'BloomFilter', _size: 1 },
-        { type: 'BloomFilter', _size: 1, _seed: 1 },
-        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {} },
-        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {size: 1, base64: "error, not actually base64"} },
-        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {size: 1, base64: "error, not actually base64"} },
+        { type: 'wrong', _size: 1, _nbHashes: 2, _seed: 1, _filter: {size: 1, content: 'AA=='} },
+        { type: 'BloomFilter', _nbHashes: 2, _seed: 1, _filter: {size: 1, content: 'AA=='} },
+        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {size: 1, content: 'AA=='} },
+        { type: 'BloomFilter', _size: 1, _nbHashes: 2, _filter: {size: 1, content: 'AA=='} },
+        { type: 'BloomFilter', _size: 1, _nbHashes: 2, _seed: 1 }
       ]
 
       invalids.forEach(json => {
