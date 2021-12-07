@@ -26,7 +26,8 @@ import {encode, decode} from "base64-arraybuffer";
 
 const bitsPerWord = 8;
 
-/** A memory-efficient Boolean array. Contains just the minimal operations needed for our Bloom filter implementation.
+/**
+ * A memory-efficient Boolean array. Contains just the minimal operations needed for our Bloom filter implementation.
  *
  * @author David Leppik
  */
@@ -45,7 +46,8 @@ export default class BitSet {
         this.array = new Uint8Array(Math.ceil(size / bitsPerWord))
     }
 
-    /** Returns the value of the bit at the given index
+    /**
+     * Returns the value of the bit at the given index
      * @param index position of the bit, zero-indexed
      */
     has(index: number): boolean {
@@ -54,7 +56,8 @@ export default class BitSet {
         return (this.array[wordIndex] & mask) !== 0
     }
 
-    /** Set the bit to true
+    /**
+     * Set the bit to true
      * @param index position of the bit, zero-indexed
      */
     add(index: number) {
@@ -63,7 +66,8 @@ export default class BitSet {
         this.array[wordIndex] = this.array[wordIndex] | mask
     }
 
-    /** Set the bit to false
+    /**
+     * Set the bit to false
      * @param index position of the bit, zero-indexed
      */
     remove(index: number) {
@@ -72,7 +76,9 @@ export default class BitSet {
         this.array[wordIndex] = this.array[wordIndex] ^ mask
     }
 
-    /** Returns the maximum true bit. */
+    /**
+     * Returns the maximum true bit.
+     */
     max(): number {
         for (let i = this.array.length - 1; i >= 0; i--) {
             let bits = this.array[i];
@@ -83,7 +89,9 @@ export default class BitSet {
         return 0;
     }
 
-    /** Returns the number of true bits. */
+    /**
+     * Returns the number of true bits.
+     */
     bitCount(): number {
         let result = 0
         for (let i = 0; i < this.array.length; i++) {
