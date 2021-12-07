@@ -108,7 +108,9 @@ export default class BitSet {
         return true
     }
 
-    /** Returns a JSON-encodable object readable by {@link import}. */
+    /** 
+     * Returns a JSON-encodable object readable by {@link import}. 
+     */
     export(): { size: number, content: string } {
         return {
             size: this.size,
