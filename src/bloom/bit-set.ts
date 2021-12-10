@@ -67,16 +67,6 @@ export default class BitSet {
     }
 
     /**
-     * Set the bit to false
-     * @param index position of the bit, zero-indexed
-     */
-    remove(index: number) {
-        const wordIndex = Math.floor(index / bitsPerWord)
-        const mask = 1 << (index % bitsPerWord)
-        this.array[wordIndex] = this.array[wordIndex] ^ mask
-    }
-
-    /**
      * Returns the maximum true bit.
      */
     max(): number {

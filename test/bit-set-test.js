@@ -35,18 +35,13 @@ describe('BitSet', () => {
         }
     })
 
-    it('reads and clears set values', () => {
+    it('#add', () => {
         const set = new BitSet(50)
         set.size.should.equal(50)
         for (let i = 0; i < set.size; i++) {
             set.has(i).should.equal(false)
             set.add(i)
             set.has(i).should.equal(true)
-        }
-        for (let i = 0; i < set.size; i++) {
-            set.has(i).should.equal(true)
-            set.remove(i)
-            set.has(i).should.equal(false)
         }
     })
 
@@ -110,7 +105,7 @@ describe('BitSet', () => {
             let b = new BitSet(50)
             a.add(3)
             a.equals(b).should.equal(false)
-            a.remove(3)
+            a = new BitSet(50)
             a.equals(b).should.equal(true)
             a.add(49)
             a.equals(b).should.equal(false)
