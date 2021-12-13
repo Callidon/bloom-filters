@@ -175,7 +175,7 @@ describe('CountMinSketch', () => {
       const errorRate = error / max
       const errorProb = 1 - Math.pow(Math.E, -filter.rows)
       errorRate.should.be.at.most(errorProb)
+      butils.switchSerializationType(64)
     })
-    butils.switchSerializationType(64)
   })
 })

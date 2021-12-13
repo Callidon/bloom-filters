@@ -26,9 +26,11 @@ SOFTWARE.
 
 require('chai').should()
 const utils = require('../dist/utils.js')
+utils.switchSerializationType(32)
 const {BloomFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
 const {range} = require('lodash')
+const { util } = require('chai')
 const seed = utils.getDefaultSeed()
 
 describe('Utils', () => {
@@ -144,7 +146,6 @@ describe('Utils', () => {
   })
 
   describe('#getDistinctIndexes', () => {
-    utils.switchSerializationType(32) // switch to 32 for faster execution
     const key =
       'da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82'
     const desiredIndices = 10000
@@ -166,7 +167,6 @@ describe('Utils', () => {
       } catch (e) {
         throw Error('it should not throw: ' + e)
       }
-      utils.switchSerializationType(64) // switch back to 64
     })
     it('should the issue be fixed', () => {
       try {
@@ -176,6 +176,20 @@ describe('Utils', () => {
       } catch (e) {
         throw Error('it should not throw: ' + e)
       }
+    })
+  })
+
+  describe('Use different hash functions', () => {
+    it('overriding serialize function by always returning Number(1)', () => {
+      utils.serialize = (element, seed=undefined) => { return Number(1) }
+      const data = utils.serialize('a')
+      data.should.equal(Number(1))
+      const bl = BloomFilter.create(2, 0.01)
+      bl.add('a')
+      const bl2 = BloomFilter.create(2, 0.01)
+      bl2.add('a')
+      // 2 bloom filters with a hash functions returning everytime the same thing must be equal
+      bl.equals(bl2).should.be.true
     })
   })
 })

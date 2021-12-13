@@ -60,35 +60,45 @@ export interface TwoHashesIntAndString {
   string: TwoHashesTemplated<string>
 }
 
+/**
+ * Data type of an hashable value, must be string, ArrayBuffer or Buffer.
+ */
 export type HashableInput = string | ArrayBuffer | Buffer
 
 /**
+ * @internal
  * Internal variable for switching XXH hash function from/to 32/64 bits type.
+ * Can be overrided as long as you respect the XXH.HashInterface type.
+ * Only .toNumber() is used in the package. see {@link serialize}
  */
-const serialize_function: XXH.HashInterface = switchSerializationType(64)
+let serialize_function: XXH.HashInterface = XXH.h64
 
 /**
- * Allow to switch the hash between 32 or 64 bits
- * @param base 32 or 64
+ * Allow to switch the hash function between XXH.h32 or XXH.h64 bits ({@link serialize_function})
+ * @param base 32 or 64 by default
  * @returns
  */
-export function switchSerializationType(base = 64): XXH.HashInterface {
+export function switchSerializationType(base: any = 64) {
   switch (base) {
-    case 64:
-      return XXH.h64
     case 32:
-      return XXH.h32
+      serialize_function = XXH.h32
+      break
+    case 64:
+    default:
+      serialize_function = XXH.h64
   }
-  return XXH.h64
 }
 
 /**
- * Hash an element into a 64 bits Number
+ * Hash an element of type {@link HashableInput} into {@link Number}
+ * Can be overrided as long as you return a value of type {@link Number}
+ * Don't forget to use the seed when hashing, otherwise if some kind of randomness is in the process 
+ * you may have inconsistent behaviors between 2 runs.
  * @param element
  * @param seed
- * @returns
+ * @returns A 64bits floating point {@link Number}
  */
-function serialize(element: HashableInput, seed?: number) {
+export function serialize(element: HashableInput, seed?: number) {
   if (!seed) {
     seed = getDefaultSeed()
   }

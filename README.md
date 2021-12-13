@@ -23,6 +23,7 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
   - [Top-K](#top-k)
   - [Invertible Bloom Filters](#invertible-bloom-filters)
 - [Export and import](#export-and-import)
+- [Seeding and Hashing](#seeding-and-hashing)
 - [Documentation](#documentation)
 - [Tests](#tests)
 - [References](#references)
@@ -507,6 +508,22 @@ utils.switchSerializationType(32)
 const bl = new BloomFilter(15, 0.01)
 // back to 64
 utils.switchSerializationType(64)
+```
+
+In the case you want to use your own hash functions, you can override the `serialize` function in `require('bloom-filters/utils')`, example:
+Don't forget to always override the function each time you import the module otherwise you'll have bad side effects.
+```ts
+
+const {BloomFilter} = require('bloom-filters')
+const utils = require('bloom-filters/utils')
+
+// override using a dumb version, use this one at your own risk!
+utils.serialize = (element, seed=undefined) => { return Number(1) }
+
+
+// use the library as usual
+const bl = BloomFilter.create(2, 0.01)
+bl.add('a')
 ```
 
 ## Documentation

@@ -27,11 +27,11 @@ SOFTWARE.
 require('chai').should()
 const { HyperLogLog } = require('../dist/api.js')
 const utils = require('../dist/utils.js')
+utils.switchSerializationType(32)
 
 describe('HyperLogLog', () => {
   describe('#update', () => {
     it('should support update and cardinality estimations (count) operations', () => {
-      utils.switchSerializationType(32)
       const nbDistinct = 100
       const sketch = new HyperLogLog(110)
       // populate the sketch with some values
@@ -41,7 +41,6 @@ describe('HyperLogLog', () => {
       sketch
         .count(true)
         .should.be.closeTo(nbDistinct, nbDistinct * sketch.accuracy())
-      utils.switchSerializationType(64)
     })
   })
 
