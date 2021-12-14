@@ -27,5 +27,9 @@ jobs:
       run: yarn install
     - name: Build TS
       run: yarn build
-    - name: Test package
+    - name: Test package and Code coverage
       run: yarn test
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: coverage/coverage-final.json
+        title: Test Coverage
