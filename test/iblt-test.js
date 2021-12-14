@@ -196,7 +196,7 @@ describe('Invertible Bloom Lookup Tables', () => {
 
   describe(`Set differences of [10 to ${d}] with ${keys} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${
     alpha * d
-    } cells`, () => {
+  } cells`, () => {
     for (let i = step; i <= d; i += step) {
       it(
         'should decodes correctly element for a set difference of ' + i,

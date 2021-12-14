@@ -25,7 +25,6 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { utils } = require('mocha')
 const {CountMinSketch} = require('../dist/api.js')
 const butils = require('../dist/utils.js')
 

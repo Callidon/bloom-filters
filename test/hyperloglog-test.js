@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { HyperLogLog } = require('../dist/api.js')
+const {HyperLogLog} = require('../dist/api.js')
 const utils = require('../dist/utils.js')
 utils.switchSerializationType(32)
 

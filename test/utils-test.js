@@ -30,7 +30,6 @@ utils.switchSerializationType(32)
 const {BloomFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
 const {range} = require('lodash')
-const { util } = require('chai')
 const seed = utils.getDefaultSeed()
 
 describe('Utils', () => {
@@ -181,8 +180,10 @@ describe('Utils', () => {
 
   describe('Use different hash functions', () => {
     it('overriding serialize function by always returning Number(1)', () => {
-      utils.serialize = (element, seed=undefined) => { return Number(1) }
-      const data = utils.serialize('a')
+      utils.serialize = (_element, _seed = undefined) => { // eslint-disable-line
+        return Number(1)
+      }
+      const data = utils.serialize('a', seed)
       data.should.equal(Number(1))
       const bl = BloomFilter.create(2, 0.01)
       bl.add('a')

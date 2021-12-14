@@ -78,7 +78,7 @@ let serialize_function: XXH.HashInterface = XXH.h64
  * @param base 32 or 64 by default
  * @returns
  */
-export function switchSerializationType(base: any = 64) {
+export function switchSerializationType(base = 64) {
   switch (base) {
     case 32:
       serialize_function = XXH.h32
@@ -92,7 +92,7 @@ export function switchSerializationType(base: any = 64) {
 /**
  * Hash an element of type {@link HashableInput} into {@link Number}
  * Can be overrided as long as you return a value of type {@link Number}
- * Don't forget to use the seed when hashing, otherwise if some kind of randomness is in the process 
+ * Don't forget to use the seed when hashing, otherwise if some kind of randomness is in the process
  * you may have inconsistent behaviors between 2 runs.
  * @param element
  * @param seed
