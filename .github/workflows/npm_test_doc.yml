@@ -1,7 +1,7 @@
 name: 🔎 Test package
 on:
   push:
-    branches: [ master ]
+    branches: [ master, updated_outdated ]
   pull_request:
     branches: [ master ]
 jobs:
