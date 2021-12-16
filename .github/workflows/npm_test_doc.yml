@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        node-version: [12.x, 14.x, 15.x, 16.x] # since last mocha version is compatible for node 12.0.0+ we remove 10.x matrix
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -24,7 +24,7 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
     - name: Install package
       if: steps.cache.outputs.cache-hit != 'true'
-      run: yarn install
+      run: npm install -g yarn && yarn install
     - name: Build TS
       run: yarn build
     - name: Test package and Code coverage

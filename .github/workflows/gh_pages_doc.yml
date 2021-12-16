@@ -7,10 +7,10 @@ jobs:
       runs-on: ubuntu-latest
       steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 15.x
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v1
         with:
-          node-version: "15.x"
+          node-version: "16.x"
       - name: Install package
         run: yarn install
       - name: Build TS
