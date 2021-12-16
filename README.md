@@ -25,7 +25,7 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 - [Export and import](#export-and-import)
 - [Seeding and Hashing](#seeding-and-hashing)
 - [Documentation](#documentation)
-- [Tests](#tests)
+- [Tests](#tests-and-development)
 - [References](#references)
 - [Changelog](#changelog)
 - [License](#license)
@@ -530,14 +530,18 @@ bl.add('a')
 
 See [documentation online](https://callidon.github.io/bloom-filters/) or generate it in directory `doc/` with: `npm run doc`
 
-## Tests
+## Tests and Development
 
-Running with Mocha + Chai
+* Tests are performed using [mocha](https://github.com/mochajs/mocha) and [nyc](https://github.com/istanbuljs/nyc) (code coverage) on node 12.x, 14.x, 15.x and 16.x for the moment.
+* Linting and formatting are made using [gts](https://github.com/google/gts)
 
-```bash
-# run tests
-npm test
-```
+When submitting pull requests please follow the following guidance:
+* please, PRs on the develop branch. PRs on the master will be refused without comment.
+* add tests when possible in `./test/*-test.js` or by creating `*-test.js` files.
+* functions, methods, variables and types must be documented using typedoc annotations
+* run `yarn lint` to see linting errors
+* run `yarn fix` to fix errors that can be auto-fixed by gts.
+* run `yarn test` (build, lint and run the mocha tests suite with code coverage)
 
 ## References
 
@@ -554,7 +558,7 @@ npm test
 
 | **Version** | **Release date** | **Major changes**                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `v2.0.0`    | 8/12/2021        | Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43), rename `getIndices` to `getIndexes` and `getDistinctIndices` to `getDistinctIndexes`. Use `getIndexes` every where except for IBLTs where `getDistinctIndexes` is used. Add support for switching from/to 32/64 bits hash function. Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays |
+| `v2.0.0`    | 8/12/2021        | Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43), rename `getIndices` to `getIndexes` and `getDistinctIndices` to `getDistinctIndexes`. Use `getIndexes` every where except for IBLTs where `getDistinctIndexes` is used. Add support for switching from/to 32/64 bits hash function. Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. Disable 10.x node tests. |
 | `v1.3.0`    | 10/04/2020       | Added the MinHash set                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `v1.2.0`    | 08/04/2020       | Add the TopK class                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `v1.1.0`    | 03/04/2020       | Add the HyperLogLog sketch                                                                                                                                                                                                                                                                                                                                                                                                                                    |
