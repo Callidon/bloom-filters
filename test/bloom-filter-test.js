@@ -60,13 +60,16 @@ describe('BloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+    const getFilter = () =>
+      BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should return false for elements that are definitively not in the set', () => {
+      const filter = getFilter()
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
     })
 
     it('should return true for elements that might be in the set', () => {
+      const filter = getFilter()
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)

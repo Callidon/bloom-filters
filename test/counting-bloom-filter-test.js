@@ -55,16 +55,16 @@ describe('CountingBloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = CountingBloomFilter.from(
-      ['alice', 'bob', 'carl'],
-      targetRate
-    )
+    const getFilter = () =>
+      CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should return false for elements that are definitively not in the set', () => {
+      const filter = getFilter()
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
     })
 
     it('should return true for elements that might be in the set', () => {
+      const filter = getFilter()
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)
@@ -123,11 +123,10 @@ describe('CountingBloomFilter', () => {
   })
 
   describe('#saveAsJSON', () => {
-    const filter = CountingBloomFilter.from(
-      ['alice', 'bob', 'carl'],
-      targetRate
-    )
+    const getFilter = () =>
+      CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should export a bloom filter to a JSON object', () => {
+      const filter = getFilter()
       const exported = filter.saveAsJSON()
       exported._seed.should.equal(filter.seed)
       exported.type.should.equal('CountingBloomFilter')
@@ -138,6 +137,7 @@ describe('CountingBloomFilter', () => {
     })
 
     it('should create a bloom filter from a JSON export', () => {
+      const filter = getFilter()
       const exported = filter.saveAsJSON()
       const newFilter = CountingBloomFilter.fromJSON(exported)
       newFilter.seed.should.equal(filter.seed)

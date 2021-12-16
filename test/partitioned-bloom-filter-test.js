@@ -50,17 +50,22 @@ describe('PartitionedBloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = PartitionedBloomFilter.create(15, targetRate)
-    filter.add('alice')
-    filter.add('bob')
-    filter.add('carl')
+    const getFilter = () => {
+      const filter = PartitionedBloomFilter.create(15, targetRate)
+      filter.add('alice')
+      filter.add('bob')
+      filter.add('carl')
+      return filter
+    }
 
     it('should return false for elements that are definitively not in the set', () => {
+      const filter = getFilter()
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
     })
 
     it('should return true for elements that might be in the set', () => {
+      const filter = getFilter()
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)
@@ -116,12 +121,16 @@ describe('PartitionedBloomFilter', () => {
   })
 
   describe('#saveAsJSON', () => {
-    const filter = PartitionedBloomFilter.create(15, targetRate)
-    filter.add('alice')
-    filter.add('bob')
-    filter.add('carl')
+    const getFilter = () => {
+      const filter = PartitionedBloomFilter.create(15, targetRate)
+      filter.add('alice')
+      filter.add('bob')
+      filter.add('carl')
+      return filter
+    }
 
     it('should export a partitioned bloom filter to a JSON object', () => {
+      const filter = getFilter()
       const exported = filter.saveAsJSON()
       exported.type.should.equal('PartitionedBloomFilter')
       exported._capacity.should.equal(15)
@@ -133,6 +142,7 @@ describe('PartitionedBloomFilter', () => {
     })
 
     it('should create a partitioned bloom filter from a JSON export', () => {
+      const filter = getFilter()
       const exported = filter.saveAsJSON()
       const newFilter = PartitionedBloomFilter.fromJSON(exported)
       newFilter._capacity.should.equal(filter._capacity)
