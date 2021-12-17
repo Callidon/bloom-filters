@@ -52,6 +52,7 @@ describe('BloomFilter', () => {
       filter.length.should.greaterThan(0)
       filter.length.should.be.at.most(filter._nbHashes * data.length)
       filter.rate().should.be.closeTo(targetRate, 0.1)
+      filter.seed.should.equal(0x1234567890) // utils.getDefaultSeed()
     })
   })
 
@@ -102,9 +103,8 @@ describe('BloomFilter', () => {
       exported._seed.should.equal(filter.seed)
       exported.type.should.equal('BloomFilter')
       exported._size.should.equal(filter.size)
-      exported._length.should.equal(filter.length)
       exported._nbHashes.should.equal(filter._nbHashes)
-      exported._filter.should.deep.equal(filter._filter)
+      exported._filter.should.deep.equal(filter._filter.export())
     })
 
     it('should create a bloom filter from a JSON export', () => {
@@ -116,19 +116,16 @@ describe('BloomFilter', () => {
       const newFilter = BloomFilter.fromJSON(exported)
       newFilter.seed.should.equal(filter.seed)
       newFilter.size.should.equal(filter._size)
-      newFilter.length.should.equal(filter._length)
-      newFilter._nbHashes.should.equal(filter._nbHashes)
       newFilter._filter.should.deep.equal(filter._filter)
     })
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'BloomFilter' },
-        { type: 'BloomFilter', _size: 1 },
-        { type: 'BloomFilter', _size: 1, _length: 1 },
-        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2 },
-        { type: 'BloomFilter', _size: 1, _length: 1, _nbHashes: 2, seed: 1 }
+        { type: 'wrong', _size: 1, _nbHashes: 2, _seed: 1, _filter: {size: 1, content: 'AA=='} },
+        { type: 'BloomFilter', _nbHashes: 2, _seed: 1, _filter: {size: 1, content: 'AA=='} },
+        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {size: 1, content: 'AA=='} },
+        { type: 'BloomFilter', _size: 1, _nbHashes: 2, _filter: {size: 1, content: 'AA=='} },
+        { type: 'BloomFilter', _size: 1, _nbHashes: 2, _seed: 1 }
       ]
 
       invalids.forEach(json => {
@@ -152,11 +149,11 @@ describe('BloomFilter', () => {
       for (let i = max; i < max * 11; ++i) {
         tries++
         current = i
-        const has = filter.has('' + current, true)
+        const has = filter.has('' + current)
         if (has) falsePositive++
       }
-      const currentrate = falsePositive / tries
-      currentrate.should.be.closeTo(targetedRate, targetedRate)
+      const currentRate = falsePositive / tries
+      currentRate.should.be.closeTo(targetedRate, targetedRate)
     })
   })
 })

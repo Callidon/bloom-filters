@@ -26,9 +26,10 @@ SOFTWARE.
 
 import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter from '../base-filter'
+import BitSet from "./bit-set";
 import { AutoExportable, Field, Parameter } from '../exportable'
 import { optimalFilterSize, optimalHashes } from '../formulas'
-import { HashableInput, allocateArray, getDistinctIndices } from '../utils'
+import { HashableInput, getDistinctIndices } from '../utils'
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -42,16 +43,13 @@ import { HashableInput, allocateArray, getDistinctIndices } from '../utils'
 @AutoExportable<BloomFilter>('BloomFilter', ['_seed'])
 export default class BloomFilter extends BaseFilter implements ClassicFilter<HashableInput> {
   @Field()
-  private _size: number
+  private readonly _size: number
 
   @Field()
-  private _nbHashes: number
+  private readonly _nbHashes: number
 
-  @Field()
-  private _filter: Array<number>
-
-  @Field()
-  private _length: number
+  @Field<BitSet>(f => f.export(), d => BitSet.import(d))
+  private readonly _filter: BitSet
 
   /**
    * Constructor
@@ -65,13 +63,12 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
     }
     this._size = size
     this._nbHashes = nbHashes
-    this._filter = allocateArray(this._size, 0)
-    this._length = 0
+    this._filter = new BitSet(size)
   }
 
   /**
    * Create an optimal bloom filter providing the maximum of elements stored and the error rate desired
-   * @param  items      - The maximum nuber of item to store
+   * @param  nbItems      - The maximum number of item to store
    * @param  errorRate  - The error rate desired for a maximum of items inserted
    * @return A new {@link BloomFilter}
    */
@@ -84,15 +81,19 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
   /**
    * Build a new Bloom Filter from an existing iterable with a fixed error rate
    * @param items - The iterable used to populate the filter
-   * @param errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
+   * @param errorRate - The error rate, i.e. 'false positive' rate, targeted by the filter
+   * @param seed - The random number seed (optional)
    * @return A new Bloom Filter filled with the iterable's elements
    * @example
    * // create a filter with a false positive rate of 0.1
    * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    */
-  static from (items: Iterable<HashableInput>, errorRate: number): BloomFilter {
+  static from (items: Iterable<HashableInput>, errorRate: number, seed?: number): BloomFilter {
     const array = Array.from(items)
     const filter = BloomFilter.create(array.length, errorRate)
+    if (typeof seed === 'number') {
+      filter.seed = seed
+    }
     array.forEach(element => filter.add(element))
     return filter
   }
@@ -110,7 +111,7 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * @return The filter length
    */
   get length (): number {
-    return this._length
+    return this._filter.bitCount()
   }
 
   /**
@@ -123,10 +124,7 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
   add (element: HashableInput): void {
     const indexes = getDistinctIndices(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
-      if (!this._filter[indexes[i]]) {
-        this._length++
-      }
-      this._filter[indexes[i]] = 1
+      this._filter.add(indexes[i]);
     }
   }
 
@@ -143,7 +141,7 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
   has (element: HashableInput): boolean {
     const indexes = getDistinctIndices(element, this._size, this._nbHashes, this.seed)
     for (let i = 0; i < indexes.length; i++) {
-      if (!this._filter[indexes[i]]) {
+      if (!this._filter.has(indexes[i])) {
         return false
       }
     }
@@ -158,18 +156,18 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
    * console.log(filter.rate()); // output: something around 0.1
    */
   rate (): number {
-    return Math.pow(1 - Math.exp(-this._length / this._size), this._nbHashes)
+    return Math.pow(1 - Math.exp(-this.length / this._size), this._nbHashes)
   }
 
   /**
    * Check if another Bloom Filter is equal to this one
-   * @param  filter - The filter to compare to this one
+   * @param  other - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */
   equals (other: BloomFilter): boolean {
-    if (this._size !== other._size || this._nbHashes !== other._nbHashes || this._length !== other._length) {
+    if (this._size !== other._size || this._nbHashes !== other._nbHashes) {
       return false
     }
-    return this._filter.every((value, index) => other._filter[index] === value)
+    return this._filter.equals(other._filter)
   }
 }

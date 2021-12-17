@@ -27,6 +27,7 @@ SOFTWARE.
 export { default as BloomFilter } from './bloom/bloom-filter'
 export { default as CountingBloomFilter } from './bloom/counting-bloom-filter'
 export { default as PartitionedBloomFilter } from './bloom/partitioned-bloom-filter'
+export { default as BitSet } from './bloom/bit-set'
 export { default as CountMinSketch } from './sketch/count-min-sketch'
 export { default as HyperLogLog } from './sketch/hyperloglog'
 export { default as TopK } from './sketch/topk'
