@@ -25,6 +25,7 @@ SOFTWARE.
 'use strict'
 
 export {default as BloomFilter} from './bloom/bloom-filter'
+export {default as BitSet} from './bloom/bit-set'
 export {default as XorFilter} from './bloom/xor-filter'
 export {default as CountingBloomFilter} from './bloom/counting-bloom-filter'
 export {default as PartitionedBloomFilter} from './bloom/partitioned-bloom-filter'
