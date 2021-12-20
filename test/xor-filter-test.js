@@ -1,7 +1,7 @@
-/* file : api.ts
+/* file : bloom-filter-test.js
 MIT License
 
-Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
+Copyright (c) 2017 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,15 @@ SOFTWARE.
 
 'use strict'
 
-export {default as BloomFilter} from './bloom/bloom-filter'
-export {default as XorFilter} from './bloom/xor-filter'
-export {default as CountingBloomFilter} from './bloom/counting-bloom-filter'
-export {default as PartitionedBloomFilter} from './bloom/partitioned-bloom-filter'
-export {default as CountMinSketch} from './sketch/count-min-sketch'
-export {default as HyperLogLog} from './sketch/hyperloglog'
-export {default as TopK} from './sketch/topk'
-export {MinHash} from './sketch/min-hash'
-export {default as MinHashFactory} from './sketch/min-hash-factory'
-export {default as CuckooFilter} from './cuckoo/cuckoo-filter'
-export {default as InvertibleBloomFilter} from './iblt/invertible-bloom-lookup-tables'
-export {default as Cell} from './iblt/cell'
+require('chai').should()
+const {XorFilter} = require('../dist/api.js')
+
+describe('XorFilter', () => {
+  const elements = ['alice', 'bob']
+  it(`should create a xor filter correctly for one entry (array of ${elements.length} element)`, () => {
+    const filter = new XorFilter(elements)
+    console.log(filter)
+    filter.has('alice').should.be.true
+    filter.has('bob').should.be.true
+  })
+})
