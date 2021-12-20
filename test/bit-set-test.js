@@ -66,7 +66,7 @@ describe('BitSet', () => {
       const imported = BitSet.import(exported)
       imported.size.should.equal(set.size)
       for (let i = 0; i < set.size; i++) {
-        let expected = i % 3 === 0
+        const expected = i % 3 === 0
         set.has(i).should.equal(expected)
       }
     })
@@ -82,8 +82,8 @@ describe('BitSet', () => {
 
   describe('#equals', () => {
     it('returns true on identical size and data', () => {
-      let a = new BitSet(50)
-      let b = new BitSet(50)
+      const a = new BitSet(50)
+      const b = new BitSet(50)
       a.equals(b).should.equal(true)
       for (let i = 0; i < a.size; i += 3) {
         // 3 is relatively prime to 8, so should hit all edge cases
@@ -99,7 +99,7 @@ describe('BitSet', () => {
 
     it('returns false on different data', () => {
       let a = new BitSet(50)
-      let b = new BitSet(50)
+      const b = new BitSet(50)
       a.add(3)
       a.equals(b).should.equal(false)
       a = new BitSet(50)
@@ -111,7 +111,7 @@ describe('BitSet', () => {
 
   describe('#bitCount', () => {
     it('counts the number of bits', () => {
-      let set = new BitSet(50)
+      const set = new BitSet(50)
       let expectedCount = 0
       set.bitCount().should.equal(expectedCount)
       for (let i = 0; i < set.size; i += 3) {

@@ -233,7 +233,10 @@ export default class XorFilter extends BaseFilter {
    * @returns KeyIndex[]
    */
   private _scanCount(sets: XorSet[]): KeyIndex[] {
-    const values: KeyIndex[] = allocateArray(this.bucketSize, () => new KeyIndex())
+    const values: KeyIndex[] = allocateArray(
+      this.bucketSize,
+      () => new KeyIndex()
+    )
     sets.forEach((set, index) => {
       if (set.count === 1) {
         const keyindex = new KeyIndex()
