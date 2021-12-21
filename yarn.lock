@@ -263,6 +263,18 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
+"@stdlib/number-int32-base-to-uint32@^0.0.x":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@stdlib/number-int32-base-to-uint32/-/number-int32-base-to-uint32-0.0.6.tgz#02480da6df44ffb019f0f9e54a88105bb3f7cecf"
+  integrity sha512-Rp0lGbd7cOK3/H4qa/eUamSQj7brABqwLazcyt9xgLDNBgXkOlMqMYjGnWa4WGkOAgll8UTiQveArrghSWHGXw==
+
+"@stdlib/number-uint32-base-rotl@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@stdlib/number-uint32-base-rotl/-/number-uint32-base-rotl-0.0.6.tgz#7cbd2cab8afa0707a98d508017fcabc63710c9fc"
+  integrity sha512-akVdWl0WiparoVYFOhub33XNbIonOy7qHvaxkkXBlMC6bvCS8V/Fupkl4tJN6ih1h7avil0RsUBbI/n9bHJQYA==
+  dependencies:
+    "@stdlib/number-int32-base-to-uint32" "^0.0.x"
+
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-1.1.2.tgz#b1665e2c461a2cd92f4c1bbf50d5454de0d4b421"

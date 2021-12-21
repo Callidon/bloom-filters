@@ -29,10 +29,10 @@ const {XorFilter} = require('../dist/api.js')
 
 describe('XorFilter', () => {
   const elements = ['alice', 'bob']
-  it(`should create a xor filter correctly for one entry (array of ${elements.length} element)`, () => {
+  it(`should create a xor filter correctly (array of ${elements.length} element(s))`, () => {
     const filter = new XorFilter(elements)
-    console.log(filter)
     filter.has('alice').should.be.true
     filter.has('bob').should.be.true
+    filter.has('george').should.be.false
   })
 })

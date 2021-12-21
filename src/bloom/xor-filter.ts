@@ -27,6 +27,7 @@ SOFTWARE.
 import BaseFilter from '../base-filter'
 import {AutoExportable, Field} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
+import rotl32 from '@stdlib/number-uint32-base-rotl'
 import XXH from 'xxhashjs'
 
 /**
@@ -34,7 +35,7 @@ import XXH from 'xxhashjs'
  * Structure defining a xor of elements with the number of elements XORed.
  */
 export class XorSet {
-  mask = BigInt(0)
+  mask = 0
   count = 0
 }
 
@@ -43,12 +44,12 @@ export class XorSet {
  */
 export class KeyIndex {
   index = 0
-  hash = BigInt(0)
+  hash = 0
 }
 
 @AutoExportable<XorFilter>('XorFilter', ['_seed'])
 export default class XorFilter extends BaseFilter {
-  private static readonly MAX_ITERATION = 1024
+  private static readonly MAX_ITERATION = 10
 
   /**
    * Array of fingerprints
@@ -57,15 +58,18 @@ export default class XorFilter extends BaseFilter {
   public filter: number[]
 
   /**
-   * The bucket size. filtersize / 3
+   * Return the current bucketSize, based on the filter size
    */
-  @Field()
-  public readonly bucketSize: number
+  public get bucketSize() {
+    return this.filterSize / 3
+  }
+
   /**
-   * Filter size Aka: (64 + ceil(1.23 * |S|)) / 3 * 3, where S is the set of elements to insert in the filter
+   * Return the filter size
    */
-  @Field()
-  public readonly filterSize: number
+  public get filterSize() {
+    return this.filter.length
+  }
 
   constructor(elements: HashableInput[]) {
     super()
@@ -74,10 +78,12 @@ export default class XorFilter extends BaseFilter {
         'a XorFilter must be calibrated for a given number of elements'
       )
     }
-    this.filterSize =
-      Math.round((64 + Math.ceil(1.23 * elements.length)) / 3) * 3
-    this.bucketSize = this.filterSize / 3
-    this.filter = this._create(elements)
+
+    this.filter = allocateArray(
+      Math.round((32 + Math.ceil(1.23 * elements.length)) / 3) * 3,
+      () => 0
+    )
+    this._create(elements)
   }
 
   /**
@@ -87,13 +93,11 @@ export default class XorFilter extends BaseFilter {
    */
   public has(element: HashableInput): boolean {
     const hashes = this._geth0h1h2(element, this.seed)
-    const fprint = Number(BigInt.asUintN(8, this._fingerprint(hashes.hash)))
-    return (
-      fprint ===
-      (hashes.h0 ^
-        (hashes.h1 + this.bucketSize) ^
-        (hashes.h2 + 2 * this.bucketSize))
-    )
+    const fprint = this._fingerprint(hashes.hash)
+    const fh0 = this.filter[hashes.h0]
+    const fh1 = this.filter[hashes.h1 + this.bucketSize]
+    const fh2 = this.filter[hashes.h2 + 2 * this.bucketSize]
+    return fprint === (fh0 ^ fh1 ^ fh2)
   }
 
   /**
@@ -112,20 +116,20 @@ export default class XorFilter extends BaseFilter {
    * Generate the fingerprint of the hash of the element
    * Because we hash an element using XXH.h64 and return a hash on 64 bits then we use this hash
    * @param hash hash of the element as a number
-   * @returns bigint
+   * @returns
    */
-  private _fingerprint(hash: bigint): bigint {
-    return hash * (hash >> BigInt(32)) // this._geth0(hash) ^ this._geth1(hash) ^ this._geth2(hash)
+  private _fingerprint(hash: number): number {
+    return hash
   }
 
   /**
-   * Hash the element to its 64 bits version Number
+   * Hash the element to its 64 bits version Number XXH.h64
    * @param element
    * @param seed
-   * @returns bigint
+   * @returns
    */
   private _serialize(element: HashableInput, seed: number) {
-    return BigInt.asUintN(64, BigInt(XXH.h64(element, seed).toNumber()))
+    return XXH.h32(element, seed).toNumber()
   }
 
   /**
@@ -136,8 +140,8 @@ export default class XorFilter extends BaseFilter {
    * @param c the number of rotation
    * @returns
    */
-  private _rotl64(n: bigint, c: number) {
-    return ((n << BigInt(c)) & BigInt(63)) | ((n >> -BigInt(c)) & BigInt(63))
+  private _rotl(n: number, c: number): number {
+    return rotl32(n, c)
   }
 
   /**
@@ -166,11 +170,8 @@ export default class XorFilter extends BaseFilter {
    * @param n
    * @returns
    */
-  private _reduce(hash: bigint, n: number): bigint {
-    const bign = BigInt.asUintN(64, BigInt(n))
-    const big32 = BigInt(32)
-    const bighash = BigInt.asUintN(64, hash)
-    return BigInt.asUintN(32, (bighash * bign) >> big32)
+  private _reduce(hash: number, n: number): number {
+    return hash % n
   }
 
   /**
@@ -181,48 +182,30 @@ export default class XorFilter extends BaseFilter {
    * @param size
    * @returns
    */
-  private _geth0(hash: bigint, size: number = this.bucketSize): number {
-    return Number(this._reduce(BigInt.asUintN(32, hash), size))
+  private _geth0(hash: number, size: number = this.bucketSize): number {
+    return this._reduce(hash, size)
   }
   /**
    * @internal
    * @private
-   * Return the h0 index of the provided hash on the interval [0, size)
+   * Return the h1 index of the provided hash on the interval [0, size)
    * @param hash
    * @param size
    * @returns
    */
-  private _geth1(hash: bigint, size: number = this.bucketSize): number {
-    return Number(
-      this._reduce(BigInt.asUintN(32, this._rotl64(hash, 21)), size)
-    )
+  private _geth1(hash: number, size: number = this.bucketSize): number {
+    return this._reduce(this._rotl(hash, 10), size)
   }
   /**
    * @internal
    * @private
-   * Return the h0 index of the provided hash on the interval [0, size)
+   * Return the h2 index of the provided hash on the interval [0, size)
    * @param hash
    * @param size
    * @returns
    */
-  private _geth2(hash: bigint, size: number = this.bucketSize): number {
-    return Number(
-      this._reduce(BigInt.asUintN(32, this._rotl64(hash, 42)), size)
-    )
-  }
-
-  /**
-   * Update the seed to a new one
-   * @param seed
-   * @returns
-   */
-  private _splitmix64(seed: number): number {
-    let newSeed = BigInt(seed) + BigInt('0x9E3779B97F4A7C15')
-    newSeed =
-      (newSeed ^ (newSeed >> BigInt('30'))) * BigInt('0xBF58476D1CE4E5B9')
-    newSeed =
-      (newSeed ^ (newSeed >> BigInt('27'))) * BigInt('0x94D049BB133111EB')
-    return Number(newSeed ^ (newSeed >> BigInt('31')))
+  private _geth2(hash: number, size: number = this.bucketSize): number {
+    return this._reduce(this._rotl(hash, 21), size)
   }
 
   /**
@@ -232,34 +215,32 @@ export default class XorFilter extends BaseFilter {
    * @param set
    * @returns KeyIndex[]
    */
-  private _scanCount(sets: XorSet[]): KeyIndex[] {
-    const values: KeyIndex[] = allocateArray(
-      this.bucketSize,
-      () => new KeyIndex()
-    )
+  private _scanCount(sets: XorSet[]): {values: KeyIndex[]; size: number} {
+    const values: KeyIndex[] = []
+    let size = 0
     sets.forEach((set, index) => {
       if (set.count === 1) {
         const keyindex = new KeyIndex()
         keyindex.index = index
         keyindex.hash = set.mask
-        values[index] = keyindex
+        values.push(keyindex)
+        size++
       }
     })
-    return values
+    return {values, size}
   }
 
   /**
-   * Return an array of number representing the elements to store.
+   * Create the filter representing the elements to store.
    * We eliminate all duplicated entries before creating the array.
    * Follow the algorithm 2 and 3 of the paper (@see https://arxiv.org/pdf/1912.08258.pdf)
    * Inspired by Go impl from (@see https://github.com/FastFilter/xorfilter/blob/master/xorfilter.go)
    * @param elements HashableInput[]
-   * @returns number[]
+   * @returns
    */
-  private _create(elements: HashableInput[]): number[] {
-    const filter: number[] = allocateArray(this.filterSize, () => 0)
+  private _create(elements: HashableInput[]) {
     // get a new seed seed
-    this.seed = this._splitmix64(this.seed)
+    // this.seed = this._splitmix64(this.seed)
     // create the constructor function of a xorset array
     const iXorset = () => allocateArray(this.bucketSize, () => new XorSet())
     // create all the array xorsets
@@ -286,20 +267,20 @@ export default class XorFilter extends BaseFilter {
         s2[hashes.h2].mask ^= hashes.hash
         s2[hashes.h2].count++
       })
-      console.log(s0, s1, s2)
 
       // scan for pure-cells, just like IBLTs
       // aka: if count==1 then we this is a value hashed,
       // then we can xor all other sets to remove this value from those sets
       // until there is no value anymore
-      const q0: KeyIndex[] = this._scanCount(s0)
-      let q0Size = q0.length
-      const q1: KeyIndex[] = this._scanCount(s1)
-      let q1Size = q1.length
-      const q2: KeyIndex[] = this._scanCount(s2)
-      let q2Size = q2.length
-      console.log(q0, q1, q2)
-      console.log(q0Size, q1Size, q2Size)
+      const zero = this._scanCount(s0),
+        one = this._scanCount(s1),
+        two = this._scanCount(s2)
+      const q0 = zero.values,
+        q1 = one.values,
+        q2 = two.values
+      let q0Size = zero.size,
+        q1Size = one.size,
+        q2Size = two.size
 
       stacksize = 0
       while (q0Size + q1Size + q2Size > 0) {
@@ -317,6 +298,7 @@ export default class XorFilter extends BaseFilter {
           stack[stacksize] = keyindexvalue
           stacksize++
 
+          // ##### H1 #####
           s1[h1].mask ^= hash
           s1[h1].count--
           if (s1[h1].count === 1) {
@@ -325,6 +307,7 @@ export default class XorFilter extends BaseFilter {
             q1Size++
           }
 
+          // ##### H2 #####
           s2[h2].mask ^= hash
           s2[h2].count--
           if (s2[h2].count === 1) {
@@ -351,6 +334,7 @@ export default class XorFilter extends BaseFilter {
           stack[stacksize] = keyindexvalue
           stacksize++
 
+          // ##### H0 #####
           s0[h0].mask ^= hash
           s0[h0].count--
           if (s0[h0].count === 1) {
@@ -359,6 +343,7 @@ export default class XorFilter extends BaseFilter {
             q0Size++
           }
 
+          // ##### H2 #####
           s2[h2].mask ^= hash
           s2[h2].count--
           if (s2[h2].count === 1) {
@@ -385,6 +370,7 @@ export default class XorFilter extends BaseFilter {
           stack[stacksize] = keyindexvalue
           stacksize++
 
+          // ##### H0 #####
           s0[h0].mask ^= hash
           s0[h0].count--
           if (s0[h0].count === 1) {
@@ -393,6 +379,7 @@ export default class XorFilter extends BaseFilter {
             q0Size++
           }
 
+          // ##### H1 #####
           s1[h1].mask ^= hash
           s1[h1].count--
           if (s1[h1].count === 1) {
@@ -410,22 +397,21 @@ export default class XorFilter extends BaseFilter {
 
     // next part will definitively create the filter
     stack.forEach(({hash, index}) => {
-      let val = Number(this._fingerprint(hash))
+      let val = this._fingerprint(hash)
       if (index < this.bucketSize) {
         val ^=
-          filter[this._geth1(hash) + this.bucketSize] ^
-          filter[this._geth2(hash) + 2 * this.bucketSize]
+          this.filter[this._geth1(hash) + this.bucketSize] ^
+          this.filter[this._geth2(hash) + 2 * this.bucketSize]
       } else if (index < 2 * this.bucketSize) {
         val ^=
-          filter[this._geth0(hash)] ^
-          filter[this._geth2(hash) + 2 * this.bucketSize]
+          this.filter[this._geth0(hash)] ^
+          this.filter[this._geth2(hash) + 2 * this.bucketSize]
       } else {
         val ^=
-          filter[this._geth0(hash)] ^
-          filter[this._geth1(hash) + this.bucketSize]
+          this.filter[this._geth0(hash)] ^
+          this.filter[this._geth1(hash) + this.bucketSize]
       }
-      filter[index] = val
+      this.filter[index] = val
     })
-    return filter
   }
 }
