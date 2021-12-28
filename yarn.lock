@@ -263,24 +263,17 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.14.0.tgz#9fb3a3cf3132328151f353de4632e01e52102bea"
   integrity sha512-9NET910DNaIPngYnLLPeg+Ogzqsi9uM4mSboU5y6p8S5DzMTVEsJZrawi+BoDNUVBa2DhJqQYUFvMDfgU062LQ==
 
-"@stdlib/number-int32-base-to-uint32@^0.0.x":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@stdlib/number-int32-base-to-uint32/-/number-int32-base-to-uint32-0.0.6.tgz#02480da6df44ffb019f0f9e54a88105bb3f7cecf"
-  integrity sha512-Rp0lGbd7cOK3/H4qa/eUamSQj7brABqwLazcyt9xgLDNBgXkOlMqMYjGnWa4WGkOAgll8UTiQveArrghSWHGXw==
-
-"@stdlib/number-uint32-base-rotl@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@stdlib/number-uint32-base-rotl/-/number-uint32-base-rotl-0.0.6.tgz#7cbd2cab8afa0707a98d508017fcabc63710c9fc"
-  integrity sha512-akVdWl0WiparoVYFOhub33XNbIonOy7qHvaxkkXBlMC6bvCS8V/Fupkl4tJN6ih1h7avil0RsUBbI/n9bHJQYA==
-  dependencies:
-    "@stdlib/number-int32-base-to-uint32" "^0.0.x"
-
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@szmarczak/http-timer/-/http-timer-1.1.2.tgz#b1665e2c461a2cd92f4c1bbf50d5454de0d4b421"
   integrity sha512-XIB2XbzHTN6ieIjfIMV9hlVcfPU26s2vafYWQcZHWXHOxiaRZYEDKEwdl129Zyg50+foYV2jCgtrqSA6qNuNSA==
   dependencies:
     defer-to-connect "^1.0.1"
+
+"@types/cuint@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@types/cuint/-/cuint-0.2.1.tgz#eb61d1c69b3d2e26701cc534687bb746f2dbf13e"
+  integrity sha512-yIO66K76vGSV1Y2Ovq5LklkYiHOtbJIukCfO9GRYg7hDccwoapWkDKaygxBvDgB+1uNHsgaTyK41xtbJGLCCGA==
 
 "@types/json-schema@^7.0.7":
   version "7.0.9"
@@ -1914,6 +1907,11 @@ log-symbols@4.1.0:
   dependencies:
     chalk "^4.1.0"
     is-unicode-supported "^0.1.0"
+
+long@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/long/-/long-5.2.0.tgz#2696dadf4b4da2ce3f6f6b89186085d94d52fd61"
+  integrity sha512-9RTUNjK60eJbx3uz+TEGF7fUr29ZDxR5QzXcyDpeSfeH28S9ycINflOgOlppit5U+4kNTe83KQnMEerw7GmE8w==
 
 lowercase-keys@^1.0.0, lowercase-keys@^1.0.1:
   version "1.0.1"

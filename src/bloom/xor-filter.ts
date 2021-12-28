@@ -22,47 +22,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Code inspired by the go implementation (https://github.com/FastFilter/xorfilter/blob/master/xorfilter.go)
+// Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
 
 import BaseFilter from '../base-filter'
 import {AutoExportable, Field} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
-import rotl32 from '@stdlib/number-uint32-base-rotl'
 import XXH from 'xxhashjs'
+import Long from 'long'
 
 /**
- * @internal
- * Structure defining a xor of elements with the number of elements XORed.
+ * 64-Bits Version of the XOR-Filter.
+ * To use for fixed sets of elements only
+ * Inspired from @see https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java
  */
-export class XorSet {
-  mask = 0
-  count = 0
-}
-
-/**
- * @internal
- */
-export class KeyIndex {
-  index = 0
-  hash = 0
-}
-
 @AutoExportable<XorFilter>('XorFilter', ['_seed'])
 export default class XorFilter extends BaseFilter {
-  private static readonly MAX_ITERATION = 10
+  private readonly HASHES = 3
+  private readonly OFFSET = 64
+  private readonly FACTOR_TIMES_100 = 123
 
   /**
-   * Array of fingerprints
+   * Array<UInt8> of fingerprints
    */
   @Field()
-  public filter: number[]
+  public filter: Buffer[]
 
   /**
-   * Return the current bucketSize, based on the filter size
+   * Number of bits per fingerprint
    */
-  public get bucketSize() {
-    return this.filterSize / 3
-  }
+  @Field()
+  public BITS_PER_FINGERPRINT = 8
+
+  /**
+   * Number of elements inserted in the filter
+   */
+  @Field()
+  public size: number
+
+  /**
+   * Size of each block (filter size / HASHES)
+   */
+  @Field()
+  public blockLength: number
 
   /**
    * Return the filter size
@@ -71,19 +72,49 @@ export default class XorFilter extends BaseFilter {
     return this.filter.length
   }
 
-  constructor(elements: HashableInput[]) {
+  private getOptimalFilterSize(size: number): number {
+    // optimal size
+    const s = Long.ONE.multiply(this.FACTOR_TIMES_100)
+      .multiply(size)
+      .divide(100)
+      .add(this.OFFSET)
+    // return a size which is a multiple of hashes for optimal blocklength
+    return s.add(-s.mod(this.HASHES)).toInt()
+  }
+
+  constructor(elements: HashableInput[], bits_per_fingerprint?: number) {
     super()
+    if (bits_per_fingerprint) {
+      if (
+        bits_per_fingerprint % 8 !== 0 &&
+        bits_per_fingerprint <= 64 &&
+        bits_per_fingerprint >= 8
+      ) {
+        throw new Error(
+          'BITS_PER_FINGERPRINT must be a multiple of 8 between 8 and 64'
+        )
+      }
+      this.BITS_PER_FINGERPRINT = bits_per_fingerprint
+    }
     if (elements.length <= 0 || !elements || !elements.length) {
       throw new Error(
         'a XorFilter must be calibrated for a given number of elements'
       )
     }
-
-    this.filter = allocateArray(
-      Math.round((32 + Math.ceil(1.23 * elements.length)) / 3) * 3,
-      () => 0
+    this.size = elements.length
+    const arrayLength = this.getOptimalFilterSize(this.size)
+    this.blockLength = arrayLength / this.HASHES
+    this.filter = allocateArray(arrayLength, () =>
+      Buffer.from(allocateArray(this.BITS_PER_FINGERPRINT / 8, 0))
     )
-    this._create(elements)
+    const elementsAsLong: Long[] = elements.map(k => {
+      if (k instanceof Long) {
+        return k
+      } else {
+        return this._hashable_to_long(k, this.seed)
+      }
+    })
+    this._create(elementsAsLong, arrayLength)
   }
 
   /**
@@ -91,13 +122,43 @@ export default class XorFilter extends BaseFilter {
    * @param element
    * @returns
    */
-  public has(element: HashableInput): boolean {
-    const hashes = this._geth0h1h2(element, this.seed)
-    const fprint = this._fingerprint(hashes.hash)
-    const fh0 = this.filter[hashes.h0]
-    const fh1 = this.filter[hashes.h1 + this.bucketSize]
-    const fh2 = this.filter[hashes.h2 + 2 * this.bucketSize]
-    return fprint === (fh0 ^ fh1 ^ fh2)
+  public has(element: HashableInput | Long): boolean {
+    const hash = this._hash64(
+      element instanceof Long ? element : this._hashable_to_long(element, this.seed),
+      this.seed
+    )
+    const fingerprint = this._fingerprint(hash)
+    const r0 = hash
+    const r1 = hash.rotl(21)
+    const r2 = hash.rotl(42)
+    const h0 = this._reduce(r0, this.blockLength)
+    const h1 = this._reduce(r1, this.blockLength)
+    const h2 = this._reduce(r2, this.blockLength)
+    const xor: Long = fingerprint
+      .xor(this._buf2Long(this.filter[h0]))
+      .xor(this._buf2Long(this.filter[h1]))
+      .xor(this._buf2Long(this.filter[h2]))
+    const bf = this._long2buff(fingerprint)
+    const bxor = this._long2buff(xor)
+    return bf.equals(bxor)
+  }
+  
+  /**
+   * Return a Buffer of size (8 - this.BITS_PER_FINGERPRINT / 8) bytes representing the provided Long
+   * @param elem 
+   * @returns 
+   */
+  _long2buff(elem: Long) {
+    return Buffer.from(elem.toBytes()).slice(8 - this.BITS_PER_FINGERPRINT / 8)
+  }
+
+  /**
+   * Convert a Buffer to its Long representation
+   * @param buffer 
+   * @returns 
+   */
+  _buf2Long(buffer: Buffer): Long {
+    return Long.fromBytes([...buffer.values()])
   }
 
   /**
@@ -113,121 +174,62 @@ export default class XorFilter extends BaseFilter {
   /**
    * @internal
    * @private
-   * Generate the fingerprint of the hash of the element
-   * Because we hash an element using XXH.h64 and return a hash on 64 bits then we use this hash
-   * @param hash hash of the element as a number
+   * Generate the fingerprint of the hash
+   * @param hash hash of the element
    * @returns
    */
-  private _fingerprint(hash: number): number {
-    return hash
+  private _fingerprint(hash: Long): Long {
+    return hash.and((1 << this.BITS_PER_FINGERPRINT) - 1)
   }
 
   /**
-   * Hash the element to its 64 bits version Number XXH.h64
+   * Transform any HashableInput into its Long representation
    * @param element
    * @param seed
    * @returns
    */
-  private _serialize(element: HashableInput, seed: number) {
-    return XXH.h32(element, seed).toNumber()
+  _hashable_to_long(element: HashableInput, seed: number) {
+    return Long.fromString(XXH.h64(element, seed).toString(10), 10)
   }
 
   /**
-   * @internal
-   * @private
-   * Bitwise left-rotation
-   * @param n the number to rotate
-   * @param c the number of rotation
+   * Hash a long into a Long
+   * @param element
    * @returns
    */
-  private _rotl(n: number, c: number): number {
-    return rotl32(n, c)
+  _hash64(element: Long, seed: number): Long {
+    let h = element.add(seed)
+    h = h
+      .xor(h.shiftRightUnsigned(33))
+      .multiply(Long.fromString('0xff51afd7ed558ccd', 16))
+    h = h = h
+      .xor(h.shiftRightUnsigned(33))
+      .multiply(Long.fromString('0xc4ceb9fe1a85ec53', 16))
+    h = h.xor(h.shiftRightUnsigned(33))
+    return h
+  }
+
+  _reduce(hash: Long, size: number): number {
+    // http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
+    return hash
+      .and(Long.fromString('0xffffffff', 16))
+      .multiply(size)
+      .shiftRightUnsigned(32)
+      .toInt()
   }
 
   /**
-   * @internal
-   * @private
-   * Return the modulo reduction for h0, h1 and h2 on the hash of the element
-   * @param hash
+   * Hash the element
+   * @param element
    * @param seed
    * @returns
    */
-  private _geth0h1h2(element: HashableInput, seed: number) {
-    const hash = this._serialize(element, seed)
-    return {
-      hash,
-      h0: this._geth0(hash),
-      h1: this._geth1(hash),
-      h2: this._geth2(hash),
-    }
-  }
-
-  /**
-   * @internal
-   * @private
-   * Modulo reduction
-   * @param hash
-   * @param n
-   * @returns
-   */
-  private _reduce(hash: number, n: number): number {
-    return hash % n
-  }
-
-  /**
-   * @internal
-   * @private
-   * Return the h0 index of the provided hash on the interval [0, size)
-   * @param hash
-   * @param size
-   * @returns
-   */
-  private _geth0(hash: number, size: number = this.bucketSize): number {
-    return this._reduce(hash, size)
-  }
-  /**
-   * @internal
-   * @private
-   * Return the h1 index of the provided hash on the interval [0, size)
-   * @param hash
-   * @param size
-   * @returns
-   */
-  private _geth1(hash: number, size: number = this.bucketSize): number {
-    return this._reduce(this._rotl(hash, 10), size)
-  }
-  /**
-   * @internal
-   * @private
-   * Return the h2 index of the provided hash on the interval [0, size)
-   * @param hash
-   * @param size
-   * @returns
-   */
-  private _geth2(hash: number, size: number = this.bucketSize): number {
-    return this._reduce(this._rotl(hash, 21), size)
-  }
-
-  /**
-   * @internal
-   * @private
-   * Scan for pure values aka sets of count 1
-   * @param set
-   * @returns KeyIndex[]
-   */
-  private _scanCount(sets: XorSet[]): {values: KeyIndex[]; size: number} {
-    const values: KeyIndex[] = []
-    let size = 0
-    sets.forEach((set, index) => {
-      if (set.count === 1) {
-        const keyindex = new KeyIndex()
-        keyindex.index = index
-        keyindex.hash = set.mask
-        values.push(keyindex)
-        size++
-      }
-    })
-    return {values, size}
+  private _getHash(element: Long, seed: number, index: number): number {
+    const hash: Long = this._hash64(element, seed)
+    const r: Long = hash.rotl(21 * index)
+    const rn = this._reduce(r, this.blockLength)
+    const sum = rn + index * this.blockLength
+    return sum
   }
 
   /**
@@ -235,183 +237,103 @@ export default class XorFilter extends BaseFilter {
    * We eliminate all duplicated entries before creating the array.
    * Follow the algorithm 2 and 3 of the paper (@see https://arxiv.org/pdf/1912.08258.pdf)
    * Inspired by Go impl from (@see https://github.com/FastFilter/xorfilter/blob/master/xorfilter.go)
-   * @param elements HashableInput[]
+   * @param elements array of elements to add in the filter
+   * @param arraylength length of the filter
    * @returns
    */
-  private _create(elements: HashableInput[]) {
-    // get a new seed seed
-    // this.seed = this._splitmix64(this.seed)
-    // create the constructor function of a xorset array
-    const iXorset = () => allocateArray(this.bucketSize, () => new XorSet())
-    // create all the array xorsets
-    const s0: XorSet[] = iXorset(),
-      s1: XorSet[] = iXorset(),
-      s2: XorSet[] = iXorset()
-
-    let iteration = 0
-    let finished = false
-    const stack = allocateArray(elements.length, () => new KeyIndex())
-    let stacksize = 0
-    while (!finished) {
-      iteration++
-      if (iteration > XorFilter.MAX_ITERATION) {
-        throw new Error('You might have duplicated keys')
-      }
-
-      elements.forEach(elem => {
-        const hashes = this._geth0h1h2(elem, this.seed)
-        s0[hashes.h0].mask ^= hashes.hash
-        s0[hashes.h0].count++
-        s1[hashes.h1].mask ^= hashes.hash
-        s1[hashes.h1].count++
-        s2[hashes.h2].mask ^= hashes.hash
-        s2[hashes.h2].count++
+  private _create(elements: Long[], arrayLength: number) {
+    const m = arrayLength
+    const reverseOrder: Long[] = allocateArray(this.size, Long.ZERO)
+    const reverseH: number[] = allocateArray(this.size, 0)
+    let reverseOrderPos
+    let seed = 1
+    do {
+      seed = (this.random as any).int32()
+      const t2count = allocateArray(m, 0)
+      const t2 = allocateArray(m, Long.ZERO)
+      elements.forEach((k) => {
+        for (let hi = 0; hi < this.HASHES; hi++) {
+          const h = this._getHash(k, this.seed, hi)
+          t2[h] = t2[h].xor(k)
+          if (t2count[h] > 120) {
+            // probably something wrong with the hash function
+            throw new Error(
+              `Probably something wrong with the hash function, t2count[${h}]=${t2count[h]}`
+            )
+          }
+          t2count[h]++
+        }
       })
-
-      // scan for pure-cells, just like IBLTs
-      // aka: if count==1 then we this is a value hashed,
-      // then we can xor all other sets to remove this value from those sets
-      // until there is no value anymore
-      const zero = this._scanCount(s0),
-        one = this._scanCount(s1),
-        two = this._scanCount(s2)
-      const q0 = zero.values,
-        q1 = one.values,
-        q2 = two.values
-      let q0Size = zero.size,
-        q1Size = one.size,
-        q2Size = two.size
-
-      stacksize = 0
-      while (q0Size + q1Size + q2Size > 0) {
-        while (q0Size > 0) {
-          q0Size--
-          const keyindexvalue = q0[q0Size]
-          const index = keyindexvalue.index
-          if (s0[index].count === 0) {
-            continue
-          }
-          const hash = keyindexvalue.hash
-          const h1 = this._geth1(hash)
-          const h2 = this._geth2(hash)
-
-          stack[stacksize] = keyindexvalue
-          stacksize++
-
-          // ##### H1 #####
-          s1[h1].mask ^= hash
-          s1[h1].count--
-          if (s1[h1].count === 1) {
-            q1[q1Size].index = h1
-            q1[q1Size].hash = s1[h1].mask
-            q1Size++
-          }
-
-          // ##### H2 #####
-          s2[h2].mask ^= hash
-          s2[h2].count--
-          if (s2[h2].count === 1) {
-            q2[q2Size].index = h2
-            q2[q2Size].hash = s2[h2].mask
-            q2Size++
-          }
-        }
-
-        while (q1Size > 0) {
-          q1Size--
-          const keyindexvalue = q1[q1Size]
-          const index = keyindexvalue.index
-          if (s1[index].count === 0) {
-            continue
-          }
-          const hash = keyindexvalue.hash
-          const h0 = this._geth0(hash)
-          const h2 = this._geth2(hash)
-
-          // increase the blocklength
-          keyindexvalue.index += this.bucketSize
-
-          stack[stacksize] = keyindexvalue
-          stacksize++
-
-          // ##### H0 #####
-          s0[h0].mask ^= hash
-          s0[h0].count--
-          if (s0[h0].count === 1) {
-            q0[q0Size].index = h0
-            q0[q0Size].hash = s0[h0].mask
-            q0Size++
-          }
-
-          // ##### H2 #####
-          s2[h2].mask ^= hash
-          s2[h2].count--
-          if (s2[h2].count === 1) {
-            q2[q2Size].index = h2
-            q2[q2Size].hash = s2[h2].mask
-            q2Size++
-          }
-        }
-
-        while (q2Size > 0) {
-          q2Size--
-          const keyindexvalue = q2[q2Size]
-          const index = keyindexvalue.index
-          if (s2[index].count === 0) {
-            continue
-          }
-          const hash = keyindexvalue.hash
-          const h0 = this._geth0(hash)
-          const h1 = this._geth1(hash)
-
-          // increase the blocklength
-          keyindexvalue.index += 2 * this.bucketSize
-
-          stack[stacksize] = keyindexvalue
-          stacksize++
-
-          // ##### H0 #####
-          s0[h0].mask ^= hash
-          s0[h0].count--
-          if (s0[h0].count === 1) {
-            q0[q0Size].index = h0
-            q0[q0Size].hash = s0[h0].mask
-            q0Size++
-          }
-
-          // ##### H1 #####
-          s1[h1].mask ^= hash
-          s1[h1].count--
-          if (s1[h1].count === 1) {
-            q1[q1Size].index = h1
-            q1[q1Size].hash = s1[h1].mask
-            q1Size++
+      reverseOrderPos = 0
+      const alone: number[][] = allocateArray(this.HASHES, () =>
+        allocateArray(this.blockLength, 0)
+      )
+      const alonePos: number[] = allocateArray(this.HASHES, 0)
+      for (let nextAlone = 0; nextAlone < this.HASHES; nextAlone++) {
+        for (let i = 0; i < this.blockLength; i++) {
+          if (t2count[nextAlone * this.blockLength + i] === 1) {
+            alone[nextAlone][alonePos[nextAlone]++] =
+              nextAlone * this.blockLength + i
           }
         }
       }
-
-      if (stacksize === elements.length) {
-        finished = true
+      let found = -1
+      let i = 0
+      while (i !== -1) {
+        i = -1
+        for (let hi = 0; hi < this.HASHES; hi++) {
+          if (alonePos[hi] > 0) {
+            i = alone[hi][--alonePos[hi]]
+            found = hi
+            break
+          }
+        }
+        if (i === -1) {
+          // no entry found
+          break
+        }
+        if (t2count[i] <= 0) {
+          continue
+        }
+        const k = t2[i]
+        if (t2count[i] !== 1) {
+          throw new Error('At this step, the count must not be different of 1')
+        }
+        --t2count[i]
+        for (let hi = 0; hi < this.HASHES; hi++) {
+          if (hi !== found) {
+            const h = this._getHash(k, this.seed, hi)
+            const newCount = --t2count[h]
+            if (newCount === 1) {
+              alone[hi][alonePos[hi]++] = h
+            }
+            t2[h] = t2[h].xor(k)
+          }
+        }
+        reverseOrder[reverseOrderPos] = k
+        reverseH[reverseOrderPos] = found
+        reverseOrderPos++
       }
+    } while (reverseOrderPos !== this.size)
+
+    this.seed = seed
+    for (let i = reverseOrderPos - 1; i >= 0; i--) {
+      const k = reverseOrder[i]
+      const found = reverseH[i]
+      let change = -1
+      const hash = this._hash64(k, seed)
+      let xor = this._fingerprint(hash)
+      for (let hi = 0; hi < this.HASHES; hi++) {
+        const h = this._getHash(k, seed, hi)
+        if (found === hi) {
+          change = h
+        } else {
+          xor = xor.xor(this._buf2Long(this.filter[h]))
+        }
+      }
+      const buf = Buffer.from(xor.toBytes())
+      // a Long is always 8 bytes
+      this.filter[change] = buf.slice(8 - this.BITS_PER_FINGERPRINT / 8)
     }
-
-    // next part will definitively create the filter
-    stack.forEach(({hash, index}) => {
-      let val = this._fingerprint(hash)
-      if (index < this.bucketSize) {
-        val ^=
-          this.filter[this._geth1(hash) + this.bucketSize] ^
-          this.filter[this._geth2(hash) + 2 * this.bucketSize]
-      } else if (index < 2 * this.bucketSize) {
-        val ^=
-          this.filter[this._geth0(hash)] ^
-          this.filter[this._geth2(hash) + 2 * this.bucketSize]
-      } else {
-        val ^=
-          this.filter[this._geth0(hash)] ^
-          this.filter[this._geth1(hash) + this.bucketSize]
-      }
-      this.filter[index] = val
-    })
   }
 }
