@@ -34,7 +34,7 @@ import seedrandom from 'seedrandom'
  */
 export default abstract class BaseFilter {
   private _seed: number
-  private _rng: () => number
+  private _rng: any
 
   constructor() {
     this._seed = utils.getDefaultSeed()
@@ -63,6 +63,14 @@ export default abstract class BaseFilter {
    */
   get random(): () => number {
     return this._rng
+  }
+
+  /**
+   * Return a next random seeded int32 integer
+   * @returns
+   */
+  nextInt32(): number {
+    return this._rng.int32()
   }
 
   /**

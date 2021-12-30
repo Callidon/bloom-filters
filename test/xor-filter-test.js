@@ -26,42 +26,51 @@ SOFTWARE.
 
 require('chai').should()
 const {XorFilter} = require('../dist/api.js')
-const Long = require('long')
 
 describe('XorFilter', () => {
-  const elements = [Long.ONE]
-  it(`should create a xor filter correctly (array of ${elements.length} element(s))`, () => {
-    const filter = new XorFilter(elements, 8)
-    filter.has(Long.ONE).should.be.true
-    filter.has(Long.fromNumber(2)).should.be.false
-  })
-  const count = 100000
-  it.skip(`should create a xor filter correctly for ${count} elements`, () => {
-    const a = []
-    const format = e => `${e}`
-    for (let i = 0; i < count; i++) {
-      a.push(format(i))
-    }
-    const filter = new XorFilter(a)
-    let truthy = 0, falsy = 0
-    for (let i = 0; i < count; i++) {
-      if (filter.has(format(i))) {
-        truthy++
-      } else {
-        falsy++
+  const elements = ['1']
+  const count = 1000
+  const sizes = [8, 16]
+  sizes.forEach(size => {
+    it(`[XOR/${size}] should create a xor filter correctly (array of ${elements.length} element(s))`, () => {
+      const filter = XorFilter.create(elements, size)
+      filter.has(elements[0]).should.be.true
+      filter.has('2').should.be.false
+    })
+    it(`[XOR/${size}] should create a xor filter correctly for ${count} elements`, () => {
+      const a = []
+      const format = e => `hash:${e}`
+      for (let i = 0; i < count; i++) {
+        a.push(format(i))
       }
-    }
-    const prob = truthy / count
-    prob.should.be.at.least(0.99)
-    falsy = 0, truthy = 0
-    for (let i = 0; i < count; i++) {
-      if (filter.has(format(count + i))) {
-        truthy++
-      } else {
-        falsy++
+      const filter = XorFilter.create(a, size)
+      let truthy = 0,
+        falsy = 0
+      for (let i = 0; i < count; i++) {
+        if (filter.has(format(i))) {
+          truthy++
+        } else {
+          falsy++
+        }
       }
-    }
-    console.log(truthy, falsy)
-    falsy.should.be.equal(count)
+      let prob = truthy / count
+      prob.should.be.at.least(0.99)
+      ;(falsy = 0), (truthy = 0)
+      for (let i = 0; i < count; i++) {
+        if (filter.has(format(count * 10 + i))) {
+          truthy++
+        } else {
+          falsy++
+        }
+      }
+      prob = falsy / count
+      prob.should.be.at.least(0.99)
+    })
+    it(`[XOR/${size}] exported filter should be importable`, () => {
+      const filter = XorFilter.create(['alice'])
+      const json = filter.saveAsJSON()
+      const newFilter = XorFilter.fromJSON(json)
+      filter.equals(newFilter)
+    })
   })
 })

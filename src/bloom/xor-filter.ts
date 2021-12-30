@@ -25,54 +25,182 @@ SOFTWARE.
 // Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
 
 import BaseFilter from '../base-filter'
-import {AutoExportable, Field} from '../exportable'
+import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
 import XXH from 'xxhashjs'
 import Long from 'long'
+import {encode, decode} from 'base64-arraybuffer'
+
+const CONSTANTS = new Map<number, number>()
+CONSTANTS.set(8, 0xff)
+CONSTANTS.set(16, 0xffff)
 
 /**
- * 64-Bits Version of the XOR-Filter.
+ * XOR-Filter for 8-bits and 16-bits fingerprint length.
  * To use for fixed sets of elements only
- * Inspired from @see https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java
+ * Inspired from @see https://github.com/FastFilter/fastfilter_java
  */
 @AutoExportable<XorFilter>('XorFilter', ['_seed'])
 export default class XorFilter extends BaseFilter {
+  private readonly ALLOWED_FINGERPRINT_SIZES: number[] = [8, 16]
   private readonly HASHES = 3
-  private readonly OFFSET = 64
+  private readonly OFFSET = 32
   private readonly FACTOR_TIMES_100 = 123
 
   /**
-   * Array<UInt8> of fingerprints
+   * Buffer array of fingerprints
    */
-  @Field()
-  public filter: Buffer[]
+  @Field<Buffer[]>(d => d.map(encode), d => d.map((e: string) => Buffer.from(decode(e))))
+  private _filter: Buffer[]
 
   /**
    * Number of bits per fingerprint
    */
   @Field()
-  public BITS_PER_FINGERPRINT = 8
+  private _bits: number = 8
 
   /**
    * Number of elements inserted in the filter
    */
   @Field()
-  public size: number
+  private _size: number
 
   /**
    * Size of each block (filter size / HASHES)
    */
   @Field()
-  public blockLength: number
+  private _blockLength: number
 
   /**
-   * Return the filter size
+   * Create an empty XorFilter for a number of `size` elements.
+   * The fingerprint length can be choosen
+   * @param size
+   * @param bits_per_fingerprint
    */
-  public get filterSize() {
-    return this.filter.length
+  constructor(
+    @Parameter('_size') size: number,
+    @Parameter('_bits') bits_per_fingerprint?: 8 | 16
+  ) {
+    super()
+    if (bits_per_fingerprint) {
+      if (!this.ALLOWED_FINGERPRINT_SIZES.includes(bits_per_fingerprint)) {
+        throw new Error(
+          `bits_per_fingerprint parameter must be one of: ${this.ALLOWED_FINGERPRINT_SIZES}, got: ${bits_per_fingerprint}`
+        )
+      }
+      this._bits = bits_per_fingerprint
+    }
+    if (size <= 0) {
+      throw new Error(
+        'a XorFilter must be calibrated for a given number of elements'
+      )
+    }
+    this._size = size
+    const arrayLength = this._getOptimalFilterSize(this._size)
+    this._blockLength = arrayLength / this.HASHES
+    this._filter = allocateArray(arrayLength, () =>
+      Buffer.allocUnsafe(this._bits / 8).fill(0)
+    )
   }
 
-  private getOptimalFilterSize(size: number): number {
+  /**
+   * Return False if the element is not in the filter, True if it might be in the set with certain probability.
+   * @param element
+   * @returns
+   */
+  public has(element: HashableInput): boolean {
+    const hash = this._hash64(this._hashable_to_long(element, this.seed), this.seed)
+    const fingerprint = this._fingerprint(hash).toInt()
+    const r0 = Long.fromInt(hash.toInt())
+    const r1 = Long.fromInt(hash.rotl(21).toInt())
+    const r2 = Long.fromInt(hash.rotl(42).toInt())
+    const h0 = this._reduce(r0, this._blockLength)
+    const h1 = this._reduce(r1, this._blockLength) + this._blockLength
+    const h2 = this._reduce(r2, this._blockLength) + 2 * this._blockLength
+    const l0 = this._readBuffer(this._filter[h0])
+    const l1 = this._readBuffer(this._filter[h1])
+    const l2 = this._readBuffer(this._filter[h2])
+
+    return ((fingerprint ^ l0 ^ l1 ^ l2) & CONSTANTS.get(this._bits)!) === 0
+  }
+
+  /**
+   * Add elements to the filter, modify the filter in place.
+   * Warning: Another call will override the previously created filter.
+   * @param elements
+   * @example
+   * const xor = new XorFilter(1, 8)
+   * xor.add(['alice'])
+   * xor.has('alice') // true
+   * xor.has('bob') // false
+   */
+  add(elements: HashableInput[]) {
+    if (elements.length != this._size) {
+      throw new Error(
+        `This filter has been created for exactly ${this._size} elements`
+      )
+    } else {
+      this._create(elements, this._filter.length)
+    }
+  }
+
+  /**
+   * Return True if the other XorFilter is equal
+   * @param filter
+   * @returns
+   */
+  equals(filter: XorFilter) {
+    // first check the seed
+    if (this.seed !== filter.seed) {
+      return false
+    }
+    // check the number of bits per fingerprint used
+    if (this._bits !== filter._bits) {
+      return false
+    }
+    // check the number of elements inserted
+    if (this._size !== filter._size) {
+      return false
+    }
+    // now check each entry of the filter
+    let broken = true
+    let i = 0    
+    while (broken && i < this._filter.length) {
+      if (!filter._filter[i].equals(this._filter[i])) {
+        broken = false
+      } else {
+        i++
+      }
+    }
+    return broken
+  }
+
+  /**
+   * Return a XorFilter for a specified set of elements
+   * @param elements
+   * @returns
+   */
+  public static create(
+    elements: HashableInput[],
+    bits_per_fingerprint?: 8 | 16
+  ): XorFilter {
+    const a = new XorFilter(elements.length, bits_per_fingerprint)
+    a.add(elements)
+    return a
+  }
+
+  // ===================================
+  // ==== PRIVATE METHODS/FUNCTIONS ====
+  // ===================================
+
+  /**
+   * @internal
+   * @private
+   * Return the optimal xor filter size
+   * @param size
+   * @returns
+   */
+  private _getOptimalFilterSize(size: number): number {
     // optimal size
     const s = Long.ONE.multiply(this.FACTOR_TIMES_100)
       .multiply(size)
@@ -82,93 +210,25 @@ export default class XorFilter extends BaseFilter {
     return s.add(-s.mod(this.HASHES)).toInt()
   }
 
-  constructor(elements: HashableInput[], bits_per_fingerprint?: number) {
-    super()
-    if (bits_per_fingerprint) {
-      if (
-        bits_per_fingerprint % 8 !== 0 &&
-        bits_per_fingerprint <= 64 &&
-        bits_per_fingerprint >= 8
-      ) {
-        throw new Error(
-          'BITS_PER_FINGERPRINT must be a multiple of 8 between 8 and 64'
-        )
-      }
-      this.BITS_PER_FINGERPRINT = bits_per_fingerprint
-    }
-    if (elements.length <= 0 || !elements || !elements.length) {
-      throw new Error(
-        'a XorFilter must be calibrated for a given number of elements'
-      )
-    }
-    this.size = elements.length
-    const arrayLength = this.getOptimalFilterSize(this.size)
-    this.blockLength = arrayLength / this.HASHES
-    this.filter = allocateArray(arrayLength, () =>
-      Buffer.from(allocateArray(this.BITS_PER_FINGERPRINT / 8, 0))
-    )
-    const elementsAsLong: Long[] = elements.map(k => {
-      if (k instanceof Long) {
-        return k
-      } else {
-        return this._hashable_to_long(k, this.seed)
-      }
-    })
-    this._create(elementsAsLong, arrayLength)
-  }
-
   /**
-   * Return False if the element is not in the filter, True if it might be in the set with certain probability.
-   * @param element
+   * @internal
+   * @private
+   * Read the buffer provided as int8, int16 or int32le based on the size of the finger prints
+   * @param buffer
    * @returns
    */
-  public has(element: HashableInput | Long): boolean {
-    const hash = this._hash64(
-      element instanceof Long ? element : this._hashable_to_long(element, this.seed),
-      this.seed
-    )
-    const fingerprint = this._fingerprint(hash)
-    const r0 = hash
-    const r1 = hash.rotl(21)
-    const r2 = hash.rotl(42)
-    const h0 = this._reduce(r0, this.blockLength)
-    const h1 = this._reduce(r1, this.blockLength)
-    const h2 = this._reduce(r2, this.blockLength)
-    const xor: Long = fingerprint
-      .xor(this._buf2Long(this.filter[h0]))
-      .xor(this._buf2Long(this.filter[h1]))
-      .xor(this._buf2Long(this.filter[h2]))
-    const bf = this._long2buff(fingerprint)
-    const bxor = this._long2buff(xor)
-    return bf.equals(bxor)
-  }
-  
-  /**
-   * Return a Buffer of size (8 - this.BITS_PER_FINGERPRINT / 8) bytes representing the provided Long
-   * @param elem 
-   * @returns 
-   */
-  _long2buff(elem: Long) {
-    return Buffer.from(elem.toBytes()).slice(8 - this.BITS_PER_FINGERPRINT / 8)
-  }
-
-  /**
-   * Convert a Buffer to its Long representation
-   * @param buffer 
-   * @returns 
-   */
-  _buf2Long(buffer: Buffer): Long {
-    return Long.fromBytes([...buffer.values()])
-  }
-
-  /**
-   * Return a XorFilter for a specified set of elements
-   * Just an alias to the constructor.
-   * @param elements
-   * @returns
-   */
-  public static create(elements: HashableInput[]): XorFilter {
-    return new XorFilter(elements)
+  private _readBuffer(buffer: Buffer): number {
+    let val: number
+    switch (this._bits) {
+      case 16:
+        val = buffer.readInt16LE()
+        break
+      case 8:
+      default:
+        val = buffer.readInt8()
+        break
+    }
+    return val
   }
 
   /**
@@ -179,25 +239,29 @@ export default class XorFilter extends BaseFilter {
    * @returns
    */
   private _fingerprint(hash: Long): Long {
-    return hash.and((1 << this.BITS_PER_FINGERPRINT) - 1)
+    return hash.and((1 << this._bits) - 1)
   }
 
   /**
+   * @internal
+   * @private
    * Transform any HashableInput into its Long representation
    * @param element
    * @param seed
    * @returns
    */
-  _hashable_to_long(element: HashableInput, seed: number) {
+  private _hashable_to_long(element: HashableInput, seed: number) {
     return Long.fromString(XXH.h64(element, seed).toString(10), 10)
   }
 
   /**
+   * @internal
+   * @private
    * Hash a long into a Long
    * @param element
    * @returns
    */
-  _hash64(element: Long, seed: number): Long {
+  private _hash64(element: Long, seed: number): Long {
     let h = element.add(seed)
     h = h
       .xor(h.shiftRightUnsigned(33))
@@ -209,7 +273,15 @@ export default class XorFilter extends BaseFilter {
     return h
   }
 
-  _reduce(hash: Long, size: number): number {
+  /**
+   * @internal
+   * @private
+   * Perform a modulo reduction using an optimiaze technique
+   * @param hash
+   * @param size
+   * @returns
+   */
+  private _reduce(hash: Long, size: number): number {
     // http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
     return hash
       .and(Long.fromString('0xffffffff', 16))
@@ -219,6 +291,8 @@ export default class XorFilter extends BaseFilter {
   }
 
   /**
+   * @internal
+   * @private
    * Hash the element
    * @param element
    * @param seed
@@ -227,12 +301,14 @@ export default class XorFilter extends BaseFilter {
   private _getHash(element: Long, seed: number, index: number): number {
     const hash: Long = this._hash64(element, seed)
     const r: Long = hash.rotl(21 * index)
-    const rn = this._reduce(r, this.blockLength)
-    const sum = rn + index * this.blockLength
+    const rn = this._reduce(r, this._blockLength)
+    const sum = rn + index * this._blockLength
     return sum
   }
 
   /**
+   * @internal
+   * @private
    * Create the filter representing the elements to store.
    * We eliminate all duplicated entries before creating the array.
    * Follow the algorithm 2 and 3 of the paper (@see https://arxiv.org/pdf/1912.08258.pdf)
@@ -241,39 +317,45 @@ export default class XorFilter extends BaseFilter {
    * @param arraylength length of the filter
    * @returns
    */
-  private _create(elements: Long[], arrayLength: number) {
-    const m = arrayLength
-    const reverseOrder: Long[] = allocateArray(this.size, Long.ZERO)
-    const reverseH: number[] = allocateArray(this.size, 0)
+  private _create(elements: HashableInput[], arrayLength: number) {
+    const reverseOrder: Long[] = allocateArray(this._size, Long.ZERO)
+    const reverseH: number[] = allocateArray(this._size, 0)
     let reverseOrderPos
-    let seed = 1
     do {
-      seed = (this.random as any).int32()
-      const t2count = allocateArray(m, 0)
-      const t2 = allocateArray(m, Long.ZERO)
-      elements.forEach((k) => {
-        for (let hi = 0; hi < this.HASHES; hi++) {
-          const h = this._getHash(k, this.seed, hi)
-          t2[h] = t2[h].xor(k)
-          if (t2count[h] > 120) {
-            // probably something wrong with the hash function
-            throw new Error(
-              `Probably something wrong with the hash function, t2count[${h}]=${t2count[h]}`
-            )
+      this.seed = this.nextInt32()
+      const t2count = allocateArray(arrayLength, 0)
+      const t2 = allocateArray(arrayLength, Long.ZERO)
+      elements
+        .map(k => {
+          if (k instanceof Long) {
+            return k
+          } else {
+            return this._hashable_to_long(k, this.seed)
           }
-          t2count[h]++
-        }
-      })
+        })
+        .forEach(k => {
+          for (let hi = 0; hi < this.HASHES; hi++) {
+            const h = this._getHash(k, this.seed, hi)
+            t2[h] = t2[h].xor(k)
+            if (t2count[h] > 120) {
+              // probably something wrong with the hash function
+              throw new Error(
+                `Probably something wrong with the hash function, t2count[${h}]=${t2count[h]}`
+              )
+            }
+            t2count[h]++
+          }
+        })
       reverseOrderPos = 0
       const alone: number[][] = allocateArray(this.HASHES, () =>
-        allocateArray(this.blockLength, 0)
+        allocateArray(this._blockLength, 0)
       )
       const alonePos: number[] = allocateArray(this.HASHES, 0)
       for (let nextAlone = 0; nextAlone < this.HASHES; nextAlone++) {
-        for (let i = 0; i < this.blockLength; i++) {
-          if (t2count[nextAlone * this.blockLength + i] === 1) {
+        for (let i = 0; i < this._blockLength; i++) {
+          if (t2count[nextAlone * this._blockLength + i] === 1) {
             alone[nextAlone][alonePos[nextAlone]++] =
-              nextAlone * this.blockLength + i
+              nextAlone * this._blockLength + i
           }
         }
       }
@@ -314,26 +396,26 @@ export default class XorFilter extends BaseFilter {
         reverseH[reverseOrderPos] = found
         reverseOrderPos++
       }
-    } while (reverseOrderPos !== this.size)
+    } while (reverseOrderPos !== this._size)
 
-    this.seed = seed
     for (let i = reverseOrderPos - 1; i >= 0; i--) {
       const k = reverseOrder[i]
       const found = reverseH[i]
       let change = -1
-      const hash = this._hash64(k, seed)
-      let xor = this._fingerprint(hash)
+      const hash = this._hash64(k, this.seed)
+      let xor = this._fingerprint(hash).toInt()
       for (let hi = 0; hi < this.HASHES; hi++) {
-        const h = this._getHash(k, seed, hi)
+        const h = this._getHash(k, this.seed, hi)
         if (found === hi) {
           change = h
         } else {
-          xor = xor.xor(this._buf2Long(this.filter[h]))
+          xor ^= this._readBuffer(this._filter[h])
         }
       }
-      const buf = Buffer.from(xor.toBytes())
-      // a Long is always 8 bytes
-      this.filter[change] = buf.slice(8 - this.BITS_PER_FINGERPRINT / 8)
+      // the value is in 32 bits format, so we must cast it to the desired number of bytes
+      let buf = Buffer.from(allocateArray(4, 0))
+      buf.writeInt32LE(xor)
+      this._filter[change] = buf.slice(0, this._bits / 8)
     }
   }
 }
