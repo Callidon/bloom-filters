@@ -1,9 +1,9 @@
 name: 🔎 Test package
 on:
   push:
-    branches: [ master, update_outdated ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, develop ]
 jobs:
   ubuntu_build:
     runs-on: ubuntu-latest
