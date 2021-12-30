@@ -22,6 +22,7 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
   - [MinHash](#minhash)
   - [Top-K](#top-k)
   - [Invertible Bloom Filters](#invertible-bloom-filters)
+  - [XOR-Filter](#xor-filter)
 - [Export and import](#export-and-import)
 - [Seeding and Hashing](#seeding-and-hashing)
 - [Documentation](#documentation)
@@ -460,6 +461,38 @@ filter = InvertibleBloomFilter.from(items, errorRate)
 
 **Tuning the IBLT** We recommend to use at least a **hashcount** of 3 and an **alpha** of 1.5 for at least 50 differences, which equals to 1.5\*50 = 75 cells. Then, if you insert a huge number of values in there, the decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic, based on the number of elements inserted (Even for the functions like listEntries). For more details, you should read the seminal research paper on IBLTs ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
 
+### XOR Filter
+
+**Available as 8-bits and 16-bits fingerprint length**
+
+A XOR Filter is a better space-efficient probabilistic data structure than Bloom Filters. 
+Very usefull for space efficiency of readonly sets.
+
+**Reference:** Graf, Thomas Mueller, and Daniel Lemire. "Xor filters: Faster and smaller than bloom and cuckoo filters." Journal of Experimental Algorithmics (JEA) 25 (2020): 1-16.
+([Full text article](https://arxiv.org/abs/1912.08258))
+
+#### Methods
+
+- `add(elements: HashableInput[]) -> void`: Add elements to the filter. Calling more than once this methods will override the current filter with the new elements.
+- `has(element: HashableInput) -> boolean`: true/false whether the element is in the set or not.
+
+```javascript
+const {XorFilter} = require('bloom-filters')
+const xor8 = new XorFilter(1)
+xor8.add(['a'])
+xor8.has('a') // true
+xor8.has('b') // false
+// or the combined
+const filter = XorFilter.create(['a'])
+filter.has('a') // true
+// using 16-bits fingerprint length
+XorFilter.create(['a'], 16).has('a') // true
+const a = new XorFilter(1, 16)
+a.add(['a'])
+a.has('a') // true
+```
+
+
 ## Export and import
 
 All data structures exposed by this package can be **exported and imported to/from JSON**:
@@ -553,12 +586,13 @@ When submitting pull requests please follow the following guidance:
 - [HyperLogLog](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf): Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). _"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"_. Discrete Mathematics and Theoretical Computer Science Proceedings.
 - [MinHash](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&rep=rep1&type=pdf): Andrei Z. Broder, _"On the resemblance and containment of documents"_, in Compression and Complexity of Sequences: Proceedings (1997).
 - [Invertible Bloom Filters](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). _What's the difference?: efficient set reconciliation without prior context._ ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
+- [Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters](https://arxiv.org/abs/1912.08258) Thomas Mueller Graf,  Daniel Lemire, Journal of Experimental Algorithmics 25 (1), 2020. DOI: 10.1145/3376122
 
 ## Changelog
 
 | **Version** | **Release date** | **Major changes**                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `v2.0.0`    | 8/12/2021        | Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43), rename `getIndices` to `getIndexes` and `getDistinctIndices` to `getDistinctIndexes`. Use `getIndexes` every where except for IBLTs where `getDistinctIndexes` is used. Add support for switching from/to 32/64 bits hash function. Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. Disable 10.x node tests. |
+| `v2.0.0`    | 12/2021        | Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43), rename `getIndices` to `getIndexes` and `getDistinctIndices` to `getDistinctIndexes`. Use `getIndexes` every where except for IBLTs where `getDistinctIndexes` is used. Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. Disable 10.x node tests. Add XorFilter [#29](https://github.com/Callidon/bloom-filters/issues/29) |
 | `v1.3.0`    | 10/04/2020       | Added the MinHash set                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `v1.2.0`    | 08/04/2020       | Add the TopK class                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `v1.1.0`    | 03/04/2020       | Add the HyperLogLog sketch                                                                                                                                                                                                                                                                                                                                                                                                                                    |

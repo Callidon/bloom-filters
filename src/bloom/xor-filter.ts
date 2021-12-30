@@ -37,8 +37,20 @@ CONSTANTS.set(16, 0xffff)
 
 /**
  * XOR-Filter for 8-bits and 16-bits fingerprint length.
+ *
  * To use for fixed sets of elements only
  * Inspired from @see https://github.com/FastFilter/fastfilter_java
+ * @example
+ * ```js
+ * const xor8 = new XorFilter(1) // default fingerprint of 8 bits
+ * xor8.add(['a'])
+ * xor8.has('a') // true
+ * xor8.has('b') // false
+ * const xor16 = new XorFilter(1, 16)
+ * xor16.add(['a'])
+ * xor16.has('a') // true
+ * xor16.has('b') // false
+ * ```
  */
 @AutoExportable<XorFilter>('XorFilter', ['_seed'])
 export default class XorFilter extends BaseFilter {
@@ -50,14 +62,17 @@ export default class XorFilter extends BaseFilter {
   /**
    * Buffer array of fingerprints
    */
-  @Field<Buffer[]>(d => d.map(encode), d => d.map((e: string) => Buffer.from(decode(e))))
+  @Field<Buffer[]>(
+    d => d.map(encode),
+    d => d.map((e: string) => Buffer.from(decode(e)))
+  )
   private _filter: Buffer[]
 
   /**
    * Number of bits per fingerprint
    */
   @Field()
-  private _bits: number = 8
+  private _bits = 8
 
   /**
    * Number of elements inserted in the filter
@@ -109,7 +124,10 @@ export default class XorFilter extends BaseFilter {
    * @returns
    */
   public has(element: HashableInput): boolean {
-    const hash = this._hash64(this._hashable_to_long(element, this.seed), this.seed)
+    const hash = this._hash64(
+      this._hashable_to_long(element, this.seed),
+      this.seed
+    )
     const fingerprint = this._fingerprint(hash).toInt()
     const r0 = Long.fromInt(hash.toInt())
     const r1 = Long.fromInt(hash.rotl(21).toInt())
@@ -129,13 +147,15 @@ export default class XorFilter extends BaseFilter {
    * Warning: Another call will override the previously created filter.
    * @param elements
    * @example
+   * ```js
    * const xor = new XorFilter(1, 8)
    * xor.add(['alice'])
    * xor.has('alice') // true
    * xor.has('bob') // false
+   * ```
    */
   add(elements: HashableInput[]) {
-    if (elements.length != this._size) {
+    if (elements.length !== this._size) {
       throw new Error(
         `This filter has been created for exactly ${this._size} elements`
       )
@@ -164,7 +184,7 @@ export default class XorFilter extends BaseFilter {
     }
     // now check each entry of the filter
     let broken = true
-    let i = 0    
+    let i = 0
     while (broken && i < this._filter.length) {
       if (!filter._filter[i].equals(this._filter[i])) {
         broken = false
@@ -413,7 +433,7 @@ export default class XorFilter extends BaseFilter {
         }
       }
       // the value is in 32 bits format, so we must cast it to the desired number of bytes
-      let buf = Buffer.from(allocateArray(4, 0))
+      const buf = Buffer.from(allocateArray(4, 0))
       buf.writeInt32LE(xor)
       this._filter[change] = buf.slice(0, this._bits / 8)
     }

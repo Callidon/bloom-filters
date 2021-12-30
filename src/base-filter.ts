@@ -28,17 +28,29 @@ import * as utils from './utils'
 import seedrandom from 'seedrandom'
 
 /**
+ * Exported prng type because it is not from seedrandom
+ * Orignal type can be found in: @types/seedrandom
+ */
+export interface prng {
+  (): number
+  double(): number
+  int32(): number
+  quick(): number
+  state(): seedrandom.State
+}
+
+/**
  * A base class for implementing probailistic filters
  * @author Thomas Minier
  * @author Arnaud Grall
  */
 export default abstract class BaseFilter {
   private _seed: number
-  private _rng: any
+  private _rng: prng
 
   constructor() {
     this._seed = utils.getDefaultSeed()
-    this._rng = seedrandom(`${this._seed}`)
+    this._rng = seedrandom(`${this._seed}`) as prng
   }
 
   /**
@@ -54,14 +66,14 @@ export default abstract class BaseFilter {
    */
   set seed(seed: number) {
     this._seed = seed
-    this._rng = seedrandom(`${this._seed}`)
+    this._rng = seedrandom(`${this._seed}`) as prng
   }
 
   /**
    * Get a function used to draw random number
    * @return A factory function used to draw random integer
    */
-  get random(): () => number {
+  get random(): prng {
     return this._rng
   }
 
