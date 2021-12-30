@@ -229,9 +229,11 @@ export default class CuckooFilter
    * @param element - The element to add
    * @return True if the insertion is a success, False if the filter is full
    * @example
+   * ```js
    * const filter = new CuckooFilter(15, 3, 2);
    * filter.add('alice');
    * filter.add('bob');
+   * ```
    */
   add(
     element: HashableInput,
@@ -297,12 +299,14 @@ export default class CuckooFilter
    * @param element - The element to remove
    * @return True if the element has been removed from the filter, False if it wasn't in the filter
    * @example
+   * ```js
    * const filter = new CuckooFilter(15, 3, 2);
    * filter.add('alice');
    * filter.add('bob');
    *
    * // remove an element
    * filter.remove('bob');
+   * ```
    */
   remove(element: HashableInput): boolean {
     const locations = this._locations(element)
@@ -323,11 +327,13 @@ export default class CuckooFilter
    * @param element - The element to look for in the filter
    * @return False if the element is definitively not in the filter, True is the element might be in the filter
    * @example
+   * ```js
    * const filter = new CuckooFilter(15, 3, 2);
    * filter.add('alice');
    *
    * console.log(filter.has('alice')); // output: true
    * console.log(filter.has('bob')); // output: false
+   * ```
    */
   has(element: HashableInput): boolean {
     const locations = this._locations(element)

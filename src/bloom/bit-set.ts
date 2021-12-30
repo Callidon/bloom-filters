@@ -137,9 +137,11 @@ export default class BitSet {
   /**
    * Returns the index of the maximum bit in the number, or -1 for 0
    * @bits an unsigned 8-bit number
+   * ```js
    * @example
    * BitSet.highBit(0) // returns -1
    * BitSet.highBit(5) // returns 2
+   * ```
    */
   private static highBit(bits: number): number {
     let result = bitsPerWord - 1
@@ -155,8 +157,10 @@ export default class BitSet {
    * Returns the number of true bits in the number
    * @bits an unsigned 8-bit number
    * @example
+   * ```js
    * BitSet.countBits(0) // returns 0
    * BitSet.countBits(3) // returns 2
+   * ```
    */
   private static countBits(bits: number): number {
     let result = bits & 1

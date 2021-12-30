@@ -93,8 +93,10 @@ export default class BloomFilter
    * @param seed - The random number seed (optional)
    * @return A new Bloom Filter filled with the iterable's elements
    * @example
+   * ```js
    * // create a filter with a false positive rate of 0.1
    * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
+   * ```
    */
   static from(
     items: Iterable<HashableInput>,
@@ -130,8 +132,10 @@ export default class BloomFilter
    * Add an element to the filter
    * @param element - The element to add
    * @example
+   * ```js
    * const filter = new BloomFilter(15, 0.1);
    * filter.add('foo');
+   * ```
    */
   add(element: HashableInput): void {
     const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
@@ -145,10 +149,12 @@ export default class BloomFilter
    * @param element - The element to look for in the filter
    * @return False if the element is definitively not in the filter, True is the element might be in the filter
    * @example
+   * ```js
    * const filter = new BloomFilter(15, 0.1);
    * filter.add('foo');
    * console.log(filter.has('foo')); // output: true
    * console.log(filter.has('bar')); // output: false
+   * ```
    */
   has(element: HashableInput): boolean {
     const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
@@ -164,8 +170,10 @@ export default class BloomFilter
    * Get the current false positive rate (or error rate) of the filter
    * @return The current false positive rate of the filter
    * @example
+   * ```js
    * const filter = new BloomFilter(15, 0.1);
    * console.log(filter.rate()); // output: something around 0.1
+   * ```
    */
   rate(): number {
     return Math.pow(1 - Math.exp(-this.length / this._size), this._nbHashes)

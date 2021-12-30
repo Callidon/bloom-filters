@@ -40,6 +40,7 @@ CONSTANTS.set(16, 0xffff)
  *
  * To use for fixed sets of elements only
  * Inspired from @see https://github.com/FastFilter/fastfilter_java
+ * @author Arnaud GRALL
  * @example
  * ```js
  * const xor8 = new XorFilter(1) // default fingerprint of 8 bits
