@@ -26,7 +26,8 @@
     "probabilistic",
     "datastructure",
     "count min sketch",
-    "cuckoo"
+    "cuckoo",
+    "xor-filter"
   ],
   "author": "Thomas Minier <thomas.minier@protonmail.com>",
   "contributors": [

@@ -7,7 +7,7 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 
 📕[Online documentation](https://callidon.github.io/bloom-filters/)
 
-**Keywords:** _bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures._
+**Keywords:** _bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures, XOR-Filter._
 
 # Table of contents
 
