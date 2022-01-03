@@ -1,4 +1,4 @@
-name: 🔎 Test package
+name: 🔎 Tests
 on:
   push:
     branches: [ master, develop ]
