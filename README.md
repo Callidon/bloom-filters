@@ -9,6 +9,11 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 
 **Keywords:** _bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures, XOR-Filter._
 
+❗️**Compatibility**❗️ 
+* Be carefull when migrating from a version to another.
+* Bug fixes were introduced in `1.3.7` for hashing and indexing data. Then, you **must re-build completely your filters from start** to be compatible with the new versions. 
+* To keep the `breaking changes` rule of npm versions we will make now new `majored versions` since 1.3.9 whenever a modification is done on the hashing system. 
+
 # Table of contents
 
 - [Installation](#installation)
@@ -471,10 +476,16 @@ Very usefull for space efficiency of readonly sets.
 **Reference:** Graf, Thomas Mueller, and Daniel Lemire. "Xor filters: Faster and smaller than bloom and cuckoo filters." Journal of Experimental Algorithmics (JEA) 25 (2020): 1-16.
 ([Full text article](https://arxiv.org/abs/1912.08258))
 
+
+
 #### Methods
 
-- `add(elements: HashableInput[]) -> void`: Add elements to the filter. Calling more than once this methods will override the current filter with the new elements.
-- `has(element: HashableInput) -> boolean`: true/false whether the element is in the set or not.
+- `add(elements: XorHashableInput[]) -> void`: Add elements to the filter. Calling more than once this methods will override the current filter with the new elements.
+- `has(element: XorHashableInput) -> boolean`: true/false whether the element is in the set or not.
+
+---
+* Extended input types: `type XorHashableInput = HashableInput | Long`
+* We use Buffers internally which are exported/imported to/from `base64` strings. 
 
 ```javascript
 const {XorFilter} = require('bloom-filters')
@@ -531,33 +542,18 @@ console.log(bl.seed) // 43981
 ```
 
 By default we hash elements using `XXH.h64` function from [`xxhashjs`](https://github.com/pierrec/js-xxhash).
-But in case you want the 32 bits version, you can use
-
+In the case you want to use your own hash functions, you can override the `_serialize` function in the `BaseFilter` class, example:
 ```js
 const {BloomFilter} = require('bloom-filters')
-const utils = require('bloom-filters/utils')
-// switch to a hash 32
-utils.switchSerializationType(32)
-const bl = new BloomFilter(15, 0.01)
-// back to 64
-utils.switchSerializationType(64)
-```
 
-In the case you want to use your own hash functions, you can override the `serialize` function in `require('bloom-filters/utils')`, example:
-Don't forget to always override the function each time you import the module otherwise you'll have bad side effects.
-```ts
-
-const {BloomFilter} = require('bloom-filters')
-const utils = require('bloom-filters/utils')
-
-// override using a dumb version, use this one at your own risk!
-utils.serialize = (element, seed=undefined) => { return Number(1) }
-
+// override the method
+BaseFilter.prototype._serialize = function (element, seed=undefined) { return Number(1) }
 
 // use the library as usual
 const bl = BloomFilter.create(2, 0.01)
 bl.add('a')
 ```
+See `test/utils-test.js` "_Use different hash functions_" describe close.
 
 ## Documentation
 
@@ -592,7 +588,7 @@ When submitting pull requests please follow the following guidance:
 
 | **Version** | **Release date** | **Major changes**                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `v2.0.0`    | 12/2021        | Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43), rename `getIndices` to `getIndexes` and `getDistinctIndices` to `getDistinctIndexes`. Use `getIndexes` every where except for IBLTs where `getDistinctIndexes` is used. Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. Disable 10.x node tests. Add XorFilter [#29](https://github.com/Callidon/bloom-filters/issues/29) |
+| `v2.0.0`    | 12/2021        | - Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43). <br/> - Move all hashing related functions to the BaseFilter class <br/> - Expose the BaseFilter.prototype._serialize function <br/> - Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. <br/> - Disable 10.x node tests. <br/> - Add XorFilter [#29](https://github.com/Callidon/bloom-filters/issues/29) <br/> - Add `.nextInt32()` function to get a new random seeded int 32-bits from the current seed. |
 | `v1.3.0`    | 10/04/2020       | Added the MinHash set                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `v1.2.0`    | 08/04/2020       | Add the TopK class                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `v1.1.0`    | 03/04/2020       | Add the HyperLogLog sketch                                                                                                                                                                                                                                                                                                                                                                                                                                    |
