@@ -28,13 +28,7 @@ import WritableFilter from '../interfaces/writable-filter'
 import BaseFilter from '../base-filter'
 import Bucket from './bucket'
 import {Exportable, cloneObject} from '../exportable'
-import {
-  HashableInput,
-  allocateArray,
-  hashAsInt,
-  hashIntAndString,
-  randomInt,
-} from '../utils'
+import {HashableInput, allocateArray, randomInt} from '../utils'
 
 /**
  * Compute the optimal fingerprint length in bytes for a given bucket size
@@ -264,7 +258,7 @@ export default class CuckooFilter
         this._filter[index].set(rndIndex, movedElement)
         movedElement = tmp!
         // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
-        const newHash = hashAsInt(movedElement!, this.seed)
+        const newHash = this._hashAsInt(movedElement!, this.seed)
         index = Math.abs(index ^ Math.abs(newHash)) % this._filter.length
         // add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {
@@ -375,7 +369,7 @@ export default class CuckooFilter
    * @private
    */
   _locations(element: HashableInput) {
-    const hashes = hashIntAndString(element, this.seed)
+    const hashes = this._hashIntAndString(element, this.seed)
     const hash = hashes.int
     if (this._fingerprintLength > hashes.string.length) {
       throw new Error(
@@ -384,7 +378,7 @@ export default class CuckooFilter
     }
     const fingerprint = hashes.string.substring(0, this._fingerprintLength)
     const firstIndex = Math.abs(hash)
-    const secondHash = Math.abs(hashAsInt(fingerprint, this.seed))
+    const secondHash = Math.abs(this._hashAsInt(fingerprint, this.seed))
     const secondIndex = Math.abs(firstIndex ^ secondHash)
     const res = {
       fingerprint,

@@ -29,7 +29,7 @@ import BaseFilter from '../base-filter'
 import BitSet from './bit-set'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {optimalFilterSize, optimalHashes} from '../formulas'
-import {HashableInput, getIndexes} from '../utils'
+import {HashableInput} from '../utils'
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -83,7 +83,7 @@ export default class BloomFilter
   static create(nbItems: number, errorRate: number): BloomFilter {
     const size = optimalFilterSize(nbItems, errorRate)
     const hashes = optimalHashes(size, nbItems)
-    return new BloomFilter(size, hashes)
+    return new this(size, hashes)
   }
 
   /**
@@ -138,7 +138,12 @@ export default class BloomFilter
    * ```
    */
   add(element: HashableInput): void {
-    const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
+    const indexes = this._getIndexes(
+      element,
+      this._size,
+      this._nbHashes,
+      this.seed
+    )
     for (let i = 0; i < indexes.length; i++) {
       this._filter.add(indexes[i])
     }
@@ -157,7 +162,12 @@ export default class BloomFilter
    * ```
    */
   has(element: HashableInput): boolean {
-    const indexes = getIndexes(element, this._size, this._nbHashes, this.seed)
+    const indexes = this._getIndexes(
+      element,
+      this._size,
+      this._nbHashes,
+      this.seed
+    )
     for (let i = 0; i < indexes.length; i++) {
       if (!this._filter.has(indexes[i])) {
         return false

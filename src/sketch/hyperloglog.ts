@@ -24,7 +24,7 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
-import {HashableInput, allocateArray, hashAsInt} from '../utils'
+import {HashableInput, allocateArray} from '../utils'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
 const TWO_POW_32 = Math.pow(2, 32)
@@ -104,7 +104,7 @@ export default class HyperLogLog extends BaseFilter {
    */
   update(element: HashableInput): void {
     // const hashedValue = Buffer.from(hashAsString(element, this.seed))
-    const hashedValue = hashAsInt(element, this.seed).toString(2)
+    const hashedValue = this._hashAsInt(element, this.seed).toString(2)
     const registerIndex =
       1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
     // find the left most 1-bit in the second part of the buffer

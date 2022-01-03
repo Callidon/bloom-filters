@@ -26,7 +26,7 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
-import {HashableInput, allocateArray} from '../utils'
+import {HashableInput, allocateArray, BufferError} from '../utils'
 import XXH from 'xxhashjs'
 import Long from 'long'
 import {encode, decode} from 'base64-arraybuffer'
@@ -34,6 +34,11 @@ import {encode, decode} from 'base64-arraybuffer'
 const CONSTANTS = new Map<number, number>()
 CONSTANTS.set(8, 0xff)
 CONSTANTS.set(16, 0xffff)
+
+/**
+ * Extended HashableInput type adding the Long type from the long package for using plain 64-bits number.
+ */
+export type XorHashableInput = HashableInput | Long
 
 /**
  * XOR-Filter for 8-bits and 16-bits fingerprint length.
@@ -98,6 +103,10 @@ export default class XorFilter extends BaseFilter {
     @Parameter('_bits') bits_per_fingerprint?: 8 | 16
   ) {
     super()
+    // try to use the Buffer class or reject by throwing an error
+    if (!Buffer) {
+      throw new Error(BufferError)
+    }
     if (bits_per_fingerprint) {
       if (!this.ALLOWED_FINGERPRINT_SIZES.includes(bits_per_fingerprint)) {
         throw new Error(
@@ -124,9 +133,11 @@ export default class XorFilter extends BaseFilter {
    * @param element
    * @returns
    */
-  public has(element: HashableInput): boolean {
+  public has(element: XorHashableInput): boolean {
     const hash = this._hash64(
-      this._hashable_to_long(element, this.seed),
+      element instanceof Long
+        ? element
+        : this._hashable_to_long(element, this.seed),
       this.seed
     )
     const fingerprint = this._fingerprint(hash).toInt()
@@ -155,7 +166,7 @@ export default class XorFilter extends BaseFilter {
    * xor.has('bob') // false
    * ```
    */
-  add(elements: HashableInput[]) {
+  add(elements: XorHashableInput[]) {
     if (elements.length !== this._size) {
       throw new Error(
         `This filter has been created for exactly ${this._size} elements`
@@ -202,7 +213,7 @@ export default class XorFilter extends BaseFilter {
    * @returns
    */
   public static create(
-    elements: HashableInput[],
+    elements: XorHashableInput[],
     bits_per_fingerprint?: 8 | 16
   ): XorFilter {
     const a = new XorFilter(elements.length, bits_per_fingerprint)
@@ -338,7 +349,7 @@ export default class XorFilter extends BaseFilter {
    * @param arraylength length of the filter
    * @returns
    */
-  private _create(elements: HashableInput[], arrayLength: number) {
+  private _create(elements: XorHashableInput[], arrayLength: number) {
     const reverseOrder: Long[] = allocateArray(this._size, Long.ZERO)
     const reverseH: number[] = allocateArray(this._size, 0)
     let reverseOrderPos

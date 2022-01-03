@@ -28,7 +28,7 @@ import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import Cell from './cell'
 import {AutoExportable, Field, Parameter} from '../exportable'
-import {allocateArray, getDistinctIndexes, hashTwiceAsString} from '../utils'
+import {allocateArray} from '../utils'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 
 /**
@@ -169,11 +169,11 @@ export default class InvertibleBloomFilter
    * @param element - The element to insert
    */
   add(element: Buffer): void {
-    const hashes = hashTwiceAsString(
+    const hashes = this._hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
     )
-    const indexes = getDistinctIndexes(
+    const indexes = this._getDistinctIndexes(
       hashes.first,
       this._size,
       this._hashCount,
@@ -190,11 +190,11 @@ export default class InvertibleBloomFilter
    * @return True if the element has been removed, False otheriwse
    */
   remove(element: Buffer): boolean {
-    const hashes = hashTwiceAsString(
+    const hashes = this._hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
     )
-    const indexes = getDistinctIndexes(
+    const indexes = this._getDistinctIndexes(
       hashes.first,
       this._size,
       this._hashCount,
@@ -214,11 +214,11 @@ export default class InvertibleBloomFilter
    * @return False if the element is not in the filter, true if "may be" in the filter.
    */
   has(element: Buffer): boolean {
-    const hashes = hashTwiceAsString(
+    const hashes = this._hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
     )
-    const indexes = getDistinctIndexes(
+    const indexes = this._getDistinctIndexes(
       hashes.first,
       this._size,
       this._hashCount,
@@ -337,8 +337,11 @@ export default class InvertibleBloomFilter
         } else {
           throw new Error('Please report, not possible')
         }
-        const hashes = hashTwiceAsString(JSON.stringify(id.toJSON()), this.seed)
-        const indexes = getDistinctIndexes(
+        const hashes = this._hashTwiceAsString(
+          JSON.stringify(id.toJSON()),
+          this.seed
+        )
+        const indexes = this._getDistinctIndexes(
           hashes.first,
           this._size,
           this._hashCount,

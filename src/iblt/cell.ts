@@ -24,7 +24,7 @@ SOFTWARE.
 
 'use strict'
 
-import {hashTwiceAsString, xorBuffer} from '../utils'
+import {xorBuffer} from '../utils'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import BaseFilter from '../base-filter'
 
@@ -166,7 +166,7 @@ export default class Cell extends BaseFilter {
       return false
     }
     // compare the hashes
-    const hashes = hashTwiceAsString(
+    const hashes = this._hashTwiceAsString(
       JSON.stringify(this._idSum.toJSON()),
       this.seed
     )
