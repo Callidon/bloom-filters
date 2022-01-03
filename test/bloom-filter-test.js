@@ -168,11 +168,9 @@ describe('BloomFilter', () => {
     it(`should not return an error when inserting ${max} elements`, () => {
       const filter = BloomFilter.create(max, targetedRate)
       for (let i = 0; i < max; ++i) filter.add('' + i)
-      console.log('Elements added')
       for (let i = 0; i < max; ++i) {
         filter.has('' + i).should.equal(true)
       }
-      console.log('Elements checked')
       let current
       let falsePositive = 0
       let tries = 0

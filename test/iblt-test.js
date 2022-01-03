@@ -29,8 +29,6 @@ require('chai').expect()
 const {InvertibleBloomFilter} = require('../dist/api.js')
 const random = require('random')
 const seedrandom = require('seedrandom')
-const utils = require('../dist/utils.js')
-utils.switchSerializationType(32)
 
 describe('Invertible Bloom Lookup Tables', () => {
   const keys = 1000

@@ -25,23 +25,30 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const utils = require('../dist/utils.js')
-utils.switchSerializationType(32)
+const {
+  allocateArray,
+  randomInt,
+  doubleHashing,
+  xorBuffer,
+  getDefaultSeed,
+  isEmptyBuffer,
+} = require('../dist/utils')
 const {BloomFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
 const {range} = require('lodash')
-const seed = utils.getDefaultSeed()
+const {default: BaseFilter} = require('../dist/base-filter')
+const seed = getDefaultSeed()
 
 describe('Utils', () => {
   describe('#allocateArray', () => {
     it('should allocate an array with the given size and a default value', () => {
-      const array = utils.allocateArray(15, 1)
+      const array = allocateArray(15, 1)
       array.length.should.equal(15)
       array.forEach(value => value.should.equal(1))
     })
 
     it('should allow the use of a function to set the default value', () => {
-      const array = utils.allocateArray(15, () => 'foo')
+      const array = allocateArray(15, () => 'foo')
       array.length.should.equal(15)
       array.forEach(value => value.should.equal('foo'))
     })
@@ -54,9 +61,9 @@ describe('Utils', () => {
       const size = 1000
       const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       values.forEach(n => {
-        utils
-          .doubleHashing(n, hashA, hashB, size)
-          .should.equal((hashA + n * hashB + (n ** 3 - n) / 6) % size)
+        doubleHashing(n, hashA, hashB, size).should.equal(
+          (hashA + n * hashB + (n ** 3 - n) / 6) % size
+        )
       })
     })
   })
@@ -64,7 +71,7 @@ describe('Utils', () => {
   describe('#randomInt', () => {
     it('should generate a random int in an interval', () => {
       const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-      utils.randomInt(values[0], values[9]).should.be.oneOf(values)
+      randomInt(values[0], values[9]).should.be.oneOf(values)
     })
   })
 
@@ -75,40 +82,23 @@ describe('Utils', () => {
       const res = Buffer.allocUnsafe(10).fill(0)
       res[res.length - 1] = 1
       // xor(a, b) = <Buffer 00 00 00 00 00 00 00 00 00 01>
-      utils
-        .xorBuffer(Buffer.from(a), Buffer.from(b))
+      xorBuffer(Buffer.from(a), Buffer.from(b))
         .toString()
         .should.equal(b.toString())
       // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
-      utils
-        .xorBuffer(
-          utils.xorBuffer(Buffer.from(a), Buffer.from(b)),
-          Buffer.from(b)
-        )
+      xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(b))
         .toString()
         .should.equal(Buffer.from('').toString())
       // xor(xor(a, b), a) === b
-      utils
-        .xorBuffer(
-          utils.xorBuffer(Buffer.from(a), Buffer.from(b)),
-          Buffer.from(a)
-        )
+      xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(a))
         .toString()
         .should.equal(Buffer.from(b).toString())
       // xor(xor(a, a), a) === a
-      utils
-        .xorBuffer(
-          utils.xorBuffer(Buffer.from(a), Buffer.from(a)),
-          Buffer.from(a)
-        )
+      xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(a)), Buffer.from(a))
         .toString()
         .should.equal(Buffer.from('').toString())
       // xor(xor(b, b), b) === a
-      utils
-        .xorBuffer(
-          utils.xorBuffer(Buffer.from(b), Buffer.from(b)),
-          Buffer.from(b)
-        )
+      xorBuffer(xorBuffer(Buffer.from(b), Buffer.from(b)), Buffer.from(b))
         .toString()
         .should.equal(Buffer.from(b).toString())
     })
@@ -120,27 +110,27 @@ describe('Utils', () => {
       for (let i = 0; i < max; i++) {
         const s = XXH.h64('' + i, seed).toString(16)
         const buf = Buffer.from(s)
-        a = utils.xorBuffer(a, buf)
+        a = xorBuffer(a, buf)
         if (i !== max - 1) {
-          b = utils.xorBuffer(buf, b)
+          b = xorBuffer(buf, b)
         } else {
           last = buf
         }
       }
-      utils.xorBuffer(a, b).equals(last).should.equal(true)
-      utils.xorBuffer(a, b).toString().should.equal(last.toString())
-      utils.xorBuffer(a, a).equals(Buffer.allocUnsafe(0)).should.equal(true)
-      utils.xorBuffer(b, b).equals(Buffer.allocUnsafe(0)).should.equal(true)
+      xorBuffer(a, b).equals(last).should.equal(true)
+      xorBuffer(a, b).toString().should.equal(last.toString())
+      xorBuffer(a, a).equals(Buffer.allocUnsafe(0)).should.equal(true)
+      xorBuffer(b, b).equals(Buffer.allocUnsafe(0)).should.equal(true)
     })
   })
 
   describe('#isBufferEmpty', () => {
     it('should return true if a buffer is empty', () => {
-      utils.isEmptyBuffer(Buffer.allocUnsafe(10).fill(0)).should.equal(true)
-      utils.isEmptyBuffer(Buffer.allocUnsafe(0).fill(0)).should.equal(true)
+      isEmptyBuffer(Buffer.allocUnsafe(10).fill(0)).should.equal(true)
+      isEmptyBuffer(Buffer.allocUnsafe(0).fill(0)).should.equal(true)
     })
     it('should return false if a buffer is not empty', () => {
-      utils.isEmptyBuffer(Buffer.allocUnsafe(10).fill(1)).should.equal(false)
+      isEmptyBuffer(Buffer.allocUnsafe(10).fill(1)).should.equal(false)
     })
   })
 
@@ -151,9 +141,10 @@ describe('Utils', () => {
     const result = range(0, desiredIndices, 1)
     it(`should return ${desiredIndices} distinct indices on the interval [0, ${desiredIndices})`, () => {
       try {
+        const obj = new (class extends BaseFilter {})()
         const start = new Date().getTime()
-        const indices = utils
-          .getDistinctIndexes(key, desiredIndices, desiredIndices)
+        const indices = obj
+          ._getDistinctIndexes(key, desiredIndices, desiredIndices)
           .sort((a, b) => a - b)
         indices.should.deep.equal(result)
         console.log(
@@ -180,15 +171,13 @@ describe('Utils', () => {
 
   describe('Use different hash functions', () => {
     it('overriding serialize function by always returning Number(1)', () => {
-      utils.serialize = (_element, _seed = undefined) => { // eslint-disable-line
+      BaseFilter.prototype._serialize = function (_element, _seed = undefined) { // eslint-disable-line
         return Number(1)
       }
-      const data = utils.serialize('a', seed)
-      data.should.equal(Number(1))
       const bl = BloomFilter.create(2, 0.01)
       bl.add('a')
       const bl2 = BloomFilter.create(2, 0.01)
-      bl2.add('a')
+      bl2.add('b')
       // 2 bloom filters with a hash functions returning everytime the same thing must be equal
       bl.equals(bl2).should.be.true
     })

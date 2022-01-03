@@ -26,8 +26,6 @@ SOFTWARE.
 
 require('chai').should()
 const {HyperLogLog} = require('../dist/api.js')
-const utils = require('../dist/utils.js')
-utils.switchSerializationType(32)
 
 describe('HyperLogLog', () => {
   describe('#update', () => {

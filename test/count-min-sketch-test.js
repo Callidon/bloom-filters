@@ -26,7 +26,6 @@ SOFTWARE.
 
 require('chai').should()
 const {CountMinSketch} = require('../dist/api.js')
-const butils = require('../dist/utils.js')
 
 describe('CountMinSketch', () => {
   const delta = 0.999
@@ -133,7 +132,6 @@ describe('CountMinSketch', () => {
     })
   })
   describe('Performance test', () => {
-    butils.switchSerializationType(32)
     // setup an finite stream of 100 000 elements between [0; 1000)
     const max = 100000
     const rate = 0.00001
@@ -174,7 +172,6 @@ describe('CountMinSketch', () => {
       const errorRate = error / max
       const errorProb = 1 - Math.pow(Math.E, -filter.rows)
       errorRate.should.be.at.most(errorProb)
-      butils.switchSerializationType(64)
     })
   })
 })
