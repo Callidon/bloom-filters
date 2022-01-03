@@ -1,4 +1,4 @@
-# Bloom-Filters [![Master](https://github.com/callidon/bloom-filters/actions/workflows/npm_test_doc.yml/badge.svg?branch=master&event=push)](https://github.com/Callidon/bloom-filters/actions)
+# Bloom-Filters [![Master](https://github.com/callidon/bloom-filters/actions/workflows/npm_test_doc.yml/badge.svg)](https://github.com/Callidon/bloom-filters/actions)
 
 JavaScript/TypeScript implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash.
 **This package relies on [non-cryptographic hash functions](https://cyan4973.github.io/xxHash/)**.
