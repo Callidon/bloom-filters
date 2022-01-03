@@ -9,11 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 15.x, 16.x] # since last mocha version is compatible for node 12.0.0+ we remove 10.x matrix
+        # since last mocha version is compatible for node 12.0.0+ we remove 10.x matrix
+        # Only LTS major version
+        node-version: ['12', '14', '15', '16', 'lts/*'] 
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
     - name: Cache node modules
