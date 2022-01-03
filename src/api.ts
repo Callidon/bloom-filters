@@ -24,6 +24,7 @@ SOFTWARE.
 
 'use strict'
 
+export {default as BaseFilter} from './base-filter'
 export {default as BloomFilter} from './bloom/bloom-filter'
 export {default as BitSet} from './bloom/bit-set'
 export {default as XorFilter} from './bloom/xor-filter'

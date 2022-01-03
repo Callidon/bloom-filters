@@ -33,10 +33,9 @@ const {
   getDefaultSeed,
   isEmptyBuffer,
 } = require('../dist/utils')
-const {BloomFilter} = require('../dist/api.js')
+const {BloomFilter, BaseFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
 const {range} = require('lodash')
-const {default: BaseFilter} = require('../dist/base-filter')
 const seed = getDefaultSeed()
 
 describe('Utils', () => {
