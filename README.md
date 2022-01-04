@@ -9,8 +9,8 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 
 ❗️**Compatibility**❗️ 
 * Be carefull when migrating from a version to another.
-* Bug fixes were introduced in `1.3.7` for hashing and indexing data. Then, you **must re-build completely your filters from start** to be compatible with the new versions. 
-* To keep the `breaking changes` rule of npm versions we will make now new `majored versions` since 1.3.9 whenever a modification is done on the hashing system. 
+* Bug fixes were introduced in `1.3.7` and from `1.3.9` to `2.0.0` for hashing and indexing data. Then, you **must re-build completely your filters from start** to be compatible with the new versions. 
+* To keep the `breaking changes` rule of npm versions we will make now new `majored versions` since 1.3.9 whenever a modification is done on the hashing/indexing system or breaks the current API. 
 
 # Table of contents
 
