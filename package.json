@@ -40,11 +40,11 @@
   },
   "homepage": "https://github.com/Callidon/bloom-filters#readme",
   "devDependencies": {
-    "@types/cuint": "^0.2.1",
+    "@types/cuint": "^0.2.X",
     "@types/lodash": "^4.14.X",
     "@types/lodash.eq": "^4.0.X",
     "@types/lodash.indexof": "^4.0.X",
-    "@types/node": "^17.0.0",
+    "@types/node": "^17.0.X",
     "@types/seedrandom": "^3.0.X",
     "@types/xxhashjs": "^0.2.X",
     "chai": "^4.3.4",
