@@ -299,4 +299,78 @@ export default abstract class BaseFilter {
     const hash = this._hashAsInt(elem, seed)
     return {int: hash, string: numberToHex(hash)}
   }
+
+  /**
+   * @deprecated
+   * Generate a set of distinct indexes on interval [0, size) using the double hashing technique
+   * This function is the old method called by a lot of filters.
+   * To work in the current version, replace, the getIndexes function of the filters by this one
+   * @param  element  - The element to hash
+   * @param  size     - the range on which we can generate an index [0, size) = size
+   * @param  number   - The number of indexes desired
+   * @param  seed     - The seed used
+   * @return A array of indexes
+   * @author Arnaud Grall
+   */
+  protected _deprecated_getDistinctIndices(
+    element: HashableInput,
+    size: number,
+    number: number,
+    seed?: number
+  ): Array<number> {
+    if (seed === undefined) {
+      seed = getDefaultSeed()
+    }
+
+    // old and deprecated double hashing used until version 1.3.9
+    const _deprecated_double_hashing = (
+      n: number,
+      hashA: number,
+      hashB: number,
+      size: number
+    ): number => {
+      return Math.abs((hashA + n * hashB) % size)
+    }
+
+    const _deprecated_getDistinctIndicesBis = (
+      n: number,
+      elem: HashableInput,
+      size: number,
+      count: number,
+      indexes: Array<number> = []
+    ): Array<number> => {
+      if (indexes.length === count) {
+        return indexes
+      } else {
+        const hashes = this._hashTwice(elem, seed! + (size % n))
+        const ind = _deprecated_double_hashing(
+          n,
+          hashes.first,
+          hashes.second,
+          size
+        )
+        if (indexes.includes(ind)) {
+          // console.log('generate index: %d for %s', ind, elem)
+          return _deprecated_getDistinctIndicesBis(
+            n + 1,
+            elem,
+            size,
+            count,
+            indexes
+          )
+        } else {
+          // console.log('already found: %d for %s', ind, elem)
+          indexes.push(ind)
+          return _deprecated_getDistinctIndicesBis(
+            n + 1,
+            elem,
+            size,
+            count,
+            indexes
+          )
+        }
+      }
+    }
+    return _deprecated_getDistinctIndicesBis(1, element, size, number)
+  }
 }

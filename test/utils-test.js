@@ -170,12 +170,14 @@ describe('Utils', () => {
 
   describe('Use different hash functions', () => {
     it('overriding serialize function by always returning Number(1)', () => {
-      BaseFilter.prototype._serialize = function (_element, _seed = undefined) { // eslint-disable-line
+      function _serialize(_element, _seed = undefined) { // eslint-disable-line
         return Number(1)
       }
       const bl = BloomFilter.create(2, 0.01)
+      bl._serialize = _serialize
       bl.add('a')
       const bl2 = BloomFilter.create(2, 0.01)
+      bl2._serialize = _serialize
       bl2.add('b')
       // 2 bloom filters with a hash functions returning everytime the same thing must be equal
       bl.equals(bl2).should.be.true

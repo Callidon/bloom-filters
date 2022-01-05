@@ -544,11 +544,15 @@ In the case you want to use your own hash functions, you can override the `_seri
 ```js
 const {BaseFilter, BloomFilter} = require('bloom-filters')
 
-// override the method
-BaseFilter.prototype._serialize = function (element, seed=undefined) { return Number(1) }
+function _serialize(element, seed=undefined) { return Number(1) }
+
+// override the method globaly for all classes
+BaseFilter.prototype._serialize = _serialize
 
 // use the library as usual
 const bl = BloomFilter.create(2, 0.01)
+// override just your structure locally
+bl._serialize = _serialize
 bl.add('a')
 ```
 See `test/utils-test.js` "_Use different hash functions_" describe close.
