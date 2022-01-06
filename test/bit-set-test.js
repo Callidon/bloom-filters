@@ -28,7 +28,7 @@ const {BitSet} = require('../dist/api')
 describe('BitSet', () => {
   it('is initially clear', () => {
     const set = new BitSet(50)
-    set.size.should.equal(50)
+    set.size.should.equal(56)
     for (let i = 0; i < set.size; i++) {
       set.has(i).should.equal(false)
     }
@@ -36,7 +36,7 @@ describe('BitSet', () => {
 
   it('#add', () => {
     const set = new BitSet(50)
-    set.size.should.equal(50)
+    set.size.should.equal(56)
     for (let i = 0; i < set.size; i++) {
       set.has(i).should.equal(false)
       set.add(i)
@@ -47,7 +47,7 @@ describe('BitSet', () => {
   describe('#max', () => {
     it('finds the high bit', () => {
       const set = new BitSet(150)
-      set.size.should.equal(150)
+      set.size.should.equal(152)
       for (let i = 0; i < set.size; i++) {
         set.add(i)
         set.max().should.equal(i)

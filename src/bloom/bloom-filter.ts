@@ -27,7 +27,7 @@ SOFTWARE.
 import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter from '../base-filter'
 import BitSet from './bit-set'
-import {Exportable, Field, Parameter} from '../exportable'
+import {AutoExportable, Field, Parameter} from '../exportable'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 import {HashableInput} from '../utils'
 
@@ -40,55 +40,7 @@ import {HashableInput} from '../utils'
  * @author Thomas Minier
  * @author Arnaud Grall
  */
-@Exportable({
-  export: d => {
-    return {
-      type: 'BloomFilter',
-      _size: d._size,
-      _nbHashes: d._nbHashes,
-      _filter: d._filter.export(),
-      _seed: d.seed,
-    }
-  },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  import: (json: any) => {
-    let bl: BloomFilter
-    const mandatory_fileds = ['type', '_size', '_nbHashes', '_filter', '_seed']
-    const filtered_json_keys = Object.keys(json).filter(key =>
-      mandatory_fileds.includes(key)
-    )
-    if (filtered_json_keys.length === mandatory_fileds.length) {
-      if (json.type !== 'BloomFilter') {
-        throw new Error(
-          'Cannot import the BloomFilter because type is: ' + json.type
-        )
-      }
-      // Create the bitset from new and old exported structure
-      let bs: BitSet
-      if (Array.isArray(json._filter)) {
-        // create a new BitSet from the specified array
-        bs = new BitSet(json._size)
-        json._filter.forEach((val: number, index: number) => {
-          if (val !== 0) {
-            bs.add(index)
-          }
-        })
-      } else {
-        bs = BitSet.import(json._filter)
-      }
-      bl = new BloomFilter(json._size, json._nbHashes)
-      bl.seed = json._seed
-      bl._filter = bs
-      return bl
-    } else {
-      throw new Error(
-        `Cannot import the BloomFilter. Mandatory fields are: ${filtered_json_keys.join(
-          ','
-        )}`
-      )
-    }
-  },
-})
+@AutoExportable<BloomFilter>('BloomFilter', ['_seed'])
 export default class BloomFilter
   extends BaseFilter
   implements ClassicFilter<HashableInput>
@@ -99,7 +51,25 @@ export default class BloomFilter
   @Field()
   private readonly _nbHashes: number
 
-  @Field<BitSet>(f => f.export(), d => BitSet.import(d))
+  @Field<BitSet>(
+    f => f.export(),
+    data => {
+      // Create the bitset from new and old exported structure
+      let bs: BitSet
+      if (Array.isArray(data)) {
+        // create a new BitSet from the specified array
+        bs = new BitSet(data.length)
+        data.forEach((val: number, index: number) => {
+          if (val !== 0) {
+            bs.add(index)
+          }
+        })
+        return bs
+      } else {
+        return BitSet.import(data)
+      }
+    }
+  )
   private _filter: BitSet
 
   /**

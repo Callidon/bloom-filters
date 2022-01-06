@@ -42,8 +42,9 @@ export default class BitSet {
    * @param size the number of bits that can be stored. (This is NOT required to be a multiple of 8.)
    */
   constructor(size: number) {
-    this.size = size
-    this.array = new Uint8Array(Math.ceil(size / bitsPerWord))
+    const diff = bitsPerWord - (size % bitsPerWord)
+    this.size = size + ([0, 8].includes(diff) ? 0 : diff)
+    this.array = new Uint8Array(Math.ceil(this.size / bitsPerWord))
   }
 
   /**
