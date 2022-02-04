@@ -104,7 +104,7 @@ export default class HyperLogLog extends BaseFilter {
    */
   update(element: HashableInput): void {
     // const hashedValue = Buffer.from(hashAsString(element, this.seed))
-    const hashedValue = this._hashAsInt(element, this.seed).toString(2)
+    const hashedValue = this._hashing.hashAsInt(element, this.seed).toString(2)
     const registerIndex =
       1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
     // find the left most 1-bit in the second part of the buffer

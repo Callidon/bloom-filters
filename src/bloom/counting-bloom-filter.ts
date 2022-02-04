@@ -128,7 +128,7 @@ export default class CountingBloomFilter
    * ```
    */
   add(element: HashableInput): void {
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._size,
       this._nbHashes,
@@ -155,7 +155,7 @@ export default class CountingBloomFilter
    * ```
    */
   remove(element: HashableInput): boolean {
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._size,
       this._nbHashes,
@@ -187,7 +187,7 @@ export default class CountingBloomFilter
    * ```
    */
   has(element: HashableInput): boolean {
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._size,
       this._nbHashes,

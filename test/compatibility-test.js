@@ -26,13 +26,13 @@ SOFTWARE.
 
 require('chai').should()
 const {expect} = require('chai')
-const {BloomFilter} = require('../dist/api.js')
+const {BloomFilter, DeprecatedHashing} = require('../dist/api.js')
 
 describe('BloomFilter Compatibility (only) between versions', () => {
   it('1.3.4 compatibility (issue #49)', () => {
     const bl = BloomFilter.create(15, 0.1)
     bl.seed = 1
-    bl._getIndexes = bl._deprecated_getDistinctIndices
+    bl._hashing = new DeprecatedHashing()
     bl.add('alice')
     bl.add('bob')
     // compatibility with the current version
@@ -44,19 +44,14 @@ describe('BloomFilter Compatibility (only) between versions', () => {
       _seed: 1,
     })
     // these indexes are generated using the 1.3.4 version
-    let indexes = bl._deprecated_getDistinctIndices(
+    let indexes = bl._hashing.getDistinctIndexes(
       'alice',
       bl._size,
       bl._nbHashes,
       1
     )
     expect(indexes).to.deep.equal([59, 53, 47, 41])
-    indexes = bl._deprecated_getDistinctIndices(
-      'bob',
-      bl._size,
-      bl._nbHashes,
-      1
-    )
+    indexes = bl._hashing.getDistinctIndexes('bob', bl._size, bl._nbHashes, 1)
     expect(indexes).deep.equal([17, 14, 11, 8])
 
     // try to import an old 1.3.4 filter to the new format
@@ -72,7 +67,7 @@ describe('BloomFilter Compatibility (only) between versions', () => {
       ],
     }
     const importedBl = BloomFilter.fromJSON(filter)
-    importedBl._getIndexes = importedBl._deprecated_getDistinctIndices // dont forget this line or the .has() wont work correctly
+    importedBl._hashing = new DeprecatedHashing() // dont forget this line or the .has() wont work correctly
     bl.equals(importedBl).should.be.true
     importedBl.has('alice').should.be.true
     importedBl.has('bob').should.be.true

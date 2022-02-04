@@ -105,27 +105,6 @@ export function numberToHex(elem: number): string {
 }
 
 /**
- * Apply enhanced Double Hashing to produce a n-hash
- * @see {@link http://peterd.org/pcd-diss.pdf} s6.5.4
- * @param  n - The indice of the hash function we want to produce
- * @param  hashA - The result of the first hash function applied to a value.
- * @param  hashB - The result of the second hash function applied to a value.
- * @param  size - The size of the datastructures associated to the hash context (ex: the size of a Bloom Filter)
- * @return The result of hash_n applied to a value.
- * @memberof Utils
- * @author Thomas Minier
- * @author Arnaud Grall
- */
-export function doubleHashing(
-  n: number,
-  hashA: number,
-  hashB: number,
-  size: number
-): number {
-  return Math.abs((hashA + n * hashB + Math.floor((n ** 3 - n) / 6)) % size)
-}
-
-/**
  * Generate a random int between two bounds (included)
  * @param min - The lower bound
  * @param max - The upper bound

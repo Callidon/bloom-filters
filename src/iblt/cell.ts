@@ -166,7 +166,7 @@ export default class Cell extends BaseFilter {
       return false
     }
     // compare the hashes
-    const hashes = this._hashTwiceAsString(
+    const hashes = this._hashing.hashTwiceAsString(
       JSON.stringify(this._idSum.toJSON()),
       this.seed
     )

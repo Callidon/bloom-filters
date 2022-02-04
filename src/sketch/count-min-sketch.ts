@@ -130,7 +130,7 @@ export default class CountMinSketch
    */
   update(element: HashableInput, count = 1): void {
     this._allSums += count
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._columns,
       this._rows,
@@ -148,7 +148,7 @@ export default class CountMinSketch
    */
   count(element: HashableInput): number {
     let min = Infinity
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._columns,
       this._rows,

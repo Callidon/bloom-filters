@@ -222,7 +222,7 @@ export default class PartitionedBloomFilter
    * ```
    */
   add(element: HashableInput): void {
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._m,
       this._nbHashes,
@@ -247,7 +247,7 @@ export default class PartitionedBloomFilter
    * ```
    */
   has(element: HashableInput): boolean {
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._m,
       this._nbHashes,

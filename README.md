@@ -540,19 +540,19 @@ console.log(bl.seed) // 43981
 ```
 
 By default we hash elements using `XXH.h64` function from [`xxhashjs`](https://github.com/pierrec/js-xxhash).
-In the case you want to use your own hash functions, you can override the `_serialize` function in the `BaseFilter` class, example:
+In the case you want to use your own hash functions, you can use your own Hashing class by extending the default one. Example:
 ```js
-const {BaseFilter, BloomFilter} = require('bloom-filters')
+const {BloomFilter, Hashing} = require('bloom-filters')
 
-function _serialize(element, seed=undefined) { return Number(1) }
+class CustomHashing extends Hashing {
+  serialize(_element, _seed) {
+    return Number(1)
+  }
+}
 
-// override the method globaly for all classes
-BaseFilter.prototype._serialize = _serialize
-
-// use the library as usual
 const bl = BloomFilter.create(2, 0.01)
 // override just your structure locally
-bl._serialize = _serialize
+bl._hashing = new CustomHashing()
 bl.add('a')
 ```
 See `test/utils-test.js` "_Use different hash functions_" describe close.

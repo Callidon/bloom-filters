@@ -28,7 +28,6 @@ require('chai').should()
 const {
   allocateArray,
   randomInt,
-  doubleHashing,
   xorBuffer,
   getDefaultSeed,
   isEmptyBuffer,
@@ -37,6 +36,7 @@ const {BloomFilter, BaseFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
 const {range} = require('lodash')
 const seed = getDefaultSeed()
+const {Hashing} = require('../dist/api')
 
 describe('Utils', () => {
   describe('#allocateArray', () => {
@@ -55,14 +55,15 @@ describe('Utils', () => {
 
   describe('#doubleHashing', () => {
     it('should perform a double hashing', () => {
+      const hashing = new Hashing()
       const hashA = Math.random(Number.MIN_VALUE, Number.MAX_VALUE / 2)
       const hashB = Math.random(Number.MAX_VALUE / 2, Number.MAX_VALUE)
       const size = 1000
       const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       values.forEach(n => {
-        doubleHashing(n, hashA, hashB, size).should.equal(
-          (hashA + n * hashB + (n ** 3 - n) / 6) % size
-        )
+        hashing
+          .doubleHashing(n, hashA, hashB, size)
+          .should.equal((hashA + n * hashB + (n ** 3 - n) / 6) % size)
       })
     })
   })
@@ -142,8 +143,8 @@ describe('Utils', () => {
       try {
         const obj = new (class extends BaseFilter {})()
         const start = new Date().getTime()
-        const indices = obj
-          ._getDistinctIndexes(key, desiredIndices, desiredIndices)
+        const indices = obj._hashing
+          .getDistinctIndexes(key, desiredIndices, desiredIndices)
           .sort((a, b) => a - b)
         indices.should.deep.equal(result)
         console.log(
@@ -170,14 +171,16 @@ describe('Utils', () => {
 
   describe('Use different hash functions', () => {
     it('overriding serialize function by always returning Number(1)', () => {
-      function _serialize(_element, _seed = undefined) { // eslint-disable-line
-        return Number(1)
+      class CustomHashing extends Hashing {
+        serialize(_element, _seed = undefined) { // eslint-disable-line
+          return Number(1)
+        }
       }
       const bl = BloomFilter.create(2, 0.01)
-      bl._serialize = _serialize
+      bl._hashing = new CustomHashing()
       bl.add('a')
       const bl2 = BloomFilter.create(2, 0.01)
-      bl2._serialize = _serialize
+      bl2._hashing = new CustomHashing()
       bl2.add('b')
       // 2 bloom filters with a hash functions returning everytime the same thing must be equal
       bl.equals(bl2).should.be.true

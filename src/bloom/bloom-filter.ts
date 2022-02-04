@@ -156,7 +156,7 @@ export default class BloomFilter
    * ```
    */
   add(element: HashableInput): void {
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._size,
       this._nbHashes,
@@ -180,7 +180,7 @@ export default class BloomFilter
    * ```
    */
   has(element: HashableInput): boolean {
-    const indexes = this._getIndexes(
+    const indexes = this._hashing.getIndexes(
       element,
       this._size,
       this._nbHashes,
