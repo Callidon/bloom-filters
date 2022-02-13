@@ -68,9 +68,9 @@ function closestPrime(x: number): number {
  * @author Thomas Minier
  */
 export default class MinHashFactory {
-  private _nbHashes: number
-  private _maxValue: number
-  private _hashFunctions: HashFunction[]
+  public _nbHashes: number
+  public _maxValue: number
+  public _hashFunctions: HashFunction[]
 
   /**
    * Constructor
@@ -94,7 +94,7 @@ export default class MinHashFactory {
    * Create a new MinHash set
    * @return A new MinHash set
    */
-  create(): MinHash {
+  public create(): MinHash {
     return new MinHash(this._nbHashes, this._hashFunctions)
   }
 }

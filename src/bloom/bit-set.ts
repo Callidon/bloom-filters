@@ -32,10 +32,10 @@ const bitsPerWord = 8
  * @author David Leppik
  */
 export default class BitSet {
-  readonly size: number
+  public readonly size: number
 
   // Uint32Array may be slightly faster due to memory alignment, but this avoids endianness when serializing
-  private array: Uint8Array
+  public array: Uint8Array
 
   /**
    * Constructor. All bits are initially set to false.
@@ -51,7 +51,7 @@ export default class BitSet {
    * Returns the value of the bit at the given index
    * @param index position of the bit, zero-indexed
    */
-  has(index: number): boolean {
+  public has(index: number): boolean {
     const wordIndex = Math.floor(index / bitsPerWord)
     const mask = 1 << index % bitsPerWord
     return (this.array[wordIndex] & mask) !== 0
@@ -61,7 +61,7 @@ export default class BitSet {
    * Set the bit to true
    * @param index position of the bit, zero-indexed
    */
-  add(index: number) {
+  public add(index: number) {
     const wordIndex = Math.floor(index / bitsPerWord)
     const mask = 1 << index % bitsPerWord
     this.array[wordIndex] = this.array[wordIndex] | mask
@@ -70,7 +70,7 @@ export default class BitSet {
   /**
    * Returns the maximum true bit.
    */
-  max(): number {
+  public max(): number {
     for (let i = this.array.length - 1; i >= 0; i--) {
       const bits = this.array[i]
       if (bits) {
@@ -83,7 +83,7 @@ export default class BitSet {
   /**
    * Returns the number of true bits.
    */
-  bitCount(): number {
+  public bitCount(): number {
     let result = 0
     for (let i = 0; i < this.array.length; i++) {
       result += BitSet.countBits(this.array[i]) // Assumes we never have bits set beyond the end
@@ -95,7 +95,7 @@ export default class BitSet {
    * Returns true if the size and contents are identical.
    * @param other another BitSet
    */
-  equals(other: BitSet): boolean {
+  public equals(other: BitSet): boolean {
     if (other.size !== this.size) {
       return false
     }
@@ -110,7 +110,7 @@ export default class BitSet {
   /**
    * Returns a JSON-encodable object readable by {@link import}.
    */
-  export(): {size: number; content: string} {
+  public export(): {size: number; content: string} {
     return {
       size: this.size,
       content: encode(this.array),
@@ -121,8 +121,7 @@ export default class BitSet {
    * Returns an object written by {@link export}.
    * @param data an object written by {@link export}
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static import(data: any): BitSet {
+  public static import(data: {size: number; content: string}): BitSet {
     if (typeof data.size !== 'number') {
       throw Error('BitSet missing size')
     }
@@ -144,7 +143,7 @@ export default class BitSet {
    * BitSet.highBit(5) // returns 2
    * ```
    */
-  private static highBit(bits: number): number {
+  public static highBit(bits: number): number {
     let result = bitsPerWord - 1
     let mask = 1 << result
     while (result >= 0 && (mask & bits) !== mask) {
@@ -163,7 +162,7 @@ export default class BitSet {
    * BitSet.countBits(3) // returns 2
    * ```
    */
-  private static countBits(bits: number): number {
+  public static countBits(bits: number): number {
     let result = bits & 1
     while (bits !== 0) {
       bits = bits >>> 1

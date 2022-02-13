@@ -59,25 +59,25 @@ export default class HyperLogLog extends BaseFilter {
    * The number of registers, denoted m in the algorithm
    */
   @Field()
-  private _nbRegisters: number
+  public _nbRegisters: number
 
   /**
    * Number of bytes to take per hash, denoted b in the algorithm (b = log2(m))
    */
   @Field()
-  private _nbBytesPerHash: number
+  public _nbBytesPerHash: number
 
   /**
    * The bias-correction constant, denoted alpha in the algorithm
    */
   @Field()
-  private _correctionBias: number
+  public _correctionBias: number
 
   /**
    * The registers used to store data
    */
   @Field()
-  private _registers: Array<number>
+  public _registers: Array<number>
 
   /**
    * Constructor
@@ -94,7 +94,7 @@ export default class HyperLogLog extends BaseFilter {
   /**
    * Get the number of registers used by the HyperLogLog
    */
-  get nbRegisters(): number {
+  public get nbRegisters(): number {
     return this._nbRegisters
   }
 
@@ -102,7 +102,7 @@ export default class HyperLogLog extends BaseFilter {
    * Update The multiset with a new element
    * @param element - Element to add
    */
-  update(element: HashableInput): void {
+  public update(element: HashableInput): void {
     // const hashedValue = Buffer.from(hashAsString(element, this.seed))
     const hashedValue = this._hashing.hashAsInt(element, this.seed).toString(2)
     const registerIndex =
@@ -127,7 +127,7 @@ export default class HyperLogLog extends BaseFilter {
    * Estimate the cardinality of the multiset
    * @return The estimated cardinality of the multiset
    */
-  count(round = false): number {
+  public count(round = false): number {
     // Use the standard HyperLogLog estimator
     const harmonicMean = this._registers.reduce(
       (acc: number, value: number) => acc + Math.pow(2, -value),
@@ -157,7 +157,7 @@ export default class HyperLogLog extends BaseFilter {
    * Compute the accuracy of the cardinality estimation produced by this HyperLogLog
    * @return The accuracy of the cardinality estimation
    */
-  accuracy(): number {
+  public accuracy(): number {
     return 1.04 / Math.sqrt(this._nbRegisters)
   }
 
@@ -166,7 +166,7 @@ export default class HyperLogLog extends BaseFilter {
    * @param other - Multiset ot merge with
    * @return The union of the two multisets
    */
-  merge(other: HyperLogLog): HyperLogLog {
+  public merge(other: HyperLogLog): HyperLogLog {
     if (this.nbRegisters !== other.nbRegisters) {
       throw new Error(
         `Two HyperLogLog must have the same number of registers to be merged. Tried to merge two HyperLogLog with m = ${this.nbRegisters} and m = ${other.nbRegisters}`
@@ -187,7 +187,7 @@ export default class HyperLogLog extends BaseFilter {
    * @param  other - The HyperLogLog to compare to this one
    * @return True if they are equal, false otherwise
    */
-  equals(other: HyperLogLog): boolean {
+  public equals(other: HyperLogLog): boolean {
     if (this.nbRegisters !== other.nbRegisters) {
       return false
     }

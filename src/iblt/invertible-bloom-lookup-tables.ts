@@ -63,24 +63,32 @@ export default class InvertibleBloomFilter
   implements WritableFilter<Buffer>
 {
   @Field()
-  private _size: number
+  public _size: number
 
   @Field()
-  private _hashCount: number
+  public _hashCount: number
 
-  @Field<Array<Cell>>(undefined, json => {
+  @Field<Array<Cell>>(undefined, (json: []) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return json.map((elt: any) => {
-      const c = new Cell(
-        Buffer.from(elt._idSum),
-        Buffer.from(elt._hashSum),
-        elt._count
-      )
-      c.seed = elt._seed
-      return c
-    })
+    const res: Array<Cell> = json.map(
+      (elt: {
+        _idSum: string
+        _hashSum: string
+        _count: number
+        _seed: number
+      }) => {
+        const c = new Cell(
+          Buffer.from(elt._idSum),
+          Buffer.from(elt._hashSum),
+          elt._count
+        )
+        c.seed = elt._seed
+        return c
+      }
+    )
+    return res
   })
-  private _elements: Array<Cell>
+  public _elements: Array<Cell>
 
   /**
    * Construct an Invertible Bloom Lookup Table
@@ -112,7 +120,10 @@ export default class InvertibleBloomFilter
    * @param errorRate - Expected error rate
    * @return A new Invertible Bloom filter optimal for the given parameters.
    */
-  static create(nbItems: number, errorRate: number): InvertibleBloomFilter {
+  public static create(
+    nbItems: number,
+    errorRate: number
+  ): InvertibleBloomFilter {
     const size = optimalFilterSize(nbItems, errorRate)
     const nbHashes = optimalHashes(size, nbItems)
     return new InvertibleBloomFilter(size, nbHashes)
@@ -124,7 +135,7 @@ export default class InvertibleBloomFilter
    * @param errorRate - Expected error rate
    * @return A new Invertible Bloom filter filled with the iterable's items.
    */
-  static from(
+  public static from(
     items: Iterable<Buffer>,
     errorRate: number
   ): InvertibleBloomFilter {
@@ -138,14 +149,14 @@ export default class InvertibleBloomFilter
    * Return the number of hash functions used
    * @return {Number}
    */
-  get hashCount() {
+  public get hashCount() {
     return this._hashCount
   }
 
   /**
    * Get the number of cells of the filter
    */
-  get size(): number {
+  public get size(): number {
     return this._size
   }
 
@@ -153,14 +164,14 @@ export default class InvertibleBloomFilter
    * Get the number of elements added in the filter
    * Complexity in time: O(alpha*d)
    */
-  get length(): number {
+  public get length(): number {
     return this._elements.reduce((a, b) => a + b.count, 0) / this._hashCount
   }
 
   /**
    * Return the cells used to store elements in this InvertibleBloomFilter
    */
-  get elements(): Cell[] {
+  public get elements(): Cell[] {
     return this._elements
   }
 
@@ -168,7 +179,7 @@ export default class InvertibleBloomFilter
    * Add an element to the InvertibleBloomFilter
    * @param element - The element to insert
    */
-  add(element: Buffer): void {
+  public add(element: Buffer): void {
     const hashes = this._hashing.hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
@@ -189,7 +200,7 @@ export default class InvertibleBloomFilter
    * @param element - The element to remove
    * @return True if the element has been removed, False otheriwse
    */
-  remove(element: Buffer): boolean {
+  public remove(element: Buffer): boolean {
     const hashes = this._hashing.hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
@@ -213,7 +224,7 @@ export default class InvertibleBloomFilter
    * @param  element - The element to test
    * @return False if the element is not in the filter, true if "may be" in the filter.
    */
-  has(element: Buffer): boolean {
+  public has(element: Buffer): boolean {
     const hashes = this._hashing.hashTwiceAsString(
       JSON.stringify(element.toJSON()),
       this.seed
@@ -244,7 +255,7 @@ export default class InvertibleBloomFilter
    * It is not recommended to modify an IBLT while listing its entries!
    * @return A generator that yields all filter's entries.
    */
-  listEntries(): Generator<Buffer, boolean> {
+  public listEntries(): Generator<Buffer, boolean> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
     const seenBefore: Buffer[] = []
@@ -272,7 +283,7 @@ export default class InvertibleBloomFilter
    * @param  remote - The filter to substract with
    * @return A new InvertibleBloomFilter which is the XOR of the local and remote one
    */
-  substract(iblt: InvertibleBloomFilter): InvertibleBloomFilter {
+  public substract(iblt: InvertibleBloomFilter): InvertibleBloomFilter {
     if (this.size !== iblt.size) {
       throw new Error(
         'The two Invertible Bloom Filters must be of the same size'
@@ -291,7 +302,7 @@ export default class InvertibleBloomFilter
    * @param iblt - The filter to compare with
    * @return True if the two filters are equals, False otherwise
    */
-  equals(iblt: InvertibleBloomFilter): boolean {
+  public equals(iblt: InvertibleBloomFilter): boolean {
     if (
       iblt._size !== this._size ||
       iblt._hashCount !== this._hashCount ||
@@ -312,7 +323,7 @@ export default class InvertibleBloomFilter
    * Decode an InvertibleBloomFilter based on its substracted version
    * @return The results of the deconding process
    */
-  decode(
+  public decode(
     additional: Buffer[] = [],
     missing: Buffer[] = []
   ): IBLTDecodingResults {
@@ -326,7 +337,7 @@ export default class InvertibleBloomFilter
       }
     }
     while (pureList.length !== 0) {
-      cell = this._elements[pureList.pop()!]
+      cell = this._elements[pureList.pop()!] // eslint-disable-line @typescript-eslint/no-non-null-assertion
       const id = cell.idSum
       const c = cell.count
       if (cell.isPure()) {

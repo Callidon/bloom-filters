@@ -49,7 +49,7 @@ interface TopkElement extends HeapElement {
  * @author Thomas Minier
  */
 class MinHeap {
-  private _content: HeapElement[]
+  public _content: HeapElement[]
 
   constructor() {
     this._content = []
@@ -58,15 +58,15 @@ class MinHeap {
   /**
    * Get the number of items in the heap
    */
-  get length() {
+  public get length() {
     return this._content.length
   }
 
-  get content() {
+  public get content() {
     return this._content
   }
 
-  set content(value: HeapElement[]) {
+  public set content(value: HeapElement[]) {
     this._content = value
   }
 
@@ -75,7 +75,7 @@ class MinHeap {
    * @param index - Index of the item
    * @return The item or `undefined` if the index is out of the array
    */
-  get(index: number): HeapElement | undefined {
+  public get(index: number): HeapElement | undefined {
     return this._content[index]
   }
 
@@ -83,7 +83,7 @@ class MinHeap {
    * Add a new element to the heap and keep items sorted by ascending frequency
    * @param element - Element to insert
    */
-  add(element: HeapElement) {
+  public add(element: HeapElement) {
     // kepp items sorted by frequency
     const index = sortedIndexBy(
       this._content,
@@ -97,7 +97,7 @@ class MinHeap {
    * Remove an item at a given index and keep items sorted by ascending frequency
    * @param index - Index of the item to remove
    */
-  remove(index: number): void {
+  public remove(index: number): void {
     this._content.splice(index, 1)
   }
 
@@ -105,7 +105,7 @@ class MinHeap {
    * Remove and returns the element with the smallest frequency in the heap
    * @return The element with the smallest frequency in the heap
    */
-  popMin(): HeapElement | undefined {
+  public popMin(): HeapElement | undefined {
     return this._content.shift()
   }
 
@@ -114,7 +114,7 @@ class MinHeap {
    * @param value - Value of the element to search for
    * @return Index of the element or -1 if it is not in the heap
    */
-  indexOf(value: string): number {
+  public indexOf(value: string): number {
     // TODO optimize
     return this._content.findIndex(heapElement => heapElement.value === value)
     // const index = sortedIndexBy(this._content, {value, frequency: 0}, heapElement => heapElement.value)
@@ -127,7 +127,7 @@ class MinHeap {
   /**
    * Clear the content of the heap
    */
-  clear() {
+  public clear() {
     this._content = []
   }
 }
@@ -142,19 +142,19 @@ class MinHeap {
 @AutoExportable('TopK', ['_seed'])
 export default class TopK extends BaseFilter {
   @Field()
-  private _k: number
+  public _k: number
 
   @Field()
-  private _errorRate: number
+  public _errorRate: number
 
   @Field()
-  private _accuracy: number
+  public _accuracy: number
 
   @Field<CountMinSketch>(
     (sketch: CountMinSketch) => sketch.saveAsJSON(),
-    (json: JSON) => CountMinSketch.fromJSON(json)
+    (json: JSON) => CountMinSketch.fromJSON(json) as CountMinSketch
   )
-  private _sketch: CountMinSketch
+  public _sketch: CountMinSketch
 
   @Field<MinHeap>(
     (heap: MinHeap) => heap.content,
@@ -164,7 +164,7 @@ export default class TopK extends BaseFilter {
       return heap
     }
   )
-  private _heap: MinHeap
+  public _heap: MinHeap
 
   /**
    * Constructor
@@ -189,7 +189,7 @@ export default class TopK extends BaseFilter {
    * Add an element to the TopK
    * @param element - Element to add
    */
-  add(element: string, count = 1): void {
+  public add(element: string, count = 1): void {
     if (0 >= count) {
       throw `count must be > 0 (was ${count})`
     }
@@ -198,7 +198,7 @@ export default class TopK extends BaseFilter {
 
     if (
       this._heap.length < this._k ||
-      frequency >= this._heap.get(0)!.frequency
+      frequency >= this._heap.get(0)!.frequency // eslint-disable-line @typescript-eslint/no-non-null-assertion
     ) {
       const index = this._heap.indexOf(element)
       // remove the entry if it is already in the MinHeap
@@ -220,7 +220,7 @@ export default class TopK extends BaseFilter {
   /**
    * Clear the content of the TopK
    */
-  clear(): void {
+  public clear(): void {
     this._sketch = CountMinSketch.create(this._errorRate, this._accuracy)
     this._heap.clear()
   }
@@ -229,10 +229,10 @@ export default class TopK extends BaseFilter {
    * Get the top-k values as an array of objects {value: string, frequency: number, rank: number}
    * @return The top-k values as an array of objects {value: string, frequency: number, rank: number}
    */
-  values(): TopkElement[] {
+  public values(): TopkElement[] {
     const res = []
     for (let i = this._heap.length - 1; i >= 0; i--) {
-      const elt = this._heap.get(i)!
+      const elt = this._heap.get(i)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
       res.push({
         value: elt.value,
         frequency: elt.frequency,
@@ -248,11 +248,11 @@ export default class TopK extends BaseFilter {
    * while the iteration is not completed, otherwise the generated values may not respect the TopK properties.
    * @return The top-k values as an iterator of object {value: string, frequency: number, rank: number}
    */
-  iterator(): Iterator<TopkElement> {
+  public iterator(): Iterator<TopkElement> {
     const heap = this._heap
     return (function* () {
       for (let i = heap.length - 1; i >= 0; i--) {
-        const elt = heap.get(i)!
+        const elt = heap.get(i)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
         yield {
           value: elt.value,
           frequency: elt.frequency,

@@ -1,7 +1,5 @@
 dist/
 docs/
 build/
-coverage/
-.nyc_output/
 node_modules/
 .github

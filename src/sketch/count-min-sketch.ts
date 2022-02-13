@@ -44,13 +44,13 @@ export default class CountMinSketch
   implements CountingFilter<HashableInput>
 {
   @Field()
-  private _columns: number
+  public _columns: number
   @Field()
-  private _rows: number
+  public _rows: number
   @Field()
-  private _matrix: Array<Array<number>>
+  public _matrix: Array<Array<number>>
   @Field()
-  private _allSums: number
+  public _allSums: number
 
   /**
    * Constructor
@@ -76,7 +76,7 @@ export default class CountMinSketch
    * @param  accuracy  - The probability of accuracy
    * @return A new Count Min Sketch optimal for the input parameters
    */
-  static create(errorRate: number, accuracy = 0.999): CountMinSketch {
+  public static create(errorRate: number, accuracy = 0.999): CountMinSketch {
     // columns = Math.ceil(Math.E / epsilon) and rows = Math.ceil(Math.log(1 / delta))
     const columns = Math.ceil(Math.E / errorRate)
     const rows = Math.ceil(Math.log(1 / accuracy))
@@ -90,7 +90,7 @@ export default class CountMinSketch
    * @param  accuracy  - The probability of accuracy
    * @return A new Count Min Sketch filled with the iterable's items.
    */
-  static from(
+  public static from(
     items: Iterable<HashableInput>,
     errorRate: number,
     accuracy = 0.999
@@ -105,21 +105,21 @@ export default class CountMinSketch
   /**
    * Return the number of columns in the sketch
    */
-  get columns(): number {
+  public get columns(): number {
     return this._columns
   }
 
   /**
    * Return the number of rows in the sketch
    */
-  get rows(): number {
+  public get rows(): number {
     return this._rows
   }
 
   /**
    * Get the sum of all counts in the sketch
    */
-  get sum(): number {
+  public get sum(): number {
     return this._allSums
   }
 
@@ -128,7 +128,7 @@ export default class CountMinSketch
    * @param element - The new element
    * @param count - Number of occurences of the elemnt (defauls to one)
    */
-  update(element: HashableInput, count = 1): void {
+  public update(element: HashableInput, count = 1): void {
     this._allSums += count
     const indexes = this._hashing.getIndexes(
       element,
@@ -146,7 +146,7 @@ export default class CountMinSketch
    * @param element - The element we want to count
    * @return The estimate number of occurence of the element
    */
-  count(element: HashableInput): number {
+  public count(element: HashableInput): number {
     let min = Infinity
     const indexes = this._hashing.getIndexes(
       element,
@@ -166,7 +166,7 @@ export default class CountMinSketch
    * @param  filter - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */
-  equals(other: CountMinSketch): boolean {
+  public equals(other: CountMinSketch): boolean {
     if (this._columns !== other._columns || this._rows !== other._rows) {
       return false
     }
@@ -184,7 +184,7 @@ export default class CountMinSketch
    * Merge (in place) this sketch with another sketch, if they have the same number of columns and rows.
    * @param sketch - The sketch to merge with
    */
-  merge(sketch: CountMinSketch): void {
+  public merge(sketch: CountMinSketch): void {
     if (this._columns !== sketch._columns) {
       throw new Error(
         'Cannot merge two sketches with different number of columns'
@@ -205,7 +205,7 @@ export default class CountMinSketch
    * Clone the sketch
    * @return A new cloned sketch
    */
-  clone(): CountMinSketch {
+  public clone(): CountMinSketch {
     const sketch = new CountMinSketch(this._columns, this._rows)
     sketch.merge(this)
     sketch.seed = this.seed

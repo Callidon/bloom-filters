@@ -3,16 +3,16 @@
   "version": "2.0.0",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
+  "type":"commonjs",
   "scripts": {
     "build": "tsc",
-    "gts": "gts",
-    "pretest": "yarn build && yarn lint",
-    "test": "nyc --reporter=text-summary mocha test/**/*-test.js --trace-deprecation --timeout=60000",
+    "pretest": "yarn lint && yarn build",
+    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
     "doc": "typedoc --out docs/ --emit both --includeVersion src/api.ts",
-    "lint": "gts lint",
-    "clean": "gts clean && rimraf .nyc_output/ coverage/ docs/ dist/ build/",
-    "compile": "tsc",
-    "fix": "gts fix"
+    "lint": "yarn prettier && eslint --fix src/**/*.ts",
+    "prettier": "prettier --config package.json --write \"(src|test)/**/*.(t|j)s\"",
+    "clean": "rimraf docs/ dist/ build/",
+    "compile": "tsc"
   },
   "repository": {
     "type": "git",
@@ -44,13 +44,17 @@
     "@types/lodash": "^4.14.X",
     "@types/lodash.eq": "^4.0.X",
     "@types/lodash.indexof": "^4.0.X",
-    "@types/node": "^17.0.14",
-    "@types/seedrandom": "^3.0.X",
+    "@types/node": "^17.0.17",
+    "@types/seedrandom": "^3.0.2",
     "@types/xxhashjs": "^0.2.X",
+    "@typescript-eslint/eslint-plugin": "^5.11.0",
+    "@typescript-eslint/parser": "^5.11.0",
     "chai": "^4.3.6",
-    "gts": "^3.1.0",
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "mocha": "^9.2.0",
-    "nyc": "^15.1.0",
+    "prettier": "^2.5.1",
     "random": "^3.0.6",
     "rimraf": "^3.0.2",
     "typedoc": "^0.22.11",
@@ -67,15 +71,49 @@
     "seedrandom": "^3.0.5",
     "xxhashjs": "^0.2.2"
   },
+  "prettier": {
+    "semi": false,
+    "tabWidth": 2,
+    "endOfLine": "auto",
+    "bracketSpacing": false,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "arrowParens": "avoid"
+  },
   "eslintConfig": {
-    "extends": "./node_modules/gts/",
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": "es5",
+      "project": "tsconfig.json",
+      "sourceType": "commonjs"
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:node/recommended",
+      "prettier",
+      "plugin:prettier/recommended",
+      "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    ],
+    "plugins": [
+      "@typescript-eslint",
+      "prettier"
+    ],
     "globals": {
       "chai": "readonly",
       "it": "readonly",
       "expect": "readonly",
       "describe": "readonly"
     },
+    "settings": {
+      "node": {
+          "allowModules": [],
+          "resolvePaths": ["./src"],
+          "tryExtensions": [".ts"]
+      }
+    },
     "rules": {
+      "node/no-unsupported-features/es-syntax": ["error", { "ignores": ["modules"] }],
       "node/no-unpublished-require": [
         "error",
         {

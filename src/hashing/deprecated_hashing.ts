@@ -74,7 +74,7 @@ export default class DeprecatedHashing extends Hashing {
       if (indexes.length === count) {
         return indexes
       } else {
-        const hashes = this.hashTwice(elem, seed! + (size % n))
+        const hashes = this.hashTwice(elem, seed! + (size % n)) // eslint-disable-line @typescript-eslint/no-non-null-assertion
         const ind = this.double_hashing(n, hashes.first, hashes.second, size)
         if (indexes.includes(ind)) {
           // console.log('generate index: %d for %s', ind, elem)

@@ -92,7 +92,7 @@ interface FieldSpec<F> {
   importer: (json: any) => F
 }
 
-type ParameterSpecs = Map<String, number>
+type ParameterSpecs = Map<string, number>
 
 const METADATA_CLASSNAME = Symbol('bloom-filters:exportable:class-name')
 const METADATA_FIELDS = Symbol('bloom-filters:exportable:fields')
@@ -130,7 +130,7 @@ export function Field<F>(
 
 export function Parameter(fieldName: string) {
   return function (target: any, propertyKey: string, parameterIndex: number) {
-    let parameters: ParameterSpecs = new Map<String, number>()
+    let parameters: ParameterSpecs = new Map<string, number>()
     if (Reflect.hasMetadata(METADATA_PARAMETERS, target)) {
       parameters = Reflect.getMetadata(METADATA_PARAMETERS, target)
     }

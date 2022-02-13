@@ -46,13 +46,14 @@ export interface prng {
  * @author Arnaud Grall
  */
 export default abstract class BaseFilter {
-  private _seed: number
-  private _rng: prng
-  public _hashing: Hashing = new Hashing()
+  public _seed: number
+  public _rng: prng
+  public _hashing: Hashing
 
   constructor() {
     this._seed = getDefaultSeed()
     this._rng = seedrandom(`${this._seed}`) as prng
+    this._hashing = new Hashing()
   }
 
   /**

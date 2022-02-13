@@ -46,19 +46,18 @@ export default class BloomFilter
   implements ClassicFilter<HashableInput>
 {
   @Field()
-  private readonly _size: number
+  public _size: number
 
   @Field()
-  private readonly _nbHashes: number
+  public _nbHashes: number
 
   @Field<BitSet>(
     f => f.export(),
     data => {
-      // Create the bitset from new and old exported structure
-      let bs: BitSet
       if (Array.isArray(data)) {
+        // Create the bitset from new and old exported structure
         // create a new BitSet from the specified array
-        bs = new BitSet(data.length)
+        const bs = new BitSet(data.length)
         data.forEach((val: number, index: number) => {
           if (val !== 0) {
             bs.add(index)
@@ -66,11 +65,11 @@ export default class BloomFilter
         })
         return bs
       } else {
-        return BitSet.import(data)
+        return BitSet.import(data as {size: number; content: string})
       }
     }
   )
-  private _filter: BitSet
+  public _filter: BitSet
 
   /**
    * Constructor
@@ -98,7 +97,7 @@ export default class BloomFilter
    * @param  errorRate  - The error rate desired for a maximum of items inserted
    * @return A new {@link BloomFilter}
    */
-  static create(nbItems: number, errorRate: number): BloomFilter {
+  public static create(nbItems: number, errorRate: number): BloomFilter {
     const size = optimalFilterSize(nbItems, errorRate)
     const hashes = optimalHashes(size, nbItems)
     return new this(size, hashes)
@@ -116,7 +115,7 @@ export default class BloomFilter
    * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    * ```
    */
-  static from(
+  public static from(
     items: Iterable<HashableInput>,
     errorRate: number,
     seed?: number
@@ -142,7 +141,7 @@ export default class BloomFilter
    * Get the number of bits currently set in the filter
    * @return The filter length
    */
-  get length(): number {
+  public get length(): number {
     return this._filter.bitCount()
   }
 
@@ -155,7 +154,7 @@ export default class BloomFilter
    * filter.add('foo');
    * ```
    */
-  add(element: HashableInput): void {
+  public add(element: HashableInput): void {
     const indexes = this._hashing.getIndexes(
       element,
       this._size,
@@ -179,7 +178,7 @@ export default class BloomFilter
    * console.log(filter.has('bar')); // output: false
    * ```
    */
-  has(element: HashableInput): boolean {
+  public has(element: HashableInput): boolean {
     const indexes = this._hashing.getIndexes(
       element,
       this._size,
@@ -203,7 +202,7 @@ export default class BloomFilter
    * console.log(filter.rate()); // output: something around 0.1
    * ```
    */
-  rate(): number {
+  public rate(): number {
     return Math.pow(1 - Math.exp(-this.length / this._size), this._nbHashes)
   }
 
@@ -212,7 +211,7 @@ export default class BloomFilter
    * @param  other - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */
-  equals(other: BloomFilter): boolean {
+  public equals(other: BloomFilter): boolean {
     if (this._size !== other._size || this._nbHashes !== other._nbHashes) {
       return false
     }

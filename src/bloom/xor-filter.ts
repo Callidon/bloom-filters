@@ -60,37 +60,37 @@ export type XorHashableInput = HashableInput | Long
  */
 @AutoExportable<XorFilter>('XorFilter', ['_seed'])
 export default class XorFilter extends BaseFilter {
-  private readonly ALLOWED_FINGERPRINT_SIZES: number[] = [8, 16]
-  private readonly HASHES = 3
-  private readonly OFFSET = 32
-  private readonly FACTOR_TIMES_100 = 123
+  public ALLOWED_FINGERPRINT_SIZES: number[] = [8, 16]
+  public HASHES = 3
+  public OFFSET = 32
+  public FACTOR_TIMES_100 = 123
 
   /**
    * Buffer array of fingerprints
    */
   @Field<Buffer[]>(
-    d => d.map(encode),
-    d => d.map((e: string) => Buffer.from(decode(e)))
+    (d: Buffer[]) => d.map(encode),
+    (d: string[]) => d.map((e: string) => Buffer.from(decode(e)))
   )
-  private _filter: Buffer[]
+  public _filter: Buffer[]
 
   /**
    * Number of bits per fingerprint
    */
   @Field()
-  private _bits = 8
+  public _bits = 8
 
   /**
    * Number of elements inserted in the filter
    */
   @Field()
-  private _size: number
+  public _size: number
 
   /**
    * Size of each block (filter size / HASHES)
    */
   @Field()
-  private _blockLength: number
+  public _blockLength: number
 
   /**
    * Create an empty XorFilter for a number of `size` elements.
@@ -110,7 +110,9 @@ export default class XorFilter extends BaseFilter {
     if (bits_per_fingerprint) {
       if (!this.ALLOWED_FINGERPRINT_SIZES.includes(bits_per_fingerprint)) {
         throw new Error(
-          `bits_per_fingerprint parameter must be one of: ${this.ALLOWED_FINGERPRINT_SIZES}, got: ${bits_per_fingerprint}`
+          `bits_per_fingerprint parameter must be one of: [${this.ALLOWED_FINGERPRINT_SIZES.join(
+            ','
+          )}], got: ${bits_per_fingerprint}`
         )
       }
       this._bits = bits_per_fingerprint
@@ -150,8 +152,9 @@ export default class XorFilter extends BaseFilter {
     const l0 = this._readBuffer(this._filter[h0])
     const l1 = this._readBuffer(this._filter[h1])
     const l2 = this._readBuffer(this._filter[h2])
-
-    return ((fingerprint ^ l0 ^ l1 ^ l2) & CONSTANTS.get(this._bits)!) === 0
+    const xored = fingerprint ^ l0 ^ l1 ^ l2
+    const constant = CONSTANTS.get(this._bits)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    return (xored & constant) === 0
   }
 
   /**
@@ -166,7 +169,7 @@ export default class XorFilter extends BaseFilter {
    * xor.has('bob') // false
    * ```
    */
-  add(elements: XorHashableInput[]) {
+  public add(elements: XorHashableInput[]) {
     if (elements.length !== this._size) {
       throw new Error(
         `This filter has been created for exactly ${this._size} elements`
@@ -181,7 +184,7 @@ export default class XorFilter extends BaseFilter {
    * @param filter
    * @returns
    */
-  equals(filter: XorFilter) {
+  public equals(filter: XorFilter) {
     // first check the seed
     if (this.seed !== filter.seed) {
       return false
@@ -232,7 +235,7 @@ export default class XorFilter extends BaseFilter {
    * @param size
    * @returns
    */
-  private _getOptimalFilterSize(size: number): number {
+  public _getOptimalFilterSize(size: number): number {
     // optimal size
     const s = Long.ONE.multiply(this.FACTOR_TIMES_100)
       .multiply(size)
@@ -249,7 +252,7 @@ export default class XorFilter extends BaseFilter {
    * @param buffer
    * @returns
    */
-  private _readBuffer(buffer: Buffer): number {
+  public _readBuffer(buffer: Buffer): number {
     let val: number
     switch (this._bits) {
       case 16:
@@ -270,7 +273,7 @@ export default class XorFilter extends BaseFilter {
    * @param hash hash of the element
    * @returns
    */
-  private _fingerprint(hash: Long): Long {
+  public _fingerprint(hash: Long): Long {
     return hash.and((1 << this._bits) - 1)
   }
 
@@ -282,7 +285,7 @@ export default class XorFilter extends BaseFilter {
    * @param seed
    * @returns
    */
-  private _hashable_to_long(element: HashableInput, seed: number) {
+  public _hashable_to_long(element: HashableInput, seed: number) {
     return Long.fromString(XXH.h64(element, seed).toString(10), 10)
   }
 
@@ -293,7 +296,7 @@ export default class XorFilter extends BaseFilter {
    * @param element
    * @returns
    */
-  private _hash64(element: Long, seed: number): Long {
+  public _hash64(element: Long, seed: number): Long {
     let h = element.add(seed)
     h = h
       .xor(h.shiftRightUnsigned(33))
@@ -306,14 +309,12 @@ export default class XorFilter extends BaseFilter {
   }
 
   /**
-   * @internal
-   * @private
    * Perform a modulo reduction using an optimiaze technique
    * @param hash
    * @param size
    * @returns
    */
-  private _reduce(hash: Long, size: number): number {
+  public _reduce(hash: Long, size: number): number {
     // http://lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
     return hash
       .and(Long.fromString('0xffffffff', 16))
@@ -323,14 +324,12 @@ export default class XorFilter extends BaseFilter {
   }
 
   /**
-   * @internal
-   * @private
    * Hash the element
    * @param element
    * @param seed
    * @returns
    */
-  private _getHash(element: Long, seed: number, index: number): number {
+  public _getHash(element: Long, seed: number, index: number): number {
     const hash: Long = this._hash64(element, seed)
     const r: Long = hash.rotl(21 * index)
     const rn = this._reduce(r, this._blockLength)
@@ -339,8 +338,6 @@ export default class XorFilter extends BaseFilter {
   }
 
   /**
-   * @internal
-   * @private
    * Create the filter representing the elements to store.
    * We eliminate all duplicated entries before creating the array.
    * Follow the algorithm 2 and 3 of the paper (@see https://arxiv.org/pdf/1912.08258.pdf)
@@ -349,7 +346,7 @@ export default class XorFilter extends BaseFilter {
    * @param arraylength length of the filter
    * @returns
    */
-  private _create(elements: XorHashableInput[], arrayLength: number) {
+  public _create(elements: XorHashableInput[], arrayLength: number) {
     const reverseOrder: Long[] = allocateArray(this._size, Long.ZERO)
     const reverseH: number[] = allocateArray(this._size, 0)
     let reverseOrderPos

@@ -43,13 +43,13 @@ export default class CountingBloomFilter
   implements WritableFilter<HashableInput>
 {
   @Field()
-  private _size: number
+  public _size: number
   @Field()
-  private _nbHashes: number
+  public _nbHashes: number
   @Field()
-  private _filter: Array<Array<number>>
+  public _filter: Array<Array<number>>
   @Field()
-  private _length: number
+  public _length: number
   /**
    * Constructor
    * @param size - The size of the filter
@@ -78,7 +78,10 @@ export default class CountingBloomFilter
    * @param  errorRate - The error rate of the filter
    * @return A new {@link CountingBloomFilter}
    */
-  static create(capacity: number, errorRate: number): CountingBloomFilter {
+  public static create(
+    capacity: number,
+    errorRate: number
+  ): CountingBloomFilter {
     const s = optimalFilterSize(capacity, errorRate)
     return new CountingBloomFilter(s, optimalHashes(s, capacity))
   }
@@ -94,7 +97,7 @@ export default class CountingBloomFilter
    * const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    * ```
    */
-  static from(
+  public static from(
     items: Iterable<HashableInput>,
     errorRate: number
   ): CountingBloomFilter {
@@ -107,14 +110,14 @@ export default class CountingBloomFilter
   /**
    * Get the optimal size of the filter
    */
-  get size(): number {
+  public get size(): number {
     return this._size
   }
 
   /**
    * Get the number of elements currently in the filter
    */
-  get length(): number {
+  public get length(): number {
     return this._length
   }
 
@@ -127,7 +130,7 @@ export default class CountingBloomFilter
    * filter.add('foo');
    * ```
    */
-  add(element: HashableInput): void {
+  public add(element: HashableInput): void {
     const indexes = this._hashing.getIndexes(
       element,
       this._size,
@@ -154,7 +157,7 @@ export default class CountingBloomFilter
    * filter.remove('foo');
    * ```
    */
-  remove(element: HashableInput): boolean {
+  public remove(element: HashableInput): boolean {
     const indexes = this._hashing.getIndexes(
       element,
       this._size,
@@ -186,7 +189,7 @@ export default class CountingBloomFilter
    * console.log(filter.has('bar')); // output: false
    * ```
    */
-  has(element: HashableInput): boolean {
+  public has(element: HashableInput): boolean {
     const indexes = this._hashing.getIndexes(
       element,
       this._size,
@@ -210,7 +213,7 @@ export default class CountingBloomFilter
    * console.log(filter.rate()); // output: something around 0.1
    * ```
    */
-  rate(): number {
+  public rate(): number {
     return Math.pow(
       1 - Math.exp((-this._nbHashes * this._length) / this._size),
       this._nbHashes
@@ -222,7 +225,7 @@ export default class CountingBloomFilter
    * @param  filter - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */
-  equals(other: CountingBloomFilter): boolean {
+  public equals(other: CountingBloomFilter): boolean {
     if (
       this._size !== other._size ||
       this._nbHashes !== other._nbHashes ||

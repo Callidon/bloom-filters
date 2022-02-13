@@ -100,19 +100,19 @@ export default class PartitionedBloomFilter
   implements ClassicFilter<HashableInput>
 {
   @Field()
-  private _size: number
+  public _size: number
   @Field()
-  private _nbHashes: number
+  public _nbHashes: number
   @Field()
-  private _loadFactor: number
+  public _loadFactor: number
   @Field()
-  private _m: number
+  public _m: number
   @Field()
-  private _filter: Array<Array<number>>
+  public _filter: Array<Array<number>>
   @Field()
-  private _capacity: number
+  public _capacity: number
   @Field()
-  private _length: number
+  public _length: number
   /**
    * Constructor
    * @param size - The total number of cells
@@ -147,7 +147,7 @@ export default class PartitionedBloomFilter
    * @param  errorRate - The desired error rate
    * @return A new PartitionedBloomFilter optimal for the given parameters
    */
-  static create(
+  public static create(
     size: number,
     errorRate: number,
     loadFactor = 0.5
@@ -169,7 +169,7 @@ export default class PartitionedBloomFilter
    * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
    * ```
    */
-  static from(
+  public static from(
     items: Iterable<HashableInput>,
     errorRate: number,
     loadFactor = 0.5
@@ -187,28 +187,28 @@ export default class PartitionedBloomFilter
   /**
    * Get the filter capacity, i.e. the maximum number of elements it will contains
    */
-  get capacity(): number {
+  public get capacity(): number {
     return this._capacity
   }
 
   /**
    * Get the size of the filter
    */
-  get size(): number {
+  public get size(): number {
     return this._size
   }
 
   /**
    * Get the number of elements currently in the filter
    */
-  get length(): number {
+  public get length(): number {
     return this._length
   }
 
   /**
    * Get the filter's load factor
    */
-  get loadFactor(): number {
+  public get loadFactor(): number {
     return this._loadFactor
   }
 
@@ -221,7 +221,7 @@ export default class PartitionedBloomFilter
    * filter.add('foo');
    * ```
    */
-  add(element: HashableInput): void {
+  public add(element: HashableInput): void {
     const indexes = this._hashing.getIndexes(
       element,
       this._m,
@@ -246,7 +246,7 @@ export default class PartitionedBloomFilter
    * console.log(filter.has('bar')); // output: false
    * ```
    */
-  has(element: HashableInput): boolean {
+  public has(element: HashableInput): boolean {
     const indexes = this._hashing.getIndexes(
       element,
       this._m,
@@ -270,7 +270,7 @@ export default class PartitionedBloomFilter
    * console.log(filter.rate()); // output: something around 0.1
    * ```
    */
-  rate(): number {
+  public rate(): number {
     // get the error rate for the first bucket (1 - (1 - 1/m)^n), where m is the size of a slice and n is the number of inserted elements
     const p = this._currentload()
     // P = p^k
@@ -282,7 +282,7 @@ export default class PartitionedBloomFilter
    * @param  filter - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */
-  equals(other: PartitionedBloomFilter): boolean {
+  public equals(other: PartitionedBloomFilter): boolean {
     if (
       this._size !== other._size ||
       this._nbHashes !== other._nbHashes ||
@@ -302,7 +302,7 @@ export default class PartitionedBloomFilter
    * Return the current load of this filter, iterate on all buckets
    * @return An integer between 0 and 1, where 0 = filter empty and 1 = filter full
    */
-  _currentload(): number {
+  public _currentload(): number {
     const values = this._filter.map(bucket => {
       return bucket.reduce((a, b) => a + b, 0)
     })

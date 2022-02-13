@@ -172,7 +172,8 @@ describe('Utils', () => {
   describe('Use different hash functions', () => {
     it('overriding serialize function by always returning Number(1)', () => {
       class CustomHashing extends Hashing {
-        serialize(_element, _seed = undefined) { // eslint-disable-line
+        serialize(_element, _seed = undefined) {
+          // eslint-disable-line
           return Number(1)
         }
       }

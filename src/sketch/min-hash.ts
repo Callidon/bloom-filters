@@ -65,13 +65,13 @@ function applyHashFunction(x: number, fn: HashFunction): number {
 @AutoExportable('MinHash', ['_seed'])
 export class MinHash extends BaseFilter {
   @Field()
-  private _nbHashes: number
+  public _nbHashes: number
 
   @Field()
-  private _hashFunctions: HashFunction[]
+  public _hashFunctions: HashFunction[]
 
   @Field()
-  private _signature: number[]
+  public _signature: number[]
 
   /**
    * Constructor
@@ -91,7 +91,7 @@ export class MinHash extends BaseFilter {
   /**
    * Get the number of hash functions used by the MinHash
    */
-  get nbHashes(): number {
+  public get nbHashes(): number {
     return this._nbHashes
   }
 
@@ -99,7 +99,7 @@ export class MinHash extends BaseFilter {
    * Test if the signature of the MinHash is empty
    * @return True if the MinHash is empty, False otherwise
    */
-  isEmpty(): boolean {
+  public isEmpty(): boolean {
     return this._signature[0] === Infinity
   }
 
@@ -107,7 +107,7 @@ export class MinHash extends BaseFilter {
    * Insert a value into the MinHash and update its signature.
    * @param value - Value to insert
    */
-  add(value: number): void {
+  public add(value: number): void {
     for (let i = 0; i < this._nbHashes; i++) {
       this._signature[i] = Math.min(
         this._signature[i],
@@ -120,7 +120,7 @@ export class MinHash extends BaseFilter {
    * Ingest a set of values into the MinHash, in an efficient manner, and update its signature.
    * @param values - Set of values to load
    */
-  bulkLoad(values: number[]): void {
+  public bulkLoad(values: number[]): void {
     for (let i = 0; i < this._nbHashes; i++) {
       const candidateSignatures = values.map((value: number) =>
         applyHashFunction(value, this._hashFunctions[i])
@@ -134,7 +134,7 @@ export class MinHash extends BaseFilter {
    * @param other - MinHash to compare with
    * @return The estimated Jaccard similarity coefficient between the two sets
    */
-  compareWith(other: MinHash): number {
+  public compareWith(other: MinHash): number {
     if (this.isEmpty() || other.isEmpty()) {
       throw new EmptyMinHashError(
         'Cannot compute a Jaccard similairty with a MinHash that contains no values'
