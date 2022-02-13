@@ -9,7 +9,8 @@
     "pretest": "yarn lint && yarn build",
     "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
     "doc": "typedoc --out docs/ --emit both --includeVersion src/api.ts",
-    "lint": "yarn prettier && eslint --fix src/**/*.ts",
+    "lint": "yarn prettier && yarn slint",
+    "slint": "eslint --fix src/**/*.ts",
     "prettier": "prettier --config package.json --write \"(src|test)/**/*.(t|j)s\"",
     "clean": "rimraf docs/ dist/ build/",
     "compile": "tsc"
@@ -84,9 +85,8 @@
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-      "ecmaVersion": "es5",
-      "project": "tsconfig.json",
-      "sourceType": "commonjs"
+      "ecmaVersion": 2015,
+      "project": "tsconfig.json"
     },
     "extends": [
       "eslint:recommended",
