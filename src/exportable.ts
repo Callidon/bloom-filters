@@ -21,16 +21,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-// disable no-explicit-any for exportable because we are dealing with all types so any is allowed
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// !disable all rules referring to `any` for exportable because we are dealing with all types so any is allowed
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 
 'use strict'
 
 import 'reflect-metadata'
 
 interface ImportExportSpecs<T> {
-  export: (instance: T) => Object
-  import: (json: Object) => T
+  export: (instance: T) => any
+  import: (json: any) => T
 }
 
 /**
@@ -121,8 +121,8 @@ export function Field<F>(
     }
     fields.push({
       name: propertyKey,
-      exporter: exporter!,
-      importer: importer!,
+      exporter: exporter!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      importer: importer!, // eslint-disable-line @typescript-eslint/no-non-null-assertion
     })
     Reflect.defineMetadata(METADATA_FIELDS, fields, target)
   }
@@ -162,7 +162,7 @@ export function AutoExportable<T>(
       Reflect.defineMetadata(METADATA_PARAMETERS, new Map(), target)
     }
 
-    target.prototype.saveAsJSON = function (): Object {
+    target.prototype.saveAsJSON = function (): any {
       const json: any = {
         type: Reflect.getMetadata(METADATA_CLASSNAME, target.prototype),
       }
@@ -197,7 +197,7 @@ export function AutoExportable<T>(
       // validate the input JSON
       if (json.type !== className) {
         throw new Error(
-          `Cannot create an object ${className} from a JSON export with type "${json.type}"`
+          `Cannot create an object ${className} from a JSON export with type "${json.type}"` // eslint-disable-line @typescript-eslint/restrict-template-expressions
         )
       }
       const constructorArgs: Array<{name: string; value: any}> = []
@@ -209,11 +209,12 @@ export function AutoExportable<T>(
         .forEach(field => {
           if (!(field.name in json)) {
             throw new Error(
-              `Invalid import: required field "${field}" not found in JSON export "${json}"`
+              `Invalid import: required field "${field}" not found in JSON export "${json}"` // eslint-disable-line @typescript-eslint/restrict-template-expressions
             )
           }
           // build constructor/copy arguments
           if (parameters.has(field.name)) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             constructorArgs[parameters.get(field.name)!] = field.importer(
               json[field.name]
             )

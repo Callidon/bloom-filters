@@ -151,6 +151,7 @@ export default class TopK extends BaseFilter {
   public _accuracy: number
 
   @Field<CountMinSketch>(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     (sketch: CountMinSketch) => sketch.saveAsJSON(),
     (json: JSON) => CountMinSketch.fromJSON(json) as CountMinSketch
   )

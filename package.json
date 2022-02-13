@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
-  "type":"commonjs",
+  "type": "commonjs",
   "scripts": {
     "build": "tsc",
     "pretest": "yarn lint && yarn build",
@@ -52,6 +52,7 @@
     "chai": "^4.3.6",
     "eslint": "^8.9.0",
     "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "mocha": "^9.2.0",
     "prettier": "^2.5.1",
@@ -107,13 +108,24 @@
     },
     "settings": {
       "node": {
-          "allowModules": [],
-          "resolvePaths": ["./src"],
-          "tryExtensions": [".ts"]
+        "allowModules": [],
+        "resolvePaths": [
+          "./src"
+        ],
+        "tryExtensions": [
+          ".ts"
+        ]
       }
     },
     "rules": {
-      "node/no-unsupported-features/es-syntax": ["error", { "ignores": ["modules"] }],
+      "node/no-unsupported-features/es-syntax": [
+        "error",
+        {
+          "ignores": [
+            "modules"
+          ]
+        }
+      ],
       "node/no-unpublished-require": [
         "error",
         {

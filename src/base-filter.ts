@@ -89,9 +89,10 @@ export default abstract class BaseFilter {
   }
 
   /**
-   * Save the current structure as a JSON object
+   * Save the current structure as a JSON
    */
-  public saveAsJSON(): Object {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public saveAsJSON(): any {
     throw new Error('not-implemented')
   }
 
@@ -100,8 +101,8 @@ export default abstract class BaseFilter {
    * @param json the JSON object to load
    * @return Return the Object loaded from the provided JSON object
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
   public static fromJSON(json: JSON): any {
-    throw new Error(`not-implemented: ${json}`)
+    throw new Error(`not-implemented`)
   }
 }
