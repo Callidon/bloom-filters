@@ -8,7 +8,7 @@
     "build": "tsc",
     "pretest": "yarn lint && yarn build",
     "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
-    "doc": "typedoc --out docs/ --emit both --includeVersion src/api.ts",
+    "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
     "lint": "yarn prettier && yarn slint",
     "slint": "eslint --fix src/**/*.ts",
     "prettier": "prettier --config package.json --write \"(src|test)/**/*.(t|j)s\"",
@@ -60,6 +60,7 @@
     "random": "^3.0.6",
     "rimraf": "^3.0.2",
     "typedoc": "^0.22.11",
+    "typedoc-plugin-missing-exports": "^0.22.6",
     "typescript": "^4.5.5"
   },
   "dependencies": {

@@ -15,7 +15,7 @@ export default class DeprecatedHashing extends Hashing {
    * @return The result of hash_n applied to a value.
    * @returns
    */
-  public double_hashing = (
+  public doubleHashing = (
     n: number,
     hashA: number,
     hashB: number,
@@ -75,7 +75,7 @@ export default class DeprecatedHashing extends Hashing {
         return indexes
       } else {
         const hashes = this.hashTwice(elem, seed! + (size % n)) // eslint-disable-line @typescript-eslint/no-non-null-assertion
-        const ind = this.double_hashing(n, hashes.first, hashes.second, size)
+        const ind = this.doubleHashing(n, hashes.first, hashes.second, size)
         if (indexes.includes(ind)) {
           // console.log('generate index: %d for %s', ind, elem)
           return getDistinctIndicesBis(n + 1, elem, size, count, indexes)
