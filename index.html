@@ -1,890 +1,408 @@
-<!doctype html>
-<html class="default no-js">
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>bloom-filters - v1.3.9</title>
-	<meta name="description" content="">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="assets/css/main.css">
-</head>
-<body>
-<header>
-	<div class="tsd-page-toolbar">
-		<div class="container">
-			<div class="table-wrap">
-				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
-					<div class="field">
-						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
-						<input id="tsd-search-field" type="text" />
-					</div>
-					<ul class="results">
-						<li class="state loading">Preparing search index...</li>
-						<li class="state failure">The search index is not available</li>
-					</ul>
-					<a href="index.html" class="title">bloom-filters - v1.3.9</a>
-				</div>
-				<div class="table-cell" id="tsd-widgets">
-					<div id="tsd-filter">
-						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
-						<div class="tsd-filter-group">
-							<div class="tsd-select" id="tsd-filter-visibility">
-								<span class="tsd-select-label">All</span>
-								<ul class="tsd-select-list">
-									<li data-value="public">Public</li>
-									<li data-value="protected">Public/Protected</li>
-									<li data-value="private" class="selected">All</li>
-								</ul>
-							</div>
-							<input type="checkbox" id="tsd-filter-inherited" checked />
-							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
-							<input type="checkbox" id="tsd-filter-externals" checked />
-							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
-							<input type="checkbox" id="tsd-filter-only-exported" />
-							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
-						</div>
-					</div>
-					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="tsd-page-title">
-		<div class="container">
-			<ul class="tsd-breadcrumb">
-				<li>
-					<a href="globals.html">Globals</a>
-				</li>
-			</ul>
-			<h1> bloom-filters - v1.3.9</h1>
-		</div>
-	</div>
-</header>
-<div class="container container-main">
-	<div class="row">
-		<div class="col-8 col-content">
-			<div class="tsd-panel tsd-typography">
-				<a href="#bloom-filters" id="bloom-filters" style="color: inherit; text-decoration: none;">
-					<h1>Bloom-Filters</h1>
-				</a>
-				<p><a href="https://travis-ci.com/Callidon/bloom-filters"><img src="https://travis-ci.com/Callidon/bloom-filters.svg?branch=master" alt="Build Status"></a></p>
-				<p>JavaScript/TypeScript implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash.
-				<strong>This package rely on <a href="https://cyan4973.github.io/xxHash/">non-cryptographic hash functions</a></strong>.</p>
-				<p>📕<a href="https://callidon.github.io/bloom-filters/">Online documentation</a></p>
-				<p><strong>Keywords:</strong> <em>bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures.</em></p>
-				<a href="#table-of-contents" id="table-of-contents" style="color: inherit; text-decoration: none;">
-					<h1>Table of contents</h1>
-				</a>
-				<ul>
-					<li><a href="#installation">Installation</a></li>
-					<li><a href="#data-structures">Data structures</a><ul>
-							<li><a href="#classic-bloom-filter">Classic Bloom Filter</a></li>
-							<li><a href="#partitioned-bloom-filter">Partitioned Bloom Filter</a></li>
-							<li><a href="#cuckoo-filter">Cuckoo Filter</a></li>
-							<li><a href="#counting-bloom-filter">Counting Bloom Filter</a></li>
-							<li><a href="#count-min-sketch">Count Min Sketch</a></li>
-							<li><a href="#hyperloglog">HyperLogLog</a></li>
-							<li><a href="#minhash">MinHash</a></li>
-							<li><a href="#top-k">Top-K</a><ul>
-									<li><a href="#invertible-bloom-filters">Invertible Bloom Filters</a></li>
-								</ul>
-							</li>
-						</ul>
-					</li>
-					<li><a href="#export-and-import">Export and import</a></li>
-					<li><a href="#documentation">Documentation</a></li>
-					<li><a href="#tests">Tests</a></li>
-					<li><a href="#references">References</a></li>
-					<li><a href="#changelog">Changelog</a></li>
-					<li><a href="#license">License</a></li>
-				</ul>
-				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
-					<h2>Installation</h2>
-				</a>
-				<pre><code class="language-bash">npm install bloom-filters --save</code></pre>
-				<p><strong>Supported platforms</strong></p>
-				<ul>
-					<li><a href="https://nodejs.org">Node.js</a>: <em>v4.0.0</em> or higher</li>
-					<li><a href="https://www.google.com/intl/en/chrome/">Google Chrome</a>: <em>v41</em> or higher</li>
-					<li><a href="https://www.mozilla.org/en-US/firefox/new/">Mozilla Firefox</a>: <em>v34</em> or higher</li>
-					<li><a href="https://www.microsoft.com/en-US/edge">Microsoft Edge</a>: <em>v12</em> or higher</li>
-				</ul>
-				<a href="#data-structures" id="data-structures" style="color: inherit; text-decoration: none;">
-					<h2>Data structures</h2>
-				</a>
-				<a href="#classic-bloom-filter" id="classic-bloom-filter" style="color: inherit; text-decoration: none;">
-					<h3>Classic Bloom Filter</h3>
-				</a>
-				<p>A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
-				that is used to test whether an element is a member of a set. False positive matches are possible, but false negatives are not.</p>
-				<p><strong>Reference:</strong> Bloom, B. H. (1970). <em>Space/time trade-offs in hash coding with allowable errors</em>. Communications of the ACM, 13(7), 422-426.
-				(<a href="http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf">Full text article</a>)</p>
-				<a href="#methods" id="methods" style="color: inherit; text-decoration: none;">
-					<h4>Methods</h4>
-				</a>
-				<ul>
-					<li><code>add(element: string) -&gt; void</code>: add an element into the filter.</li>
-					<li><code>has(element: string) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
-					<li><code>equals(other: BloomFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
-					<li><code>rate() -&gt; number</code>: compute the filter&#39;s false positive rate (or error rate).</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { BloomFilter } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
-<span class="hljs-comment">// create a Bloom Filter with a size of 10 and 4 hash functions</span>
-<span class="hljs-keyword">let</span> filter = <span class="hljs-keyword">new</span> BloomFilter(<span class="hljs-number">10</span>, <span class="hljs-number">4</span>)
-<span class="hljs-comment">// insert data</span>
-filter.add(<span class="hljs-string">'alice'</span>)
-filter.add(<span class="hljs-string">'bob'</span>)
+<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>bloom-filters - v2.0.0</title><meta name="description" content="Documentation for bloom-filters - v2.0.0"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">bloom-filters - v2.0.0</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label><input type="checkbox" id="tsd-filter-externals" checked/><label class="tsd-widget" for="tsd-filter-externals">Externals</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1>bloom-filters - v2.0.0</h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><div class="tsd-panel tsd-typography">
+<a href="#bloom-filters-" id="bloom-filters-" style="color: inherit; text-decoration: none;">
+  <h1>Bloom-Filters <a href="https://github.com/Callidon/bloom-filters/actions"><img src="https://github.com/callidon/bloom-filters/actions/workflows/npm_test_doc.yml/badge.svg" alt="Master"></a></h1>
+</a>
+<p>JavaScript/TypeScript implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash.
+<strong>This package relies on <a href="https://cyan4973.github.io/xxHash/">non-cryptographic hash functions</a></strong>.</p>
+<p>📕<a href="https://callidon.github.io/bloom-filters/">Online documentation</a></p>
+<p><strong>Keywords:</strong> <em>bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures, XOR-Filter.</em></p>
+<p>❗️<strong>Compatibility</strong>❗️ </p>
+<ul>
+<li>Be carefull when migrating from a version to another.</li>
+<li>Bug fixes were introduced in <code>1.3.7</code> and from <code>1.3.9</code> to <code>2.0.0</code> for hashing and indexing data. Then, you <strong>must re-build completely your filters from start</strong> to be compatible with the new versions. </li>
+<li>To keep the <code>breaking changes</code> rule of npm versions we will make now new <code>majored versions</code> since 1.3.9 whenever a modification is done on the hashing/indexing system or breaks the current API.</li>
+</ul>
 
-<span class="hljs-comment">// lookup for some data</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'bob'</span>)) <span class="hljs-comment">// output: true</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'daniel'</span>)) <span class="hljs-comment">// output: false</span>
+<a href="#table-of-contents" id="table-of-contents" style="color: inherit; text-decoration: none;">
+  <h1>Table of contents</h1>
+</a>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#data-structures">Data structures</a><ul>
+<li><a href="#classic-bloom-filter">Classic Bloom Filter</a></li>
+<li><a href="#partitioned-bloom-filter">Partitioned Bloom Filter</a></li>
+<li><a href="#cuckoo-filter">Cuckoo Filter</a></li>
+<li><a href="#counting-bloom-filter">Counting Bloom Filter</a></li>
+<li><a href="#count-min-sketch">Count Min Sketch</a></li>
+<li><a href="#hyperloglog">HyperLogLog</a></li>
+<li><a href="#minhash">MinHash</a></li>
+<li><a href="#top-k">Top-K</a></li>
+<li><a href="#invertible-bloom-filters">Invertible Bloom Filters</a></li>
+<li><a href="#xor-filter">XOR-Filter</a></li>
+</ul>
+</li>
+<li><a href="#export-and-import">Export and import</a></li>
+<li><a href="#seeding-and-hashing">Seeding and Hashing</a></li>
+<li><a href="#documentation">Documentation</a></li>
+<li><a href="#tests-and-development">Tests</a></li>
+<li><a href="#references">References</a></li>
+<li><a href="#changelog">Changelog</a></li>
+<li><a href="#license">License</a></li>
+</ul>
 
-<span class="hljs-comment">// print the error rate</span>
-<span class="hljs-built_in">console</span>.log(filter.rate())
+<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+  <h2>Installation</h2>
+</a>
+<pre><code class="language-bash"><span class="hl-0">npm install bloom-filters --save</span>
+</code></pre>
+<p><strong>Supported platforms</strong></p>
+<ul>
+<li><a href="https://nodejs.org">Node.js</a>: <em>v4.0.0</em> or higher</li>
+<li><a href="https://www.google.com/intl/en/chrome/">Google Chrome</a>: <em>v41</em> or higher</li>
+<li><a href="https://www.mozilla.org/en-US/firefox/new/">Mozilla Firefox</a>: <em>v34</em> or higher</li>
+<li><a href="https://www.microsoft.com/en-US/edge">Microsoft Edge</a>: <em>v12</em> or higher</li>
+</ul>
 
-<span class="hljs-comment">// alternatively, create a bloom filter optimal for a number of items and a desired error rate</span>
-<span class="hljs-keyword">const</span> items = [<span class="hljs-string">'alice'</span>, <span class="hljs-string">'bob'</span>]
-<span class="hljs-keyword">const</span> errorRate = <span class="hljs-number">0.04</span> <span class="hljs-comment">// 4 % error rate</span>
-filter = BloomFilter.create(items.length, errorRate)
+<a href="#data-structures" id="data-structures" style="color: inherit; text-decoration: none;">
+  <h2>Data structures</h2>
+</a>
 
-<span class="hljs-comment">// or create a bloom filter optimal for a collections of items and a desired error rate</span>
-filter = BloomFilter.from(items, errorRate)</code></pre>
-				<a href="#partitioned-bloom-filter" id="partitioned-bloom-filter" style="color: inherit; text-decoration: none;">
-					<h3>Partitioned Bloom Filter</h3>
-				</a>
-				<p>A Partitioned Bloom Filter is a variation of a classic Bloom Filter.</p>
-				<p>This filter works by partitioning the M-sized bit array into k slices of size <code>m = M/k</code> bits, <code>k = nb of hash functions</code> in the filter.
-					Each hash function produces an index over <code>m</code> for its respective slice.
-				Thus, each element is described by exactly <code>k</code> bits, meaning the distribution of false positives is uniform across all elements.</p>
-				<p>Be careful, as a Partitioned Bloom Filter have much higher collison risks that a classic Bloom Filter on small sets of data.</p>
-				<p><strong>Reference:</strong> Chang, F., Feng, W. C., &amp; Li, K. (2004, March). <em>Approximate caches for packet classification.</em> In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
-				(<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&amp;rep=rep1&amp;type=pdf">Full text article</a>)</p>
-				<a href="#methods-1" id="methods-1" style="color: inherit; text-decoration: none;">
-					<h4>Methods</h4>
-				</a>
-				<ul>
-					<li><code>add(element: string) -&gt; void</code>: add an element into the filter.</li>
-					<li><code>has(element: string) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
-					<li><code>equals(other: PartitionedBloomFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
-					<li><code>rate() -&gt; number</code>: compute the filter&#39;s false positive rate (or error rate).</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { PartitionedBloomFilter } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
+<a href="#classic-bloom-filter" id="classic-bloom-filter" style="color: inherit; text-decoration: none;">
+  <h3>Classic Bloom Filter</h3>
+</a>
+<p>A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
+that is used to test whether an element is a member of a set. False positive matches are possible, but false negatives are not.</p>
+<p><strong>Reference:</strong> Bloom, B. H. (1970). <em>Space/time trade-offs in hash coding with allowable errors</em>. Communications of the ACM, 13(7), 422-426.
+(<a href="http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf">Full text article</a>)</p>
 
-<span class="hljs-comment">// create a PartitionedBloomFilter of size 10, with 5 hash functions and a load factor of 0.5</span>
-<span class="hljs-keyword">const</span> filter = <span class="hljs-keyword">new</span> PartitionedBloomFilter(<span class="hljs-number">10</span>, <span class="hljs-number">5</span>, <span class="hljs-number">0.5</span>)
+<a href="#methods" id="methods" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>add(element: string) -&gt; void</code>: add an element into the filter.</li>
+<li><code>has(element: string) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
+<li><code>equals(other: BloomFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
+<li><code>rate() -&gt; number</code>: compute the filter&#39;s false positive rate (or error rate).</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">BloomFilter</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><span class="hl-5">// create a Bloom Filter with a size of 10 and 4 hash functions</span><br/><span class="hl-1">let</span><span class="hl-0"> </span><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">BloomFilter</span><span class="hl-0">(</span><span class="hl-7">10</span><span class="hl-0">, </span><span class="hl-7">4</span><span class="hl-0">)</span><br/><span class="hl-5">// insert data</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// lookup for some data</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: true</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;daniel&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: false</span><br/><br/><span class="hl-5">// print the error rate</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">rate</span><span class="hl-0">())</span><br/><br/><span class="hl-5">// alternatively, create a bloom filter optimal for a number of items and a desired error rate</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">items</span><span class="hl-0"> = [</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">, </span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">]</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">errorRate</span><span class="hl-0"> = </span><span class="hl-7">0.04</span><span class="hl-0"> </span><span class="hl-5">// 4 % error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">BloomFilter</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">.</span><span class="hl-6">length</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// or create a bloom filter optimal for a collections of items and a desired error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">BloomFilter</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span>
+</code></pre>
 
-<span class="hljs-comment">// add some value in the filter</span>
-filter.add(<span class="hljs-string">'alice'</span>)
-filter.add(<span class="hljs-string">'bob'</span>)
+<a href="#partitioned-bloom-filter" id="partitioned-bloom-filter" style="color: inherit; text-decoration: none;">
+  <h3>Partitioned Bloom Filter</h3>
+</a>
+<p>A Partitioned Bloom Filter is a variation of a classic Bloom Filter.</p>
+<p>This filter works by partitioning the M-sized bit array into k slices of size <code>m = M/k</code> bits, <code>k = nb of hash functions</code> in the filter.
+Each hash function produces an index over <code>m</code> for its respective slice.
+Thus, each element is described by exactly <code>k</code> bits, meaning the distribution of false positives is uniform across all elements.</p>
+<p>Be careful, as a Partitioned Bloom Filter have much higher collison risks that a classic Bloom Filter on small sets of data.</p>
+<p><strong>Reference:</strong> Chang, F., Feng, W. C., &amp; Li, K. (2004, March). <em>Approximate caches for packet classification.</em> In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
+(<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&amp;rep=rep1&amp;type=pdf">Full text article</a>)</p>
 
-<span class="hljs-comment">// lookup for some data</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'bob'</span>)) <span class="hljs-comment">// output: true</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'daniel'</span>)) <span class="hljs-comment">// output: false</span>
+<a href="#methods-1" id="methods-1" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>add(element: string) -&gt; void</code>: add an element into the filter.</li>
+<li><code>has(element: string) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
+<li><code>equals(other: PartitionedBloomFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
+<li><code>rate() -&gt; number</code>: compute the filter&#39;s false positive rate (or error rate).</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">PartitionedBloomFilter</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// create a PartitionedBloomFilter of size 10, with 5 hash functions and a load factor of 0.5</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">filter</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">PartitionedBloomFilter</span><span class="hl-0">(</span><span class="hl-7">10</span><span class="hl-0">, </span><span class="hl-7">5</span><span class="hl-0">, </span><span class="hl-7">0.5</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// add some value in the filter</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// lookup for some data</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: true</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;daniel&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: false</span><br/><br/><span class="hl-5">// now use it like a classic bloom filter!</span><br/><span class="hl-5">// ...</span><br/><br/><span class="hl-5">// alternatively, create a PartitionedBloomFilter optimal for a number of items and a desired error rate</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">items</span><span class="hl-0"> = [</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">, </span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">]</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">errorRate</span><span class="hl-0"> = </span><span class="hl-7">0.04</span><span class="hl-0"> </span><span class="hl-5">// 4 % error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">PartitionedBloomFilter</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">.</span><span class="hl-6">length</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// or create a PartitionedBloomFilter optimal for a collections of items and a desired error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">PartitionedBloomFilter</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span>
+</code></pre>
 
-<span class="hljs-comment">// now use it like a classic bloom filter!</span>
-<span class="hljs-comment">// ...</span>
+<a href="#cuckoo-filter" id="cuckoo-filter" style="color: inherit; text-decoration: none;">
+  <h3>Cuckoo Filter</h3>
+</a>
+<p>Cuckoo filters improve on Bloom filters by supporting deletion, limited counting, and bounded False positive rate with similar storage efficiency as a standard Bloom Filter.</p>
+<p><strong>Reference:</strong> Fan, B., Andersen, D. G., Kaminsky, M., &amp; Mitzenmacher, M. D. (2014, December). <em>Cuckoo filter: Practically better than bloom.</em> In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
+(<a href="https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf">Full text article</a>)</p>
 
-<span class="hljs-comment">// alternatively, create a PartitionedBloomFilter optimal for a number of items and a desired error rate</span>
-<span class="hljs-keyword">const</span> items = [<span class="hljs-string">'alice'</span>, <span class="hljs-string">'bob'</span>]
-<span class="hljs-keyword">const</span> errorRate = <span class="hljs-number">0.04</span> <span class="hljs-comment">// 4 % error rate</span>
-filter = PartitionedBloomFilter.create(items.length, errorRate)
+<a href="#methods-2" id="methods-2" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>add(element: string) -&gt; void</code>: add an element into the filter.</li>
+<li><code>remove(element: string) -&gt; boolean</code>: delete an element from the filter, returning True if the deletion was a success and False otherwise.</li>
+<li><code>has(element: string) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
+<li><code>equals(other: CuckooFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
+<li><code>rate() -&gt; number</code>: compute the filter&#39;s false positive rate (or error rate).</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">CuckooFilter</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// create a Cuckoo Filter with size = 15, fingerprint length = 3 and bucket size = 2</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">filter</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">CuckooFilter</span><span class="hl-0">(</span><span class="hl-7">15</span><span class="hl-0">, </span><span class="hl-7">3</span><span class="hl-0">, </span><span class="hl-7">2</span><span class="hl-0">)</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// lookup for some data</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: true</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;daniel&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: false</span><br/><br/><span class="hl-5">// remove something</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">remove</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: false</span><br/><br/><span class="hl-5">// alternatively, create a Cuckoo Filter optimal for a number of items and a desired error rate</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">items</span><span class="hl-0"> = [</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">, </span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">]</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">errorRate</span><span class="hl-0"> = </span><span class="hl-7">0.04</span><span class="hl-0"> </span><span class="hl-5">// 4 % error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">CuckooFilter</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">.</span><span class="hl-6">length</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// or create a Cuckoo Filter optimal for a collections of items and a desired error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">CuckooFilter</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span>
+</code></pre>
+<p><strong>WARNING</strong>: The error rate cannot be higher than <code>1 * 10^-18</code>. Above this value, you will get an exception stating that the fingerprint length is higher than the hash length.</p>
 
-<span class="hljs-comment">// or create a PartitionedBloomFilter optimal for a collections of items and a desired error rate</span>
-filter = PartitionedBloomFilter.from(items, errorRate)</code></pre>
-				<a href="#cuckoo-filter" id="cuckoo-filter" style="color: inherit; text-decoration: none;">
-					<h3>Cuckoo Filter</h3>
-				</a>
-				<p>Cuckoo filters improve on Bloom filters by supporting deletion, limited counting, and bounded False positive rate with similar storage efficiency as a standard Bloom Filter.</p>
-				<p><strong>Reference:</strong> Fan, B., Andersen, D. G., Kaminsky, M., &amp; Mitzenmacher, M. D. (2014, December). <em>Cuckoo filter: Practically better than bloom.</em> In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.
-				(<a href="https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf">Full text article</a>)</p>
-				<a href="#methods-2" id="methods-2" style="color: inherit; text-decoration: none;">
-					<h4>Methods</h4>
-				</a>
-				<ul>
-					<li><code>add(element: string) -&gt; void</code>: add an element into the filter.</li>
-					<li><code>remove(element: string) -&gt; boolean</code>: delete an element from the filter, returning True if the deletion was a success and False otherwise.</li>
-					<li><code>has(element: string) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
-					<li><code>equals(other: CuckooFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
-					<li><code>rate() -&gt; number</code>: compute the filter&#39;s false positive rate (or error rate).</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { CuckooFilter } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
+<a href="#counting-bloom-filter" id="counting-bloom-filter" style="color: inherit; text-decoration: none;">
+  <h3>Counting Bloom Filter</h3>
+</a>
+<p>A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.</p>
+<p><strong>Reference:</strong> F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, “An Improved Construction for Counting Bloom Filters,” in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006</p>
 
-<span class="hljs-comment">// create a Cuckoo Filter with size = 15, fingerprint length = 3 and bucket size = 2</span>
-<span class="hljs-keyword">const</span> filter = <span class="hljs-keyword">new</span> CuckooFilter(<span class="hljs-number">15</span>, <span class="hljs-number">3</span>, <span class="hljs-number">2</span>)
-filter.add(<span class="hljs-string">'alice'</span>)
-filter.add(<span class="hljs-string">'bob'</span>)
+<a href="#methods-3" id="methods-3" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>add(element: string) -&gt; void</code>: add an element into the filter.</li>
+<li><code>remove(element: string) -&gt; boolean</code>: delete an element from the filter, returning True if the deletion was a success and False otherwise.</li>
+<li><code>has(element: string) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
+<li><code>equals(other: CountingBloomFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
+<li><code>rate() -&gt; number</code>: compute the filter&#39;s false positive rate (or error rate).</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">CountingBloomFilter</span><span class="hl-0"> = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">).</span><span class="hl-6">CountingBloomFilter</span><br/><br/><span class="hl-5">// create a Bloom Filter with capacity = 15 and 4 hash functions</span><br/><span class="hl-1">let</span><span class="hl-0"> </span><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">CountingBloomFilter</span><span class="hl-0">(</span><span class="hl-7">15</span><span class="hl-0">, </span><span class="hl-7">4</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// add some value in the filter</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;carole&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// remove some value</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">remove</span><span class="hl-0">(</span><span class="hl-4">&#39;carole&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// lookup for some data</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: true</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;carole&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: false</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;daniel&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: false</span><br/><br/><span class="hl-5">// print false positive rate (around 0.1)</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">rate</span><span class="hl-0">())</span><br/><br/><span class="hl-5">// alternatively, create a Counting Bloom Filter optimal for a number of items and a desired error rate</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">items</span><span class="hl-0"> = [</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">, </span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">]</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">errorRate</span><span class="hl-0"> = </span><span class="hl-7">0.04</span><span class="hl-0"> </span><span class="hl-5">// 4 % error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">CountingBloomFilter</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">.</span><span class="hl-6">length</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// or create a Counting Bloom Filter optimal for a collections of items and a desired error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">CountingBloomFilter</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span>
+</code></pre>
 
-<span class="hljs-comment">// lookup for some data</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'bob'</span>)) <span class="hljs-comment">// output: true</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'daniel'</span>)) <span class="hljs-comment">// output: false</span>
+<a href="#count-min-sketch" id="count-min-sketch" style="color: inherit; text-decoration: none;">
+  <h3>Count Min Sketch</h3>
+</a>
+<p>The Count Min Sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
+It uses hash functions to map events to frequencies, but unlike a hash table uses only sub-linear space, at the expense of overcounting some events due to collisions.</p>
+<p><strong>Reference:</strong> Cormode, G., &amp; Muthukrishnan, S. (2005). <em>An improved data stream summary: the count-min sketch and its applications.</em> Journal of Algorithms, 55(1), 58-75.
+(<a href="http://dimacs.rutgers.edu/~graham/pubs/papers/cm-full.pdf">Full text article</a>)</p>
 
-<span class="hljs-comment">// remove something</span>
-filter.remove(<span class="hljs-string">'bob'</span>)
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'bob'</span>)) <span class="hljs-comment">// output: false</span>
+<a href="#methods-4" id="methods-4" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>update(element: string, count = 1) -&gt; void</code>: add <code>count</code> occurences of an element into the sketch.</li>
+<li><code>count(element: string) -&gt; number</code>: estimate the number of occurences of an element.</li>
+<li><code>merge(other: CountMinSketch) -&gt; CountMinSketch</code>: merge occurences of two sketches.</li>
+<li><code>equals(other: CountMinSketch) -&gt; boolean</code>: Test if two sketchs are equals.</li>
+<li><code>clone(): CountMinSketch</code>: Clone the sketch.</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">CountMinSketch</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// create a new Count Min sketch with 2048 columns and 1 row</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">sketch</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">CountMinSketch</span><span class="hl-0">(</span><span class="hl-7">2048</span><span class="hl-0">, </span><span class="hl-7">1</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// push some occurrences in the sketch</span><br/><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">update</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">update</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">update</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// count occurrences</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">count</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: 2</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">count</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: 1</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">count</span><span class="hl-0">(</span><span class="hl-4">&#39;daniel&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: 0</span><br/><br/><span class="hl-5">// alternatively, create a Count Min sketch optimal for a target error rate and probability of accuracy</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">items</span><span class="hl-0"> = [</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">, </span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">]</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">errorRate</span><span class="hl-0"> = </span><span class="hl-7">0.04</span><span class="hl-0"> </span><span class="hl-5">// 4 % error rate</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">accuracy</span><span class="hl-0"> = </span><span class="hl-7">0.99</span><span class="hl-0"> </span><span class="hl-5">// 99% accuracy</span><br/><span class="hl-6">sketch</span><span class="hl-0"> = </span><span class="hl-6">CountMinSketch</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">(</span><span class="hl-6">errorRate</span><span class="hl-0">, </span><span class="hl-6">accuracy</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// or create a Count Min Sketch optimal for a collections of items,</span><br/><span class="hl-5">// a target error rate and probability of accuracy</span><br/><span class="hl-6">sketch</span><span class="hl-0"> = </span><span class="hl-6">CountMinSketch</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">, </span><span class="hl-6">accuracy</span><span class="hl-0">)</span>
+</code></pre>
 
-<span class="hljs-comment">// alternatively, create a Cuckoo Filter optimal for a number of items and a desired error rate</span>
-<span class="hljs-keyword">const</span> items = [<span class="hljs-string">'alice'</span>, <span class="hljs-string">'bob'</span>]
-<span class="hljs-keyword">const</span> errorRate = <span class="hljs-number">0.04</span> <span class="hljs-comment">// 4 % error rate</span>
-filter = CuckooFilter.create(items.length, errorRate)
+<a href="#hyperloglog" id="hyperloglog" style="color: inherit; text-decoration: none;">
+  <h3>HyperLogLog</h3>
+</a>
+<p>HyperLogLog is an algorithm for the count-distinct problem, approximating the number of distinct elements in a multiset. Calculating the exact cardinality of a multiset requires an amount of memory proportional to the cardinality, which is impractical for very large data sets. Probabilistic cardinality estimators, such as the HyperLogLog algorithm, use significantly less memory than this, at the cost of obtaining only an approximation of the cardinality.
+The HyperLogLog algorithm is able to estimate cardinalities greather than <code>10e9</code> with a typical accuracy (standard error) of <code>2%</code>, using around 1.5 kB of memory (see reference).</p>
+<p><strong>Reference:</strong> Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). <em>&quot;Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm&quot;</em>. Discrete Mathematics and Theoretical Computer Science Proceedings.
+(<a href="http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf">Full text article</a>)</p>
 
-<span class="hljs-comment">// or create a Cuckoo Filter optimal for a collections of items and a desired error rate</span>
-filter = CuckooFilter.from(items, errorRate)</code></pre>
-				<p><strong>WARNING</strong>: The error rate cannot be higher than <code>1 * 10^-18</code>. Above this value, you will get an exception stating that the fingerprint length is higher than the hash length.</p>
-				<a href="#counting-bloom-filter" id="counting-bloom-filter" style="color: inherit; text-decoration: none;">
-					<h3>Counting Bloom Filter</h3>
-				</a>
-				<p>A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.</p>
-				<p><strong>Reference:</strong> F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, “An Improved Construction for Counting Bloom Filters,” in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006</p>
-				<a href="#methods-3" id="methods-3" style="color: inherit; text-decoration: none;">
-					<h4>Methods</h4>
-				</a>
-				<ul>
-					<li><code>add(element: string) -&gt; void</code>: add an element into the filter.</li>
-					<li><code>remove(element: string) -&gt; boolean</code>: delete an element from the filter, returning True if the deletion was a success and False otherwise.</li>
-					<li><code>has(element: string) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
-					<li><code>equals(other: CountingBloomFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
-					<li><code>rate() -&gt; number</code>: compute the filter&#39;s false positive rate (or error rate).</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> CountingBloomFilter = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>).CountingBloomFilter;
+<a href="#methods-5" id="methods-5" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>update(element: string) -&gt; void</code>: add a new occurence of an element to the sketch.</li>
+<li><code>count() -&gt; number</code>: estimate the number of distinct elements in the sketch.</li>
+<li><code>merge(other: HyperLogLog) -&gt; HyperLogLog</code>: merge occurences of two sketches.</li>
+<li><code>equals(other: HyperLogLog) -&gt; boolean</code>: Test if two sketchs are equals.</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">HyperLogLog</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// create a new HyperLogLog with 100 registers</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">sketch</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">HyperLogLog</span><span class="hl-0">(</span><span class="hl-7">100</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// push some occurrences in the sketch</span><br/><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">update</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">update</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">update</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// count occurrences</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">count</span><span class="hl-0">())</span><br/><br/><span class="hl-5">// print accuracy</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">sketch</span><span class="hl-0">.</span><span class="hl-3">accuracy</span><span class="hl-0">())</span>
+</code></pre>
 
-<span class="hljs-comment">// create a Bloom Filter with capacity = 15 and 4 hash functions</span>
-<span class="hljs-keyword">let</span> filter = <span class="hljs-keyword">new</span> CountingBloomFilter(<span class="hljs-number">15</span>, <span class="hljs-number">4</span>);
+<a href="#minhash" id="minhash" style="color: inherit; text-decoration: none;">
+  <h3>MinHash</h3>
+</a>
+<p><strong>MinHash</strong> (or the min-wise independent permutations locality sensitive hashing scheme) is a technique for quickly estimating how similar two sets are.
+The goal of MinHash is to estimate the <em>Jaccard similarity coefficient</em>, a commonly used indicator of the similarity between two sets, without explicitly computing the intersection and union of the two sets.
+It does so by computing fixed sized signatures for a set of numbers using randomly generated hash functions.</p>
+<p>❗️<strong>WARNINGS</strong>❗</p>
+<ul>
+<li>A <code>MinHash</code> class only accepts <code>numbers</code> (integers and floats) as inputs.</li>
+<li>Two MinHash can be compared <strong>only if they share the same set of randomly generated hash functions</strong>. To ease the creation of MinHash sets, we introduce a <code>MinHashFactory</code> class that is able to create MinHash structures that <em>share the same set of hash functions</em>. We recommend most users <strong>to rely on the factory</strong>, but the <code>MinHash</code> class remains importable for advanced usage.</li>
+</ul>
+<p><strong>Reference:</strong> Andrei Z. Broder, <em>&quot;On the resemblance and containment of documents&quot;</em>, in Compression and Complexity of Sequences: Proceedings (1997).
+(<a href="https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&amp;rep=rep1&amp;type=pdf">Full text article</a>)</p>
 
-<span class="hljs-comment">// add some value in the filter</span>
-filter.add(<span class="hljs-string">'alice'</span>);
-filter.add(<span class="hljs-string">'bob'</span>);
-filter.add(<span class="hljs-string">'carole'</span>);
+<a href="#minhashfactory-methods" id="minhashfactory-methods" style="color: inherit; text-decoration: none;">
+  <h4><code>MinHashFactory</code> methods</h4>
+</a>
+<ul>
+<li><code>create() -&gt; MinHash</code>: create a new empty MinHash structure, using the parameters of the factory.</li>
+</ul>
 
-<span class="hljs-comment">// remove some value</span>
-filter.remove(<span class="hljs-string">'carole'</span>);
+<a href="#minhash-methods" id="minhash-methods" style="color: inherit; text-decoration: none;">
+  <h4><code>MinHash</code> methods</h4>
+</a>
+<ul>
+<li><code>add(element: number) -&gt; void</code>: add a new element to the set.</li>
+<li><code>bulkLoad(elements: number[]) -&gt; void</code>: efficently add several new elements to the set.</li>
+<li><code>isEmpty() -&gt; boolean</code>: test if the signature of the MinHash is empty.</li>
+<li><code>compareWith(other: MinHash) -&gt; number</code>: estimate the Jaccard similarity coefficient with another MinHash set.</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">MinHashFactory</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// create the MinHashFactory, to create several comparable MinHash sets</span><br/><span class="hl-5">// it uses 10 random hash functions and expect to see a maximum value of 999</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">factory</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">MinHashFactory</span><span class="hl-0">(</span><span class="hl-7">10</span><span class="hl-0">, </span><span class="hl-7">999</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// create two empty MinHash</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">fistSet</span><span class="hl-0"> = </span><span class="hl-6">factory</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">()</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">secondSet</span><span class="hl-0"> = </span><span class="hl-6">factory</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">()</span><br/><br/><span class="hl-5">// push some occurrences in the first set</span><br/><span class="hl-6">fistSet</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-7">1</span><span class="hl-0">)</span><br/><span class="hl-6">fistSet</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-7">2</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// the MinHash class also supports bulk loading</span><br/><span class="hl-6">secondSet</span><span class="hl-0">.</span><span class="hl-3">bulkLoad</span><span class="hl-0">([</span><span class="hl-7">1</span><span class="hl-0">, </span><span class="hl-7">3</span><span class="hl-0">, </span><span class="hl-7">4</span><span class="hl-0">])</span><br/><br/><span class="hl-5">// estimate the jaccard similarity between the two sets</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">jaccardSim</span><span class="hl-0"> = </span><span class="hl-6">fistSet</span><span class="hl-0">.</span><span class="hl-3">compareWith</span><span class="hl-0">(</span><span class="hl-6">secondSet</span><span class="hl-0">)</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-4">`The estimated Jaccard similarity is </span><span class="hl-1">${</span><span class="hl-6">jaccardSim</span><span class="hl-1">}</span><span class="hl-4">`</span><span class="hl-0">)</span>
+</code></pre>
 
-<span class="hljs-comment">// lookup for some data</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'bob'</span>)); <span class="hljs-comment">// output: true</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'carole'</span>)); <span class="hljs-comment">// output: false</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'daniel'</span>)); <span class="hljs-comment">// output: false</span>
+<a href="#top-k" id="top-k" style="color: inherit; text-decoration: none;">
+  <h3>Top-K</h3>
+</a>
+<p>Given a multiset of elements, the <strong>Top-K problem</strong> is to compute the ranking of these elements (by an arbitrary score) and returns the <code>k</code> results with the highest scores.
+This package provides an implementation of the Top-K problem that sort items based on their estimated cardinality in the multiset. It is based on a Count Min Sketch, for estimating the cardinality of items, and a MinHeap, for implementing a sliding window over the <code>k</code> results with the highest scores.</p>
+<p>Items produced by the <code>TopK</code> class are JavaScript objects with the following content (shown in Typescript notation).</p>
+<pre><code class="language-typescript"><span class="hl-1">interface</span><span class="hl-0"> </span><span class="hl-8">TopkElement</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-5">// The element&#39;s value</span><br/><span class="hl-0">  </span><span class="hl-6">value</span><span class="hl-0">: </span><span class="hl-8">string</span><br/><span class="hl-0">  </span><span class="hl-5">// The element&#39;s frequency</span><br/><span class="hl-0">  </span><span class="hl-6">frequency</span><span class="hl-0">: </span><span class="hl-8">number</span><br/><span class="hl-0">  </span><span class="hl-5">// The element&#39;s rank in the TopK, ranging from 1 to k</span><br/><span class="hl-0">  </span><span class="hl-6">rank</span><span class="hl-0">: </span><span class="hl-8">number</span><br/><span class="hl-0">}</span>
+</code></pre>
 
-<span class="hljs-comment">// print false positive rate (around 0.1)</span>
-<span class="hljs-built_in">console</span>.log(filter.rate());
+<a href="#methods-6" id="methods-6" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>add(element: string, count: number = 1) -&gt; void</code>: add one or more new occurences of an element to the sketch.</li>
+<li><code>values() -&gt; Array&lt;TopkElement&gt;</code>: get the top-k values as an array of objects.</li>
+<li><code>iterator() -&gt; Iterator&lt;TopkElement&gt;</code>: get the top-k values as an iterator that yields objects.</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">TopK</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// create a new TopK with k = 10, an error rate of 0.001 and an accuracy of 0.99</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">topk</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">TopK</span><span class="hl-0">(</span><span class="hl-7">10</span><span class="hl-0">, </span><span class="hl-7">0.001</span><span class="hl-0">, </span><span class="hl-7">0.99</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// push occurrences one-at-a-time in the multiset</span><br/><span class="hl-6">topk</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">topk</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)</span><br/><span class="hl-6">topk</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// or, equally, push multiple occurrences at-once in the multiset</span><br/><span class="hl-5">// topk.add(&#39;alice&#39;, 2)</span><br/><span class="hl-5">// topk.add(&#39;bob&#39;, 1)</span><br/><br/><span class="hl-5">// print the top k values</span><br/><span class="hl-9">for</span><span class="hl-0"> (</span><span class="hl-1">let</span><span class="hl-0"> </span><span class="hl-6">item</span><span class="hl-0"> </span><span class="hl-1">of</span><span class="hl-0"> </span><span class="hl-6">topk</span><span class="hl-0">.</span><span class="hl-3">values</span><span class="hl-0">()) {</span><br/><span class="hl-0">  </span><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><br/><span class="hl-0">    </span><span class="hl-4">`Item &quot;</span><span class="hl-1">${</span><span class="hl-6">item</span><span class="hl-10">.</span><span class="hl-6">value</span><span class="hl-1">}</span><span class="hl-4">&quot; is in position </span><span class="hl-1">${</span><span class="hl-6">item</span><span class="hl-10">.</span><span class="hl-6">rank</span><span class="hl-1">}</span><span class="hl-4"> with an estimated frequency of </span><span class="hl-1">${</span><span class="hl-6">item</span><span class="hl-10">.</span><span class="hl-6">frequency</span><span class="hl-1">}</span><span class="hl-4">`</span><br/><span class="hl-0">  )</span><br/><span class="hl-0">}</span><br/><span class="hl-5">// Output:</span><br/><span class="hl-5">// Item &quot;alice&quot; is in position 1 with an estimated frequency of 2</span><br/><span class="hl-5">// Item &quot;bob&quot; is in position 2 with an estimated frequency of 1</span>
+</code></pre>
 
-<span class="hljs-comment">// alternatively, create a Counting Bloom Filter optimal for a number of items and a desired error rate</span>
-<span class="hljs-keyword">const</span> items = [<span class="hljs-string">'alice'</span>, <span class="hljs-string">'bob'</span>]
-<span class="hljs-keyword">const</span> errorRate = <span class="hljs-number">0.04</span> <span class="hljs-comment">// 4 % error rate</span>
-filter = CountingBloomFilter.create(items.length, errorRate)
+<a href="#invertible-bloom-filters" id="invertible-bloom-filters" style="color: inherit; text-decoration: none;">
+  <h3>Invertible Bloom Filters</h3>
+</a>
+<p>An Invertible Bloom Filters (IBLT), also called Invertible Bloom Lookup Table, is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
+They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction, in that it randomly combines elements using the XOR function.</p>
+<p>❗️<strong>WARNING</strong>❗️ An IBLT only accepts <a href="https://nodejs.org/api/buffer.html"><code>Buffer</code></a> as inputs. If you are using <code>bloom-filters</code> in a Web browser, you might consider using the <a href="https://www.npmjs.com/package/buffer"><code>feros/buffer</code></a> package, which provides a polyfill for <code>Buffer</code> in a browser.</p>
+<p><strong>Reference:</strong> Eppstein, D., Goodrich, M. T., Uyeda, F., &amp; Varghese, G. (2011). <em>What&#39;s the difference?: efficient set reconciliation without prior context.</em> ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
+(<a href="http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf">Full text article</a>)</p>
 
-<span class="hljs-comment">// or create a Counting Bloom Filter optimal for a collections of items and a desired error rate</span>
-filter = CountingBloomFilter.from(items, errorRate)</code></pre>
-				<a href="#count-min-sketch" id="count-min-sketch" style="color: inherit; text-decoration: none;">
-					<h3>Count Min Sketch</h3>
-				</a>
-				<p>The Count Min Sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
-				It uses hash functions to map events to frequencies, but unlike a hash table uses only sub-linear space, at the expense of overcounting some events due to collisions.</p>
-				<p><strong>Reference:</strong> Cormode, G., &amp; Muthukrishnan, S. (2005). <em>An improved data stream summary: the count-min sketch and its applications.</em> Journal of Algorithms, 55(1), 58-75.
-				(<a href="http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf">Full text article</a>)</p>
-				<a href="#methods-4" id="methods-4" style="color: inherit; text-decoration: none;">
-					<h4>Methods</h4>
-				</a>
-				<ul>
-					<li><code>update(element: string, count = 1) -&gt; void</code>: add <code>count</code> occurences of an element into the sketch.</li>
-					<li><code>count(element: string) -&gt; number</code>: estimate the number of occurences of an element.</li>
-					<li><code>merge(other: CountMinSketch) -&gt; CountMinSketch</code>: merge occurences of two sketches.</li>
-					<li><code>equals(other: CountMinSketch) -&gt; boolean</code>: Test if two sketchs are equals.</li>
-					<li><code>clone(): CountMinSketch</code>: Clone the sketch.</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { CountMinSketch } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
+<a href="#methods-7" id="methods-7" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>add(element: Buffer) -&gt; void</code>: add an element into the filter.</li>
+<li><code>remove(element: Buffer) -&gt; void</code>: delete an element from the filter, returning True if the deletion was a success and False otherwise.</li>
+<li><code>has(element: Buffer) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
+<li><code>equals(other: InvertibleBloomFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
+<li><code>substract(remote: InvertibleBloomFilter)</code>: peform the XOR substraction of two IBLTs.</li>
+<li><code>decode() -&gt; {additional: Buffer[], missing: Buffer[]} </code>: decode an IBLT.</li>
+<li><code>listEntries() -&gt; Generator&lt;Buffer, number, void&gt;</code>: list all entries in the IBLT using a Generator.</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">InvertibleBloomFilter</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">hashcount</span><span class="hl-0"> = </span><span class="hl-7">3</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">size</span><span class="hl-0"> = </span><span class="hl-7">50</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">iblt</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">InvertibleBloomFilter</span><span class="hl-0">(</span><span class="hl-6">size</span><span class="hl-0">, </span><span class="hl-6">hashcount</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// push some data in the IBLT</span><br/><span class="hl-6">iblt</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">))</span><br/><span class="hl-6">iblt</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;42&#39;</span><span class="hl-0">))</span><br/><span class="hl-6">iblt</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;help&#39;</span><span class="hl-0">))</span><br/><span class="hl-6">iblt</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;meow&#39;</span><span class="hl-0">))</span><br/><span class="hl-6">iblt</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;json&#39;</span><span class="hl-0">))</span><br/><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">ilbt</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">))) </span><span class="hl-5">// output: true</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">ilbt</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;daniel&#39;</span><span class="hl-0">))) </span><span class="hl-5">// output: false</span><br/><br/><span class="hl-6">iblt</span><span class="hl-0">.</span><span class="hl-3">remove</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">))</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">ilbt</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">))) </span><span class="hl-5">// output: false</span><br/><br/><span class="hl-5">// Now, let&#39;s demonstrate the decoding power of IBLT!</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">remote</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">InvertibleBloomFilter</span><span class="hl-0">(</span><span class="hl-6">size</span><span class="hl-0">, </span><span class="hl-6">hashcount</span><span class="hl-0">)</span><br/><span class="hl-6">remote</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">))</span><br/><span class="hl-6">remote</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;car&#39;</span><span class="hl-0">))</span><br/><span class="hl-6">remote</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;meow&#39;</span><span class="hl-0">))</span><br/><span class="hl-6">remote</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;help&#39;</span><span class="hl-0">))</span><br/><br/><span class="hl-5">// decode the difference between the two filters</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">result</span><span class="hl-0"> = </span><span class="hl-6">iblt</span><span class="hl-0">.</span><span class="hl-3">substract</span><span class="hl-0">(</span><span class="hl-6">remote</span><span class="hl-0">).</span><span class="hl-3">decode</span><span class="hl-0">()</span><br/><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><br/><span class="hl-0">  </span><span class="hl-4">`Did we successfully decode the subtracted iblts? </span><span class="hl-1">${</span><span class="hl-6">result</span><span class="hl-10">.</span><span class="hl-6">success</span><span class="hl-1">}</span><span class="hl-4">. Why? $</span><span class="hl-1">${</span><span class="hl-6">result</span><span class="hl-10">.</span><span class="hl-6">reason</span><span class="hl-1">}</span><span class="hl-4">`</span><br/><span class="hl-0">)</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><br/><span class="hl-0">  </span><span class="hl-4">`Elements of iblt missing elements from remote: </span><span class="hl-1">${</span><span class="hl-6">result</span><span class="hl-10">.</span><span class="hl-6">additional</span><span class="hl-1">}</span><span class="hl-4">`</span><br/><span class="hl-0">)</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-4">`Elements of remote missing elements from iblt: </span><span class="hl-1">${</span><span class="hl-6">result</span><span class="hl-10">.</span><span class="hl-6">missing</span><span class="hl-1">}</span><span class="hl-4">`</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// alternatively, create an IBLT optimal for a number of items and a desired error rate</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">items</span><span class="hl-0"> = [</span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">), </span><span class="hl-6">Buffer</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)]</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">errorRate</span><span class="hl-0"> = </span><span class="hl-7">0.04</span><span class="hl-0"> </span><span class="hl-5">// 4 % error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">InvertibleBloomFilter</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">.</span><span class="hl-6">length</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// or create an IBLT optimal for a collections of items and a desired error rate</span><br/><span class="hl-6">filter</span><span class="hl-0"> = </span><span class="hl-6">InvertibleBloomFilter</span><span class="hl-0">.</span><span class="hl-3">from</span><span class="hl-0">(</span><span class="hl-6">items</span><span class="hl-0">, </span><span class="hl-6">errorRate</span><span class="hl-0">)</span>
+</code></pre>
+<p><strong>Tuning the IBLT</strong> We recommend to use at least a <strong>hashcount</strong> of 3 and an <strong>alpha</strong> of 1.5 for at least 50 differences, which equals to 1.5*50 = 75 cells. Then, if you insert a huge number of values in there, the decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic, based on the number of elements inserted (Even for the functions like listEntries). For more details, you should read the seminal research paper on IBLTs (<a href="http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf">full-text article</a>).</p>
 
-<span class="hljs-comment">// create a new Count Min sketch with 2048 columns and 1 row</span>
-<span class="hljs-keyword">const</span> sketch = <span class="hljs-keyword">new</span> CountMinSketch(<span class="hljs-number">2048</span>, <span class="hljs-number">1</span>)
+<a href="#xor-filter" id="xor-filter" style="color: inherit; text-decoration: none;">
+  <h3>XOR Filter</h3>
+</a>
+<p><strong>Available as 8-bits and 16-bits fingerprint length</strong></p>
+<p>A XOR Filter is a better space-efficient probabilistic data structure than Bloom Filters. 
+Very usefull for space efficiency of readonly sets.</p>
+<p><strong>Reference:</strong> Graf, Thomas Mueller, and Daniel Lemire. &quot;Xor filters: Faster and smaller than bloom and cuckoo filters.&quot; Journal of Experimental Algorithmics (JEA) 25 (2020): 1-16.
+(<a href="https://arxiv.org/abs/1912.08258">Full text article</a>)</p>
 
-<span class="hljs-comment">// push some occurrences in the sketch</span>
-sketch.update(<span class="hljs-string">'alice'</span>)
-sketch.update(<span class="hljs-string">'alice'</span>)
-sketch.update(<span class="hljs-string">'bob'</span>)
+<a href="#methods-8" id="methods-8" style="color: inherit; text-decoration: none;">
+  <h4>Methods</h4>
+</a>
+<ul>
+<li><code>add(elements: XorHashableInput[]) -&gt; void</code>: Add elements to the filter. Calling more than once this methods will override the current filter with the new elements.</li>
+<li><code>has(element: XorHashableInput) -&gt; boolean</code>: true/false whether the element is in the set or not.</li>
+</ul>
+<hr>
+<ul>
+<li>Extended input types: <code>type XorHashableInput = HashableInput | Long</code></li>
+<li>We use Buffers internally which are exported/imported to/from <code>base64</code> strings.</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">XorFilter</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">xor8</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">XorFilter</span><span class="hl-0">(</span><span class="hl-7">1</span><span class="hl-0">)</span><br/><span class="hl-6">xor8</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">([</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">])</span><br/><span class="hl-6">xor8</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">) </span><span class="hl-5">// true</span><br/><span class="hl-6">xor8</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;b&#39;</span><span class="hl-0">) </span><span class="hl-5">// false</span><br/><span class="hl-5">// or the combined</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">filter</span><span class="hl-0"> = </span><span class="hl-6">XorFilter</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">([</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">])</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">) </span><span class="hl-5">// true</span><br/><span class="hl-5">// using 16-bits fingerprint length</span><br/><span class="hl-6">XorFilter</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">([</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">], </span><span class="hl-7">16</span><span class="hl-0">).</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">) </span><span class="hl-5">// true</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">a</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">XorFilter</span><span class="hl-0">(</span><span class="hl-7">1</span><span class="hl-0">, </span><span class="hl-7">16</span><span class="hl-0">)</span><br/><span class="hl-6">a</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">([</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">])</span><br/><span class="hl-6">a</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">) </span><span class="hl-5">// true</span>
+</code></pre>
 
-<span class="hljs-comment">// count occurrences</span>
-<span class="hljs-built_in">console</span>.log(sketch.count(<span class="hljs-string">'alice'</span>)) <span class="hljs-comment">// output: 2</span>
-<span class="hljs-built_in">console</span>.log(sketch.count(<span class="hljs-string">'bob'</span>)) <span class="hljs-comment">// output: 1</span>
-<span class="hljs-built_in">console</span>.log(sketch.count(<span class="hljs-string">'daniel'</span>)) <span class="hljs-comment">// output: 0</span>
+<a href="#export-and-import" id="export-and-import" style="color: inherit; text-decoration: none;">
+  <h2>Export and import</h2>
+</a>
+<p>All data structures exposed by this package can be <strong>exported and imported to/from JSON</strong>:</p>
+<ul>
+<li>Use the method <code>saveAsJSON()</code> to export any data structures into a JSON object.</li>
+<li>Use the static method <code>fromJSON(json)</code> to load a data structure from a JSON object.</li>
+</ul>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">BloomFilter</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">filter</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">BloomFilter</span><span class="hl-0">(</span><span class="hl-7">15</span><span class="hl-0">, </span><span class="hl-7">0.01</span><span class="hl-0">)</span><br/><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-5">// export a bloom filter to JSON</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">exported</span><span class="hl-0"> = </span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">saveAsJSON</span><span class="hl-0">()</span><br/><br/><span class="hl-5">// do something with the JSON object (save it as file, send it to a server, etc)</span><br/><span class="hl-5">// ...</span><br/><br/><span class="hl-5">// import the same filter from its JSON export</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">importedFilter</span><span class="hl-0"> = </span><span class="hl-6">BloomFilter</span><span class="hl-0">.</span><span class="hl-3">fromJSON</span><span class="hl-0">(</span><span class="hl-6">exported</span><span class="hl-0">)</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;alice&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: true</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">filter</span><span class="hl-0">.</span><span class="hl-3">has</span><span class="hl-0">(</span><span class="hl-4">&#39;bob&#39;</span><span class="hl-0">)) </span><span class="hl-5">// output: false</span>
+</code></pre>
 
-<span class="hljs-comment">// alternatively, create a Count Min sketch optimal for a target error rate and probability of accuracy</span>
-<span class="hljs-keyword">const</span> items = [<span class="hljs-string">'alice'</span>, <span class="hljs-string">'bob'</span>]
-<span class="hljs-keyword">const</span> errorRate = <span class="hljs-number">0.04</span> <span class="hljs-comment">// 4 % error rate</span>
-<span class="hljs-keyword">const</span> accuracy = <span class="hljs-number">0.99</span> <span class="hljs-comment">// 99% accuracy</span>
-sketch = CountMinSketch.create(errorRate, accuracy)
+<a href="#seeding-and-hashing" id="seeding-and-hashing" style="color: inherit; text-decoration: none;">
+  <h2>Seeding and Hashing</h2>
+</a>
+<p>By default every hash function is seeded with an internal seed which is equal to <code>0x1234567890</code>. If you want to change it:</p>
+<pre><code class="language-javascript"><span class="hl-1">const</span><span class="hl-0"> { </span><span class="hl-2">BloomFilter</span><span class="hl-0"> } = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filter&#39;</span><span class="hl-0">)</span><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">bl</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">BloomFilter</span><span class="hl-0">(...)</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">bl</span><span class="hl-0">.</span><span class="hl-6">seed</span><span class="hl-0">) </span><span class="hl-5">// 78187493520</span><br/><span class="hl-6">bl</span><span class="hl-0">.</span><span class="hl-6">seed</span><span class="hl-0"> = </span><span class="hl-7">0xABCD</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-3">log</span><span class="hl-0">(</span><span class="hl-6">bl</span><span class="hl-0">.</span><span class="hl-6">seed</span><span class="hl-0">) </span><span class="hl-5">// 43981</span>
+</code></pre>
+<p>By default we hash elements using <code>XXH.h64</code> function from <a href="https://github.com/pierrec/js-xxhash"><code>xxhashjs</code></a>.
+In the case you want to use your own hash functions, you can use your own Hashing class by extending the default one. Example:</p>
+<pre><code class="language-js"><span class="hl-1">const</span><span class="hl-0"> {</span><span class="hl-2">BloomFilter</span><span class="hl-0">, </span><span class="hl-2">Hashing</span><span class="hl-0">} = </span><span class="hl-3">require</span><span class="hl-0">(</span><span class="hl-4">&#39;bloom-filters&#39;</span><span class="hl-0">)</span><br/><br/><span class="hl-1">class</span><span class="hl-0"> </span><span class="hl-8">CustomHashing</span><span class="hl-0"> </span><span class="hl-1">extends</span><span class="hl-0"> </span><span class="hl-8">Hashing</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-3">serialize</span><span class="hl-0">(</span><span class="hl-6">_element</span><span class="hl-0">, </span><span class="hl-6">_seed</span><span class="hl-0">) {</span><br/><span class="hl-0">    </span><span class="hl-9">return</span><span class="hl-0"> </span><span class="hl-8">Number</span><span class="hl-0">(</span><span class="hl-7">1</span><span class="hl-0">)</span><br/><span class="hl-0">  }</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-1">const</span><span class="hl-0"> </span><span class="hl-2">bl</span><span class="hl-0"> = </span><span class="hl-6">BloomFilter</span><span class="hl-0">.</span><span class="hl-3">create</span><span class="hl-0">(</span><span class="hl-7">2</span><span class="hl-0">, </span><span class="hl-7">0.01</span><span class="hl-0">)</span><br/><span class="hl-5">// override just your structure locally</span><br/><span class="hl-6">bl</span><span class="hl-0">.</span><span class="hl-6">_hashing</span><span class="hl-0"> = </span><span class="hl-1">new</span><span class="hl-0"> </span><span class="hl-3">CustomHashing</span><span class="hl-0">()</span><br/><span class="hl-6">bl</span><span class="hl-0">.</span><span class="hl-3">add</span><span class="hl-0">(</span><span class="hl-4">&#39;a&#39;</span><span class="hl-0">)</span>
+</code></pre>
+<p>See <code>test/utils-test.js</code> &quot;<em>Use different hash functions</em>&quot; describe close.</p>
 
-<span class="hljs-comment">// or create a Count Min Sketch optimal for a collections of items, </span>
-<span class="hljs-comment">// a target error rate and probability of accuracy</span>
-sketch = CountMinSketch.from(items, errorRate, accuracy)</code></pre>
-				<a href="#hyperloglog" id="hyperloglog" style="color: inherit; text-decoration: none;">
-					<h3>HyperLogLog</h3>
-				</a>
-				<p>HyperLogLog is an algorithm for the count-distinct problem, approximating the number of distinct elements in a multiset. Calculating the exact cardinality of a multiset requires an amount of memory proportional to the cardinality, which is impractical for very large data sets. Probabilistic cardinality estimators, such as the HyperLogLog algorithm, use significantly less memory than this, at the cost of obtaining only an approximation of the cardinality.
-				The HyperLogLog algorithm is able to estimate cardinalities greather than <code>10e9</code> with a typical accuracy (standard error) of <code>2%</code>, using around 1.5 kB of memory (see reference).</p>
-				<p><strong>Reference:</strong> Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). *&quot;Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm&quot;*. Discrete Mathematics and Theoretical Computer Science Proceedings.
-				(<a href="http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf">Full text article</a>)</p>
-				<a href="#methods-5" id="methods-5" style="color: inherit; text-decoration: none;">
-					<h4>Methods</h4>
-				</a>
-				<ul>
-					<li><code>update(element: string) -&gt; void</code>: add a new occurence of an element to the sketch.</li>
-					<li><code>count() -&gt; number</code>: estimate the number of distinct elements in the sketch.</li>
-					<li><code>merge(other: HyperLogLog) -&gt; HyperLogLog</code>: merge occurences of two sketches.</li>
-					<li><code>equals(other: HyperLogLog) -&gt; boolean</code>: Test if two sketchs are equals.</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { HyperLogLog } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
+<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
+  <h2>Documentation</h2>
+</a>
+<p>See <a href="https://callidon.github.io/bloom-filters/">documentation online</a> or generate it in directory <code>doc/</code> with: <code>npm run doc</code></p>
 
-<span class="hljs-comment">// create a new HyperLogLog with 100 registers</span>
-<span class="hljs-keyword">const</span> sketch = <span class="hljs-keyword">new</span> HyperLogLog(<span class="hljs-number">100</span>)
+<a href="#tests-and-development" id="tests-and-development" style="color: inherit; text-decoration: none;">
+  <h2>Tests and Development</h2>
+</a>
+<ul>
+<li>Tests are performed using <a href="https://github.com/mochajs/mocha">mocha</a> and <a href="https://github.com/istanbuljs/nyc">nyc</a> (code coverage) on node 12.x, 14.x, 15.x and 16.x for the moment.</li>
+<li>Linting and formatting are made using <code>prettier</code> and <code>eslint</code></li>
+</ul>
+<p>When submitting pull requests please follow the following guidance:</p>
+<ul>
+<li>please, PRs on the develop branch. PRs on the master will be refused without comment.</li>
+<li>add tests when possible in <code>./test/*-test.js</code> or by creating <code>*-test.js</code> files.</li>
+<li>functions, methods, variables and types must be documented using typedoc annotations</li>
+<li>run <code>yarn lint</code> to see linting errors</li>
+<li>run <code>yarn fix</code> to fix errors that can be auto-fixed by gts.</li>
+<li>run <code>yarn test</code> (build, lint and run the mocha tests suite with code coverage)</li>
+</ul>
 
-<span class="hljs-comment">// push some occurrences in the sketch</span>
-sketch.update(<span class="hljs-string">'alice'</span>)
-sketch.update(<span class="hljs-string">'alice'</span>)
-sketch.update(<span class="hljs-string">'bob'</span>)
+<a href="#references" id="references" style="color: inherit; text-decoration: none;">
+  <h2>References</h2>
+</a>
+<ul>
+<li><a href="http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf">Classic Bloom Filter</a>: Bloom, B. H. (1970). <em>Space/time trade-offs in hash coding with allowable errors.</em> Communications of the ACM, 13(7), 422-426.</li>
+<li><a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&amp;rep=rep1&amp;type=pdf">Partitioned Bloom Filter</a>: Chang, F., Feng, W. C., &amp; Li, K. (2004, March). <em>Approximate caches for packet classification.</em> In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.</li>
+<li><a href="https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf">Cuckoo Filter</a>: Fan, B., Andersen, D. G., Kaminsky, M., &amp; Mitzenmacher, M. D. (2014, December). <em>Cuckoo filter: Practically better than bloom.</em> In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.</li>
+<li><a href="http://www.eecs.harvard.edu/~michaelm/postscripts/esa2006b.pdf">Counting Bloom Filter</a>: F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, <em>An Improved Construction for Counting Bloom Filters</em>, in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.</li>
+<li><a href="http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf">Count Min Sketch</a>: Cormode, G., &amp; Muthukrishnan, S. (2005). <em>An improved data stream summary: the count-min sketch and its applications.</em> Journal of Algorithms, 55(1), 58-75.</li>
+<li><a href="http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf">HyperLogLog</a>: Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). <em>&quot;Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm&quot;</em>. Discrete Mathematics and Theoretical Computer Science Proceedings.</li>
+<li><a href="https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&amp;rep=rep1&amp;type=pdf">MinHash</a>: Andrei Z. Broder, <em>&quot;On the resemblance and containment of documents&quot;</em>, in Compression and Complexity of Sequences: Proceedings (1997).</li>
+<li><a href="http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf">Invertible Bloom Filters</a>: Eppstein, D., Goodrich, M. T., Uyeda, F., &amp; Varghese, G. (2011). <em>What&#39;s the difference?: efficient set reconciliation without prior context.</em> ACM SIGCOMM Computer Communication Review, 41(4), 218-229.</li>
+<li><a href="https://arxiv.org/abs/1912.08258">Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters</a> Thomas Mueller Graf,  Daniel Lemire, Journal of Experimental Algorithmics 25 (1), 2020. DOI: 10.1145/3376122</li>
+</ul>
 
-<span class="hljs-comment">// count occurrences</span>
-<span class="hljs-built_in">console</span>.log(sketch.count())
+<a href="#changelog" id="changelog" style="color: inherit; text-decoration: none;">
+  <h2>Changelog</h2>
+</a>
+<table>
+<thead>
+<tr>
+<th><strong>Version</strong></th>
+<th><strong>Release date</strong></th>
+<th><strong>Major changes</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>v2.0.0</code></td>
+<td>02/2022</td>
+<td>- Use correctly double hashing <a href="https://github.com/Callidon/bloom-filters/issues/43">#issue43</a>. <br/> - Move all hashing related functions to its specific Hash class in a component of the BaseFilter class. It also allows for overriding the serizalize function for using custom hash functions <br/> - Add <a href="https://github.com/Callidon/bloom-filters/pull/44">#PR44</a> optimizing the BloomFilter internal storage with Uint arrays. <br/> - Disable 10.x, 15.x node tests. <br/> - Add XorFilter <a href="https://github.com/Callidon/bloom-filters/issues/29">#29</a> <br/> - Add <code>.nextInt32()</code> function to get a new random seeded int 32-bits from the current seed. <br/> - Make all properties public for allowing developpers to override everything.</td>
+</tr>
+<tr>
+<td><code>v1.3.0</code></td>
+<td>10/04/2020</td>
+<td>Added the MinHash set</td>
+</tr>
+<tr>
+<td><code>v1.2.0</code></td>
+<td>08/04/2020</td>
+<td>Add the TopK class</td>
+</tr>
+<tr>
+<td><code>v1.1.0</code></td>
+<td>03/04/2020</td>
+<td>Add the HyperLogLog sketch</td>
+</tr>
+<tr>
+<td><code>v1.0.0</code></td>
+<td>23/03/2020</td>
+<td>Rework the whole library using TypeScript, unify the API and fix the documentation</td>
+</tr>
+<tr>
+<td><code>v0.8.0</code></td>
+<td>11/11/2019</td>
+<td>Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API, use the <code>.create()</code> or <code>.from()</code> functions to match the old api.</td>
+</tr>
+<tr>
+<td><code>v0.7.1</code></td>
+<td>11/09/2019</td>
+<td>Add the Counting Bloom Filter</td>
+</tr>
+<tr>
+<td><code>v0.7.0</code></td>
+<td>01/07/2019</td>
+<td>Move to <a href="https://cyan4973.github.io/xxHash/">XXHASH</a> for hashing elements in the library. One property has been added into the exported json <code>_seed</code> which is used to seed every hash of every elements. Update Invertible Bloom Filters with #add, #has, #delete, #listEntries, #substract, #Static.decode methods. Updated the way to get distinct indices which could have collisions in many cases.</td>
+</tr>
+<tr>
+<td><code>v0.6.1</code></td>
+<td>18/06/2019</td>
+<td>Add Invertible Bloom Filters (only #encode/#substract/#Static.decode methods)</td>
+</tr>
+</tbody></table>
 
-<span class="hljs-comment">// print accuracy</span>
-<span class="hljs-built_in">console</span>.log(sketch.accuracy())</code></pre>
-				<a href="#minhash" id="minhash" style="color: inherit; text-decoration: none;">
-					<h3>MinHash</h3>
-				</a>
-				<p><strong>MinHash</strong> (or the min-wise independent permutations locality sensitive hashing scheme) is a technique for quickly estimating how similar two sets are.
-					The goal of MinHash is to estimate the <em>Jaccard similarity coefficient</em>, a commonly used indicator of the similarity between two sets, without explicitly computing the intersection and union of the two sets.
-				It does so by computing fixed sized signatures for a set of numbers using randomly generated hash functions.</p>
-				<p>❗️<strong>WARNINGS</strong>❗</p>
-				<ul>
-					<li>A <code>MinHash</code> class only accepts <code>numbers</code> (integers and floats) as inputs.</li>
-					<li>Two MinHash can be compared <strong>only if they share the same set of randomly generated hash functions</strong>. To ease the creation of MinHash sets, we introduce a <code>MinHashFactory</code> class that is able to create MinHash structures that <em>share the same set of hash functions</em>. We recommend most users <strong>to rely on the factory</strong>, but the <code>MinHash</code> class remains importable for advanced usage.</li>
-				</ul>
-				<p><strong>Reference:</strong> Andrei Z. Broder, *&quot;On the resemblance and containment of documents&quot;*, in Compression and Complexity of Sequences: Proceedings (1997).
-				(<a href="https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&amp;rep=rep1&amp;type=pdf">Full text article</a>)</p>
-				<a href="#codeminhashfactorycode-methods" id="codeminhashfactorycode-methods" style="color: inherit; text-decoration: none;">
-					<h4><code>MinHashFactory</code> methods</h4>
-				</a>
-				<ul>
-					<li><code>create() -&gt; MinHash</code>: create a new empty MinHash structure, using the parameters of the factory.</li>
-				</ul>
-				<a href="#codeminhashcode-methods" id="codeminhashcode-methods" style="color: inherit; text-decoration: none;">
-					<h4><code>MinHash</code> methods</h4>
-				</a>
-				<ul>
-					<li><code>add(element: number) -&gt; void</code>: add a new element to the set.</li>
-					<li><code>bulkLoad(elements: number[]) -&gt; void</code>: efficently add several new elements to the set.</li>
-					<li><code>isEmpty() -&gt; boolean</code>: test if the signature of the MinHash is empty.</li>
-					<li><code>compareWith(other: MinHash) -&gt; number</code>: estimate the Jaccard similarity coefficient with another MinHash set.</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { MinHashFactory } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
-
-<span class="hljs-comment">// create the MinHashFactory, to create several comparable MinHash sets</span>
-<span class="hljs-comment">// it uses 10 random hash functions and expect to see a maximum value of 999</span>
-<span class="hljs-keyword">const</span> factory = <span class="hljs-keyword">new</span> MinHashFactory(<span class="hljs-number">10</span>, <span class="hljs-number">999</span>)
-
-<span class="hljs-comment">// create two empty MinHash</span>
-<span class="hljs-keyword">const</span> fistSet = factory.create()
-<span class="hljs-keyword">const</span> secondSet = factory.create()
-
-<span class="hljs-comment">// push some occurrences in the first set</span>
-fistSet.add(<span class="hljs-number">1</span>)
-fistSet.add(<span class="hljs-number">2</span>)
-
-<span class="hljs-comment">// the MinHash class also supports bulk loading</span>
-secondSet.bulkLoad([<span class="hljs-number">1</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>])
-
-<span class="hljs-comment">// estimate the jaccard similarity between the two sets</span>
-<span class="hljs-keyword">const</span> jaccardSim = fistSet.compareWith(secondSet)
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`The estimated Jaccard similarity is <span class="hljs-subst">${jaccardSim}</span>`</span>)</code></pre>
-				<a href="#top-k" id="top-k" style="color: inherit; text-decoration: none;">
-					<h3>Top-K</h3>
-				</a>
-				<p>Given a multiset of elements, the <strong>Top-K problem</strong> is to compute the ranking of these elements (by an arbitrary score) and returns the <code>k</code> results with the highest scores.
-				This package provides an implementation of the Top-K problem that sort items based on their estimated cardinality in the multiset. It is based on a Count Min Sketch, for estimating the cardinality of items, and a MinHeap, for implementing a sliding window over the <code>k</code> results with the highest scores.</p>
-				<p>Items produced by the <code>TopK</code> class are JavaScript objects with the following content (shown in Typescript notation).</p>
-				<pre><code class="language-typescript"><span class="hljs-keyword">interface</span> TopkElement {
-  <span class="hljs-comment">// The element's value</span>
-  value: <span class="hljs-built_in">string</span>,
-  <span class="hljs-comment">// The element's frequency</span>
-  frequency: <span class="hljs-built_in">number</span>,
-  <span class="hljs-comment">// The element's rank in the TopK, ranging from 1 to k</span>
-  rank: <span class="hljs-built_in">number</span>
-}</code></pre>
-				<a href="#methods-6" id="methods-6" style="color: inherit; text-decoration: none;">
-					<h4>Methods</h4>
-				</a>
-				<ul>
-					<li><code>add(element: string, count: number = 1) -&gt; void</code>: add one or more new occurences of an element to the sketch.</li>
-					<li><code>values() -&gt; Array&lt;TopkElement&gt;</code>: get the top-k values as an array of objects.</li>
-					<li><code>iterator() -&gt; Iterator&lt;TopkElement&gt;</code>: get the top-k values as an iterator that yields objects.</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { TopK } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
-
-<span class="hljs-comment">// create a new TopK with k = 10, an error rate of 0.001 and an accuracy of 0.99</span>
-<span class="hljs-keyword">const</span> topk = <span class="hljs-keyword">new</span> TopK(<span class="hljs-number">10</span>, <span class="hljs-number">0.001</span>, <span class="hljs-number">0.99</span>)
-
-<span class="hljs-comment">// push occurrences one-at-a-time in the multiset</span>
-topk.add(<span class="hljs-string">'alice'</span>)
-topk.add(<span class="hljs-string">'bob'</span>)
-topk.add(<span class="hljs-string">'alice'</span>)
-
-<span class="hljs-comment">// or, equally, push multiple occurrences at-once in the multiset</span>
-<span class="hljs-comment">// topk.add('alice', 2)</span>
-<span class="hljs-comment">// topk.add('bob', 1)</span>
-
-<span class="hljs-comment">// print the top k values</span>
-<span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> item <span class="hljs-keyword">of</span> topk.values()) {
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Item "<span class="hljs-subst">${item.value}</span>" is in position <span class="hljs-subst">${item.rank}</span> with an estimated frequency of <span class="hljs-subst">${item.frequency}</span>`</span>)
-}
-<span class="hljs-comment">// Output:</span>
-<span class="hljs-comment">// Item "alice" is in position 1 with an estimated frequency of 2</span>
-<span class="hljs-comment">// Item "bob" is in position 2 with an estimated frequency of 1</span></code></pre>
-				<a href="#invertible-bloom-filters" id="invertible-bloom-filters" style="color: inherit; text-decoration: none;">
-					<h3>Invertible Bloom Filters</h3>
-				</a>
-				<p>An Invertible Bloom Filters (IBLT), also called Invertible Bloom Lookup Table, is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
-				They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction, in that it randomly combines elements using the XOR function.</p>
-				<p>❗️<strong>WARNING</strong>❗️ An IBLT only accepts <a href="https://nodejs.org/api/buffer.html"><code>Buffer</code></a> as inputs. If you are using <code>bloom-filters</code> in a Web browser, you might consider using the <a href="https://www.npmjs.com/package/buffer"><code>feros/buffer</code></a> package, which provides a polyfill for <code>Buffer</code> in a browser.</p>
-				<p><strong>Reference:</strong> Eppstein, D., Goodrich, M. T., Uyeda, F., &amp; Varghese, G. (2011). <em>What&#39;s the difference?: efficient set reconciliation without prior context.</em> ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
-				(<a href="http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf">Full text article</a>)</p>
-				<a href="#methods-7" id="methods-7" style="color: inherit; text-decoration: none;">
-					<h4>Methods</h4>
-				</a>
-				<ul>
-					<li><code>add(element: Buffer) -&gt; void</code>: add an element into the filter.</li>
-					<li><code>remove(element: Buffer) -&gt; void</code>: delete an element from the filter, returning True if the deletion was a success and False otherwise.</li>
-					<li><code>has(element: Buffer) -&gt; boolean</code>: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.</li>
-					<li><code>equals(other: InvertibleBloomFilter) -&gt; boolean</code>: Test if two filters are equals.</li>
-					<li><code>substract(remote: InvertibleBloomFilter)</code>: peform the XOR substraction of two IBLTs.</li>
-					<li><code>decode() -&gt; {additional: Buffer[], missing: Buffer[]}</code>: decode an IBLT.</li>
-					<li><code>listEntries() -&gt; Generator&lt;Buffer, number, void&gt;</code>: list all entries in the IBLT using a Generator.</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { InvertibleBloomFilter } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
-
-<span class="hljs-keyword">const</span> hashcount = <span class="hljs-number">3</span>
-<span class="hljs-keyword">const</span> size = <span class="hljs-number">50</span>
-<span class="hljs-keyword">const</span> iblt = <span class="hljs-keyword">new</span> InvertibleBloomFilter(size, hashcount)
-
-<span class="hljs-comment">// push some data in the IBLT</span>
-iblt.add(Buffer.from(<span class="hljs-string">'alice'</span>))
-iblt.add(Buffer.from(<span class="hljs-string">'42'</span>))
-iblt.add(Buffer.from(<span class="hljs-string">'help'</span>))
-iblt.add(Buffer.from(<span class="hljs-string">'meow'</span>))
-iblt.add(Buffer.from(<span class="hljs-string">'json'</span>))
-
-<span class="hljs-built_in">console</span>.log(ilbt.has(Buffer.from(<span class="hljs-string">'alice'</span>))) <span class="hljs-comment">// output: true</span>
-<span class="hljs-built_in">console</span>.log(ilbt.has(Buffer.from(<span class="hljs-string">'daniel'</span>))) <span class="hljs-comment">// output: false</span>
-
-iblt.remove(Buffer.from(<span class="hljs-string">'alice'</span>))
-<span class="hljs-built_in">console</span>.log(ilbt.has(Buffer.from(<span class="hljs-string">'alice'</span>))) <span class="hljs-comment">// output: false</span>
-
-<span class="hljs-comment">// Now, let's demonstrate the decoding power of IBLT!</span>
-<span class="hljs-keyword">const</span> remote = <span class="hljs-keyword">new</span> InvertibleBloomFilter(size, hashcount)
-remote.add(Buffer.from(<span class="hljs-string">'alice'</span>))
-remote.add(Buffer.from(<span class="hljs-string">'car'</span>))
-remote.add(Buffer.from(<span class="hljs-string">'meow'</span>))
-remote.add(Buffer.from(<span class="hljs-string">'help'</span>))
-
-<span class="hljs-comment">// decode the difference between the two filters</span>
-<span class="hljs-keyword">const</span> result = iblt.substract(remote).decode()
-
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Did we successfully decode the subtracted iblts? <span class="hljs-subst">${result.success}</span>. Why? $<span class="hljs-subst">${result.reason}</span>`</span>)
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Elements of iblt missing elements from remote: <span class="hljs-subst">${result.additional}</span>`</span>)
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Elements of remote missing elements from iblt: <span class="hljs-subst">${result.missing}</span>`</span>)
-
-<span class="hljs-comment">// alternatively, create an IBLT optimal for a number of items and a desired error rate</span>
-<span class="hljs-keyword">const</span> items = [Buffer.from(<span class="hljs-string">'alice'</span>), Buffer.from(<span class="hljs-string">'bob'</span>)]
-<span class="hljs-keyword">const</span> errorRate = <span class="hljs-number">0.04</span> <span class="hljs-comment">// 4 % error rate</span>
-filter = InvertibleBloomFilter.create(items.length, errorRate)
-
-<span class="hljs-comment">// or create an IBLT optimal for a collections of items and a desired error rate</span>
-filter = InvertibleBloomFilter.from(items, errorRate)</code></pre>
-				<p><strong>Tuning the IBLT</strong> We recommend to use at least a <strong>hashcount</strong> of 3 and an <strong>alpha</strong> of 1.5 for at least 50 differences, which equals to 1.5*50 = 75 cells. Then, if you insert a huge number of values in there, the decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic, based on the number of elements  inserted (Even for the functions like listEntries). For more details, you should read the seminal research paper on IBLTs (<a href="http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf">full-text article</a>).</p>
-				<a href="#export-and-import" id="export-and-import" style="color: inherit; text-decoration: none;">
-					<h2>Export and import</h2>
-				</a>
-				<p>All data structures exposed by this package can be <strong>exported and imported to/from JSON</strong>:</p>
-				<ul>
-					<li>Use the method <code>saveAsJSON()</code> to export any data structures into a JSON object.</li>
-					<li>Use the static method <code>fromJSON(json)</code> to load a data structure from a JSON object.</li>
-				</ul>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { BloomFilter } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filters'</span>)
-
-<span class="hljs-keyword">const</span> filter = <span class="hljs-keyword">new</span> BloomFilter(<span class="hljs-number">15</span>, <span class="hljs-number">0.01</span>)
-filter.add(<span class="hljs-string">'alice'</span>)
-
-<span class="hljs-comment">// export a bloom filter to JSON</span>
-<span class="hljs-keyword">const</span> exported = filter.saveAsJSON()
-
-<span class="hljs-comment">// do something with the JSON object (save it as file, send it to a server, etc)</span>
-<span class="hljs-comment">// ...</span>
-
-<span class="hljs-comment">// import the same filter from its JSON export</span>
-<span class="hljs-keyword">const</span> importedFilter = BloomFilter.fromJSON(exported)
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'alice'</span>)) <span class="hljs-comment">// output: true</span>
-<span class="hljs-built_in">console</span>.log(filter.has(<span class="hljs-string">'bob'</span>)) <span class="hljs-comment">// output: false</span></code></pre>
-				<a href="#every-hash-function-is-seeded" id="every-hash-function-is-seeded" style="color: inherit; text-decoration: none;">
-					<h2>Every hash function is seeded</h2>
-				</a>
-				<p>By default every hash function is seeded with an internal seed which is equal to <code>0x1234567890</code>. If you want to change it:</p>
-				<pre><code class="language-javascript"><span class="hljs-keyword">const</span> { BloomFilter } = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bloom-filter'</span>)
-<span class="hljs-keyword">const</span> bl = <span class="hljs-keyword">new</span> BloomFilter(...)
-<span class="hljs-built_in">console</span>.log(bl.seed) <span class="hljs-comment">// 78187493520</span>
-bl.seed = <span class="hljs-number">0xABCD</span>
-<span class="hljs-built_in">console</span>.log(bl.seed) <span class="hljs-comment">// 43981</span></code></pre>
-				<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
-					<h2>Documentation</h2>
-				</a>
-				<p>See <a href="https://callidon.github.io/bloom-filters/">documentation online</a> or generate it in directory <code>doc/</code> with: <code>npm run doc</code></p>
-				<a href="#tests" id="tests" style="color: inherit; text-decoration: none;">
-					<h2>Tests</h2>
-				</a>
-				<p>Running with Mocha + Chai</p>
-				<pre><code class="language-bash"><span class="hljs-comment"># run tests</span>
-npm <span class="hljs-built_in">test</span></code></pre>
-				<a href="#references" id="references" style="color: inherit; text-decoration: none;">
-					<h2>References</h2>
-				</a>
-				<ul>
-					<li><a href="http://crystal.uta.edu/~mcguigan/cse6350/papers/Bloom.pdf">Classic Bloom Filter</a>: Bloom, B. H. (1970). <em>Space/time trade-offs in hash coding with allowable errors.</em> Communications of the ACM, 13(7), 422-426.</li>
-					<li><a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&amp;rep=rep1&amp;type=pdf">Partitioned Bloom Filter</a>: Chang, F., Feng, W. C., &amp; Li, K. (2004, March). <em>Approximate caches for packet classification.</em> In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.</li>
-					<li><a href="https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf">Cuckoo Filter</a>: Fan, B., Andersen, D. G., Kaminsky, M., &amp; Mitzenmacher, M. D. (2014, December). <em>Cuckoo filter: Practically better than bloom.</em> In Proceedings of the 10th ACM International on Conference on emerging Networking Experiments and Technologies (pp. 75-88). ACM.</li>
-					<li><a href="http://www.eecs.harvard.edu/~michaelm/postscripts/esa2006b.pdf">Counting Bloom Filter</a>: F. Bonomi, M. Mitzenmacher, R. Panigrahy, S. Singh, and G. Varghese, <em>An Improved Construction for Counting Bloom Filters</em>, in 14th Annual European Symposium on Algorithms, LNCS 4168, 2006, pp.</li>
-					<li><a href="http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf">Count Min Sketch</a>: Cormode, G., &amp; Muthukrishnan, S. (2005). <em>An improved data stream summary: the count-min sketch and its applications.</em> Journal of Algorithms, 55(1), 58-75.</li>
-					<li><a href="http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf">HyperLogLog</a>: Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). *&quot;Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm&quot;*. Discrete Mathematics and Theoretical Computer Science Proceedings.</li>
-					<li><a href="https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&amp;rep=rep1&amp;type=pdf">MinHash</a>: Andrei Z. Broder, *&quot;On the resemblance and containment of documents&quot;*, in Compression and Complexity of Sequences: Proceedings (1997).</li>
-					<li><a href="http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf">Invertible Bloom Filters</a>: Eppstein, D., Goodrich, M. T., Uyeda, F., &amp; Varghese, G. (2011). <em>What&#39;s the difference?: efficient set reconciliation without prior context.</em> ACM SIGCOMM Computer Communication Review, 41(4), 218-229.</li>
-				</ul>
-				<a href="#changelog" id="changelog" style="color: inherit; text-decoration: none;">
-					<h2>Changelog</h2>
-				</a>
-				<table>
-					<thead>
-						<tr>
-							<th><strong>Version</strong></th>
-							<th><strong>Release date</strong></th>
-							<th><strong>Major changes</strong></th>
-						</tr>
-					</thead>
-					<tbody><tr>
-							<td><code>v1.3.0</code></td>
-							<td>10/04/2020</td>
-							<td>Added the MinHash set</td>
-						</tr>
-						<tr>
-							<td><code>v1.2.0</code></td>
-							<td>08/04/2020</td>
-							<td>Add the TopK class</td>
-						</tr>
-						<tr>
-							<td><code>v1.1.0</code></td>
-							<td>03/04/2020</td>
-							<td>Add the HyperLogLog sketch</td>
-						</tr>
-						<tr>
-							<td><code>v1.0.0</code></td>
-							<td>23/03/2020</td>
-							<td>Rework the whole library using TypeScript, unify the API and fix the documentation</td>
-						</tr>
-						<tr>
-							<td><code>v0.8.0</code></td>
-							<td>11/11/2019</td>
-							<td>Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API, use the <code>.create()</code> or <code>.from()</code> functions to match the old api.</td>
-						</tr>
-						<tr>
-							<td><code>v0.7.1</code></td>
-							<td>11/09/2019</td>
-							<td>Add the Counting Bloom Filter</td>
-						</tr>
-						<tr>
-							<td><code>v0.7.0</code></td>
-							<td>01/07/2019</td>
-							<td>Move to <a href="https://cyan4973.github.io/xxHash/">XXHASH</a> for hashing elements in the library. One property has been added into the exported json <code>_seed</code> which is used to seed every hash of every elements. Update Invertible Bloom Filters with #add, #has, #delete, #listEntries, #substract, #Static.decode methods. Updated the way to get distinct indices which could have collisions in many cases.</td>
-						</tr>
-						<tr>
-							<td><code>v0.6.1</code></td>
-							<td>18/06/2019</td>
-							<td>Add Invertible Bloom Filters (only #encode/#substract/#Static.decode methods)</td>
-						</tr>
-				</tbody></table>
-				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
-					<h2>License</h2>
-				</a>
-				<p><a href="https://github.com/Callidon/bloom-filters/blob/master/LICENSE">MIT License</a></p>
-			</div>
-		</div>
-		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
-			<nav class="tsd-navigation primary">
-				<ul>
-					<li class="globals  ">
-						<a href="globals.html"><em>Globals</em></a>
-					</li>
-				</ul>
-			</nav>
-			<nav class="tsd-navigation secondary menu-sticky">
-				<ul class="before-current">
-					<li class=" tsd-kind-class">
-						<a href="classes/basefilter.html" class="tsd-kind-icon">Base<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/bloomfilter.html" class="tsd-kind-icon">Bloom<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-class tsd-has-type-parameter tsd-is-private">
-						<a href="classes/bucket.html" class="tsd-kind-icon">Bucket</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/cell.html" class="tsd-kind-icon">Cell</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/countminsketch.html" class="tsd-kind-icon">Count<wbr>Min<wbr>Sketch</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/countingbloomfilter.html" class="tsd-kind-icon">Counting<wbr>Bloom<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/cuckoofilter.html" class="tsd-kind-icon">Cuckoo<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-class tsd-is-not-exported">
-						<a href="classes/emptyminhasherror.html" class="tsd-kind-icon">Empty<wbr>Min<wbr>Hash<wbr>Error</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/hyperloglog.html" class="tsd-kind-icon">Hyper<wbr>Log<wbr>Log</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/invertiblebloomfilter.html" class="tsd-kind-icon">Invertible<wbr>Bloom<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/minhash.html" class="tsd-kind-icon">Min<wbr>Hash</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/minhashfactory.html" class="tsd-kind-icon">Min<wbr>Hash<wbr>Factory</a>
-					</li>
-					<li class=" tsd-kind-class tsd-is-not-exported">
-						<a href="classes/minheap.html" class="tsd-kind-icon">Min<wbr>Heap</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/partitionedbloomfilter.html" class="tsd-kind-icon">Partitioned<wbr>Bloom<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-class">
-						<a href="classes/topk.html" class="tsd-kind-icon">TopK</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/classicfilter.html" class="tsd-kind-icon">Classic<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/countingfilter.html" class="tsd-kind-icon">Counting<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter tsd-is-not-exported">
-						<a href="interfaces/fieldspec.html" class="tsd-kind-icon">Field<wbr>Spec</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/hashfunction.html" class="tsd-kind-icon">Hash<wbr>Function</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-is-not-exported">
-						<a href="interfaces/heapelement.html" class="tsd-kind-icon">Heap<wbr>Element</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/ibltdecodingerrorreason.html" class="tsd-kind-icon">IBLTDecoding<wbr>Error<wbr>Reason</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/ibltdecodingresults.html" class="tsd-kind-icon">IBLTDecoding<wbr>Results</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter tsd-is-not-exported">
-						<a href="interfaces/importexportspecs.html" class="tsd-kind-icon">Import<wbr>Export<wbr>Specs</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-is-not-exported">
-						<a href="interfaces/topkelement.html" class="tsd-kind-icon">Topk<wbr>Element</a>
-					</li>
-					<li class=" tsd-kind-interface">
-						<a href="interfaces/twohashes.html" class="tsd-kind-icon">Two<wbr>Hashes</a>
-					</li>
-					<li class=" tsd-kind-interface tsd-has-type-parameter">
-						<a href="interfaces/writablefilter.html" class="tsd-kind-icon">Writable<wbr>Filter</a>
-					</li>
-					<li class=" tsd-kind-type-alias">
-						<a href="globals.html#hashableinput" class="tsd-kind-icon">Hashable<wbr>Input</a>
-					</li>
-					<li class=" tsd-kind-type-alias tsd-is-not-exported">
-						<a href="globals.html#parameterspecs" class="tsd-kind-icon">Parameter<wbr>Specs</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="globals.html#metadata_classname" class="tsd-kind-icon">METADATA_<wbr>CLASSNAME</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="globals.html#metadata_fields" class="tsd-kind-icon">METADATA_<wbr>FIELDS</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="globals.html#metadata_parameters" class="tsd-kind-icon">METADATA_<wbr>PARAMETERS</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="globals.html#two_pow_32" class="tsd-kind-icon">TWO_<wbr>POW_<wbr>32</a>
-					</li>
-					<li class=" tsd-kind-variable tsd-is-not-exported">
-						<a href="globals.html#inspect" class="tsd-kind-icon">inspect</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="globals.html#autoexportable" class="tsd-kind-icon">Auto<wbr>Exportable</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="globals.html#exportable" class="tsd-kind-icon">Exportable</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="globals.html#field" class="tsd-kind-icon">Field</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#parameter" class="tsd-kind-icon">Parameter</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#allinonehashtwice" class="tsd-kind-icon">all<wbr>InOne<wbr>Hash<wbr>Twice</a>
-					</li>
-					<li class=" tsd-kind-function tsd-has-type-parameter">
-						<a href="globals.html#allocatearray" class="tsd-kind-icon">allocate<wbr>Array</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-not-exported">
-						<a href="globals.html#applyhashfunction" class="tsd-kind-icon">apply<wbr>Hash<wbr>Function</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#clonefield" class="tsd-kind-icon">clone<wbr>Field</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#cloneobject" class="tsd-kind-icon">clone<wbr>Object</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-not-exported">
-						<a href="globals.html#closestprime" class="tsd-kind-icon">closest<wbr>Prime</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-not-exported">
-						<a href="globals.html#computealpha" class="tsd-kind-icon">compute<wbr>Alpha</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-private tsd-is-not-exported">
-						<a href="globals.html#computefingerpintlength" class="tsd-kind-icon">compute<wbr>Fingerpint<wbr>Length</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-not-exported">
-						<a href="globals.html#computenumberofitems" class="tsd-kind-icon">compute<wbr>Number<wbr>OfItems</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-not-exported">
-						<a href="globals.html#computeoptimalnumberofcells" class="tsd-kind-icon">compute<wbr>Optimal<wbr>Number<wbr>OfCells</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-not-exported">
-						<a href="globals.html#computeoptimalnumberofhashes" class="tsd-kind-icon">compute<wbr>Optimal<wbr>Number<wbr>Ofhashes</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#doublehashing" class="tsd-kind-icon">double<wbr>Hashing</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#getdefaultseed" class="tsd-kind-icon">get<wbr>Default<wbr>Seed</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#getdistinctindices" class="tsd-kind-icon">get<wbr>Distinct<wbr>Indices</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#getindices" class="tsd-kind-icon">get<wbr>Indices</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#hashasint" class="tsd-kind-icon">hash<wbr>AsInt</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#hashasstring" class="tsd-kind-icon">hash<wbr>AsString</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#hashintandstring" class="tsd-kind-icon">hash<wbr>Int<wbr>And<wbr>String</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#hashtwice" class="tsd-kind-icon">hash<wbr>Twice</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#hashtwiceasstring" class="tsd-kind-icon">hash<wbr>Twice<wbr>AsString</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#hex2bin" class="tsd-kind-icon">hex2bin</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#isemptybuffer" class="tsd-kind-icon">is<wbr>Empty<wbr>Buffer</a>
-					</li>
-					<li class=" tsd-kind-function tsd-is-not-exported">
-						<a href="globals.html#isprime" class="tsd-kind-icon">is<wbr>Prime</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#optimalfiltersize" class="tsd-kind-icon">optimal<wbr>Filter<wbr>Size</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#optimalhashes" class="tsd-kind-icon">optimal<wbr>Hashes</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#power2" class="tsd-kind-icon">power2</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#randomint" class="tsd-kind-icon">random<wbr>Int</a>
-					</li>
-					<li class=" tsd-kind-function">
-						<a href="globals.html#xorbuffer" class="tsd-kind-icon">xor<wbr>Buffer</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
-	</div>
-</div>
-<footer class="with-border-bottom">
-	<div class="container">
-		<h2>Legend</h2>
-		<div class="tsd-legend-group">
-			<ul class="tsd-legend">
-				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
-				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
-				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
-				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
-				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
-				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
-				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
-				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
-				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
-				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
-				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
-				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
-				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
-			</ul>
-			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
-				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
-			</ul>
-		</div>
-	</div>
-</footer>
-<div class="container tsd-generator">
-	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
-</div>
-<div class="overlay"></div>
-<script src="assets/js/main.js"></script>
-<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
-</body>
-</html>
+<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+  <h2>License</h2>
+</a>
+<p><a href="https://github.com/Callidon/bloom-filters/blob/master/LICENSE">MIT License</a></p>
+</div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Exports</a></li><li class=" tsd-kind-namespace"><a href="modules/_internal_.html">&lt;internal&gt;</a></li></ul></nav><nav class="tsd-navigation secondary menu-sticky"><ul><li class="tsd-kind-class"><a href="classes/BaseFilter.html" class="tsd-kind-icon">Base<wbr/>Filter</a></li><li class="tsd-kind-class"><a href="classes/BitSet.html" class="tsd-kind-icon">Bit<wbr/>Set</a></li><li class="tsd-kind-class"><a href="classes/BloomFilter.html" class="tsd-kind-icon">Bloom<wbr/>Filter</a></li><li class="tsd-kind-class"><a href="classes/Cell.html" class="tsd-kind-icon">Cell</a></li><li class="tsd-kind-class"><a href="classes/CountMinSketch.html" class="tsd-kind-icon">Count<wbr/>Min<wbr/>Sketch</a></li><li class="tsd-kind-class"><a href="classes/CountingBloomFilter.html" class="tsd-kind-icon">Counting<wbr/>Bloom<wbr/>Filter</a></li><li class="tsd-kind-class"><a href="classes/CuckooFilter.html" class="tsd-kind-icon">Cuckoo<wbr/>Filter</a></li><li class="tsd-kind-class"><a href="classes/DeprecatedHashing.html" class="tsd-kind-icon">Deprecated<wbr/>Hashing</a></li><li class="tsd-kind-class"><a href="classes/Hashing.html" class="tsd-kind-icon">Hashing</a></li><li class="tsd-kind-class"><a href="classes/HyperLogLog.html" class="tsd-kind-icon">Hyper<wbr/>Log<wbr/>Log</a></li><li class="tsd-kind-class"><a href="classes/InvertibleBloomFilter.html" class="tsd-kind-icon">Invertible<wbr/>Bloom<wbr/>Filter</a></li><li class="tsd-kind-class"><a href="classes/MinHash.html" class="tsd-kind-icon">Min<wbr/>Hash</a></li><li class="tsd-kind-class"><a href="classes/MinHashFactory.html" class="tsd-kind-icon">Min<wbr/>Hash<wbr/>Factory</a></li><li class="tsd-kind-class"><a href="classes/PartitionedBloomFilter.html" class="tsd-kind-icon">Partitioned<wbr/>Bloom<wbr/>Filter</a></li><li class="tsd-kind-class"><a href="classes/TopK.html" class="tsd-kind-icon">TopK</a></li><li class="tsd-kind-class"><a href="classes/XorFilter.html" class="tsd-kind-icon">Xor<wbr/>Filter</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li><li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li><li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li><li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li><li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li><li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
