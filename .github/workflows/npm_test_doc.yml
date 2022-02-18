@@ -1,19 +1,21 @@
-name: 🔎 Test package
+name: 🔎 Tests
 on:
   push:
-    branches: [ master ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, develop ]
 jobs:
   ubuntu_build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x, 15.x]
+        # since last mocha version is compatible for node 12.0.0+ we remove 10.x matrix
+        # Only LTS major version
+        node-version: ['12', '14', '16', 'lts/*'] 
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v2
       with:
         node-version: ${{ matrix.node-version }}
     - name: Cache node modules
@@ -24,8 +26,8 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
     - name: Install package
       if: steps.cache.outputs.cache-hit != 'true'
-      run: yarn install
+      run: npm install -g yarn && yarn install
     - name: Build TS
       run: yarn build
-    - name: Test package
+    - name: Test package and Code coverage
       run: yarn test

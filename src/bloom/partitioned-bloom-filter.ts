@@ -26,8 +26,8 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import ClassicFilter from '../interfaces/classic-filter'
-import { AutoExportable, Field, Parameter } from '../exportable'
-import { HashableInput, allocateArray, getIndices } from '../utils'
+import {AutoExportable, Field, Parameter} from '../exportable'
+import {HashableInput, allocateArray} from '../utils'
 
 /**
  * Return the optimal number of hashes needed for a given error rate and load factor
@@ -36,7 +36,10 @@ import { HashableInput, allocateArray, getIndices } from '../utils'
  * @param  loadFactor - The load factor, ideally 0.5
  * @return The number of hash function to use
  */
-function computeOptimalNumberOfhashes (errorRate: number, loadFactor: number): number {
+function computeOptimalNumberOfhashes(
+  errorRate: number,
+  loadFactor: number
+): number {
   // P = p^k <=> k = ln(P)/ln(p)
   return Math.ceil(Math.log(errorRate) / Math.log(loadFactor))
 }
@@ -49,9 +52,15 @@ function computeOptimalNumberOfhashes (errorRate: number, loadFactor: number): n
  * @param  loadFactor - The load factor desired
  * @return The total number of cells this filter will have
  */
-function computeOptimalNumberOfCells (size: number, rate: number, loadFactor: number): number {
+function computeOptimalNumberOfCells(
+  size: number,
+  rate: number,
+  loadFactor: number
+): number {
   // n=M*(ln(p)ln(1-p))/(-ln(P)) <=> M=(n*-ln(P)/(ln(p)ln(1-p))
-  return Math.ceil((size * -Math.log(rate)) / (Math.log(loadFactor) * Math.log(1 - loadFactor)))
+  return Math.ceil(
+    (size * -Math.log(rate)) / (Math.log(loadFactor) * Math.log(1 - loadFactor))
+  )
 }
 
 /**
@@ -61,8 +70,15 @@ function computeOptimalNumberOfCells (size: number, rate: number, loadFactor: nu
  * @param  nbHashes - The number of hash functions used
  * @return The maximum number of items this filter store
  */
-function computeNumberOfItems (totalBits: number, loadFactor: number, nbHashes: number): number {
-  return Math.ceil(totalBits * (Math.log(loadFactor) * Math.log(1 - loadFactor)) / (-(nbHashes * Math.log(loadFactor))))
+function computeNumberOfItems(
+  totalBits: number,
+  loadFactor: number,
+  nbHashes: number
+): number {
+  return Math.ceil(
+    (totalBits * (Math.log(loadFactor) * Math.log(1 - loadFactor))) /
+      -(nbHashes * Math.log(loadFactor))
+  )
 }
 
 /**
@@ -79,21 +95,24 @@ function computeNumberOfItems (totalBits: number, loadFactor: number, nbHashes: 
  * @author Thomas Minier & Arnaud Grall
  */
 @AutoExportable('PartitionedBloomFilter', ['_seed'])
-export default class PartitionedBloomFilter extends BaseFilter implements ClassicFilter<HashableInput> {
+export default class PartitionedBloomFilter
+  extends BaseFilter
+  implements ClassicFilter<HashableInput>
+{
   @Field()
-  private _size: number
+  public _size: number
   @Field()
-  private _nbHashes: number
+  public _nbHashes: number
   @Field()
-  private _loadFactor: number
+  public _loadFactor: number
   @Field()
-  private _m: number
+  public _m: number
   @Field()
-  private _filter: Array<Array<number>>
+  public _filter: Array<Array<number>>
   @Field()
-  private _capacity: number
+  public _capacity: number
   @Field()
-  private _length: number
+  public _length: number
   /**
    * Constructor
    * @param size - The total number of cells
@@ -101,14 +120,24 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
    * @param loadFactor - The load factor
    * @param capacity - The filter capacity
    */
-  constructor (@Parameter('_size') size: number, @Parameter('_nbHashes') nbHashes: number, @Parameter('_loadFactor') loadFactor: number, @Parameter('_capacity') capacity?: number) {
+  constructor(
+    @Parameter('_size') size: number,
+    @Parameter('_nbHashes') nbHashes: number,
+    @Parameter('_loadFactor') loadFactor: number,
+    @Parameter('_capacity') capacity?: number
+  ) {
     super()
     this._size = size
     this._nbHashes = nbHashes
     this._loadFactor = loadFactor
     this._m = Math.ceil(this._size / this._nbHashes)
-    this._filter = allocateArray(this._nbHashes, () => allocateArray(this._m, 0))
-    this._capacity = (capacity !== undefined) ? capacity : computeNumberOfItems(this._size, loadFactor, nbHashes)
+    this._filter = allocateArray(this._nbHashes, () =>
+      allocateArray(this._m, 0)
+    )
+    this._capacity =
+      capacity !== undefined
+        ? capacity
+        : computeNumberOfItems(this._size, loadFactor, nbHashes)
     this._length = 0
   }
 
@@ -118,7 +147,11 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
    * @param  errorRate - The desired error rate
    * @return A new PartitionedBloomFilter optimal for the given parameters
    */
-  static create (size: number, errorRate: number, loadFactor: number = 0.5): PartitionedBloomFilter {
+  public static create(
+    size: number,
+    errorRate: number,
+    loadFactor = 0.5
+  ): PartitionedBloomFilter {
     const capacity = computeOptimalNumberOfCells(size, errorRate, loadFactor)
     const nbHashes = computeOptimalNumberOfhashes(errorRate, loadFactor)
     return new PartitionedBloomFilter(capacity, nbHashes, loadFactor, size)
@@ -131,12 +164,22 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
    * @param loadFactor - The filter's load factor
    * @return A new Bloom Filter filled with the iterable's elements
    * @example
+   * ```js
    * // create a filter with a false positive rate of 0.1
    * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
+   * ```
    */
-  static from (items: Iterable<HashableInput>, errorRate: number, loadFactor: number = 0.5): PartitionedBloomFilter {
+  public static from(
+    items: Iterable<HashableInput>,
+    errorRate: number,
+    loadFactor = 0.5
+  ): PartitionedBloomFilter {
     const array = Array.from(items)
-    const filter = PartitionedBloomFilter.create(array.length, errorRate, loadFactor)
+    const filter = PartitionedBloomFilter.create(
+      array.length,
+      errorRate,
+      loadFactor
+    )
     array.forEach(element => filter.add(element))
     return filter
   }
@@ -144,28 +187,28 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
   /**
    * Get the filter capacity, i.e. the maximum number of elements it will contains
    */
-  get capacity (): number {
+  public get capacity(): number {
     return this._capacity
   }
 
   /**
    * Get the size of the filter
    */
-  get size (): number {
+  public get size(): number {
     return this._size
   }
 
   /**
    * Get the number of elements currently in the filter
    */
-  get length (): number {
+  public get length(): number {
     return this._length
   }
 
   /**
    * Get the filter's load factor
    */
-  get loadFactor (): number {
+  public get loadFactor(): number {
     return this._loadFactor
   }
 
@@ -173,11 +216,18 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
    * Add an element to the filter
    * @param element - The element to add
    * @example
+   * ```js
    * const filter = new PartitionedBloomFilter(15, 0.1);
    * filter.add('foo');
+   * ```
    */
-  add (element: HashableInput): void {
-    const indexes = getIndices(element, this._m, this._nbHashes, this.seed)
+  public add(element: HashableInput): void {
+    const indexes = this._hashing.getIndexes(
+      element,
+      this._m,
+      this._nbHashes,
+      this.seed
+    )
     for (let i = 0; i < this._nbHashes; i++) {
       this._filter[i][indexes[i]] = 1
     }
@@ -189,13 +239,20 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
    * @param element - The element to look for in the filter
    * @return False if the element is definitively not in the filter, True is the element might be in the filter
    * @example
+   * ```js
    * const filter = new PartitionedBloomFilter(15, 0.1);
    * filter.add('foo');
    * console.log(filter.has('foo')); // output: true
    * console.log(filter.has('bar')); // output: false
+   * ```
    */
-  has (element: HashableInput): boolean {
-    const indexes = getIndices(element, this._m, this._nbHashes, this.seed)
+  public has(element: HashableInput): boolean {
+    const indexes = this._hashing.getIndexes(
+      element,
+      this._m,
+      this._nbHashes,
+      this.seed
+    )
     for (let i = 0; i < this._nbHashes; i++) {
       if (!this._filter[i][indexes[i]]) {
         return false
@@ -208,10 +265,12 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
    * Compute the current false positive rate (or error rate) of the filter
    * @return The current false positive rate of the filter
    * @example
+   * ```js
    * const filter = PartitionedBloomFilter.create(15, 0.1);
    * console.log(filter.rate()); // output: something around 0.1
+   * ```
    */
-  rate (): number {
+  public rate(): number {
     // get the error rate for the first bucket (1 - (1 - 1/m)^n), where m is the size of a slice and n is the number of inserted elements
     const p = this._currentload()
     // P = p^k
@@ -223,18 +282,27 @@ export default class PartitionedBloomFilter extends BaseFilter implements Classi
    * @param  filter - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */
-  equals (other: PartitionedBloomFilter): boolean {
-    if (this._size !== other._size || this._nbHashes !== other._nbHashes || this._length !== other._length || this._loadFactor !== other._loadFactor) {
+  public equals(other: PartitionedBloomFilter): boolean {
+    if (
+      this._size !== other._size ||
+      this._nbHashes !== other._nbHashes ||
+      this._length !== other._length ||
+      this._loadFactor !== other._loadFactor
+    ) {
       return false
     }
-    return this._filter.every((array, outerIndex) => other._filter[outerIndex].every((item, innerIndex) => array[innerIndex] === item))
+    return this._filter.every((array, outerIndex) =>
+      other._filter[outerIndex].every(
+        (item, innerIndex) => array[innerIndex] === item
+      )
+    )
   }
 
   /**
    * Return the current load of this filter, iterate on all buckets
    * @return An integer between 0 and 1, where 0 = filter empty and 1 = filter full
    */
-  _currentload (): number {
+  public _currentload(): number {
     const values = this._filter.map(bucket => {
       return bucket.reduce((a, b) => a + b, 0)
     })

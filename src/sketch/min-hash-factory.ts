@@ -22,15 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { HashFunction, MinHash } from './min-hash'
-import { random } from 'lodash'
+import {HashFunction, MinHash} from './min-hash'
+import {random} from 'lodash'
 
 /**
  * Test if a number is a prime number
  * @param x - Number to test
  * @return True if the input is a prime number, False otherwise
  */
-function isPrime (x: number): boolean {
+function isPrime(x: number): boolean {
   if (x !== 2 && x % 2 === 0) {
     return false
   }
@@ -47,33 +47,37 @@ function isPrime (x: number): boolean {
  * @param x - Input number
  * @return The fist prime number superior to the input number
  */
-function closestPrime (x: number): number {
+function closestPrime(x: number): number {
   let i = 0
-  while (true) {
+  let stop = false
+  let to_return = i
+  while (!stop) {
     if (isPrime(x + i)) {
-      return x + i
+      to_return = x + i
+      stop = true
     }
     i++
   }
+  return to_return
 }
 
 /**
  * A factory to create MinHash sketches using the same set of hash functions.
- * 
+ *
  * **WARNING**: Only the MinHash produced by the same factory can be compared between them.
  * @author Thomas Minier
  */
 export default class MinHashFactory {
-  private _nbHashes: number
-  private _maxValue: number
-  private _hashFunctions: HashFunction[]
+  public _nbHashes: number
+  public _maxValue: number
+  public _hashFunctions: HashFunction[]
 
   /**
    * Constructor
    * @param nbHashes - Number of hash functions to use for comouting the MinHash signature
    * @param maxValue - The highest value that can be found in the set to compare
    */
-  constructor (nbHashes: number, maxValue: number) {
+  constructor(nbHashes: number, maxValue: number) {
     this._nbHashes = nbHashes
     this._maxValue = maxValue
     this._hashFunctions = []
@@ -82,7 +86,7 @@ export default class MinHashFactory {
     for (let i = 0; i < this._nbHashes; i++) {
       const a = random(0, this._maxValue, false)
       const b = random(0, this._maxValue, false)
-      this._hashFunctions.push({ a, b, c })
+      this._hashFunctions.push({a, b, c})
     }
   }
 
@@ -90,7 +94,7 @@ export default class MinHashFactory {
    * Create a new MinHash set
    * @return A new MinHash set
    */
-  create (): MinHash {
+  public create(): MinHash {
     return new MinHash(this._nbHashes, this._hashFunctions)
   }
 }

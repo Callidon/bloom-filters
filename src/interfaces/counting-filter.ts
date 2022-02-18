@@ -35,7 +35,7 @@ export default interface CountingFilter<T> {
    * @param element - The new element
    * @param count - Number of occurences of the elemnt (defauls to one)
    */
-  update (element: T, count: number): void
+  update(element: T, count: number): void
 
   /**
    * Perform a point query: estimate the number of occurence of an element

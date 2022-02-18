@@ -24,11 +24,10 @@ SOFTWARE.
 
 'use strict'
 
-import eq from 'lodash.eq'
-import indexOf from 'lodash.indexof'
+import {eq, indexOf} from 'lodash'
 import * as utils from '../utils'
-import { Exportable } from '../exportable'
-import { cloneObject } from '../exportable'
+import {Exportable} from '../exportable'
+import {cloneObject} from '../exportable'
 
 /**
  * A Bucket is a container of a fixed number of values, used in various bloom filters.
@@ -37,12 +36,19 @@ import { cloneObject } from '../exportable'
  * @private
  */
 @Exportable({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   export: cloneObject('Bucket', '_size', '_elements'),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   import: (json: any) => {
-    if ((json.type !== 'Bucket') || !('_size' in json), !('_elements' in json)) {
-      throw new Error('Cannot create a Bucket from a JSON export which does not represent a bucket')
+    if (
+      (json.type !== 'Bucket' || !('_size' in json), !('_elements' in json)) // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+    ) {
+      throw new Error(
+        'Cannot create a Bucket from a JSON export which does not represent a bucket'
+      )
     }
-    const bucket = new Bucket(json._size)
+    const bucket = new Bucket(json._size as number) // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     json._elements.forEach((elt: any, i: number) => {
       if (elt !== null) {
         bucket._elements[i] = elt
@@ -50,18 +56,18 @@ import { cloneObject } from '../exportable'
       }
     })
     return bucket
-  }
+  },
 })
 export default class Bucket<T> {
   public _elements: Array<T | null>
-  private _size: number
+  public _size: number
   public _length: number
 
   /**
    * Constructor
    * @param size - The maximum number of elements in the bucket
    */
-  constructor (size: number) {
+  constructor(size: number) {
     this._elements = utils.allocateArray(size, null)
     this._size = size
     this._length = 0
@@ -70,14 +76,14 @@ export default class Bucket<T> {
   /**
    * Get the maximum number of element in the bucket
    */
-  get size (): number {
+  public get size(): number {
     return this._size
   }
 
   /**
    * Get the number of elements currenlty in the bucket
    */
-  get length (): number {
+  public get length(): number {
     return this._length
   }
 
@@ -85,7 +91,7 @@ export default class Bucket<T> {
    * Test if the bucket has any space available
    * @return True if te bucket has any space available, False if if its full
    */
-  isFree (): boolean {
+  public isFree(): boolean {
     return this._length < this._size
   }
 
@@ -93,7 +99,7 @@ export default class Bucket<T> {
    * Get the index of the first empty slot in the bucket
    * @return The index of the first empty slot, or -1 if the bucket is full
    */
-  nextEmptySlot (): number {
+  public nextEmptySlot(): number {
     return indexOf(this._elements, null)
   }
 
@@ -102,7 +108,7 @@ export default class Bucket<T> {
    * @param index - The index to access
    * @return The element at the given index
    */
-  at (index: number): T | null {
+  public at(index: number): T | null {
     return this._elements[index]
   }
 
@@ -111,7 +117,7 @@ export default class Bucket<T> {
    * @param element - The element to add in the bucket
    * @return True if the insertion is a success, False if the bucket is full
    */
-  add (element: T | null): boolean {
+  add(element: T | null): boolean {
     if (element === null || !this.isFree()) {
       return false
     }
@@ -125,11 +131,11 @@ export default class Bucket<T> {
    * @param element - The element to remove from the bucket
    * @return True if the element has been successfully removed, False if it was not in the bucket
    */
-  remove (element: T): boolean {
+  public remove(element: T): boolean {
     const index = indexOf(this._elements, element)
     if (index <= -1) {
       return false
-    } 
+    }
     this.unset(index)
     return true
   }
@@ -139,7 +145,7 @@ export default class Bucket<T> {
    * @param element - The element to look for in the bucket
    * @return True is the element is in the bucket, otherwise False
    */
-  has (element: T): boolean {
+  public has(element: T): boolean {
     return indexOf(this._elements, element) > -1
   }
 
@@ -148,7 +154,7 @@ export default class Bucket<T> {
    * @param index - The index at where the element should be inserted
    * @param element - The element to insert
    */
-  set (index: number, element: T | null): void {
+  public set(index: number, element: T | null): void {
     this._elements[index] = element
   }
 
@@ -156,7 +162,7 @@ export default class Bucket<T> {
    * Unset the element at the given index
    * @param index - The index of the element that should be unset
    */
-  unset (index: number): void {
+  public unset(index: number): void {
     this._elements[index] = null
     this._length--
   }
@@ -167,7 +173,7 @@ export default class Bucket<T> {
    * @param random - Factory function used to generate random function
    * @return The element that have been swapped with the parameter
    */
-  swapRandom (element: T, random: () => number = Math.random): T | null {
+  public swapRandom(element: T, random: () => number = Math.random): T | null {
     const index = utils.randomInt(0, this._length - 1, random)
     const tmp = this._elements[index]
     this._elements[index] = element
@@ -180,7 +186,7 @@ export default class Bucket<T> {
    * @param element - The element to be inserted
    * @return The element that have been swapped with the parameter
    */
-  swap (index: number, element: T): T | null {
+  public swap(index: number, element: T): T | null {
     const tmp = this._elements[index]
     this._elements[index] = element
     return tmp
@@ -191,8 +197,9 @@ export default class Bucket<T> {
    * @param bucket - The other bucket with which to compare
    * @return True if the two buckets are equals, False otherwise
    */
-  equals (bucket: Bucket<T>): boolean {
-    if ((this._size !== bucket.size) || (this._length !== bucket.length)) return false
+  public equals(bucket: Bucket<T>): boolean {
+    if (this._size !== bucket.size || this._length !== bucket.length)
+      return false
     return this._elements.every((elt, index) => eq(bucket.at(index), elt))
   }
 }

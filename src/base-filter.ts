@@ -24,8 +24,21 @@ SOFTWARE.
 
 'use strict'
 
-import * as utils from './utils'
 import seedrandom from 'seedrandom'
+import Hashing from './hashing/hashing'
+import {getDefaultSeed} from './utils'
+
+/**
+ * Exported prng type because it is not from seedrandom
+ * Orignal type can be found in: @types/seedrandom
+ */
+export interface prng {
+  (): number
+  double(): number
+  int32(): number
+  quick(): number
+  state(): seedrandom.State
+}
 
 /**
  * A base class for implementing probailistic filters
@@ -33,18 +46,20 @@ import seedrandom from 'seedrandom'
  * @author Arnaud Grall
  */
 export default abstract class BaseFilter {
-  private _seed: number
-  private _rng: () => number
+  public _seed: number
+  public _rng: prng
+  public _hashing: Hashing
 
-  constructor () {
-    this._seed = utils.getDefaultSeed()
-    this._rng = seedrandom(`${this._seed}`)
+  constructor() {
+    this._seed = getDefaultSeed()
+    this._rng = seedrandom(`${this._seed}`) as prng
+    this._hashing = new Hashing()
   }
 
   /**
    * Get the seed used in this structure
    */
-  get seed (): number {
+  public get seed(): number {
     return this._seed
   }
 
@@ -52,32 +67,42 @@ export default abstract class BaseFilter {
    * Set the seed for this structure
    * @param  seed the new seed that will be used in this structure
    */
-  set seed (seed: number) {
+  public set seed(seed: number) {
     this._seed = seed
-    this._rng = seedrandom(`${this._seed}`)
+    this._rng = seedrandom(`${this._seed}`) as prng
   }
 
   /**
    * Get a function used to draw random number
    * @return A factory function used to draw random integer
    */
-  get random (): () => number {
+  public get random(): prng {
     return this._rng
   }
 
   /**
-   * Save the current structure as a JSON object
+   * Return a next random seeded int32 integer
+   * @returns
    */
-  saveAsJSON(): Object {
+  public nextInt32(): number {
+    return this._rng.int32()
+  }
+
+  /**
+   * Save the current structure as a JSON
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public saveAsJSON(): any {
     throw new Error('not-implemented')
   }
 
   /**
    * Load an Object from a provided JSON object
    * @param json the JSON object to load
-   * @return Return the Object loaded from the provided JSON object 
+   * @return Return the Object loaded from the provided JSON object
    */
-  static fromJSON(json: any): any {
-    throw new Error('not-implemented')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+  public static fromJSON(json: JSON): any {
+    throw new Error(`not-implemented`)
   }
 }

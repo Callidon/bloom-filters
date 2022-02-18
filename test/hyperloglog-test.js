@@ -25,19 +25,20 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { HyperLogLog } = require('../dist/api.js')
+const {HyperLogLog} = require('../dist/api.js')
 
 describe('HyperLogLog', () => {
-
   describe('#update', () => {
     it('should support update and cardinality estimations (count) operations', () => {
       const nbDistinct = 100
       const sketch = new HyperLogLog(110)
       // populate the sketch with some values
-      for(let i = 0; i < 10e5; i++) {
+      for (let i = 0; i < 10e3; i++) {
         sketch.update(`${i % nbDistinct}`)
       }
-      sketch.count(true).should.be.closeTo(nbDistinct, nbDistinct * sketch.accuracy())
+      sketch
+        .count(true)
+        .should.be.closeTo(nbDistinct, nbDistinct * sketch.accuracy())
     })
   })
 
@@ -52,8 +53,10 @@ describe('HyperLogLog', () => {
 
       const merged = first.merge(second)
       merged.nbRegisters.should.equals(first.nbRegisters)
-      for(let i = 0; i < merged.nbRegisters; i++) {
-        merged._registers[i].should.equal(Math.max(first._registers[i], second._registers[i]))
+      for (let i = 0; i < merged.nbRegisters; i++) {
+        merged._registers[i].should.equal(
+          Math.max(first._registers[i], second._registers[i])
+        )
       }
     })
 
@@ -62,7 +65,11 @@ describe('HyperLogLog', () => {
       const second = new HyperLogLog(20)
       try {
         first.merge(second)
-        done(new Error('The two sketches cannot be merged, as they have different number of registers'))
+        done(
+          new Error(
+            'The two sketches cannot be merged, as they have different number of registers'
+          )
+        )
       } catch (error) {
         done()
       }
@@ -122,15 +129,20 @@ describe('HyperLogLog', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'HyperLogLog' },
-        { type: 'HyperLogLog', _nbRegisters: 1 },
-        { type: 'HyperLogLog', _nbRegisters: 1, _nbBytesPerHash: 1 },
-        { type: 'HyperLogLog', _nbRegisters: 1, _nbBytesPerHash: 1, _correctionBias: 2 }
+        {type: 'something'},
+        {type: 'HyperLogLog'},
+        {type: 'HyperLogLog', _nbRegisters: 1},
+        {type: 'HyperLogLog', _nbRegisters: 1, _nbBytesPerHash: 1},
+        {
+          type: 'HyperLogLog',
+          _nbRegisters: 1,
+          _nbBytesPerHash: 1,
+          _correctionBias: 2,
+        },
       ]
 
       invalids.forEach(json => {
-        (() => HyperLogLog.fromJSON(json)).should.throw(Error)
+        ;(() => HyperLogLog.fromJSON(json)).should.throw(Error)
       })
     })
   })

@@ -1,13 +1,19 @@
 {
   "name": "bloom-filters",
-  "version": "1.3.9",
+  "version": "2.0.0",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
+  "type": "commonjs",
   "scripts": {
     "build": "tsc",
-    "pretest": "yarn build",
-    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=30000",
-    "doc": "typedoc --mode file --out docs/ --ignoreCompilerErrors"
+    "pretest": "yarn lint && yarn build",
+    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
+    "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
+    "lint": "yarn prettier && yarn slint",
+    "slint": "eslint --fix src/**/*.ts",
+    "prettier": "prettier --config package.json --write \"(src|test)/**/*.(t|j)s\"",
+    "clean": "rimraf docs/ dist/ build/",
+    "compile": "tsc"
   },
   "repository": {
     "type": "git",
@@ -21,7 +27,8 @@
     "probabilistic",
     "datastructure",
     "count min sketch",
-    "cuckoo"
+    "cuckoo",
+    "xor-filter"
   ],
   "author": "Thomas Minier <thomas.minier@protonmail.com>",
   "contributors": [
@@ -34,31 +41,105 @@
   },
   "homepage": "https://github.com/Callidon/bloom-filters#readme",
   "devDependencies": {
-    "@types/lodash": "^4.14.149",
-    "@types/lodash.eq": "^4.0.6",
-    "@types/lodash.indexof": "^4.0.6",
-    "@types/node": "^13.7.0",
-    "@types/seedrandom": "^2.4.28",
-    "@types/xxhashjs": "^0.2.1",
-    "chai": "^4.2.0",
-    "mocha": "^6.2.2",
-    "random": "^2.1.1",
-    "typedoc": "^0.15.0",
-    "typescript": "^3.7.5"
+    "@types/cuint": "^0.2.X",
+    "@types/lodash": "^4.14.X",
+    "@types/lodash.eq": "^4.0.X",
+    "@types/lodash.indexof": "^4.0.X",
+    "@types/node": "^17.0.17",
+    "@types/seedrandom": "^3.0.2",
+    "@types/xxhashjs": "^0.2.X",
+    "@typescript-eslint/eslint-plugin": "^5.11.0",
+    "@typescript-eslint/parser": "^5.11.0",
+    "chai": "^4.3.6",
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "mocha": "^9.2.0",
+    "prettier": "^2.5.1",
+    "random": "^3.0.6",
+    "rimraf": "^3.0.2",
+    "typedoc": "^0.22.11",
+    "typedoc-plugin-missing-exports": "^0.22.6",
+    "typescript": "^4.5.5"
   },
   "dependencies": {
-    "base64-arraybuffer": "^1.0.1",
-    "is-buffer": "^2.0.4",
+    "base64-arraybuffer": "^1.0.2",
+    "is-buffer": "^2.0.5",
     "lodash": "^4.17.15",
     "lodash.eq": "^4.0.0",
     "lodash.indexof": "^4.0.5",
+    "long": "^5.2.0",
     "reflect-metadata": "^0.1.13",
     "seedrandom": "^3.0.5",
     "xxhashjs": "^0.2.2"
   },
-  "standard": {
-    "env": [
-      "mocha"
-    ]
+  "prettier": {
+    "semi": false,
+    "tabWidth": 2,
+    "endOfLine": "auto",
+    "bracketSpacing": false,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "arrowParens": "avoid"
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2015,
+      "project": "tsconfig.json"
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:node/recommended",
+      "prettier",
+      "plugin:prettier/recommended",
+      "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    ],
+    "plugins": [
+      "@typescript-eslint",
+      "prettier"
+    ],
+    "globals": {
+      "chai": "readonly",
+      "it": "readonly",
+      "expect": "readonly",
+      "describe": "readonly"
+    },
+    "settings": {
+      "node": {
+        "allowModules": [],
+        "resolvePaths": [
+          "./src"
+        ],
+        "tryExtensions": [
+          ".ts"
+        ]
+      }
+    },
+    "rules": {
+      "node/no-unsupported-features/es-syntax": [
+        "error",
+        {
+          "ignores": [
+            "modules"
+          ]
+        }
+      ],
+      "node/no-unpublished-require": [
+        "error",
+        {
+          "allowModules": [
+            "mocha",
+            "chai",
+            "random"
+          ]
+        }
+      ]
+    }
+  },
+  "engines": {
+    "node": ">=12"
   }
 }

@@ -24,20 +24,31 @@ SOFTWARE.
 
 'use strict'
 
-
 require('chai').should()
-const { TopK } = require('../dist/api.js')
+const {TopK} = require('../dist/api.js')
 
 describe('TopK', () => {
   const lessThanOrEqualTestCaseItems = [
-    'alice', 'bob', 'alice', 'carol',
-    'bob', 'alice'
+    'alice',
+    'bob',
+    'alice',
+    'carol',
+    'bob',
+    'alice',
   ]
 
   const moreThanTestCaseItems = [
-    'alice', 'daniel', 'esther', 'bob',
-    'alice', 'bob', 'alice', 'carol',
-    'carol', 'alice', 'bob'
+    'alice',
+    'daniel',
+    'esther',
+    'bob',
+    'alice',
+    'bob',
+    'alice',
+    'carol',
+    'carol',
+    'alice',
+    'bob',
   ]
 
   const expectedTop = ['alice', 'bob', 'carol']
@@ -47,7 +58,7 @@ describe('TopK', () => {
       const k = 3
       const errorRate = 0.001
       const accuracy = 0.999
-      let freqTable = {}
+      const freqTable = {}
 
       /*
        * Add items to the traditional one-at-a-time variant while concurrently
@@ -64,16 +75,17 @@ describe('TopK', () => {
 
       /* Ensure the built frequency table is correct. */
       const expectedFreqTable = lessThanOrEqualTestCaseItems.reduce(
-        function (acc, curr) {
+        (acc, curr) => {
+          if (!Object.hasOwnProperty.call(acc, curr)) {
+            acc[`${curr}`] = 1
+          } else {
+            ++acc[`${curr}`]
+          }
 
-        if (!Object.hasOwnProperty.call(acc, curr)) {
-          acc[`${curr}`] = 1
-        } else {
-          ++acc[`${curr}`]
-        }
-
-        return acc
-      }, {})
+          return acc
+        },
+        {}
+      )
       freqTable.should.to.deep.equal(expectedFreqTable)
 
       /* Build a version of TopK using the frequency as count */
@@ -104,13 +116,13 @@ describe('TopK', () => {
   describe('#values', () => {
     it('should produce valid TopK estimations when there are fewer than K items', () => {
       const topk = new TopK(10, 0.001, 0.999)
-      for (let item of lessThanOrEqualTestCaseItems) {
+      for (const item of lessThanOrEqualTestCaseItems) {
         topk.add(item)
       }
 
       let i = 0
-      let prev = { frequency: Infinity }
-      for (let current of topk.values()) {
+      let prev = {frequency: Infinity}
+      for (const current of topk.values()) {
         current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
@@ -124,13 +136,13 @@ describe('TopK', () => {
 
     it('should produce valid TopK estimations when there are exactly K items', () => {
       const topk = new TopK(3, 0.001, 0.999)
-      for (let item of lessThanOrEqualTestCaseItems) {
+      for (const item of lessThanOrEqualTestCaseItems) {
         topk.add(item)
       }
 
       let i = 0
-      let prev = { frequency: Infinity }
-      for (let current of topk.values()) {
+      let prev = {frequency: Infinity}
+      for (const current of topk.values()) {
         current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
@@ -144,13 +156,13 @@ describe('TopK', () => {
 
     it('should produce valid TopK estimations when there are more than K items', () => {
       const topk = new TopK(3, 0.001, 0.999)
-      for (let item of moreThanTestCaseItems) {
+      for (const item of moreThanTestCaseItems) {
         topk.add(item)
       }
 
       let i = 0
-      let prev = { frequency: Infinity }
-      for (let current of topk.values()) {
+      let prev = {frequency: Infinity}
+      for (const current of topk.values()) {
         current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
@@ -166,13 +178,13 @@ describe('TopK', () => {
   describe('#iterator', () => {
     it('should produce valid TopK estimations when there are fewer than K items', () => {
       const topk = new TopK(10, 0.001, 0.999)
-      for (let item of lessThanOrEqualTestCaseItems) {
+      for (const item of lessThanOrEqualTestCaseItems) {
         topk.add(item)
       }
 
       let i = 0
-      let prev = { frequency: Infinity }
-      for (let current of topk.iterator()) {
+      let prev = {frequency: Infinity}
+      for (const current of topk.iterator()) {
         current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
@@ -186,13 +198,13 @@ describe('TopK', () => {
 
     it('should produce valid TopK estimations when there are exactly K items', () => {
       const topk = new TopK(3, 0.001, 0.999)
-      for (let item of lessThanOrEqualTestCaseItems) {
+      for (const item of lessThanOrEqualTestCaseItems) {
         topk.add(item)
       }
 
       let i = 0
-      let prev = { frequency: Infinity }
-      for (let current of topk.iterator()) {
+      let prev = {frequency: Infinity}
+      for (const current of topk.iterator()) {
         current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
@@ -206,13 +218,13 @@ describe('TopK', () => {
 
     it('should produce valid estimations when there are more than K items', () => {
       const topk = new TopK(3, 0.001, 0.999)
-      for (let item of moreThanTestCaseItems) {
+      for (const item of moreThanTestCaseItems) {
         topk.add(item)
       }
 
       let i = 0
-      let prev = { frequency: Infinity }
-      for (let current of topk.iterator()) {
+      let prev = {frequency: Infinity}
+      for (const current of topk.iterator()) {
         current.should.have.all.keys('value', 'rank', 'frequency')
         current.value.should.equal(expectedTop[i])
         current.frequency.should.be.below(prev.frequency)
@@ -273,26 +285,26 @@ describe('TopK', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'TopK' },
-        { type: 'TopK', _k: 1 },
-        { type: 'TopK', _k: 1, _errorRate: 1 },
-        { type: 'TopK', _k: 1, _errorRate: 1, _accuracy: 1 },
-        { type: 'TopK', _k: 1, _errorRate: 1, _accuracy: 1, _content: [] }
+        {type: 'something'},
+        {type: 'TopK'},
+        {type: 'TopK', _k: 1},
+        {type: 'TopK', _k: 1, _errorRate: 1},
+        {type: 'TopK', _k: 1, _errorRate: 1, _accuracy: 1},
+        {type: 'TopK', _k: 1, _errorRate: 1, _accuracy: 1, _content: []},
       ]
 
       invalids.forEach(json => {
-        (() => TopK.fromJSON(json)).should.throw(Error)
+        ;(() => TopK.fromJSON(json)).should.throw(Error)
       })
     })
 
-    it('should update an imported TopK', ()=>{
+    it('should update an imported TopK', () => {
       const exported = topk.saveAsJSON()
       const newSketch = TopK.fromJSON(exported)
-      
-      newSketch.add("alice")
-      topk.add("alice")
-      
+
+      newSketch.add('alice')
+      topk.add('alice')
+
       newSketch._k.should.equal(topk._k)
       newSketch._errorRate.should.equal(topk._errorRate)
       newSketch._accuracy.should.equal(topk._accuracy)

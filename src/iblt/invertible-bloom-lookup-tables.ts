@@ -27,15 +27,15 @@ SOFTWARE.
 import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import Cell from './cell'
-import { AutoExportable, Field, Parameter } from '../exportable'
-import { allInOneHashTwice, allocateArray, getDistinctIndices } from '../utils'
-import { optimalFilterSize, optimalHashes } from '../formulas'
+import {AutoExportable, Field, Parameter} from '../exportable'
+import {allocateArray} from '../utils'
+import {optimalFilterSize, optimalHashes} from '../formulas'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
  */
 export interface IBLTDecodingErrorReason {
-  cell: Cell | null,
+  cell: Cell | null
   iblt: InvertibleBloomFilter
 }
 
@@ -43,9 +43,9 @@ export interface IBLTDecodingErrorReason {
  * The results of decoding an Invertible Bloom Lookup Table
  */
 export interface IBLTDecodingResults {
-  success: boolean,
-  reason?: IBLTDecodingErrorReason,
-  additional: Buffer[],
+  success: boolean
+  reason?: IBLTDecodingErrorReason
+  additional: Buffer[]
   missing: Buffer[]
 }
 
@@ -58,31 +58,52 @@ export interface IBLTDecodingResults {
  * @author Thomas Minier
  */
 @AutoExportable('InvertibleBloomFilter', ['_seed'])
-export default class InvertibleBloomFilter extends BaseFilter implements WritableFilter<Buffer> {
+export default class InvertibleBloomFilter
+  extends BaseFilter
+  implements WritableFilter<Buffer>
+{
   @Field()
-  private _size: number
+  public _size: number
 
   @Field()
-  private _hashCount: number
+  public _hashCount: number
 
-  @Field<Array<Cell>>(undefined, json => {
-    return json.map((elt: any) => {
-      const c = new Cell(Buffer.from(elt._idSum), Buffer.from(elt._hashSum), elt._count)
-      c.seed = elt._seed
-      return c
-    })
+  @Field<Array<Cell>>(undefined, (json: []) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res: Array<Cell> = json.map(
+      (elt: {
+        _idSum: string
+        _hashSum: string
+        _count: number
+        _seed: number
+      }) => {
+        const c = new Cell(
+          Buffer.from(elt._idSum),
+          Buffer.from(elt._hashSum),
+          elt._count
+        )
+        c.seed = elt._seed
+        return c
+      }
+    )
+    return res
   })
-  private _elements: Array<Cell>
+  public _elements: Array<Cell>
 
   /**
    * Construct an Invertible Bloom Lookup Table
    * @param size - The number of cells in the InvertibleBloomFilter. It should be set to d * alpha, where d is the number of difference and alpha is a constant
    * @param hashCount - The number of hash functions used (empirically studied to be 3 or 4 in most cases)
    */
-  constructor (@Parameter('_size') size: number, @Parameter('_hashCount') hashCount: number = 3) {
+  constructor(
+    @Parameter('_size') size: number,
+    @Parameter('_hashCount') hashCount = 3
+  ) {
     super()
     if (Buffer === undefined) {
-      throw new Error('No native Buffer implementation bound in your JavaScript env. If you are in a Web browser, consider importing the polyfill "feross/buffer" (https://github.com/feross/buffer).')
+      throw new Error(
+        'No native Buffer implementation bound in your JavaScript env. If you are in a Web browser, consider importing the polyfill "feross/buffer" (https://github.com/feross/buffer).'
+      )
     }
     if (hashCount <= 0) {
       throw new Error('The hashCount must be a non-zero, positive integer')
@@ -99,7 +120,10 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * @param errorRate - Expected error rate
    * @return A new Invertible Bloom filter optimal for the given parameters.
    */
-  static create (nbItems: number, errorRate: number): InvertibleBloomFilter {
+  public static create(
+    nbItems: number,
+    errorRate: number
+  ): InvertibleBloomFilter {
     const size = optimalFilterSize(nbItems, errorRate)
     const nbHashes = optimalHashes(size, nbItems)
     return new InvertibleBloomFilter(size, nbHashes)
@@ -111,7 +135,10 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * @param errorRate - Expected error rate
    * @return A new Invertible Bloom filter filled with the iterable's items.
    */
-  static from (items: Iterable<Buffer>, errorRate: number): InvertibleBloomFilter {
+  public static from(
+    items: Iterable<Buffer>,
+    errorRate: number
+  ): InvertibleBloomFilter {
     const array = Array.from(items)
     const filter = InvertibleBloomFilter.create(array.length, errorRate)
     array.forEach(item => filter.add(item))
@@ -122,14 +149,14 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * Return the number of hash functions used
    * @return {Number}
    */
-  get hashCount () {
+  public get hashCount() {
     return this._hashCount
   }
 
   /**
    * Get the number of cells of the filter
    */
-  get size (): number {
+  public get size(): number {
     return this._size
   }
 
@@ -137,14 +164,14 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * Get the number of elements added in the filter
    * Complexity in time: O(alpha*d)
    */
-  get length (): number {
+  public get length(): number {
     return this._elements.reduce((a, b) => a + b.count, 0) / this._hashCount
   }
 
   /**
    * Return the cells used to store elements in this InvertibleBloomFilter
    */
-  get elements (): Cell[] {
+  public get elements(): Cell[] {
     return this._elements
   }
 
@@ -152,11 +179,19 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * Add an element to the InvertibleBloomFilter
    * @param element - The element to insert
    */
-  add (element: Buffer): void {
-    const hashes = allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
-    const indexes = getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
+  public add(element: Buffer): void {
+    const hashes = this._hashing.hashTwiceAsString(
+      JSON.stringify(element.toJSON()),
+      this.seed
+    )
+    const indexes = this._hashing.getDistinctIndexes(
+      hashes.first,
+      this._size,
+      this._hashCount,
+      this.seed
+    )
     for (let i = 0; i < this._hashCount; ++i) {
-      this._elements[indexes[i]].add(element, Buffer.from(hashes.string.first))
+      this._elements[indexes[i]].add(element, Buffer.from(hashes.first))
     }
   }
 
@@ -165,11 +200,21 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * @param element - The element to remove
    * @return True if the element has been removed, False otheriwse
    */
-  remove (element: Buffer): boolean {
-    const hashes = allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
-    const indexes = getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
+  public remove(element: Buffer): boolean {
+    const hashes = this._hashing.hashTwiceAsString(
+      JSON.stringify(element.toJSON()),
+      this.seed
+    )
+    const indexes = this._hashing.getDistinctIndexes(
+      hashes.first,
+      this._size,
+      this._hashCount,
+      this.seed
+    )
     for (let i = 0; i < this._hashCount; ++i) {
-      this._elements[indexes[i]] = this._elements[indexes[i]].xorm(new Cell(Buffer.from(element), Buffer.from(hashes.string.first), 1))
+      this._elements[indexes[i]] = this._elements[indexes[i]].xorm(
+        new Cell(Buffer.from(element), Buffer.from(hashes.first), 1)
+      )
     }
     return true
   }
@@ -179,9 +224,17 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * @param  element - The element to test
    * @return False if the element is not in the filter, true if "may be" in the filter.
    */
-  has (element: Buffer): boolean {
-    const hashes = allInOneHashTwice(JSON.stringify(element.toJSON()), this.seed)
-    const indexes = getDistinctIndices(hashes.string.first, this.size, this._hashCount, this.seed)
+  public has(element: Buffer): boolean {
+    const hashes = this._hashing.hashTwiceAsString(
+      JSON.stringify(element.toJSON()),
+      this.seed
+    )
+    const indexes = this._hashing.getDistinctIndexes(
+      hashes.first,
+      this._size,
+      this._hashCount,
+      this.seed
+    )
     for (let i = 0; i < this._hashCount; ++i) {
       if (this._elements[indexes[i]].count === 0) {
         return false
@@ -195,20 +248,24 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
     }
     return true
   }
-  
+
   /**
    * List all entries from the filter using a Generator.
    * The generator ends with True if the operation has not failed, False otheriwse.
    * It is not recommended to modify an IBLT while listing its entries!
    * @return A generator that yields all filter's entries.
    */
-  listEntries (): Generator<Buffer, boolean> {
+  public listEntries(): Generator<Buffer, boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
     const seenBefore: Buffer[] = []
-    return function * () {
-      for(let index = 0; index < that._elements.length - 1; index++) {
+    return (function* () {
+      for (let index = 0; index < that._elements.length - 1; index++) {
         const localCell = that._elements[index]
-        if (localCell.count > 0 && seenBefore.findIndex((b: Buffer) => b.equals(localCell.idSum)) === -1) {
+        if (
+          localCell.count > 0 &&
+          seenBefore.findIndex((b: Buffer) => b.equals(localCell.idSum)) === -1
+        ) {
           if (that.has(localCell.idSum)) {
             seenBefore.push(localCell.idSum)
             yield localCell.idSum
@@ -218,7 +275,7 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
         }
       }
       return true
-    }()
+    })()
   }
 
   /**
@@ -226,9 +283,11 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * @param  remote - The filter to substract with
    * @return A new InvertibleBloomFilter which is the XOR of the local and remote one
    */
-  substract (iblt: InvertibleBloomFilter): InvertibleBloomFilter {
+  public substract(iblt: InvertibleBloomFilter): InvertibleBloomFilter {
     if (this.size !== iblt.size) {
-      throw new Error('The two Invertible Bloom Filters must be of the same size')
+      throw new Error(
+        'The two Invertible Bloom Filters must be of the same size'
+      )
     }
     const res = new InvertibleBloomFilter(iblt._size, iblt._hashCount)
     res.seed = this.seed
@@ -243,8 +302,12 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * @param iblt - The filter to compare with
    * @return True if the two filters are equals, False otherwise
    */
-  equals (iblt: InvertibleBloomFilter): boolean {
-    if (iblt._size !== this._size || iblt._hashCount !== this._hashCount || iblt.seed !== this.seed) {
+  public equals(iblt: InvertibleBloomFilter): boolean {
+    if (
+      iblt._size !== this._size ||
+      iblt._hashCount !== this._hashCount ||
+      iblt.seed !== this.seed
+    ) {
       return false
     } else {
       for (let i = 0; i < iblt._elements.length; ++i) {
@@ -260,7 +323,10 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
    * Decode an InvertibleBloomFilter based on its substracted version
    * @return The results of the deconding process
    */
-  decode (additional: Buffer[] = [], missing: Buffer[] = []): IBLTDecodingResults {
+  public decode(
+    additional: Buffer[] = [],
+    missing: Buffer[] = []
+  ): IBLTDecodingResults {
     const pureList: number[] = []
     let cell: Cell | null = null
     // checking for all pure cells
@@ -271,7 +337,7 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
       }
     }
     while (pureList.length !== 0) {
-      cell = this._elements[pureList.pop()!]
+      cell = this._elements[pureList.pop()!] // eslint-disable-line @typescript-eslint/no-non-null-assertion
       const id = cell.idSum
       const c = cell.count
       if (cell.isPure()) {
@@ -282,10 +348,20 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
         } else {
           throw new Error('Please report, not possible')
         }
-        const hashes = allInOneHashTwice(JSON.stringify(id.toJSON()), this.seed)
-        const indexes = getDistinctIndices(hashes.string.first, this._size, this._hashCount, this.seed)
+        const hashes = this._hashing.hashTwiceAsString(
+          JSON.stringify(id.toJSON()),
+          this.seed
+        )
+        const indexes = this._hashing.getDistinctIndexes(
+          hashes.first,
+          this._size,
+          this._hashCount,
+          this.seed
+        )
         for (let i = 0; i < indexes.length; ++i) {
-          this._elements[indexes[i]] = this._elements[indexes[i]].xorm(new Cell(id, Buffer.from(hashes.string.first), c))
+          this._elements[indexes[i]] = this._elements[indexes[i]].xorm(
+            new Cell(id, Buffer.from(hashes.first), c)
+          )
           if (this._elements[indexes[i]].isPure()) {
             pureList.push(indexes[i])
           }
@@ -297,16 +373,16 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
         success: false,
         reason: {
           cell: cell,
-          iblt: this
+          iblt: this,
         },
         additional,
-        missing
+        missing,
       }
     } else {
       return {
         success: true,
         additional,
-        missing
+        missing,
       }
     }
   }

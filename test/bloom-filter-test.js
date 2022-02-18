@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { BloomFilter } = require('../dist/api.js')
+const {BloomFilter} = require('../dist/api.js')
 
 describe('BloomFilter', () => {
   const targetRate = 0.1
@@ -44,8 +44,12 @@ describe('BloomFilter', () => {
 
     it('should build a new filter using #from', () => {
       const data = ['alice', 'bob', 'carl']
-      const expectedSize = Math.ceil(-((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)))
-      const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
+      const expectedSize = Math.ceil(
+        -((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2))
+      )
+      const expectedHashes = Math.ceil(
+        (expectedSize / data.length) * Math.log(2)
+      )
       const filter = BloomFilter.from(data, targetRate)
       filter.size.should.equal(expectedSize)
       filter._nbHashes.should.equal(expectedHashes)
@@ -57,13 +61,16 @@ describe('BloomFilter', () => {
   })
 
   describe('#has', () => {
-    const filter = BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+    const getFilter = () =>
+      BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     it('should return false for elements that are definitively not in the set', () => {
+      const filter = getFilter()
       filter.has('daniel').should.equal(false)
       filter.has('al').should.equal(false)
     })
 
     it('should return true for elements that might be in the set', () => {
+      const filter = getFilter()
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)
@@ -121,15 +128,36 @@ describe('BloomFilter', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'wrong', _size: 1, _nbHashes: 2, _seed: 1, _filter: {size: 1, content: 'AA=='} },
-        { type: 'BloomFilter', _nbHashes: 2, _seed: 1, _filter: {size: 1, content: 'AA=='} },
-        { type: 'BloomFilter', _size: 1, _seed: 1, _filter: {size: 1, content: 'AA=='} },
-        { type: 'BloomFilter', _size: 1, _nbHashes: 2, _filter: {size: 1, content: 'AA=='} },
-        { type: 'BloomFilter', _size: 1, _nbHashes: 2, _seed: 1 }
+        {
+          type: 'wrong',
+          _size: 1,
+          _nbHashes: 2,
+          _seed: 1,
+          _filter: {size: 1, content: 'AA=='},
+        },
+        {
+          type: 'BloomFilter',
+          _nbHashes: 2,
+          _seed: 1,
+          _filter: {size: 1, content: 'AA=='},
+        },
+        {
+          type: 'BloomFilter',
+          _size: 1,
+          _seed: 1,
+          _filter: {size: 1, content: 'AA=='},
+        },
+        {
+          type: 'BloomFilter',
+          _size: 1,
+          _nbHashes: 2,
+          _filter: {size: 1, content: 'AA=='},
+        },
+        {type: 'BloomFilter', _size: 1, _nbHashes: 2, _seed: 1},
       ]
 
       invalids.forEach(json => {
-        (() => BloomFilter.fromJSON(json)).should.throw(Error)
+        ;(() => BloomFilter.fromJSON(json)).should.throw(Error)
       })
     })
   })

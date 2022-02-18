@@ -44,7 +44,7 @@ describe('Bucket', () => {
   })
 
   describe('#at', () => {
-    it('should provides an accessor for bucket\'s elements', () => {
+    it("should provides an accessor for bucket's elements", () => {
       const bucket = new Bucket(3)
       bucket.add('foo')
       bucket.add('bar')
@@ -185,14 +185,17 @@ describe('Bucket', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'Bucket' },
-        { type: 'Bucket', size: 1 },
-        { type: 'Bucket', size: 1, seed: 1 }
+        {type: 'something'},
+        {type: 'Bucket'},
+        {type: 'Bucket', size: 1},
+        {type: 'Bucket', size: 1, seed: 1},
       ]
 
       invalids.forEach(json => {
-        (() => Bucket.fromJSON(json)).should.throw(Error, 'Cannot create a Bucket from a JSON export which does not represent a bucket')
+        ;(() => Bucket.fromJSON(json)).should.throw(
+          Error,
+          'Cannot create a Bucket from a JSON export which does not represent a bucket'
+        )
       })
     })
   })

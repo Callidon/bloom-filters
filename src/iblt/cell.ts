@@ -24,8 +24,8 @@ SOFTWARE.
 
 'use strict'
 
-import { hashTwiceAsString, xorBuffer } from '../utils'
-import { AutoExportable, Field, Parameter } from '../exportable'
+import {xorBuffer} from '../utils'
+import {AutoExportable, Field, Parameter} from '../exportable'
 import BaseFilter from '../base-filter'
 
 const inspect = Symbol.for('nodejs.util.inspect.custom')
@@ -38,14 +38,16 @@ const inspect = Symbol.for('nodejs.util.inspect.custom')
  */
 @AutoExportable('Cell', ['_seed'])
 export default class Cell extends BaseFilter {
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   @Field<Buffer>(elt => elt.toString(), Buffer.from)
-  private _idSum: Buffer
+  public _idSum: Buffer
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   @Field<Buffer>(elt => elt.toString(), Buffer.from)
-  private _hashSum: Buffer
+  public _hashSum: Buffer
 
   @Field()
-  private _count: number
+  public _count: number
 
   /**
    * Constructor.
@@ -54,7 +56,11 @@ export default class Cell extends BaseFilter {
    * @param hashSum - The XOR of all hashed element in that cell
    * @param count - The number of elements inserted in that cell
    */
-  constructor (@Parameter('_idSum') idSum: Buffer, @Parameter('_hashSum') hashSum: Buffer, @Parameter('_count') count: number) {
+  constructor(
+    @Parameter('_idSum') idSum: Buffer,
+    @Parameter('_hashSum') hashSum: Buffer,
+    @Parameter('_count') count: number
+  ) {
     super()
     this._idSum = idSum
     this._hashSum = hashSum
@@ -65,32 +71,38 @@ export default class Cell extends BaseFilter {
    * Create an empty cell
    * @return An empty Cell
    */
-  static empty(): Cell {
-    return new Cell(Buffer.allocUnsafe(0).fill(0), Buffer.allocUnsafe(0).fill(0), 0)
+  public static empty(): Cell {
+    return new Cell(
+      Buffer.allocUnsafe(0).fill(0),
+      Buffer.allocUnsafe(0).fill(0),
+      0
+    )
   }
 
-  [inspect] () {
-    return `Cell:<${JSON.stringify(this._idSum.toJSON().data)}, ${JSON.stringify(this._hashSum.toJSON().data)}, ${this._count}>`
+  [inspect]() {
+    return `Cell:<${JSON.stringify(
+      this._idSum.toJSON().data
+    )}, ${JSON.stringify(this._hashSum.toJSON().data)}, ${this._count}>`
   }
 
   /**
    * Get the id sum of the Cell (The XOR of all element inserted in that cell)
    */
-  get idSum (): Buffer {
+  public get idSum(): Buffer {
     return this._idSum
   }
 
   /**
    * Get the hash sum of the Cell (The XOR of all hashed element in that cell)
    */
-  get hashSum (): Buffer {
+  public get hashSum(): Buffer {
     return this._hashSum
   }
 
   /**
    * Get the number of elements inserted in that cell
    */
-  get count (): number {
+  get count(): number {
     return this._count
   }
 
@@ -99,7 +111,7 @@ export default class Cell extends BaseFilter {
    * @param idSum - The element to XOR in this cell
    * @param hashSum - The hash of the element to XOR in this cell
    */
-  add (idSum: Buffer, hashSum: Buffer): void {
+  public add(idSum: Buffer, hashSum: Buffer): void {
     this._idSum = xorBuffer(this._idSum, idSum)
     this._hashSum = xorBuffer(this._hashSum, hashSum)
     this._count++
@@ -112,16 +124,24 @@ export default class Cell extends BaseFilter {
    * @param cell - Cell to perform XOR with
    * @return A new Cell, resulting from the XOR operation
    */
-  xorm (cell: Cell): Cell {
-    return new Cell(xorBuffer(this._idSum, cell.idSum), xorBuffer(this._hashSum, cell.hashSum), this._count - cell.count)
+  public xorm(cell: Cell): Cell {
+    return new Cell(
+      xorBuffer(this._idSum, cell.idSum),
+      xorBuffer(this._hashSum, cell.hashSum),
+      this._count - cell.count
+    )
   }
 
   /**
    * Test if the Cell is empty
    * @return True if the Cell is empty, False otherwise
    */
-  isEmpty (): boolean {
-    return this._idSum.equals(Buffer.from('')) && this._hashSum.equals(Buffer.from('')) && this._count === 0
+  public isEmpty(): boolean {
+    return (
+      this._idSum.equals(Buffer.from('')) &&
+      this._hashSum.equals(Buffer.from('')) &&
+      this._count === 0
+    )
   }
 
   /**
@@ -129,8 +149,12 @@ export default class Cell extends BaseFilter {
    * @param  cell - The cell to compare with
    * @return True if the two Cells are equals, False otherwise
    */
-  equals (cell: Cell): boolean {
-    return this._count === cell.count && this._idSum.equals(cell.idSum) && this._hashSum.equals(cell.hashSum)
+  public equals(cell: Cell): boolean {
+    return (
+      this._count === cell.count &&
+      this._idSum.equals(cell.idSum) &&
+      this._hashSum.equals(cell.hashSum)
+    )
   }
 
   /**
@@ -138,13 +162,16 @@ export default class Cell extends BaseFilter {
    * A pure cell is a cell with a counter equal to 1 or -1, and with a hash sum equal to the id sum
    * @return True if the cell ius pure, False otherwise
    */
-  isPure (): boolean {
+  public isPure(): boolean {
     // A pure cell cannot be empty or must have a count equals to 1 or -1
     if (this.isEmpty() || (this._count !== 1 && this._count !== -1)) {
       return false
     }
     // compare the hashes
-    const hashes = hashTwiceAsString(JSON.stringify(this._idSum.toJSON()), this.seed)
+    const hashes = this._hashing.hashTwiceAsString(
+      JSON.stringify(this._idSum.toJSON()),
+      this.seed
+    )
     return this._hashSum.equals(Buffer.from(hashes.first))
   }
 }

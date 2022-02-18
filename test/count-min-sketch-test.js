@@ -25,7 +25,7 @@ SOFTWARE.
 'use strict'
 
 require('chai').should()
-const { CountMinSketch } = require('../dist/api.js')
+const {CountMinSketch} = require('../dist/api.js')
 
 describe('CountMinSketch', () => {
   const delta = 0.999
@@ -69,12 +69,12 @@ describe('CountMinSketch', () => {
     const sketch = CountMinSketch.create(0.001, delta)
     const otherSketch = CountMinSketch.create(0.001, delta)
 
-    otherSketch._columns++;
-    (() => sketch.merge(otherSketch)).should.throw(Error)
+    otherSketch._columns++
+    ;(() => sketch.merge(otherSketch)).should.throw(Error)
 
     otherSketch._columns--
-    otherSketch._rows--;
-    (() => sketch.merge(otherSketch)).should.throw(Error)
+    otherSketch._rows--
+    ;(() => sketch.merge(otherSketch)).should.throw(Error)
   })
 
   it('should the clone operation', () => {
@@ -119,23 +119,23 @@ describe('CountMinSketch', () => {
 
     it('should reject imports from invalid JSON objects', () => {
       const invalids = [
-        { type: 'something' },
-        { type: 'CountMinSketch' },
-        { type: 'CountMinSketch', _columns: 1 },
-        { type: 'CountMinSketch', _columns: 1, _rows: 1 },
-        { type: 'CountMinSketch', _columns: 1, _rows: 1, seed: 1 }
+        {type: 'something'},
+        {type: 'CountMinSketch'},
+        {type: 'CountMinSketch', _columns: 1},
+        {type: 'CountMinSketch', _columns: 1, _rows: 1},
+        {type: 'CountMinSketch', _columns: 1, _rows: 1, seed: 1},
       ]
 
       invalids.forEach(json => {
-        (() => CountMinSketch.fromJSON(json)).should.throw(Error)
+        ;(() => CountMinSketch.fromJSON(json)).should.throw(Error)
       })
     })
   })
-  describe.skip('Performance test', () => {
+  describe('Performance test', () => {
     // setup an finite stream of 100 000 elements between [0; 1000)
-    const max = 1000000
+    const max = 100000
     const rate = 0.00001
-    const range = 10000
+    const range = 1000
     const random = () => {
       return Math.floor(Math.random() * range)
     }
