@@ -1,7 +1,7 @@
-/* file : bloom-filter.ts
+/* file : scalable-bloom-filter.ts
 MIT License
 
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
+Copyright (c) 2022 Thomas Minier & Arnaud Grall
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,14 @@ import {HashableInput} from '../utils'
 import PartitionBloomFilter from './partitioned-bloom-filter'
 import seedrandom from 'seedrandom'
 
+/**
+ * A Scalable Bloom Filter is a variant of Bloom Filters that can adapt dynamically to the
+number of elements stored, while assuring a maximum false positive probability
+ *
+ * Reference: ALMEIDA, Paulo Sérgio, BAQUERO, Carlos, PREGUIÇA, Nuno, et al. Scalable bloom filters. Information Processing Letters, 2007, vol. 101, no 6, p. 255-261.
+ * @see {@link https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.725.390&rep=rep1&type=pdf}
+ * @author Thomas Minier & Arnaud Grall
+ */
 @AutoExportable<ScalableBloomFilter>('ScalableBloomFilter', ['_seed'])
 export default class ScalableBloomFilter
   extends BaseFilter
@@ -42,10 +50,10 @@ export default class ScalableBloomFilter
   public static _s = 2
 
   /**
-   * The default size of this filter in number of elements, not in bytes.
+   * The initial size of this filter in number of elements, not in bytes.
    */
   @Field()
-  public _size: number
+  public _initial_size: number
 
   /**
    * The error rate desired.
@@ -62,23 +70,34 @@ export default class ScalableBloomFilter
   /**
    * Internal Partition Bloom Filters
    */
-  @Field()
+  @Field(
+    (filters: PartitionBloomFilter[]) =>
+      filters.map(filter => filter.saveAsJSON()), // eslint-disable-line @typescript-eslint/no-unsafe-return
+    (array: []) =>
+      array.map(
+        data => PartitionBloomFilter.fromJSON(data) as PartitionBloomFilter
+      )
+  )
   public _filters: PartitionBloomFilter[] = []
 
   constructor(
-    @Parameter('_size')
-    _size = 8,
+    @Parameter('_initial_size')
+    _initial_size = 8,
     @Parameter('_error_rate')
     _error_rate = 0.01,
     @Parameter('_ratio')
     _ratio = 0.5
   ) {
     super()
-    this._size = _size
+    this._initial_size = _initial_size
     this._error_rate = _error_rate
     this._ratio = _ratio
     this._filters.push(
-      PartitionBloomFilter.create(this._size, this._error_rate, this._ratio)
+      PartitionBloomFilter.create(
+        this._initial_size,
+        this._error_rate,
+        this._ratio
+      )
     )
     this._filters[this._filters.length - 1].seed = this.seed
   }
@@ -117,7 +136,7 @@ export default class ScalableBloomFilter
     if (currentFilter._currentload() > currentFilter._loadFactor) {
       // create a new filter
       const newSize =
-        this._size *
+        this._initial_size *
         Math.pow(ScalableBloomFilter._s, this._filters.length + 1) *
         Math.LN2
       const newErrorRate =
@@ -155,6 +174,44 @@ export default class ScalableBloomFilter
     return this._filters.map(f => f._capacity).reduce((p, c) => p + c, 0)
   }
 
+  /**
+   * Return the current false positive rate of this structure
+   * @returns
+   */
+  public rate(): number {
+    return this._filters[this._filters.length - 1].rate()
+  }
+
+  /**
+   * Check if two ScalableBloomFilter are equal
+   * @param filter
+   * @returns
+   */
+  public equals(filter: ScalableBloomFilter) {
+    // first check the seed
+    if (this.seed !== filter.seed) {
+      return false
+    }
+    // check the ratio
+    if (this._ratio !== filter._ratio) {
+      return false
+    }
+    // check the capacity
+    if (this.capacity() !== filter.capacity()) {
+      return false
+    }
+    return this._filters.every((currentFilter: PartitionBloomFilter, index) =>
+      filter._filters[index].equals(currentFilter)
+    )
+  }
+
+  /**
+   * Create a Scalable Bloom Filter based on Partitionned Bloom Filter.
+   * @param _size the starting size of the filter
+   * @param _error_rate ther error rate desired of the filter
+   * @param _ratio the load factor desired
+   * @returns
+   */
   public static create(_size: number, _error_rate: number, _ratio = 0.5) {
     return new ScalableBloomFilter(_size, _error_rate, _ratio)
   }

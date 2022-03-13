@@ -7,10 +7,11 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 
 **Keywords:** _bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures, XOR-Filter._
 
-❗️**Compatibility**❗️ 
-* Be carefull when migrating from a version to another.
-* Bug fixes were introduced in `1.3.7` and from `1.3.9` to `2.0.0` for hashing and indexing data. Then, you **must re-build completely your filters from start** to be compatible with the new versions. 
-* To keep the `breaking changes` rule of npm versions we will make now new `majored versions` since 1.3.9 whenever a modification is done on the hashing/indexing system or breaks the current API. 
+❗️**Compatibility**❗️
+
+- Be carefull when migrating from a version to another.
+- Bug fixes were introduced in `1.3.7` and from `1.3.9` to `2.0.0` for hashing and indexing data. Then, you **must re-build completely your filters from start** to be compatible with the new versions.
+- To keep the `breaking changes` rule of npm versions we will make now new `majored versions` since 1.3.9 whenever a modification is done on the hashing/indexing system or breaks the current API.
 
 # Table of contents
 
@@ -18,6 +19,7 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 - [Data structures](#data-structures)
   - [Classic Bloom Filter](#classic-bloom-filter)
   - [Partitioned Bloom Filter](#partitioned-bloom-filter)
+  - [Scalable Bloom Filter](#scalable-bloom-filter)
   - [Cuckoo Filter](#cuckoo-filter)
   - [Counting Bloom Filter](#counting-bloom-filter)
   - [Count Min Sketch](#count-min-sketch)
@@ -59,8 +61,8 @@ that is used to test whether an element is a member of a set. False positive mat
 
 #### Methods
 
-- `add(element: string) -> void`: add an element into the filter.
-- `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+- `add(element: HashableInput) -> void`: add an element into the filter.
+- `has(element: HashableInput) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 - `equals(other: BloomFilter) -> boolean`: Test if two filters are equals.
 - `rate() -> number`: compute the filter's false positive rate (or error rate).
 
@@ -103,8 +105,8 @@ Be careful, as a Partitioned Bloom Filter have much higher collison risks that a
 
 #### Methods
 
-- `add(element: string) -> void`: add an element into the filter.
-- `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+- `add(element: HashableInput) -> void`: add an element into the filter.
+- `has(element: HashableInput) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 - `equals(other: PartitionedBloomFilter) -> boolean`: Test if two filters are equals.
 - `rate() -> number`: compute the filter's false positive rate (or error rate).
 
@@ -134,6 +136,41 @@ filter = PartitionedBloomFilter.create(items.length, errorRate)
 filter = PartitionedBloomFilter.from(items, errorRate)
 ```
 
+### Scalable Bloom Filter
+
+A Scalable Bloom Filter is a variant of Bloom Filters that can adapt dynamically to the
+number of elements stored, while assuring a maximum false positive probability
+
+**Reference:** ALMEIDA, Paulo Sérgio, BAQUERO, Carlos, PREGUIÇA, Nuno, et al. Scalable bloom filters. Information Processing Letters, 2007, vol. 101, no 6, p. 255-261.
+([Full text article](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.725.390&rep=rep1&type=pdf))
+
+This filter use internally [Paritionned Bloom Filters](#partitioned-bloom-filter).
+
+#### Methods
+
+- `add(element: HashableInput) -> void`: add an element into the filter.
+- `has(element: HashableInput) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+- `equals(other: ScalableBloomFilter) -> boolean`: Test if two filters are equals.
+- `capacity():number` -> return the total capacity of this filter
+- `rate() -> number`: compute the filter's false positive rate (or error rate).
+
+```javascript
+const {ScalableBloomFilter} = require('bloom-filters')
+
+// by default it creates an ideally scalable bloom filter for 8 elements with an error rate of 0.01 and a load factor of 0.5
+const filter = new ScalableBloomFilter()
+filter.add('alice')
+filter.add('bob')
+filter.add('carl')
+for (let i = 0; i < 10000; i++) {
+  filter.add('elem:' + i)
+}
+filter.has('somethingwrong') // false
+
+filter.capacity() // total capacity
+filter.rate() // current rate of the current internal filter used
+```
+
 ### Cuckoo Filter
 
 Cuckoo filters improve on Bloom filters by supporting deletion, limited counting, and bounded False positive rate with similar storage efficiency as a standard Bloom Filter.
@@ -143,9 +180,9 @@ Cuckoo filters improve on Bloom filters by supporting deletion, limited counting
 
 #### Methods
 
-- `add(element: string) -> void`: add an element into the filter.
-- `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
-- `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+- `add(element: HashableInput) -> void`: add an element into the filter.
+- `remove(element: HashableInput) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
+- `has(element: HashableInput) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 - `equals(other: CuckooFilter) -> boolean`: Test if two filters are equals.
 - `rate() -> number`: compute the filter's false positive rate (or error rate).
 
@@ -184,9 +221,9 @@ A Counting Bloom filter works in a similar manner as a regular Bloom filter; how
 
 #### Methods
 
-- `add(element: string) -> void`: add an element into the filter.
-- `remove(element: string) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
-- `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+- `add(element: HashableInput) -> void`: add an element into the filter.
+- `remove(element: HashableInput) -> boolean`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
+- `has(element: HashableInput) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 - `equals(other: CountingBloomFilter) -> boolean`: Test if two filters are equals.
 - `rate() -> number`: compute the filter's false positive rate (or error rate).
 
@@ -231,8 +268,8 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 
 #### Methods
 
-- `update(element: string, count = 1) -> void`: add `count` occurences of an element into the sketch.
-- `count(element: string) -> number`: estimate the number of occurences of an element.
+- `update(element: HashableInput, count = 1) -> void`: add `count` occurences of an element into the sketch.
+- `count(element: HashableInput) -> number`: estimate the number of occurences of an element.
 - `merge(other: CountMinSketch) -> CountMinSketch`: merge occurences of two sketches.
 - `equals(other: CountMinSketch) -> boolean`: Test if two sketchs are equals.
 - `clone(): CountMinSketch`: Clone the sketch.
@@ -274,7 +311,7 @@ The HyperLogLog algorithm is able to estimate cardinalities greather than `10e9`
 
 #### Methods
 
-- `update(element: string) -> void`: add a new occurence of an element to the sketch.
+- `update(element: HashableInput) -> void`: add a new occurence of an element to the sketch.
 - `count() -> number`: estimate the number of distinct elements in the sketch.
 - `merge(other: HyperLogLog) -> HyperLogLog`: merge occurences of two sketches.
 - `equals(other: HyperLogLog) -> boolean`: Test if two sketchs are equals.
@@ -468,13 +505,11 @@ filter = InvertibleBloomFilter.from(items, errorRate)
 
 **Available as 8-bits and 16-bits fingerprint length**
 
-A XOR Filter is a better space-efficient probabilistic data structure than Bloom Filters. 
+A XOR Filter is a better space-efficient probabilistic data structure than Bloom Filters.
 Very usefull for space efficiency of readonly sets.
 
 **Reference:** Graf, Thomas Mueller, and Daniel Lemire. "Xor filters: Faster and smaller than bloom and cuckoo filters." Journal of Experimental Algorithmics (JEA) 25 (2020): 1-16.
 ([Full text article](https://arxiv.org/abs/1912.08258))
-
-
 
 #### Methods
 
@@ -482,8 +517,9 @@ Very usefull for space efficiency of readonly sets.
 - `has(element: XorHashableInput) -> boolean`: true/false whether the element is in the set or not.
 
 ---
-* Extended input types: `type XorHashableInput = HashableInput | Long`
-* We use Buffers internally which are exported/imported to/from `base64` strings. 
+
+- Extended input types: `type XorHashableInput = HashableInput | Long`
+- We use Buffers internally which are exported/imported to/from `base64` strings.
 
 ```javascript
 const {XorFilter} = require('bloom-filters')
@@ -500,7 +536,6 @@ const a = new XorFilter(1, 16)
 a.add(['a'])
 a.has('a') // true
 ```
-
 
 ## Export and import
 
@@ -541,6 +576,7 @@ console.log(bl.seed) // 43981
 
 By default we hash elements using `XXH.h64` function from [`xxhashjs`](https://github.com/pierrec/js-xxhash).
 In the case you want to use your own hash functions, you can use your own Hashing class by extending the default one. Example:
+
 ```js
 const {BloomFilter, Hashing} = require('bloom-filters')
 
@@ -555,6 +591,7 @@ const bl = BloomFilter.create(2, 0.01)
 bl._hashing = new CustomHashing()
 bl.add('a')
 ```
+
 See `test/utils-test.js` "_Use different hash functions_" describe close.
 
 ## Documentation
@@ -563,16 +600,17 @@ See [documentation online](https://callidon.github.io/bloom-filters/) or generat
 
 ## Tests and Development
 
-* Tests are performed using [mocha](https://github.com/mochajs/mocha) and [nyc](https://github.com/istanbuljs/nyc) (code coverage) on node 12.x, 14.x, 15.x and 16.x for the moment.
-* Linting and formatting are made using `prettier` and `eslint`
+- Tests are performed using [mocha](https://github.com/mochajs/mocha) and [nyc](https://github.com/istanbuljs/nyc) (code coverage) on node 12.x, 14.x, 15.x and 16.x for the moment.
+- Linting and formatting are made using `prettier` and `eslint`
 
 When submitting pull requests please follow the following guidance:
-* please, PRs on the develop branch. PRs on the master will be refused without comment.
-* add tests when possible in `./test/*-test.js` or by creating `*-test.js` files.
-* functions, methods, variables and types must be documented using typedoc annotations
-* run `yarn lint` to see linting errors
-* run `yarn fix` to fix errors that can be auto-fixed by gts.
-* run `yarn test` (build, lint and run the mocha tests suite with code coverage)
+
+- please, PRs on the develop branch. PRs on the master will be refused without comment.
+- add tests when possible in `./test/*-test.js` or by creating `*-test.js` files.
+- functions, methods, variables and types must be documented using typedoc annotations
+- run `yarn lint` to see linting errors
+- run `yarn fix` to fix errors that can be auto-fixed by gts.
+- run `yarn test` (build, lint and run the mocha tests suite with code coverage)
 
 ## References
 
@@ -584,21 +622,24 @@ When submitting pull requests please follow the following guidance:
 - [HyperLogLog](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf): Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). _"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"_. Discrete Mathematics and Theoretical Computer Science Proceedings.
 - [MinHash](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&rep=rep1&type=pdf): Andrei Z. Broder, _"On the resemblance and containment of documents"_, in Compression and Complexity of Sequences: Proceedings (1997).
 - [Invertible Bloom Filters](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). _What's the difference?: efficient set reconciliation without prior context._ ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
-- [Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters](https://arxiv.org/abs/1912.08258) Thomas Mueller Graf,  Daniel Lemire, Journal of Experimental Algorithmics 25 (1), 2020. DOI: 10.1145/3376122
+- [Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters](https://arxiv.org/abs/1912.08258) Thomas Mueller Graf, Daniel Lemire, Journal of Experimental Algorithmics 25 (1), 2020. DOI: 10.1145/3376122
+- [Scalable Bloom Filters](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.725.390&rep=rep1&type=pdf) ALMEIDA, Paulo Sérgio, BAQUERO, Carlos, PREGUIÇA, Nuno, et al. _Scalable bloom filters_. Information Processing Letters, 2007, vol. 101, no 6, p. 255-261.
 
 ## Changelog
 
-| **Version** | **Release date** | **Major changes**                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `v2.0.0`    | 02/2022        | - Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43). <br/> - Move all hashing related functions to its specific Hash class in a component of the BaseFilter class. It also allows for overriding the serizalize function for using custom hash functions <br/> - Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. <br/> - Disable 10.x, 15.x node tests. <br/> - Add XorFilter [#29](https://github.com/Callidon/bloom-filters/issues/29) <br/> - Add `.nextInt32()` function to get a new random seeded int 32-bits from the current seed. <br/> - Make all properties public for allowing developpers to override everything. |
-| `v1.3.0`    | 10/04/2020       | Added the MinHash set                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `v1.2.0`    | 08/04/2020       | Add the TopK class                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `v1.1.0`    | 03/04/2020       | Add the HyperLogLog sketch                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `v1.0.0`    | 23/03/2020       | Rework the whole library using TypeScript, unify the API and fix the documentation                                                                                                                                                                                                                                                                                                                                                                            |
-| `v0.8.0`    | 11/11/2019       | Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API, use the `.create()` or `.from()` functions to match the old api.                                                                                                                                                                                                                                           |
-| `v0.7.1`    | 11/09/2019       | Add the Counting Bloom Filter                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `v0.7.0`    | 01/07/2019       | Move to [XXHASH](https://cyan4973.github.io/xxHash/) for hashing elements in the library. One property has been added into the exported json `_seed` which is used to seed every hash of every elements. Update Invertible Bloom Filters with #add, #has, #delete, #listEntries, #substract, #Static.decode methods. Updated the way to get distinct indices which could have collisions in many cases.                                                       |
-| `v0.6.1`    | 18/06/2019       | Add Invertible Bloom Filters (only #encode/#substract/#Static.decode methods)                                                                                                                                                                                                                                                                                                                                                                                 |
+| **Version** | **Release date** | **Major changes**                                                                      |
+| ----------- | ---------------- | -------------------------------------------------------------------------------------- |
+| `v2.1.0`    | 03/2022          | - Add Scalable Bloom filters <br/> - Use array of BitSet for Partitionned Bloom Filter |
+
+| `v2.0.0` | 02/2022 | - Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43). <br/> - Move all hashing related functions to its specific Hash class in a component of the BaseFilter class. It also allows for overriding the serizalize function for using custom hash functions <br/> - Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. <br/> - Disable 10.x, 15.x node tests. <br/> - Add XorFilter [#29](https://github.com/Callidon/bloom-filters/issues/29) <br/> - Add `.nextInt32()` function to get a new random seeded int 32-bits from the current seed. <br/> - Make all properties public for allowing developpers to override everything. |
+| `v1.3.0` | 10/04/2020 | Added the MinHash set |
+| `v1.2.0` | 08/04/2020 | Add the TopK class |
+| `v1.1.0` | 03/04/2020 | Add the HyperLogLog sketch |
+| `v1.0.0` | 23/03/2020 | Rework the whole library using TypeScript, unify the API and fix the documentation |
+| `v0.8.0` | 11/11/2019 | Fix some issues with the cuckoo filter (performances). Fix the global API. It allows now to customize each Filter. If you want to use the old API, use the `.create()` or `.from()` functions to match the old api. |
+| `v0.7.1` | 11/09/2019 | Add the Counting Bloom Filter |
+| `v0.7.0` | 01/07/2019 | Move to [XXHASH](https://cyan4973.github.io/xxHash/) for hashing elements in the library. One property has been added into the exported json `_seed` which is used to seed every hash of every elements. Update Invertible Bloom Filters with #add, #has, #delete, #listEntries, #substract, #Static.decode methods. Updated the way to get distinct indices which could have collisions in many cases. |
+| `v0.6.1` | 18/06/2019 | Add Invertible Bloom Filters (only #encode/#substract/#Static.decode methods) |
 
 ## License
 

@@ -74,6 +74,21 @@ describe('ScalableBloomFilter', () => {
       filter._filters.forEach(
         f => expect(f.seed, 'the seed should be defined').to.exist
       )
+      filter._filters.length.should.equal(10)
+    })
+
+    it('should import/export correctly', () => {
+      const filter = ScalableBloomFilter.create(1, targetRate)
+      filter.seed = seed
+      for (let i = 0; i < 50; i++) {
+        filter.add('elem:' + i)
+      }
+      const exported = filter.saveAsJSON()
+      const imported = ScalableBloomFilter.fromJSON(exported)
+      imported.equals(filter).should.equal(true)
+      for (let i = 0; i < 50; i++) {
+        imported.has('elem:' + i).should.equal(true)
+      }
     })
   })
   describe('Performance test', () => {
