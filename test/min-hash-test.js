@@ -33,13 +33,31 @@ function jaccard(a, b) {
   return intersection(a, b).length / union(a, b).length
 }
 
-describe('MinHash', () => {
-  const setA = range(1, 500)
-  const setB = range(1, 500).map(x => (x % 2 === 0 ? x : x * 2))
-  const maxValue = Math.max(...setA, ...setB)
-  const nbHashes = 10
-  const factory = new MinHashFactory(nbHashes, maxValue)
+let factory,
+  setA,
+  setB,
+  maxValue = 0,
+  nbHashes
+try {
+  const max = 10000
+  setA = range(1, max)
+  setB = range(1, max).map(x => (x % 2 === 0 ? x : x * 2))
+  const allInOne = [...setA, ...setB]
+  for (let i of allInOne) {
+    if (maxValue < i) {
+      maxValue = i
+    }
+  }
+  nbHashes = 50
+  factory = new MinHashFactory(nbHashes, maxValue)
+} catch (error) {
+  console.error(error)
+  throw new Error(
+    'An error occured when creating the min hash factory: ' + error
+  )
+}
 
+describe('MinHash', () => {
   describe('#isEmpty', () => {
     it('should return True when the MinHash signeture is empty', () => {
       const set = factory.create()
