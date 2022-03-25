@@ -124,7 +124,7 @@ export class MinHash extends BaseFilter {
       )
       // get the minimum of the candidate Signatures
       // dont supply too much parameters to Math.min or Math.max with risk of getting stack error
-      // so we compute an itrative minmium
+      // so we compute an iterative minimum
       let min = candidateSignatures[0]
       for (let i = 1; i < candidateSignatures.length; i++) {
         if (min > candidateSignatures[i]) {
