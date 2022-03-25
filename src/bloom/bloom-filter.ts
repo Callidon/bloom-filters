@@ -52,9 +52,8 @@ export default class BloomFilter
   @Field<BitSet>(
     f => f.export(),
     data => {
+      // create the bitset from new and old array-based exported structure
       if (Array.isArray(data)) {
-        // Create the bitset from new and old exported structure
-        // create a new BitSet from the specified array
         const bs = new BitSet(data.length)
         data.forEach((val: number, index: number) => {
           if (val !== 0) {
