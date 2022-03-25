@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 export {default as BaseFilter} from './base-filter'
 export {default as BloomFilter} from './bloom/bloom-filter'
 export {default as BitSet} from './bloom/bit-set'

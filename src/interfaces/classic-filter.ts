@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 /**
  * A classic probabilistic data-structure, which supports insertions of elements and membership queries.
  * @author Thomas Minier

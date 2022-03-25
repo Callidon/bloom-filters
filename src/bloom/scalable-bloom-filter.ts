@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter, {prng} from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'

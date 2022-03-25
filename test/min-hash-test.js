@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 require('chai').should()
 const {MinHashFactory, MinHash} = require('../dist/api.js')
 const {range, intersection, union} = require('lodash')

@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 import WritableFilter from '../interfaces/writable-filter'
 import BaseFilter from '../base-filter'
 import Bucket from './bucket'

@@ -24,8 +24,6 @@ SOFTWARE.
 // !disable all rules referring to `any` for exportable because we are dealing with all types so any is allowed
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 
-'use strict'
-
 import 'reflect-metadata'
 
 interface ImportExportSpecs<T> {

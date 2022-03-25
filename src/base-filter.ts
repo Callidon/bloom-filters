@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 import seedrandom from 'seedrandom'
 import Hashing from './hashing/hashing'
 import {getDefaultSeed} from './utils'
