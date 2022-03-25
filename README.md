@@ -605,12 +605,10 @@ See [documentation online](https://callidon.github.io/bloom-filters/) or generat
 
 When submitting pull requests please follow the following guidance:
 
-- please, PRs on the develop branch. PRs on the master will be refused without comment.
-- add tests when possible in `./test/*-test.js` or by creating `*-test.js` files.
+- Please open pull requests on the develop branch. **Direct contributions to the master branch will be refused without comments**
+- Add tests when possible in the `test` folder.
 - functions, methods, variables and types must be documented using typedoc annotations
-- run `yarn lint` to see linting errors
-- run `yarn fix` to fix errors that can be auto-fixed by gts.
-- run `yarn test` (build, lint and run the mocha tests suite with code coverage)
+- run `yarn test` (build, lint and run the mocha tests suite)
 
 ## References
 

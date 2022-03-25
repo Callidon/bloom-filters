@@ -155,7 +155,7 @@ export default class ScalableBloomFilter
    * @returns
    */
   public has(element: HashableInput) {
-    return this._filters.some((filter) => filter.has(element))
+    return this._filters.some(filter => filter.has(element))
   }
 
   /**
@@ -181,7 +181,11 @@ export default class ScalableBloomFilter
    */
   public equals(filter: ScalableBloomFilter) {
     // assert the seed, the ratio and the capacity are equals
-    if (this.seed !== filter.seed || this._ratio !== filter._ratio || this.capacity() !== filter.capacity()) {
+    if (
+      this.seed !== filter.seed ||
+      this._ratio !== filter._ratio ||
+      this.capacity() !== filter.capacity()
+    ) {
       return false
     }
     return this._filters.every((currentFilter: PartitionBloomFilter, index) =>
