@@ -155,13 +155,7 @@ export default class ScalableBloomFilter
    * @returns
    */
   public has(element: HashableInput) {
-    let i = 0
-    let found = false
-    while (!found && i < this._filters.length) {
-      found = this._filters[i].has(element)
-      i++
-    }
-    return found
+    return this._filters.some((filter) => filter.has(element))
   }
 
   /**
