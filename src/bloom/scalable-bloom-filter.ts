@@ -186,16 +186,8 @@ export default class ScalableBloomFilter
    * @returns
    */
   public equals(filter: ScalableBloomFilter) {
-    // first check the seed
-    if (this.seed !== filter.seed) {
-      return false
-    }
-    // check the ratio
-    if (this._ratio !== filter._ratio) {
-      return false
-    }
-    // check the capacity
-    if (this.capacity() !== filter.capacity()) {
+    // assert the seed, the ratio and the capacity are equals
+    if (this.seed !== filter.seed || this._ratio !== filter._ratio || this.capacity() !== filter.capacity()) {
       return false
     }
     return this._filters.every((currentFilter: PartitionBloomFilter, index) =>
