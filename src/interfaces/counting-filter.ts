@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 /**
  * A filter that can count occurences of items and estimate their frequencies.
  * @author Thomas Minier

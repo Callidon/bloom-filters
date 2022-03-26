@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 export {default as BaseFilter} from './base-filter'
 export {default as BloomFilter} from './bloom/bloom-filter'
 export {default as BitSet} from './bloom/bit-set'
@@ -40,3 +38,4 @@ export {default as InvertibleBloomFilter} from './iblt/invertible-bloom-lookup-t
 export {default as Cell} from './iblt/cell'
 export {default as Hashing} from './hashing/hashing'
 export {default as DeprecatedHashing} from './hashing/deprecated_hashing'
+export {default as ScalableBloomFilter} from './bloom/scalable-bloom-filter'

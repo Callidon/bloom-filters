@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 import BaseFilter from '../base-filter'
 import ClassicFilter from '../interfaces/classic-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
+import BitSet from './bit-set'
 
 /**
  * Return the optimal number of hashes needed for a given error rate and load factor
@@ -107,12 +106,27 @@ export default class PartitionedBloomFilter
   public _loadFactor: number
   @Field()
   public _m: number
-  @Field()
-  public _filter: Array<Array<number>>
+  @Field(
+    (sets: BitSet[]) => sets.map(s => s.export()),
+    (array: Array<{size: number; content: string} | number[]>) =>
+      array.map((data: {size: number; content: string} | number[]) => {
+        // create the bitset from new and old array-based exported structure
+        if (Array.isArray(data)) {
+          const bs = new BitSet(data.length)
+          data.forEach((val: number, index: number) => {
+            if (val !== 0) {
+              bs.add(index)
+            }
+          })
+          return bs
+        } else {
+          return BitSet.import(data as {size: number; content: string})
+        }
+      })
+  )
+  public _filter: Array<BitSet>
   @Field()
   public _capacity: number
-  @Field()
-  public _length: number
   /**
    * Constructor
    * @param size - The total number of cells
@@ -131,14 +145,11 @@ export default class PartitionedBloomFilter
     this._nbHashes = nbHashes
     this._loadFactor = loadFactor
     this._m = Math.ceil(this._size / this._nbHashes)
-    this._filter = allocateArray(this._nbHashes, () =>
-      allocateArray(this._m, 0)
-    )
+    this._filter = allocateArray(this._nbHashes, () => new BitSet(this._m))
     this._capacity =
       capacity !== undefined
         ? capacity
         : computeNumberOfItems(this._size, loadFactor, nbHashes)
-    this._length = 0
   }
 
   /**
@@ -199,13 +210,6 @@ export default class PartitionedBloomFilter
   }
 
   /**
-   * Get the number of elements currently in the filter
-   */
-  public get length(): number {
-    return this._length
-  }
-
-  /**
    * Get the filter's load factor
    */
   public get loadFactor(): number {
@@ -229,9 +233,8 @@ export default class PartitionedBloomFilter
       this.seed
     )
     for (let i = 0; i < this._nbHashes; i++) {
-      this._filter[i][indexes[i]] = 1
+      this._filter[i].add(indexes[i])
     }
-    this._length++
   }
 
   /**
@@ -254,7 +257,7 @@ export default class PartitionedBloomFilter
       this.seed
     )
     for (let i = 0; i < this._nbHashes; i++) {
-      if (!this._filter[i][indexes[i]]) {
+      if (!this._filter[i].has(indexes[i])) {
         return false
       }
     }
@@ -286,15 +289,12 @@ export default class PartitionedBloomFilter
     if (
       this._size !== other._size ||
       this._nbHashes !== other._nbHashes ||
-      this._length !== other._length ||
       this._loadFactor !== other._loadFactor
     ) {
       return false
     }
     return this._filter.every((array, outerIndex) =>
-      other._filter[outerIndex].every(
-        (item, innerIndex) => array[innerIndex] === item
-      )
+      other._filter[outerIndex].equals(array)
     )
   }
 
@@ -304,7 +304,7 @@ export default class PartitionedBloomFilter
    */
   public _currentload(): number {
     const values = this._filter.map(bucket => {
-      return bucket.reduce((a, b) => a + b, 0)
+      return bucket.bitCount()
     })
     const used = values.reduce((a, b) => a + b, 0)
     return used / this._size

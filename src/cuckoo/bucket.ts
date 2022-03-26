@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 import {eq, indexOf} from 'lodash'
 import * as utils from '../utils'
 import {Exportable} from '../exportable'

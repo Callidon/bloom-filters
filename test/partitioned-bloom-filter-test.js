@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-'use strict'
-
 require('chai').should()
 const {PartitionedBloomFilter} = require('../dist/api.js')
 
@@ -35,7 +33,6 @@ describe('PartitionedBloomFilter', () => {
       const filter = PartitionedBloomFilter.create(15, targetRate)
       filter.add('alice')
       filter.add('bob')
-      filter.length.should.equal(2)
     })
 
     it('should build a new filter using #from', () => {
@@ -44,7 +41,6 @@ describe('PartitionedBloomFilter', () => {
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)
-      filter.length.should.equal(data.length)
       filter.rate().should.be.closeTo(targetRate, 0.1)
     })
   })
@@ -136,9 +132,8 @@ describe('PartitionedBloomFilter', () => {
       exported._capacity.should.equal(15)
       exported._size.should.equal(filter._size)
       exported._loadFactor.should.equal(filter._loadFactor)
-      exported._m.should.equal(filter._m)
       exported._nbHashes.should.equal(filter._nbHashes)
-      exported._filter.should.deep.equal(filter._filter)
+      exported._filter.should.deep.equal(filter._filter.map(f => f.export()))
     })
 
     it('should create a partitioned bloom filter from a JSON export', () => {

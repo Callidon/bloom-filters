@@ -25,7 +25,6 @@ SOFTWARE.
 import BaseFilter from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {allocateArray} from '../utils'
-import {intersection} from 'lodash'
 
 /**
  * An error thrown when we try to compute the Jaccard Similarity with an empty MinHash
@@ -109,10 +108,8 @@ export class MinHash extends BaseFilter {
    */
   public add(value: number): void {
     for (let i = 0; i < this._nbHashes; i++) {
-      this._signature[i] = Math.min(
-        this._signature[i],
-        applyHashFunction(value, this._hashFunctions[i])
-      )
+      const hash = applyHashFunction(value, this._hashFunctions[i])
+      this._signature[i] = Math.min(this._signature[i], hash)
     }
   }
 
@@ -125,7 +122,16 @@ export class MinHash extends BaseFilter {
       const candidateSignatures = values.map((value: number) =>
         applyHashFunction(value, this._hashFunctions[i])
       )
-      this._signature[i] = Math.min(this._signature[i], ...candidateSignatures)
+      // get the minimum of the candidate Signatures
+      // dont supply too much parameters to Math.min or Math.max with risk of getting stack error
+      // so we compute an iterative minimum
+      let min = candidateSignatures[0]
+      for (let i = 1; i < candidateSignatures.length; i++) {
+        if (min > candidateSignatures[i]) {
+          min = candidateSignatures[i]
+        }
+      }
+      this._signature[i] = Math.min(this._signature[i], min)
     }
   }
 
@@ -140,8 +146,14 @@ export class MinHash extends BaseFilter {
         'Cannot compute a Jaccard similairty with a MinHash that contains no values'
       )
     }
-    return (
-      intersection(this._signature, other._signature).length / this._nbHashes
-    )
+    // fix: we need to check for the number of equal signatures, not uniq equal signatures
+    // lodash intersection ends with a uniq set of values
+    let count = 0
+    for (let i = 0; i < this._nbHashes; i++) {
+      if (this._signature[i] === other._signature[i]) {
+        count++
+      }
+    }
+    return count / this._nbHashes
   }
 }
