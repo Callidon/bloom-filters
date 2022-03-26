@@ -5,6 +5,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: 
+      name: npm
+      url: https://www.npmjs.com/package/bloom-filters
     steps:
     - uses: actions/checkout@v2
     # Setup .npmrc file to publish to npm
