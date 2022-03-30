@@ -1,6 +1,6 @@
 {
   "name": "bloom-filters",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
   "type": "commonjs",
@@ -23,12 +23,18 @@
     "bloom",
     "filter",
     "bloom filter",
-    "invertible bloom filter",
     "probabilistic",
     "datastructure",
+    "partitionned bloom filter",
+    "scalable bloom filter",
+    "counting bloom filter",
+    "invertible bloom filter",
     "count min sketch",
     "cuckoo",
-    "xor-filter"
+    "xor",
+    "minhash",
+    "top-k",
+    "hyperloglog"
   ],
   "author": "Thomas Minier <thomas.minier@protonmail.com>",
   "contributors": [

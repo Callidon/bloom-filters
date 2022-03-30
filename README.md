@@ -10,7 +10,7 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 ❗️**Compatibility**❗️
 
 - Be carefull when migrating from a version to another.
-- Bug fixes were introduced in `1.3.7` and from `1.3.9` to `2.0.0` for hashing and indexing data. Then, you **must re-build completely your filters from start** to be compatible with the new versions.
+- Bug fixes were introduced in `1.3.7` and from `1.3.9` to `2.0.0+` for hashing and indexing data. Then, you **must re-build completely your filters from start** to be compatible with the new versions.
 - To keep the `breaking changes` rule of npm versions we will make now new `majored versions` since 1.3.9 whenever a modification is done on the hashing/indexing system or breaks the current API.
 
 # Table of contents
@@ -607,8 +607,8 @@ When submitting pull requests please follow the following guidance:
 
 - Please open pull requests on the develop branch. **Direct contributions to the master branch will be refused without comments**
 - Add tests when possible in the `test` folder.
-- functions, methods, variables and types must be documented using typedoc annotations
-- run `yarn test` (build, lint and run the mocha tests suite)
+- Functions, methods, variables and types must be documented using typedoc annotations
+- Run `yarn test` (build, lint and run the mocha tests suite)
 
 ## References
 
