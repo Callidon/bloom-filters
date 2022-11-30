@@ -9,7 +9,7 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 
 ❗️**Compatibility**❗️
 
-- Be carefull when migrating from a version to another.
+- Be careful when migrating from a version to another.
 - Bug fixes were introduced in `1.3.7` and from `1.3.9` to `2.0.0+` for hashing and indexing data. Then, you **must re-build completely your filters from start** to be compatible with the new versions.
 - To keep the `breaking changes` rule of npm versions we will make now new `majored versions` since 1.3.9 whenever a modification is done on the hashing/indexing system or breaks the current API.
 
@@ -98,7 +98,7 @@ This filter works by partitioning the M-sized bit array into k slices of size `m
 Each hash function produces an index over `m` for its respective slice.
 Thus, each element is described by exactly `k` bits, meaning the distribution of false positives is uniform across all elements.
 
-Be careful, as a Partitioned Bloom Filter have much higher collison risks that a classic Bloom Filter on small sets of data.
+Be careful, as a Partitioned Bloom Filter have much higher collision risks that a classic Bloom Filter on small sets of data.
 
 **Reference:** Chang, F., Feng, W. C., & Li, K. (2004, March). _Approximate caches for packet classification._ In INFOCOM 2004. Twenty-third AnnualJoint Conference of the IEEE Computer and Communications Societies (Vol. 4, pp. 2196-2207). IEEE.
 ([Full text article](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.153.6902&rep=rep1&type=pdf))
@@ -144,7 +144,7 @@ number of elements stored, while assuring a maximum false positive probability
 **Reference:** ALMEIDA, Paulo Sérgio, BAQUERO, Carlos, PREGUIÇA, Nuno, et al. Scalable bloom filters. Information Processing Letters, 2007, vol. 101, no 6, p. 255-261.
 ([Full text article](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.725.390&rep=rep1&type=pdf))
 
-This filter use internally [Paritionned Bloom Filters](#partitioned-bloom-filter).
+This filter use internally [Partitioned Bloom Filters](#partitioned-bloom-filter).
 
 #### Methods
 
@@ -268,9 +268,9 @@ It uses hash functions to map events to frequencies, but unlike a hash table use
 
 #### Methods
 
-- `update(element: HashableInput, count = 1) -> void`: add `count` occurences of an element into the sketch.
-- `count(element: HashableInput) -> number`: estimate the number of occurences of an element.
-- `merge(other: CountMinSketch) -> CountMinSketch`: merge occurences of two sketches.
+- `update(element: HashableInput, count = 1) -> void`: add `count` occurrences of an element into the sketch.
+- `count(element: HashableInput) -> number`: estimate the number of occurrences of an element.
+- `merge(other: CountMinSketch) -> CountMinSketch`: merge occurrences of two sketches.
 - `equals(other: CountMinSketch) -> boolean`: Test if two sketchs are equals.
 - `clone(): CountMinSketch`: Clone the sketch.
 
@@ -304,7 +304,7 @@ sketch = CountMinSketch.from(items, errorRate, accuracy)
 ### HyperLogLog
 
 HyperLogLog is an algorithm for the count-distinct problem, approximating the number of distinct elements in a multiset. Calculating the exact cardinality of a multiset requires an amount of memory proportional to the cardinality, which is impractical for very large data sets. Probabilistic cardinality estimators, such as the HyperLogLog algorithm, use significantly less memory than this, at the cost of obtaining only an approximation of the cardinality.
-The HyperLogLog algorithm is able to estimate cardinalities greather than `10e9` with a typical accuracy (standard error) of `2%`, using around 1.5 kB of memory (see reference).
+The HyperLogLog algorithm is able to estimate cardinalities greater than `10e9` with a typical accuracy (standard error) of `2%`, using around 1.5 kB of memory (see reference).
 
 **Reference:** Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). _"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"_. Discrete Mathematics and Theoretical Computer Science Proceedings.
 ([Full text article](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf))
@@ -313,7 +313,7 @@ The HyperLogLog algorithm is able to estimate cardinalities greather than `10e9`
 
 - `update(element: HashableInput) -> void`: add a new occurence of an element to the sketch.
 - `count() -> number`: estimate the number of distinct elements in the sketch.
-- `merge(other: HyperLogLog) -> HyperLogLog`: merge occurences of two sketches.
+- `merge(other: HyperLogLog) -> HyperLogLog`: merge occurrences of two sketches.
 - `equals(other: HyperLogLog) -> boolean`: Test if two sketchs are equals.
 
 ```javascript
@@ -355,7 +355,7 @@ It does so by computing fixed sized signatures for a set of numbers using random
 #### `MinHash` methods
 
 - `add(element: number) -> void`: add a new element to the set.
-- `bulkLoad(elements: number[]) -> void`: efficently add several new elements to the set.
+- `bulkLoad(elements: number[]) -> void`: efficiently add several new elements to the set.
 - `isEmpty() -> boolean`: test if the signature of the MinHash is empty.
 - `compareWith(other: MinHash) -> number`: estimate the Jaccard similarity coefficient with another MinHash set.
 
@@ -402,7 +402,7 @@ interface TopkElement {
 
 #### Methods
 
-- `add(element: string, count: number = 1) -> void`: add one or more new occurences of an element to the sketch.
+- `add(element: string, count: number = 1) -> void`: add one or more new occurrences of an element to the sketch.
 - `values() -> Array<TopkElement>`: get the top-k values as an array of objects.
 - `iterator() -> Iterator<TopkElement>`: get the top-k values as an iterator that yields objects.
 
@@ -448,7 +448,7 @@ They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This d
 - `remove(element: Buffer) -> void`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
 - `has(element: Buffer) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 - `equals(other: InvertibleBloomFilter) -> boolean`: Test if two filters are equals.
-- `substract(remote: InvertibleBloomFilter)`: peform the XOR substraction of two IBLTs.
+- `substract(remote: InvertibleBloomFilter)`: perform the XOR substraction of two IBLTs.
 - `decode() -> {additional: Buffer[], missing: Buffer[]} `: decode an IBLT.
 - `listEntries() -> Generator<Buffer, number, void>`: list all entries in the IBLT using a Generator.
 
@@ -627,8 +627,8 @@ When submitting pull requests please follow the following guidance:
 
 | **Version** | **Release date** | **Major changes**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `v2.1.0`    | 03/2022          | - Add Scalable Bloom filters <br/> - Use array of BitSet for Partitionned Bloom Filter <br/> - Fix wrong MinHash comparison                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `v2.0.0`    | 02/2022          | - Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43). <br/> - Move all hashing related functions to its specific Hash class in a component of the BaseFilter class. It also allows for overriding the serizalize function for using custom hash functions <br/> - Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. <br/> - Disable 10.x, 15.x node tests. <br/> - Add XorFilter [#29](https://github.com/Callidon/bloom-filters/issues/29) <br/> - Add `.nextInt32()` function to get a new random seeded int 32-bits from the current seed. <br/> - Make all properties public for allowing developpers to override everything. |
+| `v2.1.0`    | 03/2022          | - Add Scalable Bloom filters <br/> - Use array of BitSet for Partitioned Bloom Filter <br/> - Fix wrong MinHash comparison                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `v2.0.0`    | 02/2022          | - Use correctly double hashing [#issue43](https://github.com/Callidon/bloom-filters/issues/43). <br/> - Move all hashing related functions to its specific Hash class in a component of the BaseFilter class. It also allows for overriding the serizalize function for using custom hash functions <br/> - Add [#PR44](https://github.com/Callidon/bloom-filters/pull/44) optimizing the BloomFilter internal storage with Uint arrays. <br/> - Disable 10.x, 15.x node tests. <br/> - Add XorFilter [#29](https://github.com/Callidon/bloom-filters/issues/29) <br/> - Add `.nextInt32()` function to get a new random seeded int 32-bits from the current seed. <br/> - Make all properties public for allowing developers to override everything. |
 | `v1.3.0`    | 10/04/2020       | Added the MinHash set                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `v1.2.0`    | 08/04/2020       | Add the TopK class                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `v1.1.0`    | 03/04/2020       | Add the HyperLogLog sketch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
