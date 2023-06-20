@@ -86,7 +86,7 @@ const items = ['alice', 'bob']
 const errorRate = 0.04 // 4 % error rate
 filter = BloomFilter.create(items.length, errorRate)
 
-// or create a bloom filter optimal for a collections of items and a desired error rate
+// or create a bloom filter optimal for a collection of items and a desired error rate
 filter = BloomFilter.from(items, errorRate)
 ```
 
