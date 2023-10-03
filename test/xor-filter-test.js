@@ -69,6 +69,7 @@ describe('XorFilter', () => {
       const json = filter.saveAsJSON()
       const newFilter = XorFilter.fromJSON(json)
       filter.equals(newFilter)
+      filter.seed.should.equal(newFilter.seed)
     })
   })
 })

@@ -109,6 +109,7 @@ describe('CountMinSketch', () => {
     it('should create a count-min sketch from a JSON export', () => {
       const exported = sketch.saveAsJSON()
       const newSketch = CountMinSketch.fromJSON(exported)
+      newSketch.seed.should.equal(sketch.seed)
       newSketch.columns.should.equal(sketch.columns)
       newSketch.rows.should.equal(sketch.rows)
       newSketch.sum.should.be.equal(sketch.sum)
