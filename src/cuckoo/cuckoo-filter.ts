@@ -96,7 +96,7 @@ function computeFingerpintLength(size: number, rate: number): number {
       })
       return bucket
     })
-    filter.seed = json.seed
+    filter.seed = json._seed
     return filter
     /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
   },
