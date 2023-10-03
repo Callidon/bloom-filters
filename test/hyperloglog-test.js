@@ -119,6 +119,7 @@ describe('HyperLogLog', () => {
     it('should create an HyperLogLog from a JSON export', () => {
       const exported = sketch.saveAsJSON()
       const newFilter = HyperLogLog.fromJSON(exported)
+      newFilter.seed.should.equal(sketch.seed)
       newFilter._nbRegisters.should.equal(sketch._nbRegisters)
       newFilter._nbBytesPerHash.should.equal(sketch._nbBytesPerHash)
       newFilter._correctionBias.should.equal(sketch._correctionBias)

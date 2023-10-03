@@ -151,6 +151,7 @@ describe('Invertible Bloom Lookup Tables', () => {
       const exported = iblt.saveAsJSON()
       const newIblt = InvertibleBloomFilter.fromJSON(exported)
       iblt.equals(newIblt).should.equals(true)
+      newIblt.seed.should.equal(iblt.seed)
     })
 
     it('should reject imports from invalid JSON objects', () => {

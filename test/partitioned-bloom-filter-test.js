@@ -140,6 +140,7 @@ describe('PartitionedBloomFilter', () => {
       const filter = getFilter()
       const exported = filter.saveAsJSON()
       const newFilter = PartitionedBloomFilter.fromJSON(exported)
+      newFilter.seed.should.equal(filter.seed)
       newFilter._capacity.should.equal(filter._capacity)
       newFilter._size.should.equal(filter._size)
       newFilter._loadFactor.should.equal(filter._loadFactor)

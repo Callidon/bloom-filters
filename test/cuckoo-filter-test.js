@@ -253,6 +253,7 @@ describe('CuckooFilter', () => {
     it('should create a cuckoo filter from a JSON export', () => {
       const exported = filter.saveAsJSON()
       const newFilter = CuckooFilter.fromJSON(exported)
+      newFilter.seed.should.equal(filter.seed)
       newFilter.size.should.equal(filter.size)
       newFilter.fingerprintLength.should.equal(filter.fingerprintLength)
       newFilter.length.should.equal(filter.length)

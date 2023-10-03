@@ -83,6 +83,7 @@ describe('ScalableBloomFilter', () => {
       }
       const exported = filter.saveAsJSON()
       const imported = ScalableBloomFilter.fromJSON(exported)
+      imported.seed.should.equal(filter.seed)
       imported.equals(filter).should.equal(true)
       for (let i = 0; i < 50; i++) {
         imported.has('elem:' + i).should.equal(true)

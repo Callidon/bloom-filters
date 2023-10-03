@@ -142,6 +142,7 @@ describe('MinHash', () => {
     it('should create a MinHash from a JSON export', () => {
       const exported = mySet.saveAsJSON()
       const newSet = MinHash.fromJSON(exported)
+      newSet.seed.should.equal(mySet.seed)
       newSet._nbHashes.should.equal(mySet._nbHashes)
       newSet._hashFunctions.should.deep.equal(mySet._hashFunctions)
       newSet._signature.should.deep.equal(mySet._signature)
