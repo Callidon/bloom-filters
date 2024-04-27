@@ -59,7 +59,7 @@ export interface TwoHashesIntAndString {
 /**
  * Data type of an hashable value, must be string, ArrayBuffer or Buffer.
  */
-export type HashableInput = string | ArrayBuffer | Buffer
+export type HashableInput = string | Uint8Array
 
 /**
  * BufferError

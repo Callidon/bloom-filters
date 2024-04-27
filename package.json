@@ -78,7 +78,8 @@
     "long": "^5.2.0",
     "reflect-metadata": "^0.1.13",
     "seedrandom": "^3.0.5",
-    "xxhashjs": "^0.2.2"
+    "xxhashjs": "^0.2.2",
+    "@node-rs/xxhash": "^1.7.3"
   },
   "prettier": {
     "semi": false,

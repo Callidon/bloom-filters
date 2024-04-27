@@ -1,5 +1,5 @@
-import XXH from 'xxhashjs'
-import {getDefaultSeed, numberToHex} from '../utils'
+import XXH from '@node-rs/xxhash'
+import {getDefaultSeed, numberToHex, type HashableInput} from '../utils'
 
 /**
  * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
@@ -27,11 +27,6 @@ export interface TwoHashesIntAndString {
   int: TwoHashesTemplated<number>
   string: TwoHashesTemplated<string>
 }
-
-/**
- * Data type of an hashable value, must be string, ArrayBuffer or Buffer.
- */
-export type HashableInput = string | ArrayBuffer | Buffer
 
 export default class Hashing implements Hashing {
   /**
@@ -146,7 +141,7 @@ export default class Hashing implements Hashing {
     if (!seed) {
       seed = getDefaultSeed()
     }
-    return Number(XXH.h64(element, seed).toNumber())
+    return Number(XXH.xxh32(element, seed))
   }
 
   /**
