@@ -28,7 +28,6 @@ import {expect, describe, test} from '@jest/globals'
 describe('BitSet', () => {
   test('is initially clear', () => {
     const set = new BitSet(50)
-    console.log(set)
     expect(set.size).toEqual(56)
     for (let i = 0; i < set.size; i++) {
       expect(set.has(i)).toEqual(false)
