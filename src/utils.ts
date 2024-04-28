@@ -78,7 +78,7 @@ export function allocateArray<T>(
   size: number,
   defaultValue: T | (() => T)
 ): Array<T> {
-  const array: Array<T> = new Array<T>(size)
+  const array: Array<T> = Array.from<T>({length: size})
   const getDefault =
     typeof defaultValue === 'function'
       ? (defaultValue as () => T)

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "target": "es5",
+    "target": "es6",
     "outDir": "./dist",
     "module": "commonjs",
     "lib": [ "ES2015" ],
@@ -17,7 +17,7 @@
       "./src/**/*"
   ],
   "exclude": [
-    "node_modules/",
-    "test/"
+    "node_modules",
+    "tests"
   ]
 }

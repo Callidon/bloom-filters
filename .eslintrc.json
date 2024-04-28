@@ -1,0 +1,63 @@
+{
+    "ignorePatterns": [
+        "dist/",
+        "docs/",
+        "build/",
+        "node_modules/",
+        ".github"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2015,
+        "project": "tsconfig.json"
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:node/recommended",
+        "prettier",
+        "plugin:prettier/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    ],
+    "plugins": [
+        "@typescript-eslint",
+        "prettier"
+    ],
+    "globals": {
+        "chai": "readonly",
+        "it": "readonly",
+        "expect": "readonly",
+        "describe": "readonly"
+    },
+    "settings": {
+        "node": {
+            "allowModules": [],
+            "resolvePaths": [
+                "./src"
+            ],
+            "tryExtensions": [
+                ".ts"
+            ]
+        }
+    },
+    "rules": {
+        "node/no-unsupported-features/es-syntax": [
+            "error",
+            {
+                "ignores": [
+                    "modules"
+                ]
+            }
+        ],
+        "node/no-unpublished-require": [
+            "error",
+            {
+                "allowModules": [
+                    "mocha",
+                    "chai",
+                    "random"
+                ]
+            }
+        ]
+    }
+}

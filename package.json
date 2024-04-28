@@ -7,11 +7,11 @@
   "scripts": {
     "build": "tsc",
     "pretest": "yarn lint && yarn build",
-    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
+    "test": "jest tests/**-test.ts",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
-    "lint": "yarn prettier && yarn slint",
-    "slint": "eslint --fix src/**/*.ts",
-    "prettier": "prettier --config package.json --write \"(src|test)/**/*.(t|j)s\"",
+    "lint": "yarn prettier && yarn oxlint --tsconfig tsconfig.json -c .eslintrc.json",
+    "slint": "eslint src/",
+    "prettier": "prettier --config package.json --write \"(src|tests)/**/*.(t|j)s\"",
     "clean": "rimraf docs/ dist/ build/",
     "compile": "tsc"
   },
@@ -47,39 +47,39 @@
   },
   "homepage": "https://github.com/Callidon/bloom-filters#readme",
   "devDependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/preset-env": "^7.24.4",
+    "@babel/preset-typescript": "^7.24.1",
     "@types/cuint": "^0.2.X",
     "@types/lodash": "^4.14.X",
     "@types/lodash.eq": "^4.0.X",
     "@types/lodash.indexof": "^4.0.X",
-    "@types/node": "^17.0.17",
+    "@types/node": "^20.12.7",
     "@types/seedrandom": "^3.0.2",
     "@types/xxhashjs": "^0.2.X",
-    "@typescript-eslint/eslint-plugin": "^5.11.0",
-    "@typescript-eslint/parser": "^5.11.0",
-    "chai": "^4.3.6",
-    "eslint": "^8.9.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "mocha": "^9.2.0",
-    "prettier": "^2.5.1",
-    "random": "^3.0.6",
-    "rimraf": "^3.0.2",
-    "typedoc": "^0.22.11",
-    "typedoc-plugin-missing-exports": "^0.22.6",
-    "typescript": "^4.5.5"
+    "@typescript-eslint/parser": "^7.7.1",
+    "babel-jest": "^29.7.0",
+    "chai": "^5.1.0",
+    "jest": "^29.7.0",
+    "mocha": "^10.4.0",
+    "oxlint": "^0.3.1",
+    "prettier": "^3.2.5",
+    "random": "^4.1.0",
+    "rimraf": "^5.0.5",
+    "typedoc": "^0.25.13",
+    "typedoc-plugin-missing-exports": "^2.2.0",
+    "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@node-rs/xxhash": "^1.7.3",
     "base64-arraybuffer": "^1.0.2",
     "is-buffer": "^2.0.5",
     "lodash": "^4.17.15",
     "lodash.eq": "^4.0.0",
     "lodash.indexof": "^4.0.5",
     "long": "^5.2.0",
-    "reflect-metadata": "^0.1.13",
-    "seedrandom": "^3.0.5",
-    "xxhashjs": "^0.2.2",
-    "@node-rs/xxhash": "^1.7.3"
+    "reflect-metadata": "^0.2.2",
+    "seedrandom": "^3.0.5"
   },
   "prettier": {
     "semi": false,
@@ -89,62 +89,6 @@
     "singleQuote": true,
     "trailingComma": "es5",
     "arrowParens": "avoid"
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "ecmaVersion": 2015,
-      "project": "tsconfig.json"
-    },
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended",
-      "plugin:node/recommended",
-      "prettier",
-      "plugin:prettier/recommended",
-      "plugin:@typescript-eslint/recommended-requiring-type-checking"
-    ],
-    "plugins": [
-      "@typescript-eslint",
-      "prettier"
-    ],
-    "globals": {
-      "chai": "readonly",
-      "it": "readonly",
-      "expect": "readonly",
-      "describe": "readonly"
-    },
-    "settings": {
-      "node": {
-        "allowModules": [],
-        "resolvePaths": [
-          "./src"
-        ],
-        "tryExtensions": [
-          ".ts"
-        ]
-      }
-    },
-    "rules": {
-      "node/no-unsupported-features/es-syntax": [
-        "error",
-        {
-          "ignores": [
-            "modules"
-          ]
-        }
-      ],
-      "node/no-unpublished-require": [
-        "error",
-        {
-          "allowModules": [
-            "mocha",
-            "chai",
-            "random"
-          ]
-        }
-      ]
-    }
   },
   "engines": {
     "node": ">=12"

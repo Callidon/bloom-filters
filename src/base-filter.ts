@@ -35,7 +35,7 @@ export interface prng {
   double(): number
   int32(): number
   quick(): number
-  state(): seedrandom.State
+  state(): seedrandom
 }
 
 /**
@@ -84,23 +84,5 @@ export default abstract class BaseFilter {
    */
   public nextInt32(): number {
     return this._rng.int32()
-  }
-
-  /**
-   * Save the current structure as a JSON
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public saveAsJSON(): any {
-    throw new Error('not-implemented')
-  }
-
-  /**
-   * Load an Object from a provided JSON object
-   * @param json the JSON object to load
-   * @return Return the Object loaded from the provided JSON object
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
-  public static fromJSON(json: JSON): any {
-    throw new Error(`not-implemented`)
   }
 }
