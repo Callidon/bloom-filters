@@ -29,10 +29,10 @@ import {optimalFilterSize, optimalHashes} from '../formulas'
 import {HashableInput} from '../utils'
 
 export type ExportedBloomFilter = {
-  _size: number
-  _nbHashes: number
-  _filter: ExportedBitSet
-  _seed: number
+    _size: number
+    _nbHashes: number
+    _filter: ExportedBitSet
+    _seed: number
 }
 
 /**
@@ -45,181 +45,181 @@ export type ExportedBloomFilter = {
  * @author Arnaud Grall
  */
 export default class BloomFilter
-  extends BaseFilter
-  implements ClassicFilter<HashableInput>
+    extends BaseFilter
+    implements ClassicFilter<HashableInput>
 {
-  public _size: number
-  public _nbHashes: number
-  public _filter: BitSet
+    public _size: number
+    public _nbHashes: number
+    public _filter: BitSet
 
-  /**
-   * Constructor
-   * @param size - The number of cells
-   * @param nbHashes - The number of hash functions used
-   */
-  constructor(size: number, nbHashes: number) {
-    super()
-    if (nbHashes < 1) {
-      throw new Error(
-        `A BloomFilter cannot uses less than one hash function, while you tried to use ${nbHashes}.`
-      )
-    }
-    this._size = size
-    this._nbHashes = nbHashes
-    this._filter = new BitSet(size)
-  }
-
-  /**
-   * Create an optimal bloom filter providing the maximum of elements stored and the error rate desired
-   * @param  nbItems      - The maximum number of item to store
-   * @param  errorRate  - The error rate desired for a maximum of items inserted
-   * @return A new {@link BloomFilter}
-   */
-  public static create(nbItems: number, errorRate: number): BloomFilter {
-    const size = optimalFilterSize(nbItems, errorRate)
-    const hashes = optimalHashes(size, nbItems)
-    return new this(size, hashes)
-  }
-
-  /**
-   * Build a new Bloom Filter from an existing iterable with a fixed error rate
-   * @param items - The iterable used to populate the filter
-   * @param errorRate - The error rate, i.e. 'false positive' rate, targeted by the filter
-   * @param seed - The random number seed (optional)
-   * @return A new Bloom Filter filled with the iterable's elements
-   * @example
-   * ```js
-   * // create a filter with a false positive rate of 0.1
-   * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
-   * ```
-   */
-  public static from(
-    items: Iterable<HashableInput>,
-    errorRate: number,
-    seed?: number
-  ): BloomFilter {
-    const array = Array.from(items)
-    const filter = BloomFilter.create(array.length, errorRate)
-    if (typeof seed === 'number') {
-      filter.seed = seed
-    }
-    array.forEach(element => filter.add(element))
-    return filter
-  }
-
-  /**
-   * Get the optimal size of the filter
-   * @return The size of the filter
-   */
-  get size(): number {
-    return this._size
-  }
-
-  /**
-   * Get the number of bits currently set in the filter
-   * @return The filter length
-   */
-  public get length(): number {
-    return this._filter.bitCount()
-  }
-
-  /**
-   * Add an element to the filter
-   * @param element - The element to add
-   * @example
-   * ```js
-   * const filter = new BloomFilter(15, 0.1);
-   * filter.add('foo');
-   * ```
-   */
-  public add(element: HashableInput): void {
-    const indexes = this._hashing.getIndexes(
-      element,
-      this._size,
-      this._nbHashes,
-      this.seed
-    )
-    for (let i = 0; i < indexes.length; i++) {
-      this._filter.add(indexes[i])
-    }
-  }
-
-  /**
-   * Test an element for membership
-   * @param element - The element to look for in the filter
-   * @return False if the element is definitively not in the filter, True is the element might be in the filter
-   * @example
-   * ```js
-   * const filter = new BloomFilter(15, 0.1);
-   * filter.add('foo');
-   * console.log(filter.has('foo')); // output: true
-   * console.log(filter.has('bar')); // output: false
-   * ```
-   */
-  public has(element: HashableInput): boolean {
-    const indexes = this._hashing.getIndexes(
-      element,
-      this._size,
-      this._nbHashes,
-      this.seed
-    )
-    for (let i = 0; i < indexes.length; i++) {
-      if (!this._filter.has(indexes[i])) {
-        return false
-      }
-    }
-    return true
-  }
-
-  /**
-   * Get the current false positive rate (or error rate) of the filter
-   * @return The current false positive rate of the filter
-   * @example
-   * ```js
-   * const filter = new BloomFilter(15, 0.1);
-   * console.log(filter.rate()); // output: something around 0.1
-   * ```
-   */
-  public rate(): number {
-    return Math.pow(1 - Math.exp(-this.length / this._size), this._nbHashes)
-  }
-
-  /**
-   * Check if another Bloom Filter is equal to this one
-   * @param  other - The filter to compare to this one
-   * @return True if they are equal, false otherwise
-   */
-  public equals(other: BloomFilter): boolean {
-    if (this._size !== other._size || this._nbHashes !== other._nbHashes) {
-      return false
-    }
-    return this._filter.equals(other._filter)
-  }
-
-  public saveAsJSON(): ExportedBloomFilter {
-    return {
-      _size: this._size,
-      _nbHashes: this._nbHashes,
-      _filter: this._filter.export(),
-      _seed: this._seed,
-    }
-  }
-
-  public static fromJSON(element: ExportedBloomFilter): BloomFilter {
-    const bl = new BloomFilter(element._size, element._nbHashes)
-    bl.seed = element._seed
-    const data = element._filter
-    if (Array.isArray(data)) {
-      const bs = new BitSet(data.length)
-      data.forEach((val: number, index: number) => {
-        if (val !== 0) {
-          bs.add(index)
+    /**
+     * Constructor
+     * @param size - The number of cells
+     * @param nbHashes - The number of hash functions used
+     */
+    constructor(size: number, nbHashes: number) {
+        super()
+        if (nbHashes < 1) {
+            throw new Error(
+                `A BloomFilter cannot uses less than one hash function, while you tried to use ${nbHashes}.`
+            )
         }
-      })
-      bl._filter = bs
-    } else {
-      bl._filter = BitSet.import(data as {size: number; content: string})
+        this._size = size
+        this._nbHashes = nbHashes
+        this._filter = new BitSet(size)
     }
-    return bl
-  }
+
+    /**
+     * Create an optimal bloom filter providing the maximum of elements stored and the error rate desired
+     * @param  nbItems      - The maximum number of item to store
+     * @param  errorRate  - The error rate desired for a maximum of items inserted
+     * @return A new {@link BloomFilter}
+     */
+    public static create(nbItems: number, errorRate: number): BloomFilter {
+        const size = optimalFilterSize(nbItems, errorRate)
+        const hashes = optimalHashes(size, nbItems)
+        return new this(size, hashes)
+    }
+
+    /**
+     * Build a new Bloom Filter from an existing iterable with a fixed error rate
+     * @param items - The iterable used to populate the filter
+     * @param errorRate - The error rate, i.e. 'false positive' rate, targeted by the filter
+     * @param seed - The random number seed (optional)
+     * @return A new Bloom Filter filled with the iterable's elements
+     * @example
+     * ```js
+     * // create a filter with a false positive rate of 0.1
+     * const filter = BloomFilter.from(['alice', 'bob', 'carl'], 0.1);
+     * ```
+     */
+    public static from(
+        items: Iterable<HashableInput>,
+        errorRate: number,
+        seed?: number
+    ): BloomFilter {
+        const array = Array.from(items)
+        const filter = BloomFilter.create(array.length, errorRate)
+        if (typeof seed === 'number') {
+            filter.seed = seed
+        }
+        array.forEach(element => filter.add(element))
+        return filter
+    }
+
+    /**
+     * Get the optimal size of the filter
+     * @return The size of the filter
+     */
+    get size(): number {
+        return this._size
+    }
+
+    /**
+     * Get the number of bits currently set in the filter
+     * @return The filter length
+     */
+    public get length(): number {
+        return this._filter.bitCount()
+    }
+
+    /**
+     * Add an element to the filter
+     * @param element - The element to add
+     * @example
+     * ```js
+     * const filter = new BloomFilter(15, 0.1);
+     * filter.add('foo');
+     * ```
+     */
+    public add(element: HashableInput): void {
+        const indexes = this._hashing.getIndexes(
+            element,
+            this._size,
+            this._nbHashes,
+            this.seed
+        )
+        for (let i = 0; i < indexes.length; i++) {
+            this._filter.add(indexes[i])
+        }
+    }
+
+    /**
+     * Test an element for membership
+     * @param element - The element to look for in the filter
+     * @return False if the element is definitively not in the filter, True is the element might be in the filter
+     * @example
+     * ```js
+     * const filter = new BloomFilter(15, 0.1);
+     * filter.add('foo');
+     * console.log(filter.has('foo')); // output: true
+     * console.log(filter.has('bar')); // output: false
+     * ```
+     */
+    public has(element: HashableInput): boolean {
+        const indexes = this._hashing.getIndexes(
+            element,
+            this._size,
+            this._nbHashes,
+            this.seed
+        )
+        for (let i = 0; i < indexes.length; i++) {
+            if (!this._filter.has(indexes[i])) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /**
+     * Get the current false positive rate (or error rate) of the filter
+     * @return The current false positive rate of the filter
+     * @example
+     * ```js
+     * const filter = new BloomFilter(15, 0.1);
+     * console.log(filter.rate()); // output: something around 0.1
+     * ```
+     */
+    public rate(): number {
+        return Math.pow(1 - Math.exp(-this.length / this._size), this._nbHashes)
+    }
+
+    /**
+     * Check if another Bloom Filter is equal to this one
+     * @param  other - The filter to compare to this one
+     * @return True if they are equal, false otherwise
+     */
+    public equals(other: BloomFilter): boolean {
+        if (this._size !== other._size || this._nbHashes !== other._nbHashes) {
+            return false
+        }
+        return this._filter.equals(other._filter)
+    }
+
+    public saveAsJSON(): ExportedBloomFilter {
+        return {
+            _size: this._size,
+            _nbHashes: this._nbHashes,
+            _filter: this._filter.export(),
+            _seed: this._seed,
+        }
+    }
+
+    public static fromJSON(element: ExportedBloomFilter): BloomFilter {
+        const bl = new BloomFilter(element._size, element._nbHashes)
+        bl.seed = element._seed
+        const data = element._filter
+        if (Array.isArray(data)) {
+            const bs = new BitSet(data.length)
+            data.forEach((val: number, index: number) => {
+                if (val !== 0) {
+                    bs.add(index)
+                }
+            })
+            bl._filter = bs
+        } else {
+            bl._filter = BitSet.import(data as {size: number; content: string})
+        }
+        return bl
+    }
 }

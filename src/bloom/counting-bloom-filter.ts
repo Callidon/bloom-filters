@@ -28,11 +28,11 @@ import {optimalFilterSize, optimalHashes} from '../formulas'
 import {HashableInput, allocateArray} from '../utils'
 
 export type ExportedCountingBloomFilter = {
-  _seed: number
-  _size: number
-  _nbHashes: number
-  _filter: Array<Array<number>>
-  _length: number
+    _seed: number
+    _size: number
+    _nbHashes: number
+    _filter: Array<Array<number>>
+    _length: number
 }
 
 /**
@@ -43,217 +43,217 @@ export type ExportedCountingBloomFilter = {
  * @author Thomas Minier & Arnaud Grall
  */
 export default class CountingBloomFilter
-  extends BaseFilter
-  implements WritableFilter<HashableInput>
+    extends BaseFilter
+    implements WritableFilter<HashableInput>
 {
-  public _size: number
-  public _nbHashes: number
-  public _filter: Array<Array<number>>
-  public _length: number
-  /**
-   * Constructor
-   * @param size - The size of the filter
-   * @param nbHashes - The number of hash functions
-   */
-  constructor(size: number, nbHashes: number) {
-    super()
-    if (nbHashes < 1) {
-      throw new Error(
-        `A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes} functions. Consider increasing it.`
-      )
+    public _size: number
+    public _nbHashes: number
+    public _filter: Array<Array<number>>
+    public _length: number
+    /**
+     * Constructor
+     * @param size - The size of the filter
+     * @param nbHashes - The number of hash functions
+     */
+    constructor(size: number, nbHashes: number) {
+        super()
+        if (nbHashes < 1) {
+            throw new Error(
+                `A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes} functions. Consider increasing it.`
+            )
+        }
+        this._size = size // fm.optimalFilterSize(capacity, errorRate)
+        this._nbHashes = nbHashes // fm.optimalHashes(this._size, capacity)
+        // the filter contains tuples [bit, counter]
+        this._filter = allocateArray(this._size, () => [0, 0])
+        this._length = 0
     }
-    this._size = size // fm.optimalFilterSize(capacity, errorRate)
-    this._nbHashes = nbHashes // fm.optimalHashes(this._size, capacity)
-    // the filter contains tuples [bit, counter]
-    this._filter = allocateArray(this._size, () => [0, 0])
-    this._length = 0
-  }
 
-  /**
-   * Allocate a CountingBloomFilter with a target maximum capacity and error rate
-   * @param  capacity - The maximum capacity of the filter
-   * @param  errorRate - The error rate of the filter
-   * @return A new {@link CountingBloomFilter}
-   */
-  public static create(
-    capacity: number,
-    errorRate: number
-  ): CountingBloomFilter {
-    const s = optimalFilterSize(capacity, errorRate)
-    return new CountingBloomFilter(s, optimalHashes(s, capacity))
-  }
-
-  /**
-   * Build a new Bloom Filter from an iterable with a fixed error rate
-   * @param items - Iterable used to populate the filter
-   * @param errorRate - The error rate of the filter
-   * @return A new Bloom Filter filled with the iterable's elements
-   * @example
-   * ```js
-   * // create a filter with a false positive rate of 0.1
-   * const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
-   * ```
-   */
-  public static from(
-    items: Iterable<HashableInput>,
-    errorRate: number
-  ): CountingBloomFilter {
-    const array = Array.from(items)
-    const filter = CountingBloomFilter.create(array.length, errorRate)
-    array.forEach(element => filter.add(element))
-    return filter
-  }
-
-  /**
-   * Get the optimal size of the filter
-   */
-  public get size(): number {
-    return this._size
-  }
-
-  /**
-   * Get the number of elements currently in the filter
-   */
-  public get length(): number {
-    return this._length
-  }
-
-  /**
-   * Add an element to the filter
-   * @param element - The element to add
-   * @example
-   * ```js
-   * const filter = new CountingBloomFilter(15, 0.1);
-   * filter.add('foo');
-   * ```
-   */
-  public add(element: HashableInput): void {
-    const indexes = this._hashing.getIndexes(
-      element,
-      this._size,
-      this._nbHashes,
-      this.seed
-    )
-    for (let i = 0; i < indexes.length; i++) {
-      // increment counter
-      this._filter[indexes[i]][1] += 1
-      // set bit if necessary
-      if (this._filter[indexes[i]][1] > 0) {
-        this._filter[indexes[i]][0] = 1
-      }
+    /**
+     * Allocate a CountingBloomFilter with a target maximum capacity and error rate
+     * @param  capacity - The maximum capacity of the filter
+     * @param  errorRate - The error rate of the filter
+     * @return A new {@link CountingBloomFilter}
+     */
+    public static create(
+        capacity: number,
+        errorRate: number
+    ): CountingBloomFilter {
+        const s = optimalFilterSize(capacity, errorRate)
+        return new CountingBloomFilter(s, optimalHashes(s, capacity))
     }
-    this._length++
-  }
 
-  /**
-   * Remove an element from the filter
-   * @param element - The element to delete
-   * @example
-   * ```js
-   * const filter = new CountingBloomFilter(15, 0.1);
-   * filter.remove('foo');
-   * ```
-   */
-  public remove(element: HashableInput): boolean {
-    const indexes = this._hashing.getIndexes(
-      element,
-      this._size,
-      this._nbHashes,
-      this.seed
-    )
-    const success = true
-    for (let i = 0; i < indexes.length; i++) {
-      // decrement counter
-      this._filter[indexes[i]][1] -= 1
-      // set bit if necessary
-      if (this._filter[indexes[i]][1] <= 0) {
-        this._filter[indexes[i]][0] = 0
-      }
+    /**
+     * Build a new Bloom Filter from an iterable with a fixed error rate
+     * @param items - Iterable used to populate the filter
+     * @param errorRate - The error rate of the filter
+     * @return A new Bloom Filter filled with the iterable's elements
+     * @example
+     * ```js
+     * // create a filter with a false positive rate of 0.1
+     * const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
+     * ```
+     */
+    public static from(
+        items: Iterable<HashableInput>,
+        errorRate: number
+    ): CountingBloomFilter {
+        const array = Array.from(items)
+        const filter = CountingBloomFilter.create(array.length, errorRate)
+        array.forEach(element => filter.add(element))
+        return filter
     }
-    this._length--
-    return success
-  }
 
-  /**
-   * Test an element for membership
-   * @param element - The element to look for in the filter
-   * @return False if the element is definitively not in the filter, True is the element might be in the filter
-   * @example
-   * ```js
-   * const filter = new CountingBloomFilter(15, 0.1);
-   * filter.add('foo');
-   * console.log(filter.has('foo')); // output: true
-   * console.log(filter.has('bar')); // output: false
-   * ```
-   */
-  public has(element: HashableInput): boolean {
-    const indexes = this._hashing.getIndexes(
-      element,
-      this._size,
-      this._nbHashes,
-      this.seed
-    )
-    for (let i = 0; i < indexes.length; i++) {
-      if (!this._filter[indexes[i]][0]) {
-        return false
-      }
+    /**
+     * Get the optimal size of the filter
+     */
+    public get size(): number {
+        return this._size
     }
-    return true
-  }
 
-  /**
-   * Get the current false positive rate (or error rate) of the filter
-   * @return The current false positive rate of the filter
-   * @example
-   * ```js
-   * const filter = new BloomFilter(15, 0.1);
-   * console.log(filter.rate()); // output: something around 0.1
-   * ```
-   */
-  public rate(): number {
-    return Math.pow(
-      1 - Math.exp((-this._nbHashes * this._length) / this._size),
-      this._nbHashes
-    )
-  }
-
-  /**
-   * Check if another Counting Bloom Filter is equal to this one
-   * @param  filter - The filter to compare to this one
-   * @return True if they are equal, false otherwise
-   */
-  public equals(other: CountingBloomFilter): boolean {
-    if (
-      this._size !== other._size ||
-      this._nbHashes !== other._nbHashes ||
-      this._length !== other._length
-    ) {
-      return false
+    /**
+     * Get the number of elements currently in the filter
+     */
+    public get length(): number {
+        return this._length
     }
-    return this._filter.every(
-      (value, index) =>
-        other._filter[index][0] === value[0] &&
-        other._filter[index][1] === value[1]
-    )
-  }
 
-  public saveAsJSON(): ExportedCountingBloomFilter {
-    return {
-      _length: this._length,
-      _size: this._size,
-      _nbHashes: this._nbHashes,
-      _filter: this._filter,
-      _seed: this._seed,
+    /**
+     * Add an element to the filter
+     * @param element - The element to add
+     * @example
+     * ```js
+     * const filter = new CountingBloomFilter(15, 0.1);
+     * filter.add('foo');
+     * ```
+     */
+    public add(element: HashableInput): void {
+        const indexes = this._hashing.getIndexes(
+            element,
+            this._size,
+            this._nbHashes,
+            this.seed
+        )
+        for (let i = 0; i < indexes.length; i++) {
+            // increment counter
+            this._filter[indexes[i]][1] += 1
+            // set bit if necessary
+            if (this._filter[indexes[i]][1] > 0) {
+                this._filter[indexes[i]][0] = 1
+            }
+        }
+        this._length++
     }
-  }
 
-  public static fromJSON(
-    element: ExportedCountingBloomFilter
-  ): CountingBloomFilter {
-    const bl = new CountingBloomFilter(element._size, element._nbHashes)
-    bl.seed = element._seed
-    bl._length = element._length
-    bl._filter = element._filter
-    return bl
-  }
+    /**
+     * Remove an element from the filter
+     * @param element - The element to delete
+     * @example
+     * ```js
+     * const filter = new CountingBloomFilter(15, 0.1);
+     * filter.remove('foo');
+     * ```
+     */
+    public remove(element: HashableInput): boolean {
+        const indexes = this._hashing.getIndexes(
+            element,
+            this._size,
+            this._nbHashes,
+            this.seed
+        )
+        const success = true
+        for (let i = 0; i < indexes.length; i++) {
+            // decrement counter
+            this._filter[indexes[i]][1] -= 1
+            // set bit if necessary
+            if (this._filter[indexes[i]][1] <= 0) {
+                this._filter[indexes[i]][0] = 0
+            }
+        }
+        this._length--
+        return success
+    }
+
+    /**
+     * Test an element for membership
+     * @param element - The element to look for in the filter
+     * @return False if the element is definitively not in the filter, True is the element might be in the filter
+     * @example
+     * ```js
+     * const filter = new CountingBloomFilter(15, 0.1);
+     * filter.add('foo');
+     * console.log(filter.has('foo')); // output: true
+     * console.log(filter.has('bar')); // output: false
+     * ```
+     */
+    public has(element: HashableInput): boolean {
+        const indexes = this._hashing.getIndexes(
+            element,
+            this._size,
+            this._nbHashes,
+            this.seed
+        )
+        for (let i = 0; i < indexes.length; i++) {
+            if (!this._filter[indexes[i]][0]) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /**
+     * Get the current false positive rate (or error rate) of the filter
+     * @return The current false positive rate of the filter
+     * @example
+     * ```js
+     * const filter = new BloomFilter(15, 0.1);
+     * console.log(filter.rate()); // output: something around 0.1
+     * ```
+     */
+    public rate(): number {
+        return Math.pow(
+            1 - Math.exp((-this._nbHashes * this._length) / this._size),
+            this._nbHashes
+        )
+    }
+
+    /**
+     * Check if another Counting Bloom Filter is equal to this one
+     * @param  filter - The filter to compare to this one
+     * @return True if they are equal, false otherwise
+     */
+    public equals(other: CountingBloomFilter): boolean {
+        if (
+            this._size !== other._size ||
+            this._nbHashes !== other._nbHashes ||
+            this._length !== other._length
+        ) {
+            return false
+        }
+        return this._filter.every(
+            (value, index) =>
+                other._filter[index][0] === value[0] &&
+                other._filter[index][1] === value[1]
+        )
+    }
+
+    public saveAsJSON(): ExportedCountingBloomFilter {
+        return {
+            _length: this._length,
+            _size: this._size,
+            _nbHashes: this._nbHashes,
+            _filter: this._filter,
+            _seed: this._seed,
+        }
+    }
+
+    public static fromJSON(
+        element: ExportedCountingBloomFilter
+    ): CountingBloomFilter {
+        const bl = new CountingBloomFilter(element._size, element._nbHashes)
+        bl.seed = element._seed
+        bl._length = element._length
+        bl._filter = element._filter
+        return bl
+    }
 }

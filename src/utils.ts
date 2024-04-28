@@ -36,24 +36,24 @@ SOFTWARE.
  * @memberof Utils
  */
 export interface TwoHashes {
-  first: number
-  second: number
+    first: number
+    second: number
 }
 
 /**
  * Templated TwoHashes type
  */
 export interface TwoHashesTemplated<T> {
-  first: T
-  second: T
+    first: T
+    second: T
 }
 
 /**
  * TwoHashes type in number and int format
  */
 export interface TwoHashesIntAndString {
-  int: TwoHashesTemplated<number>
-  string: TwoHashesTemplated<string>
+    int: TwoHashesTemplated<number>
+    string: TwoHashesTemplated<string>
 }
 
 /**
@@ -65,7 +65,7 @@ export type HashableInput = string | Uint8Array
  * BufferError
  */
 export const BufferError =
-  'The buffer class must be available, if you are a browser user use the buffer package (https://www.npmjs.com/package/buffer)'
+    'The buffer class must be available, if you are a browser user use the buffer package (https://www.npmjs.com/package/buffer)'
 
 /**
  * Create a new array fill with a base value
@@ -75,18 +75,18 @@ export const BufferError =
  * @memberof Utils
  */
 export function allocateArray<T>(
-  size: number,
-  defaultValue: T | (() => T)
+    size: number,
+    defaultValue: T | (() => T)
 ): Array<T> {
-  const array: Array<T> = Array.from<T>({length: size})
-  const getDefault =
-    typeof defaultValue === 'function'
-      ? (defaultValue as () => T)
-      : () => defaultValue
-  for (let ind = 0; ind < size; ind++) {
-    array[ind] = getDefault()
-  }
-  return array
+    const array: Array<T> = Array.from<T>({length: size})
+    const getDefault =
+        typeof defaultValue === 'function'
+            ? (defaultValue as () => T)
+            : () => defaultValue
+    for (let ind = 0; ind < size; ind++) {
+        array[ind] = getDefault()
+    }
+    return array
 }
 
 /**
@@ -95,11 +95,11 @@ export function allocateArray<T>(
  * @returns the HEX number padded of zeroes
  */
 export function numberToHex(elem: number): string {
-  let e = Number(elem).toString(16)
-  if (e.length % 4 !== 0) {
-    e = '0'.repeat(4 - (e.length % 4)) + e
-  }
-  return e
+    let e = Number(elem).toString(16)
+    if (e.length % 4 !== 0) {
+        e = '0'.repeat(4 - (e.length % 4)) + e
+    }
+    return e
 }
 
 /**
@@ -112,17 +112,17 @@ export function numberToHex(elem: number): string {
  * @author Thomas Minier
  */
 export function randomInt(
-  min: number,
-  max: number,
-  random?: () => number
+    min: number,
+    max: number,
+    random?: () => number
 ): number {
-  if (random === undefined) {
-    random = Math.random
-  }
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  const rn = random()
-  return Math.floor(rn * (max - min + 1)) + min
+    if (random === undefined) {
+        random = Math.random
+    }
+    min = Math.ceil(min)
+    max = Math.floor(max)
+    const rn = random()
+    return Math.floor(rn * (max - min + 1)) + min
 }
 
 /**
@@ -133,26 +133,26 @@ export function randomInt(
  * @author Arnaud Grall
  */
 export function xorBuffer(a: Buffer, b: Buffer): Buffer {
-  const length = Math.max(a.length, b.length)
-  const buffer = Buffer.allocUnsafe(length).fill(0)
-  for (let i = 0; i < length; ++i) {
-    if (i < a.length && i < b.length) {
-      buffer[length - i - 1] = a[a.length - i - 1] ^ b[b.length - i - 1]
-    } else if (i < a.length && i >= b.length) {
-      buffer[length - i - 1] ^= a[a.length - i - 1]
-    } else if (i < b.length && i >= a.length) {
-      buffer[length - i - 1] ^= b[b.length - i - 1]
+    const length = Math.max(a.length, b.length)
+    const buffer = Buffer.allocUnsafe(length).fill(0)
+    for (let i = 0; i < length; ++i) {
+        if (i < a.length && i < b.length) {
+            buffer[length - i - 1] = a[a.length - i - 1] ^ b[b.length - i - 1]
+        } else if (i < a.length && i >= b.length) {
+            buffer[length - i - 1] ^= a[a.length - i - 1]
+        } else if (i < b.length && i >= a.length) {
+            buffer[length - i - 1] ^= b[b.length - i - 1]
+        }
     }
-  }
-  // now need to remove leading zeros in the buffer if any
-  let start = 0
-  const it = buffer.values()
-  let value = it.next()
-  while (!value.done && value.value === 0) {
-    start++
-    value = it.next()
-  }
-  return buffer.slice(start)
+    // now need to remove leading zeros in the buffer if any
+    let start = 0
+    const it = buffer.values()
+    let value = it.next()
+    while (!value.done && value.value === 0) {
+        start++
+        value = it.next()
+    }
+    return buffer.slice(start)
 }
 
 /**
@@ -162,13 +162,13 @@ export function xorBuffer(a: Buffer, b: Buffer): Buffer {
  * @author Arnaud Grall
  */
 export function isEmptyBuffer(buffer: Buffer | null): boolean {
-  if (buffer === null || !buffer) return true
-  for (const value of buffer) {
-    if (value !== 0) {
-      return false
+    if (buffer === null || !buffer) return true
+    for (const value of buffer) {
+        if (value !== 0) {
+            return false
+        }
     }
-  }
-  return true
+    return true
 }
 
 /**
@@ -177,5 +177,5 @@ export function isEmptyBuffer(buffer: Buffer | null): boolean {
  * @author Arnaud Grall
  */
 export function getDefaultSeed(): number {
-  return 0x1234567890
+    return 0x1234567890
 }

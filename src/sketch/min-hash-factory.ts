@@ -31,15 +31,15 @@ import {random} from 'lodash'
  * @return True if the input is a prime number, False otherwise
  */
 function isPrime(x: number): boolean {
-  if (x !== 2 && x % 2 === 0) {
-    return false
-  }
-  for (let i = 2; i < Math.sqrt(x); i++) {
-    if (x % i === 0) {
-      return false
+    if (x !== 2 && x % 2 === 0) {
+        return false
     }
-  }
-  return true
+    for (let i = 2; i < Math.sqrt(x); i++) {
+        if (x % i === 0) {
+            return false
+        }
+    }
+    return true
 }
 
 /**
@@ -48,17 +48,17 @@ function isPrime(x: number): boolean {
  * @return The fist prime number superior to the input number
  */
 function closestPrime(x: number): number {
-  let i = 0
-  let stop = false
-  let to_return = i
-  while (!stop) {
-    if (isPrime(x + i)) {
-      to_return = x + i
-      stop = true
+    let i = 0
+    let stop = false
+    let to_return = i
+    while (!stop) {
+        if (isPrime(x + i)) {
+            to_return = x + i
+            stop = true
+        }
+        i++
     }
-    i++
-  }
-  return to_return
+    return to_return
 }
 
 /**
@@ -68,33 +68,33 @@ function closestPrime(x: number): number {
  * @author Thomas Minier
  */
 export default class MinHashFactory {
-  public _nbHashes: number
-  public _maxValue: number
-  public _hashFunctions: HashFunction[]
+    public _nbHashes: number
+    public _maxValue: number
+    public _hashFunctions: HashFunction[]
 
-  /**
-   * Constructor
-   * @param nbHashes - Number of hash functions to use for comouting the MinHash signature
-   * @param maxValue - The highest value that can be found in the set to compare
-   */
-  constructor(nbHashes: number, maxValue: number) {
-    this._nbHashes = nbHashes
-    this._maxValue = maxValue
-    this._hashFunctions = []
-    // generate hash functions
-    const c = closestPrime(this._maxValue)
-    for (let i = 0; i < this._nbHashes; i++) {
-      const a = random(0, this._maxValue, false)
-      const b = random(0, this._maxValue, false)
-      this._hashFunctions.push({a, b, c})
+    /**
+     * Constructor
+     * @param nbHashes - Number of hash functions to use for comouting the MinHash signature
+     * @param maxValue - The highest value that can be found in the set to compare
+     */
+    constructor(nbHashes: number, maxValue: number) {
+        this._nbHashes = nbHashes
+        this._maxValue = maxValue
+        this._hashFunctions = []
+        // generate hash functions
+        const c = closestPrime(this._maxValue)
+        for (let i = 0; i < this._nbHashes; i++) {
+            const a = random(0, this._maxValue, false)
+            const b = random(0, this._maxValue, false)
+            this._hashFunctions.push({a, b, c})
+        }
     }
-  }
 
-  /**
-   * Create a new MinHash set
-   * @return A new MinHash set
-   */
-  public create(): MinHash {
-    return new MinHash(this._nbHashes, this._hashFunctions)
-  }
+    /**
+     * Create a new MinHash set
+     * @return A new MinHash set
+     */
+    public create(): MinHash {
+        return new MinHash(this._nbHashes, this._hashFunctions)
+    }
 }
