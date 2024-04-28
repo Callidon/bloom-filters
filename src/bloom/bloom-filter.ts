@@ -24,10 +24,16 @@ SOFTWARE.
 
 import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter from '../base-filter'
-import BitSet from './bit-set'
-import {AutoExportable, Field, Parameter} from '../exportable'
+import BitSet, {type ExportedBitSet} from './bit-set'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 import {HashableInput} from '../utils'
+
+export type ExportedBloomFilter = {
+  _size: number
+  _nbHashes: number
+  _filter: ExportedBitSet
+  _seed: number
+}
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -38,34 +44,12 @@ import {HashableInput} from '../utils'
  * @author Thomas Minier
  * @author Arnaud Grall
  */
-@AutoExportable<BloomFilter>('BloomFilter', ['_seed'])
 export default class BloomFilter
   extends BaseFilter
   implements ClassicFilter<HashableInput>
 {
-  @Field()
   public _size: number
-
-  @Field()
   public _nbHashes: number
-
-  @Field<BitSet>(
-    f => f.export(),
-    data => {
-      // create the bitset from new and old array-based exported structure
-      if (Array.isArray(data)) {
-        const bs = new BitSet(data.length)
-        data.forEach((val: number, index: number) => {
-          if (val !== 0) {
-            bs.add(index)
-          }
-        })
-        return bs
-      } else {
-        return BitSet.import(data as {size: number; content: string})
-      }
-    }
-  )
   public _filter: BitSet
 
   /**
@@ -73,10 +57,7 @@ export default class BloomFilter
    * @param size - The number of cells
    * @param nbHashes - The number of hash functions used
    */
-  constructor(
-    @Parameter('_size') size: number,
-    @Parameter('_nbHashes') nbHashes: number
-  ) {
+  constructor(size: number, nbHashes: number) {
     super()
     if (nbHashes < 1) {
       throw new Error(
@@ -213,5 +194,32 @@ export default class BloomFilter
       return false
     }
     return this._filter.equals(other._filter)
+  }
+
+  public saveAsJson(): ExportedBloomFilter {
+    return {
+      _size: this._size,
+      _nbHashes: this._nbHashes,
+      _filter: this._filter.export(),
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(element: ExportedBloomFilter): BloomFilter {
+    const bl = new BloomFilter(element._size, element._nbHashes)
+    bl._seed = element._seed
+    const data = element._filter
+    if (Array.isArray(data)) {
+      const bs = new BitSet(data.length)
+      data.forEach((val: number, index: number) => {
+        if (val !== 0) {
+          bs.add(index)
+        }
+      })
+      bl._filter = bs
+    } else {
+      bl._filter = BitSet.import(data as {size: number; content: string})
+    }
+    return bl
   }
 }

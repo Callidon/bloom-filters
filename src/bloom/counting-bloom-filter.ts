@@ -24,9 +24,16 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 import {HashableInput, allocateArray} from '../utils'
+
+export type ExportedCountingBloomFilter = {
+  _seed: number;
+  _size: number;
+  _nbHashes: number;
+  _filter: Array<Array<number>>
+  _length: number
+}
 
 /**
  * A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.
@@ -35,18 +42,13 @@ import {HashableInput, allocateArray} from '../utils'
 684–695.
  * @author Thomas Minier & Arnaud Grall
  */
-@AutoExportable('CountingBloomFilter', ['_seed'])
 export default class CountingBloomFilter
   extends BaseFilter
   implements WritableFilter<HashableInput>
 {
-  @Field()
   public _size: number
-  @Field()
   public _nbHashes: number
-  @Field()
   public _filter: Array<Array<number>>
-  @Field()
   public _length: number
   /**
    * Constructor
@@ -54,8 +56,8 @@ export default class CountingBloomFilter
    * @param nbHashes - The number of hash functions
    */
   constructor(
-    @Parameter('_size') size: number,
-    @Parameter('_nbHashes') nbHashes: number
+    size: number,
+    nbHashes: number
   ) {
     super()
     if (nbHashes < 1) {
@@ -236,5 +238,23 @@ export default class CountingBloomFilter
         other._filter[index][0] === value[0] &&
         other._filter[index][1] === value[1]
     )
+  }
+
+  public saveAsJson(): ExportedCountingBloomFilter {
+    return {
+      _length: this._length,
+      _size: this._size,
+      _nbHashes: this._nbHashes,
+      _filter: this._filter,
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(element: ExportedCountingBloomFilter): CountingBloomFilter {
+    const bl = new CountingBloomFilter(element._size, element._nbHashes)
+    bl._seed = element._seed
+    bl._length = element._length
+    bl._filter = element._filter
+    return bl
   }
 }

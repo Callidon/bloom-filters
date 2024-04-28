@@ -24,9 +24,8 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import ClassicFilter from '../interfaces/classic-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
-import BitSet from './bit-set'
+import BitSet, { ExportedBitSet } from './bit-set'
 
 /**
  * Return the optimal number of hashes needed for a given error rate and load factor
@@ -80,6 +79,16 @@ function computeNumberOfItems(
   )
 }
 
+export type ExportedPartitionedBloomFilter = {
+  _seed: number;
+  _size: number;
+  _nbHashes: number;
+  _loadFactor: number;
+  _m: number;
+  _filter: ExportedBitSet[];
+  _capacity: number
+}
+
 /**
  * A Partitioned Bloom Filter is a variation of a classic Bloom filter.
  *
@@ -93,40 +102,17 @@ function computeNumberOfItems(
  * @see {@link https://pdfs.semanticscholar.org/0e18/e24b37a1f4196fddf8c9ff8e4368b74cfd88.pdf} for more details about Partitioned Bloom Filters
  * @author Thomas Minier & Arnaud Grall
  */
-@AutoExportable('PartitionedBloomFilter', ['_seed'])
 export default class PartitionedBloomFilter
   extends BaseFilter
   implements ClassicFilter<HashableInput>
 {
-  @Field()
   public _size: number
-  @Field()
   public _nbHashes: number
-  @Field()
   public _loadFactor: number
-  @Field()
   public _m: number
-  @Field(
-    (sets: BitSet[]) => sets.map(s => s.export()),
-    (array: Array<{size: number; content: string} | number[]>) =>
-      array.map((data: {size: number; content: string} | number[]) => {
-        // create the bitset from new and old array-based exported structure
-        if (Array.isArray(data)) {
-          const bs = new BitSet(data.length)
-          data.forEach((val: number, index: number) => {
-            if (val !== 0) {
-              bs.add(index)
-            }
-          })
-          return bs
-        } else {
-          return BitSet.import(data as {size: number; content: string})
-        }
-      })
-  )
   public _filter: Array<BitSet>
-  @Field()
   public _capacity: number
+  
   /**
    * Constructor
    * @param size - The total number of cells
@@ -135,10 +121,10 @@ export default class PartitionedBloomFilter
    * @param capacity - The filter capacity
    */
   constructor(
-    @Parameter('_size') size: number,
-    @Parameter('_nbHashes') nbHashes: number,
-    @Parameter('_loadFactor') loadFactor: number,
-    @Parameter('_capacity') capacity?: number
+    size: number,
+    nbHashes: number,
+    loadFactor: number,
+    capacity?: number
   ) {
     super()
     this._size = size
@@ -308,5 +294,25 @@ export default class PartitionedBloomFilter
     })
     const used = values.reduce((a, b) => a + b, 0)
     return used / this._size
+  }
+
+  public saveAsJson(): ExportedPartitionedBloomFilter {
+    return {
+      _size: this._size,
+      _nbHashes: this._nbHashes,
+      _filter: this._filter.map(m => m.export()),
+      _seed: this._seed,
+      _capacity: this._capacity,
+      _loadFactor: this._loadFactor,
+      _m: this._m
+    }
+  }
+
+  public static fromJSON(element: ExportedPartitionedBloomFilter): PartitionedBloomFilter {
+    const bl = new PartitionedBloomFilter(element._size, element._nbHashes, element._loadFactor, element._capacity)
+    bl._m = element._m
+    bl._seed = element._seed
+    bl._filter = element._filter.map(b => BitSet.import(b))
+    return bl
   }
 }

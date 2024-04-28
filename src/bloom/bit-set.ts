@@ -26,6 +26,11 @@ import {encode, decode} from 'base64-arraybuffer'
 
 const bitsPerWord = 8
 
+export type ExportedBitSet = {
+  size: number
+  content: string
+}
+
 /**
  * A memory-efficient Boolean array. Contains just the minimal operations needed for our Bloom filter implementation.
  *

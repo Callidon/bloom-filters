@@ -24,10 +24,17 @@ SOFTWARE.
 
 import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter, {prng} from '../base-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput} from '../utils'
-import PartitionBloomFilter from './partitioned-bloom-filter'
+import PartitionBloomFilter, { ExportedPartitionedBloomFilter } from './partitioned-bloom-filter'
 import seedrandom from 'seedrandom'
+
+export type ExportedScalableBloomFilter = {
+  _seed: number;
+  _initial_size: number;
+  _error_rate: number;
+  _ratio: number;
+  _filters: ExportedPartitionedBloomFilter[];
+}
 
 /**
  * A Scalable Bloom Filter is a variant of Bloom Filters that can adapt dynamically to the
@@ -37,7 +44,6 @@ number of elements stored, while assuring a maximum false positive probability
  * @see {@link https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.725.390&rep=rep1&type=pdf}
  * @author Thomas Minier & Arnaud Grall
  */
-@AutoExportable<ScalableBloomFilter>('ScalableBloomFilter', ['_seed'])
 export default class ScalableBloomFilter
   extends BaseFilter
   implements ClassicFilter<HashableInput>
@@ -50,40 +56,26 @@ export default class ScalableBloomFilter
   /**
    * The initial size of this filter in number of elements, not in bytes.
    */
-  @Field()
   public _initial_size: number
 
   /**
    * The error rate desired.
    */
-  @Field()
   public _error_rate: number
 
   /**
    * The load factor of each filter, By default: 0.5 half of the set
    */
-  @Field()
   public _ratio: number
 
   /**
    * Internal Partition Bloom Filters
    */
-  @Field(
-    (filters: PartitionBloomFilter[]) =>
-      filters.map(filter => filter.saveAsJSON()), // eslint-disable-line @typescript-eslint/no-unsafe-return
-    (array: []) =>
-      array.map(
-        data => PartitionBloomFilter.fromJSON(data) as PartitionBloomFilter
-      )
-  )
   public _filters: PartitionBloomFilter[] = []
 
   constructor(
-    @Parameter('_initial_size')
     _initial_size = 8,
-    @Parameter('_error_rate')
     _error_rate = 0.01,
-    @Parameter('_ratio')
     _ratio = 0.5
   ) {
     super()
@@ -202,5 +194,22 @@ export default class ScalableBloomFilter
    */
   public static create(_size: number, _error_rate: number, _ratio = 0.5) {
     return new ScalableBloomFilter(_size, _error_rate, _ratio)
+  }
+
+  public saveAsJson(): ExportedScalableBloomFilter {
+    return {
+      _initial_size: this._initial_size,
+      _error_rate: this._error_rate,
+      _filters: this._filters.map(filter => filter.saveAsJson()),
+      _seed: this._seed,
+      _ratio: this._ratio
+    }
+  }
+
+  public static fromJSON(element: ExportedScalableBloomFilter): ScalableBloomFilter {
+    const bl = new ScalableBloomFilter(element._initial_size, element._error_rate, element._ratio)
+    bl._seed = element._seed
+    bl._filters = element._filters.map(filter => PartitionBloomFilter.fromJSON(filter))
+    return bl
   }
 }

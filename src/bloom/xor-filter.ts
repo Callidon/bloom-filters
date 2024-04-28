@@ -25,9 +25,8 @@ SOFTWARE.
 // Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
 
 import BaseFilter from '../base-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray, BufferError} from '../utils'
-import XXH from 'xxhashjs'
+import XXH from '@node-rs/xxhash'
 import Long from 'long'
 import {encode, decode} from 'base64-arraybuffer'
 
@@ -39,6 +38,14 @@ CONSTANTS.set(16, 0xffff)
  * Extended HashableInput type adding the Long type from the long package for using plain 64-bits number.
  */
 export type XorHashableInput = HashableInput | Long
+
+export type ExportedXorFilter = {
+  _filter: string[];
+  _bits: 8 | 16;
+  _size: number;
+  _blockLength: number;
+  _seed: number;
+}
 
 /**
  * XOR-Filter for 8-bits and 16-bits fingerprint length.
@@ -58,7 +65,6 @@ export type XorHashableInput = HashableInput | Long
  * xor16.has('b') // false
  * ```
  */
-@AutoExportable<XorFilter>('XorFilter', ['_seed'])
 export default class XorFilter extends BaseFilter {
   public ALLOWED_FINGERPRINT_SIZES: number[] = [8, 16]
   public HASHES = 3
@@ -68,28 +74,21 @@ export default class XorFilter extends BaseFilter {
   /**
    * Buffer array of fingerprints
    */
-  @Field<Buffer[]>(
-    (d: Buffer[]) => d.map(encode),
-    (d: string[]) => d.map((e: string) => Buffer.from(decode(e)))
-  )
   public _filter: Buffer[]
 
   /**
    * Number of bits per fingerprint
    */
-  @Field()
-  public _bits = 8
+  public _bits: 8 | 16 = 8
 
   /**
    * Number of elements inserted in the filter
    */
-  @Field()
   public _size: number
 
   /**
    * Size of each block (filter size / HASHES)
    */
-  @Field()
   public _blockLength: number
 
   /**
@@ -99,8 +98,8 @@ export default class XorFilter extends BaseFilter {
    * @param bits_per_fingerprint
    */
   constructor(
-    @Parameter('_size') size: number,
-    @Parameter('_bits') bits_per_fingerprint?: 8 | 16
+    size: number,
+    bits_per_fingerprint?: 8 | 16
   ) {
     super()
     // try to use the Buffer class or reject by throwing an error
@@ -286,7 +285,7 @@ export default class XorFilter extends BaseFilter {
    * @returns
    */
   public _hashable_to_long(element: HashableInput, seed: number) {
-    return Long.fromString(XXH.h64(element, seed).toString(10), 10)
+    return Long.fromString(XXH.xxh64(element, BigInt(seed)).toString(10), 10)
   }
 
   /**
@@ -446,5 +445,24 @@ export default class XorFilter extends BaseFilter {
       buf.writeInt32LE(xor)
       this._filter[change] = buf.slice(0, this._bits / 8)
     }
+  }
+
+  public saveAsJson(): ExportedXorFilter {
+    return {
+      _size: this._size,
+      _bits: this._bits,
+      _blockLength: this._blockLength,
+      _filter: this._filter.map(encode),
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(element: ExportedXorFilter): XorFilter {
+    const bl = new XorFilter(element._size, element._bits)
+    bl._seed = element._seed
+    bl._size = element._size
+    bl._blockLength = element._blockLength
+    bl._filter = element._filter.map((e: string) => Buffer.from(decode(e)))
+    return bl
   }
 }
