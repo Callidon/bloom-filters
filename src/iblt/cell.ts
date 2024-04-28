@@ -25,7 +25,12 @@ SOFTWARE.
 import {xorBuffer} from '../utils'
 import BaseFilter from '../base-filter'
 
-const inspect = Symbol.for('nodejs.util.inspect.custom')
+export type ExportedCell = {
+  _idSum: string
+  _hashSum: string
+  _count: number
+  _seed: number
+}
 
 /**
  * A cell is an internal datastructure of an {@link InvertibleBloomFilter}.
@@ -33,17 +38,9 @@ const inspect = Symbol.for('nodejs.util.inspect.custom')
  * @author Arnaud Grall
  * @author Thomas Minier
  */
-@AutoExportable('Cell', ['_seed'])
 export default class Cell extends BaseFilter {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  @Field<Buffer>(elt => elt.toString(), Buffer.from)
   public _idSum: Buffer
-
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  @Field<Buffer>(elt => elt.toString(), Buffer.from)
   public _hashSum: Buffer
-
-  @Field()
   public _count: number
 
   /**
@@ -53,11 +50,7 @@ export default class Cell extends BaseFilter {
    * @param hashSum - The XOR of all hashed element in that cell
    * @param count - The number of elements inserted in that cell
    */
-  constructor(
-    @Parameter('_idSum') idSum: Buffer,
-    @Parameter('_hashSum') hashSum: Buffer,
-    @Parameter('_count') count: number
-  ) {
+  constructor(idSum: Buffer, hashSum: Buffer, count: number) {
     super()
     this._idSum = idSum
     this._hashSum = hashSum
@@ -74,12 +67,6 @@ export default class Cell extends BaseFilter {
       Buffer.allocUnsafe(0).fill(0),
       0
     )
-  }
-
-  [inspect]() {
-    return `Cell:<${JSON.stringify(
-      this._idSum.toJSON().data
-    )}, ${JSON.stringify(this._hashSum.toJSON().data)}, ${this._count}>`
   }
 
   /**
@@ -170,5 +157,24 @@ export default class Cell extends BaseFilter {
       this.seed
     )
     return this._hashSum.equals(Buffer.from(hashes.first))
+  }
+
+  public saveAsJSON(): ExportedCell {
+    return {
+      _idSum: this._idSum.toString(),
+      _hashSum: this._hashSum.toString(),
+      _count: this._count,
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(element: ExportedCell): Cell {
+    const filter = new Cell(
+      Buffer.from(element._idSum),
+      Buffer.from(element._hashSum),
+      element._count
+    )
+    filter.seed = element._seed
+    return filter
   }
 }

@@ -24,7 +24,7 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
-import Cell from './cell'
+import Cell, {ExportedCell} from './cell'
 import {allocateArray} from '../utils'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 
@@ -46,6 +46,13 @@ export interface IBLTDecodingResults {
   missing: Buffer[]
 }
 
+export type ExportedInvertibleBloomFilter = {
+  _size: number
+  _hashCount: number
+  _elements: Array<ExportedCell>
+  _seed: number
+}
+
 /**
  * An Invertible Bloom Lookup Table is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
  * They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction [6], in that it randomly combines elements using the XOR function
@@ -54,37 +61,12 @@ export interface IBLTDecodingResults {
  * @author Arnaud Grall
  * @author Thomas Minier
  */
-@AutoExportable('InvertibleBloomFilter', ['_seed'])
 export default class InvertibleBloomFilter
   extends BaseFilter
   implements WritableFilter<Buffer>
 {
-  @Field()
   public _size: number
-
-  @Field()
   public _hashCount: number
-
-  @Field<Array<Cell>>(undefined, (json: []) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const res: Array<Cell> = json.map(
-      (elt: {
-        _idSum: string
-        _hashSum: string
-        _count: number
-        _seed: number
-      }) => {
-        const c = new Cell(
-          Buffer.from(elt._idSum),
-          Buffer.from(elt._hashSum),
-          elt._count
-        )
-        c.seed = elt._seed
-        return c
-      }
-    )
-    return res
-  })
   public _elements: Array<Cell>
 
   /**
@@ -92,10 +74,7 @@ export default class InvertibleBloomFilter
    * @param size - The number of cells in the InvertibleBloomFilter. It should be set to d * alpha, where d is the number of difference and alpha is a constant
    * @param hashCount - The number of hash functions used (empirically studied to be 3 or 4 in most cases)
    */
-  constructor(
-    @Parameter('_size') size: number,
-    @Parameter('_hashCount') hashCount = 3
-  ) {
+  constructor(size: number, hashCount = 3) {
     super()
     if (Buffer === undefined) {
       throw new Error(
@@ -382,5 +361,23 @@ export default class InvertibleBloomFilter
         missing,
       }
     }
+  }
+
+  public saveAsJSON(): ExportedInvertibleBloomFilter {
+    return {
+      _elements: this._elements.map(e => e.saveAsJSON()),
+      _size: this._size,
+      _hashCount: this._hashCount,
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(
+    element: ExportedInvertibleBloomFilter
+  ): InvertibleBloomFilter {
+    const filter = new InvertibleBloomFilter(element._size, element._hashCount)
+    filter.seed = element._seed
+    filter._elements = element._elements.map(Cell.fromJSON)
+    return filter
   }
 }
