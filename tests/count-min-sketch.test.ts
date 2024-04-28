@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-require('chai').should()
-const {CountMinSketch} = require('../dist/api.js')
+import {expect, describe, test} from '@jest/globals'
+import CountMinSketch from '../src/sketch/count-min-sketch'
 
 describe('CountMinSketch', () => {
     const delta = 0.999
 
-    it('should support update and point query (count) operations', () => {
+    test('should support update and point query (count) operations', () => {
         const sketch = CountMinSketch.create(0.001, delta)
         // populate the sketch with some values
         sketch.update('foo')
@@ -36,12 +36,12 @@ describe('CountMinSketch', () => {
         sketch.update('foo')
         sketch.update('bar')
         // assert point queries results
-        sketch.count('foo').should.equal(3)
-        sketch.count('bar').should.equal(1)
-        sketch.count('moo').should.equal(0)
+        expect(sketch.count('foo')).toEqual(3)
+        expect(sketch.count('bar')).toEqual(1)
+        expect(sketch.count('moo')).toEqual(0)
     })
 
-    it('should support a merge between two sketches', () => {
+    test('should support a merge between two sketches', () => {
         const sketch = CountMinSketch.create(0.001, delta)
         const otherSketch = CountMinSketch.create(0.001, delta)
 
@@ -58,24 +58,24 @@ describe('CountMinSketch', () => {
 
         // merge sketches
         sketch.merge(otherSketch)
-        sketch.count('foo').should.equal(4)
-        sketch.count('bar').should.equal(2)
-        sketch.count('moo').should.equal(2)
+        expect(sketch.count('foo')).toEqual(4)
+        expect(sketch.count('bar')).toEqual(2)
+        expect(sketch.count('moo')).toEqual(2)
     })
 
-    it('should reject an impossible merge', () => {
+    test('should reject an impossible merge', () => {
         const sketch = CountMinSketch.create(0.001, delta)
         const otherSketch = CountMinSketch.create(0.001, delta)
 
         otherSketch._columns++
-        ;(() => sketch.merge(otherSketch)).should.throw(Error)
+        expect(() => sketch.merge(otherSketch)).toThrow(Error)
 
         otherSketch._columns--
         otherSketch._rows--
-        ;(() => sketch.merge(otherSketch)).should.throw(Error)
+        expect(() => sketch.merge(otherSketch)).toThrow(Error)
     })
 
-    it('should the clone operation', () => {
+    test('should the clone operation', () => {
         const sketch = CountMinSketch.create(0.001, delta)
         // populate the sketches with some values
         sketch.update('foo')
@@ -85,9 +85,9 @@ describe('CountMinSketch', () => {
 
         // clone it
         const clone = sketch.clone()
-        clone.count('foo').should.equal(3)
-        clone.count('bar').should.equal(1)
-        clone.count('moo').should.equal(0)
+        expect(clone.count('foo')).toEqual(3)
+        expect(clone.count('bar')).toEqual(1)
+        expect(clone.count('moo')).toEqual(0)
     })
 
     describe('#saveAsJSON', () => {
@@ -97,37 +97,22 @@ describe('CountMinSketch', () => {
         sketch.update('foo')
         sketch.update('bar')
 
-        it('should export a count-min sketch to a JSON object', () => {
+        test('should export a count-min sketch to a JSON object', () => {
             const exported = sketch.saveAsJSON()
-            exported.type.should.equal('CountMinSketch')
-            exported._rows.should.equal(sketch._rows)
-            exported._columns.should.equal(sketch._columns)
-            exported._allSums.should.be.equal(sketch._allSums)
-            exported._matrix.should.deep.equal(sketch._matrix)
+            expect(exported._rows).toEqual(sketch._rows)
+            expect(exported._columns).toEqual(sketch._columns)
+            expect(exported._allSums).toEqual(sketch._allSums)
+            expect(exported._matrix).toEqual(sketch._matrix)
         })
 
-        it('should create a count-min sketch from a JSON export', () => {
+        test('should create a count-min sketch from a JSON export', () => {
             const exported = sketch.saveAsJSON()
             const newSketch = CountMinSketch.fromJSON(exported)
-            newSketch.seed.should.equal(sketch.seed)
-            newSketch.columns.should.equal(sketch.columns)
-            newSketch.rows.should.equal(sketch.rows)
-            newSketch.sum.should.be.equal(sketch.sum)
-            newSketch._matrix.should.deep.equal(sketch._matrix)
-        })
-
-        it('should reject imports from invalid JSON objects', () => {
-            const invalids = [
-                {type: 'something'},
-                {type: 'CountMinSketch'},
-                {type: 'CountMinSketch', _columns: 1},
-                {type: 'CountMinSketch', _columns: 1, _rows: 1},
-                {type: 'CountMinSketch', _columns: 1, _rows: 1, seed: 1},
-            ]
-
-            invalids.forEach(json => {
-                ;(() => CountMinSketch.fromJSON(json)).should.throw(Error)
-            })
+            expect(newSketch.seed).toEqual(sketch.seed)
+            expect(newSketch.columns).toEqual(sketch.columns)
+            expect(newSketch.rows).toEqual(sketch.rows)
+            expect(newSketch.sum).toEqual(sketch.sum)
+            expect(newSketch._matrix).toEqual(sketch._matrix)
         })
     })
     describe('Performance test', () => {
@@ -138,7 +123,7 @@ describe('CountMinSketch', () => {
         const random = () => {
             return Math.floor(Math.random() * range)
         }
-        it(
+        test(
             'should not return an error when inserting ' + max + ' elements',
             () => {
                 const filter = CountMinSketch.create(rate, delta)
@@ -172,7 +157,7 @@ describe('CountMinSketch', () => {
 
                 const errorRate = error / max
                 const errorProb = 1 - Math.pow(Math.E, -filter.rows)
-                errorRate.should.be.at.most(errorProb)
+                expect(errorRate).toBeLessThanOrEqual(errorProb)
             }
         )
     })

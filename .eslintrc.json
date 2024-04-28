@@ -23,17 +23,12 @@
         "@typescript-eslint",
         "prettier"
     ],
-    "globals": {
-        "chai": "readonly",
-        "it": "readonly",
-        "expect": "readonly",
-        "describe": "readonly"
-    },
     "settings": {
         "node": {
             "allowModules": [],
             "resolvePaths": [
-                "./src"
+                "./src",
+                "./tests"
             ],
             "tryExtensions": [
                 ".ts"
@@ -50,14 +45,7 @@
             }
         ],
         "node/no-unpublished-require": [
-            "error",
-            {
-                "allowModules": [
-                    "mocha",
-                    "chai",
-                    "random"
-                ]
-            }
+            "error"
         ]
     }
 }

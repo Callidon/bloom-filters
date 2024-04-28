@@ -22,8 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import exp from 'constants'
-import {ExportedBloomFilter} from '../dist/bloom/bloom-filter'
 import {BloomFilter} from '../src/api'
 import {expect, describe, test} from '@jest/globals'
 

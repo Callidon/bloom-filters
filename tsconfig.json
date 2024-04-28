@@ -7,7 +7,7 @@
     "lib": [ "ES2015" ],
     "declaration": true,
     "strict": true,
-    "allowJs": true,
+    "allowJs": false,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

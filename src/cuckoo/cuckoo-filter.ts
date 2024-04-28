@@ -74,7 +74,7 @@ export default class CuckooFilter
      * @param size - The filter size
      * @param fLength - The length of the fingerprints
      * @param bucketSize - The size of the buckets in the filter
-     * @param maxKicks - (optional) The max number of kicks when resolving collision at insertion, default to 1
+     * @param maxKicks - (optional) The max number of kicks when resolving collision at insertion, default to 500
      */
     constructor(
         size: number,
@@ -203,7 +203,7 @@ export default class CuckooFilter
         } else {
             // buckets are full, we must relocate one of them
             let index =
-                this.random() < 0.5
+                this.random.quick() < 0.5
                     ? locations.firstIndex
                     : locations.secondIndex
             let movedElement: string = locations.fingerprint
@@ -391,20 +391,9 @@ export default class CuckooFilter
             element._bucketSize as number,
             element._maxKicks as number | undefined
         )
-        filter._length = element._length
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        filter._filter = element._filter.map((j: any) => {
-            const bucket = new Bucket<string>(j._size as number)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            j._elements.forEach((elt: any, i: number) => {
-                if (elt !== null) {
-                    bucket._elements[i] = elt
-                    bucket._length++
-                }
-            })
-            return bucket
-        })
         filter.seed = element._seed
+        filter._length = element._length
+        filter._filter = element._filter.map(Bucket.fromJSON<string>)
         return filter
     }
 }

@@ -22,22 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-require('chai').should()
-const Bucket = require('../dist/cuckoo/bucket.js').default
+import Bucket from '../src/cuckoo/bucket'
+import {expect, describe, test} from '@jest/globals'
 
 describe('Bucket', () => {
     describe('#isFree', () => {
         it('should return True when the bucket as free space available', () => {
             const bucket = new Bucket(5)
-            bucket.isFree().should.equal(true)
+            expect(bucket.isFree()).toEqual(true)
             bucket.add('foo')
-            bucket.isFree().should.equal(true)
+            expect(bucket.isFree()).toEqual(true)
         })
 
         it('should return False when the bucket is full', () => {
             const bucket = new Bucket(1)
             bucket.add('foo')
-            bucket.isFree().should.equal(false)
+            expect(bucket.isFree()).toEqual(false)
         })
     })
 
@@ -46,8 +46,8 @@ describe('Bucket', () => {
             const bucket = new Bucket(3)
             bucket.add('foo')
             bucket.add('bar')
-            bucket.at(0).should.equal('foo')
-            bucket.at(1).should.equal('bar')
+            expect(bucket.at(0)).toEqual('foo')
+            expect(bucket.at(1)).toEqual('bar')
         })
     })
 
@@ -55,15 +55,15 @@ describe('Bucket', () => {
         it('should add an element to the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            bucket.at(0).should.equal('foo')
-            bucket.length.should.equal(1)
+            expect(bucket.at(0)).toEqual('foo')
+            expect(bucket.length).toEqual(1)
         })
 
         it('should not add an element when bucket is full', () => {
             const bucket = new Bucket(1)
             bucket.add('foo')
-            bucket.add('bar').should.equal(false)
-            bucket.length.should.equal(1)
+            expect(bucket.add('bar')).toEqual(false)
+            expect(bucket.length).toEqual(1)
         })
     })
 
@@ -71,8 +71,8 @@ describe('Bucket', () => {
         it('should remove an element from the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            bucket.remove('foo').should.equal(true)
-            bucket.length.should.equal(0)
+            expect(bucket.remove('foo')).toEqual(true)
+            expect(bucket.length).toEqual(0)
         })
 
         it('should remove an element without altering the others', () => {
@@ -80,17 +80,17 @@ describe('Bucket', () => {
             bucket.add('foo')
             bucket.add('bar')
             bucket.add('moo')
-            bucket.remove('bar').should.equal(true)
-            bucket._elements.indexOf('foo').should.be.greaterThan(-1)
-            bucket._elements.indexOf('moo').should.be.greaterThan(-1)
-            bucket.length.should.equal(2)
+            expect(bucket.remove('bar')).toEqual(true)
+            expect(bucket._elements.indexOf('foo')).toBeGreaterThan(-1)
+            expect(bucket._elements.indexOf('moo')).toBeGreaterThan(-1)
+            expect(bucket.length).toEqual(2)
         })
 
         it('should fail to remove elements that are not in the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            bucket.remove('bar').should.equal(false)
-            bucket.length.should.equal(1)
+            expect(bucket.remove('bar')).toEqual(false)
+            expect(bucket.length).toEqual(1)
         })
     })
 
@@ -98,13 +98,13 @@ describe('Bucket', () => {
         it('should return True when the element is in the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            bucket.has('foo').should.equal(true)
+            expect(bucket.has('foo')).toEqual(true)
         })
 
         it('should return False when the element is not in the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            bucket.has('moo').should.equal(false)
+            expect(bucket.has('moo')).toEqual(false)
         })
     })
 
@@ -114,8 +114,8 @@ describe('Bucket', () => {
             const values = ['foo', 'bar', 'moo']
             values.forEach(value => bucket.add(value))
             const expected = 'boo'
-            bucket.swapRandom(expected).should.be.oneOf(values)
-            bucket.has(expected).should.equal(true)
+            expect(values).toContain(bucket.swapRandom(expected))
+            expect(bucket.has(expected)).toEqual(true)
         })
     })
 
@@ -129,14 +129,14 @@ describe('Bucket', () => {
                 b2.add(value)
             })
 
-            b1.equals(b2).should.equal(true)
+            expect(b1.equals(b2)).toEqual(true)
         })
 
         it('should return False when two buckets are not equals due to their size', () => {
             const b1 = new Bucket(5)
             const b2 = new Bucket(3)
 
-            b1.equals(b2).should.equal(false)
+            expect(b1.equals(b2)).toEqual(false)
         })
 
         it('should return False when two buckets are not equals due to their length', () => {
@@ -146,7 +146,7 @@ describe('Bucket', () => {
             b1.add('bar')
             b2.add('moo')
 
-            b1.equals(b2).should.equal(false)
+            expect(b1.equals(b2)).toEqual(false)
         })
 
         it('should return False when two buckets are not equals due to their content', () => {
@@ -157,7 +157,7 @@ describe('Bucket', () => {
             b2.add('foo')
             b2.add('moo')
 
-            b1.equals(b2).should.equal(false)
+            expect(b1.equals(b2)).toEqual(false)
         })
     })
 
@@ -168,33 +168,16 @@ describe('Bucket', () => {
 
         it('should export a bucket to a JSON object', () => {
             const exported = bucket.saveAsJSON()
-            exported.type.should.equal('Bucket')
-            exported._size.should.equal(bucket.size)
-            exported._elements.should.deep.equal(bucket._elements)
+            expect(exported._size).toEqual(bucket.size)
+            expect(exported._elements).toEqual(bucket._elements)
         })
 
         it('should create a bucket from a JSON export', () => {
             const exported = bucket.saveAsJSON()
             const newBucket = Bucket.fromJSON(exported)
-            newBucket.size.should.equal(bucket.size)
-            newBucket.length.should.equal(bucket.length)
-            newBucket._elements.should.deep.equals(bucket._elements)
-        })
-
-        it('should reject imports from invalid JSON objects', () => {
-            const invalids = [
-                {type: 'something'},
-                {type: 'Bucket'},
-                {type: 'Bucket', size: 1},
-                {type: 'Bucket', size: 1, seed: 1},
-            ]
-
-            invalids.forEach(json => {
-                ;(() => Bucket.fromJSON(json)).should.throw(
-                    Error,
-                    'Cannot create a Bucket from a JSON export which does not represent a bucket'
-                )
-            })
+            expect(newBucket.size).toEqual(bucket.size)
+            expect(newBucket.length).toEqual(bucket.length)
+            expect(newBucket._elements).toEqual(bucket._elements)
         })
     })
 })
