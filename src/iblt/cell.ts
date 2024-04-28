@@ -23,7 +23,6 @@ SOFTWARE.
 */
 
 import {xorBuffer} from '../utils'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import BaseFilter from '../base-filter'
 
 const inspect = Symbol.for('nodejs.util.inspect.custom')

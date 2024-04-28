@@ -25,7 +25,7 @@ SOFTWARE.
 import BaseFilter from '../base-filter'
 import ClassicFilter from '../interfaces/classic-filter'
 import {HashableInput, allocateArray} from '../utils'
-import BitSet, { ExportedBitSet } from './bit-set'
+import BitSet, {ExportedBitSet} from './bit-set'
 
 /**
  * Return the optimal number of hashes needed for a given error rate and load factor
@@ -80,12 +80,12 @@ function computeNumberOfItems(
 }
 
 export type ExportedPartitionedBloomFilter = {
-  _seed: number;
-  _size: number;
-  _nbHashes: number;
-  _loadFactor: number;
-  _m: number;
-  _filter: ExportedBitSet[];
+  _seed: number
+  _size: number
+  _nbHashes: number
+  _loadFactor: number
+  _m: number
+  _filter: ExportedBitSet[]
   _capacity: number
 }
 
@@ -112,7 +112,7 @@ export default class PartitionedBloomFilter
   public _m: number
   public _filter: Array<BitSet>
   public _capacity: number
-  
+
   /**
    * Constructor
    * @param size - The total number of cells
@@ -296,7 +296,7 @@ export default class PartitionedBloomFilter
     return used / this._size
   }
 
-  public saveAsJson(): ExportedPartitionedBloomFilter {
+  public saveAsJSON(): ExportedPartitionedBloomFilter {
     return {
       _size: this._size,
       _nbHashes: this._nbHashes,
@@ -304,14 +304,21 @@ export default class PartitionedBloomFilter
       _seed: this._seed,
       _capacity: this._capacity,
       _loadFactor: this._loadFactor,
-      _m: this._m
+      _m: this._m,
     }
   }
 
-  public static fromJSON(element: ExportedPartitionedBloomFilter): PartitionedBloomFilter {
-    const bl = new PartitionedBloomFilter(element._size, element._nbHashes, element._loadFactor, element._capacity)
+  public static fromJSON(
+    element: ExportedPartitionedBloomFilter
+  ): PartitionedBloomFilter {
+    const bl = new PartitionedBloomFilter(
+      element._size,
+      element._nbHashes,
+      element._loadFactor,
+      element._capacity
+    )
     bl._m = element._m
-    bl._seed = element._seed
+    bl.seed = element._seed
     bl._filter = element._filter.map(b => BitSet.import(b))
     return bl
   }

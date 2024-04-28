@@ -24,7 +24,6 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import CountingFilter from '../interfaces/counting-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {allocateArray, HashableInput} from '../utils'
 
 /**

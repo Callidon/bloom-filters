@@ -24,8 +24,7 @@ SOFTWARE.
 
 import WritableFilter from '../interfaces/writable-filter'
 import BaseFilter from '../base-filter'
-import Bucket from './bucket'
-import {Exportable, cloneObject} from '../exportable'
+import Bucket, {ExportedBucket} from './bucket'
 import {HashableInput, allocateArray, randomInt} from '../utils'
 
 /**
@@ -41,6 +40,16 @@ function computeFingerpintLength(size: number, rate: number): number {
   return Math.ceil(f / 8) // because we use 64-bits hashes
 }
 
+export type ExportedCuckooFilter = {
+  _size: number
+  _fingerprintLength: number
+  _length: number
+  _maxKicks: number
+  _filter: Array<ExportedBucket<string>>
+  _seed: number
+  _bucketSize: number
+}
+
 /**
  * Cuckoo filters improve on Bloom filters by supporting deletion, limited counting,
  * and bounded False positive rate with similar storage efficiency as a standard Bloom filter.
@@ -50,57 +59,6 @@ function computeFingerpintLength(size: number, rate: number): number {
  * @see {@link https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf} for more details about Cuckoo filters
  * @author Thomas Minier & Arnaud Grall
  */
-@Exportable({
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  export: cloneObject(
-    'CuckooFilter',
-    '_size',
-    '_fingerprintLength',
-    '_length',
-    '_maxKicks',
-    '_filter',
-    '_seed'
-  ),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  import: (json: any) => {
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
-    if (
-      json.type !== 'CuckooFilter' ||
-      !('_size' in json) ||
-      !('_fingerprintLength' in json) ||
-      !('_length' in json) ||
-      !('_maxKicks' in json) ||
-      !('_filter' in json) ||
-      !('_seed' in json)
-    ) {
-      throw new Error(
-        'Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter'
-      )
-    }
-    const filter = new CuckooFilter(
-      json._size as number,
-      json._fingerprintLength as number,
-      json._bucketSize as number,
-      json._maxKicks as number | undefined
-    )
-    filter._length = json._length
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    filter._filter = json._filter.map((j: any) => {
-      const bucket = new Bucket<string>(j._size as number)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      j._elements.forEach((elt: any, i: number) => {
-        if (elt !== null) {
-          bucket._elements[i] = elt
-          bucket._length++
-        }
-      })
-      return bucket
-    })
-    filter.seed = json._seed
-    return filter
-    /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
-  },
-})
 export default class CuckooFilter
   extends BaseFilter
   implements WritableFilter<HashableInput>
@@ -405,5 +363,41 @@ export default class CuckooFilter
       i++
     }
     return res
+  }
+
+  public saveAsJSON(): ExportedCuckooFilter {
+    return {
+      _size: this._size,
+      _fingerprintLength: this._fingerprintLength,
+      _length: this._length,
+      _maxKicks: this._maxKicks,
+      _filter: this._filter.map(f => f.saveAsJSON()),
+      _seed: this._seed,
+      _bucketSize: this._bucketSize,
+    }
+  }
+
+  public static fromJSON(element: ExportedCuckooFilter): CuckooFilter {
+    const filter = new CuckooFilter(
+      element._size as number,
+      element._fingerprintLength as number,
+      element._bucketSize as number,
+      element._maxKicks as number | undefined
+    )
+    filter._length = element._length
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    filter._filter = element._filter.map((j: any) => {
+      const bucket = new Bucket<string>(j._size as number)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      j._elements.forEach((elt: any, i: number) => {
+        if (elt !== null) {
+          bucket._elements[i] = elt
+          bucket._length++
+        }
+      })
+      return bucket
+    })
+    filter.seed = element._seed
+    return filter
   }
 }

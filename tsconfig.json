@@ -14,7 +14,7 @@
     "downlevelIteration": true
   },
   "include": [
-      "./src/**/*"
+      "./src/api.ts"
   ],
   "exclude": [
     "node_modules",

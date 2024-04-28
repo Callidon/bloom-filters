@@ -196,7 +196,7 @@ export default class BloomFilter
     return this._filter.equals(other._filter)
   }
 
-  public saveAsJson(): ExportedBloomFilter {
+  public saveAsJSON(): ExportedBloomFilter {
     return {
       _size: this._size,
       _nbHashes: this._nbHashes,
@@ -207,7 +207,7 @@ export default class BloomFilter
 
   public static fromJSON(element: ExportedBloomFilter): BloomFilter {
     const bl = new BloomFilter(element._size, element._nbHashes)
-    bl._seed = element._seed
+    bl.seed = element._seed
     const data = element._filter
     if (Array.isArray(data)) {
       const bs = new BitSet(data.length)

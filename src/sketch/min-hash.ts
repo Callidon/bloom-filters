@@ -23,7 +23,6 @@ SOFTWARE.
 */
 
 import BaseFilter from '../base-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {allocateArray} from '../utils'
 
 /**

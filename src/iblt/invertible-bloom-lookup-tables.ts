@@ -25,7 +25,6 @@ SOFTWARE.
 import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import Cell from './cell'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {allocateArray} from '../utils'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 

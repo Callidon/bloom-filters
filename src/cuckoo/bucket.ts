@@ -24,8 +24,12 @@ SOFTWARE.
 
 import {eq, indexOf} from 'lodash'
 import * as utils from '../utils'
-import {Exportable} from '../exportable'
-import {cloneObject} from '../exportable'
+
+export type ExportedBucket<T> = {
+  _size: number
+  _elements: Array<T | null>
+  _length: number
+}
 
 /**
  * A Bucket is a container of a fixed number of values, used in various bloom filters.
@@ -33,29 +37,6 @@ import {cloneObject} from '../exportable'
  * @author Thomas Minier
  * @private
  */
-@Exportable({
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  export: cloneObject('Bucket', '_size', '_elements'),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  import: (json: any) => {
-    if (
-      (json.type !== 'Bucket' || !('_size' in json), !('_elements' in json)) // eslint-disable-line @typescript-eslint/no-unsafe-member-access
-    ) {
-      throw new Error(
-        'Cannot create a Bucket from a JSON export which does not represent a bucket'
-      )
-    }
-    const bucket = new Bucket(json._size as number) // eslint-disable-line @typescript-eslint/no-unsafe-member-access
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    json._elements.forEach((elt: any, i: number) => {
-      if (elt !== null) {
-        bucket._elements[i] = elt
-        bucket._length++
-      }
-    })
-    return bucket
-  },
-})
 export default class Bucket<T> {
   public _elements: Array<T | null>
   public _size: number
@@ -199,5 +180,20 @@ export default class Bucket<T> {
     if (this._size !== bucket.size || this._length !== bucket.length)
       return false
     return this._elements.every((elt, index) => eq(bucket.at(index), elt))
+  }
+
+  public saveAsJSON(): ExportedBucket<T> {
+    return {
+      _size: this._size,
+      _elements: this._elements,
+      _length: this._length,
+    }
+  }
+
+  public static fromJSON<U>(element: ExportedBucket<U>): Bucket<U> {
+    const bl = new Bucket<U>(element._size)
+    bl._elements = element._elements
+    bl._length = element._length
+    return bl
   }
 }

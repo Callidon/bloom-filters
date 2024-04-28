@@ -25,15 +25,17 @@ SOFTWARE.
 import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter, {prng} from '../base-filter'
 import {HashableInput} from '../utils'
-import PartitionBloomFilter, { ExportedPartitionedBloomFilter } from './partitioned-bloom-filter'
+import PartitionBloomFilter, {
+  ExportedPartitionedBloomFilter,
+} from './partitioned-bloom-filter'
 import seedrandom from 'seedrandom'
 
 export type ExportedScalableBloomFilter = {
-  _seed: number;
-  _initial_size: number;
-  _error_rate: number;
-  _ratio: number;
-  _filters: ExportedPartitionedBloomFilter[];
+  _seed: number
+  _initial_size: number
+  _error_rate: number
+  _ratio: number
+  _filters: ExportedPartitionedBloomFilter[]
 }
 
 /**
@@ -73,11 +75,7 @@ export default class ScalableBloomFilter
    */
   public _filters: PartitionBloomFilter[] = []
 
-  constructor(
-    _initial_size = 8,
-    _error_rate = 0.01,
-    _ratio = 0.5
-  ) {
+  constructor(_initial_size = 8, _error_rate = 0.01, _ratio = 0.5) {
     super()
     this._initial_size = _initial_size
     this._error_rate = _error_rate
@@ -196,20 +194,28 @@ export default class ScalableBloomFilter
     return new ScalableBloomFilter(_size, _error_rate, _ratio)
   }
 
-  public saveAsJson(): ExportedScalableBloomFilter {
+  public saveAsJSON(): ExportedScalableBloomFilter {
     return {
       _initial_size: this._initial_size,
       _error_rate: this._error_rate,
-      _filters: this._filters.map(filter => filter.saveAsJson()),
+      _filters: this._filters.map(filter => filter.saveAsJSON()),
       _seed: this._seed,
-      _ratio: this._ratio
+      _ratio: this._ratio,
     }
   }
 
-  public static fromJSON(element: ExportedScalableBloomFilter): ScalableBloomFilter {
-    const bl = new ScalableBloomFilter(element._initial_size, element._error_rate, element._ratio)
-    bl._seed = element._seed
-    bl._filters = element._filters.map(filter => PartitionBloomFilter.fromJSON(filter))
+  public static fromJSON(
+    element: ExportedScalableBloomFilter
+  ): ScalableBloomFilter {
+    const bl = new ScalableBloomFilter(
+      element._initial_size,
+      element._error_rate,
+      element._ratio
+    )
+    bl.seed = element._seed
+    bl._filters = element._filters.map(filter =>
+      PartitionBloomFilter.fromJSON(filter)
+    )
     return bl
   }
 }

@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "pretest": "yarn lint && yarn build",
-    "test": "jest tests/**-test.ts",
+    "test": "jest",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
     "lint": "yarn prettier && yarn oxlint --tsconfig tsconfig.json -c .eslintrc.json",
     "slint": "eslint src/",

@@ -23,7 +23,6 @@ SOFTWARE.
 */
 
 import BaseFilter from '../base-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm

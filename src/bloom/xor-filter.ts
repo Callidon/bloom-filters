@@ -40,11 +40,11 @@ CONSTANTS.set(16, 0xffff)
 export type XorHashableInput = HashableInput | Long
 
 export type ExportedXorFilter = {
-  _filter: string[];
-  _bits: 8 | 16;
-  _size: number;
-  _blockLength: number;
-  _seed: number;
+  _filter: string[]
+  _bits: 8 | 16
+  _size: number
+  _blockLength: number
+  _seed: number
 }
 
 /**
@@ -97,10 +97,7 @@ export default class XorFilter extends BaseFilter {
    * @param size
    * @param bits_per_fingerprint
    */
-  constructor(
-    size: number,
-    bits_per_fingerprint?: 8 | 16
-  ) {
+  constructor(size: number, bits_per_fingerprint?: 8 | 16) {
     super()
     // try to use the Buffer class or reject by throwing an error
     if (!Buffer) {
@@ -447,7 +444,7 @@ export default class XorFilter extends BaseFilter {
     }
   }
 
-  public saveAsJson(): ExportedXorFilter {
+  public saveAsJSON(): ExportedXorFilter {
     return {
       _size: this._size,
       _bits: this._bits,
@@ -459,7 +456,7 @@ export default class XorFilter extends BaseFilter {
 
   public static fromJSON(element: ExportedXorFilter): XorFilter {
     const bl = new XorFilter(element._size, element._bits)
-    bl._seed = element._seed
+    bl.seed = element._seed
     bl._size = element._size
     bl._blockLength = element._blockLength
     bl._filter = element._filter.map((e: string) => Buffer.from(decode(e)))

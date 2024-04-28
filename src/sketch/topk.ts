@@ -24,7 +24,6 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import CountMinSketch from './count-min-sketch'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {sortedIndexBy} from 'lodash'
 
 /**

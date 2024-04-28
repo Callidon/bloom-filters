@@ -28,9 +28,9 @@ import {optimalFilterSize, optimalHashes} from '../formulas'
 import {HashableInput, allocateArray} from '../utils'
 
 export type ExportedCountingBloomFilter = {
-  _seed: number;
-  _size: number;
-  _nbHashes: number;
+  _seed: number
+  _size: number
+  _nbHashes: number
   _filter: Array<Array<number>>
   _length: number
 }
@@ -55,10 +55,7 @@ export default class CountingBloomFilter
    * @param size - The size of the filter
    * @param nbHashes - The number of hash functions
    */
-  constructor(
-    size: number,
-    nbHashes: number
-  ) {
+  constructor(size: number, nbHashes: number) {
     super()
     if (nbHashes < 1) {
       throw new Error(
@@ -240,7 +237,7 @@ export default class CountingBloomFilter
     )
   }
 
-  public saveAsJson(): ExportedCountingBloomFilter {
+  public saveAsJSON(): ExportedCountingBloomFilter {
     return {
       _length: this._length,
       _size: this._size,
@@ -250,9 +247,11 @@ export default class CountingBloomFilter
     }
   }
 
-  public static fromJSON(element: ExportedCountingBloomFilter): CountingBloomFilter {
+  public static fromJSON(
+    element: ExportedCountingBloomFilter
+  ): CountingBloomFilter {
     const bl = new CountingBloomFilter(element._size, element._nbHashes)
-    bl._seed = element._seed
+    bl.seed = element._seed
     bl._length = element._length
     bl._filter = element._filter
     return bl
