@@ -9,7 +9,7 @@
     "pretest": "yarn lint && yarn build",
     "test": "jest",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
-    "lint": "yarn prettier && yarn oxlint --tsconfig tsconfig.json -c .eslintrc.json",
+    "lint": "yarn prettier && yarn oxlint --tsconfig tsconfig.json -c .eslintrc.json -D Correctness",
     "slint": "eslint src/",
     "prettier": "prettier --config package.json --write \"(src|tests)/**/*.(t|j)s\"",
     "clean": "rimraf docs/ dist/ build/",
@@ -83,7 +83,7 @@
   },
   "prettier": {
     "semi": false,
-    "tabWidth": 2,
+    "tabWidth": 4,
     "endOfLine": "auto",
     "bracketSpacing": false,
     "singleQuote": true,
