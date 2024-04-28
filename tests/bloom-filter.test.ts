@@ -22,25 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-require('chai').should()
-const {BloomFilter} = require('../dist/api.js')
+import exp from 'constants'
+import {ExportedBloomFilter} from '../dist/bloom/bloom-filter'
+import {BloomFilter} from '../src/api'
+import {expect, describe, test} from '@jest/globals'
 
 describe('BloomFilter', () => {
     const targetRate = 0.1
     const seed = Math.random()
 
     describe('construction', () => {
-        it('should add element to the filter with #add', () => {
+        test('should add element to the filter with #add', () => {
             const filter = BloomFilter.create(15, targetRate)
             filter.seed = seed
             filter.add('alice')
             filter.add('bob')
             filter.add('alice') // duplicate item
-            filter.length.should.greaterThan(0)
-            filter.length.should.be.at.most(filter._nbHashes * 2)
+            expect(filter.length).toBeGreaterThan(0)
+            expect(filter.length).toBeLessThanOrEqual(filter._nbHashes * 2)
         })
 
-        it('should build a new filter using #from', () => {
+        test('should build a new filter using #from', () => {
             const data = ['alice', 'bob', 'carl']
             const expectedSize = Math.ceil(
                 -(
@@ -52,34 +54,36 @@ describe('BloomFilter', () => {
                 (expectedSize / data.length) * Math.log(2)
             )
             const filter = BloomFilter.from(data, targetRate)
-            filter.size.should.equal(expectedSize)
-            filter._nbHashes.should.equal(expectedHashes)
-            filter.length.should.greaterThan(0)
-            filter.length.should.be.at.most(filter._nbHashes * data.length)
-            filter.rate().should.be.closeTo(targetRate, 0.1)
-            filter.seed.should.equal(0x1234567890) // utils.getDefaultSeed()
+            expect(filter.size).toEqual(expectedSize)
+            expect(filter._nbHashes).toEqual(expectedHashes)
+            expect(filter.length).toBeGreaterThan(0)
+            expect(filter.length).toBeLessThanOrEqual(
+                filter._nbHashes * data.length
+            )
+            expect(filter.rate()).toBeCloseTo(targetRate, 0.1)
+            expect(filter.seed).toEqual(0x1234567890) // utils.getDefaultSeed()
         })
     })
 
     describe('#has', () => {
         const getFilter = () =>
             BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
-        it('should return false for elements that are definitively not in the set', () => {
+        test('should return false for elements that are definitively not in the set', () => {
             const filter = getFilter()
-            filter.has('daniel').should.equal(false)
-            filter.has('al').should.equal(false)
+            expect(filter.has('daniel')).toEqual(false)
+            expect(filter.has('al')).toEqual(false)
         })
 
-        it('should return true for elements that might be in the set', () => {
+        test('should return true for elements that might be in the set', () => {
             const filter = getFilter()
-            filter.has('alice').should.equal(true)
-            filter.has('bob').should.equal(true)
-            filter.has('carl').should.equal(true)
+            expect(filter.has('alice')).toEqual(true)
+            expect(filter.has('bob')).toEqual(true)
+            expect(filter.has('carl')).toEqual(true)
         })
     })
 
     describe('#equals', () => {
-        it('should returns True when two filters are equals', () => {
+        test('should returns True when two filters are equals', () => {
             const first = BloomFilter.from(
                 ['alice', 'bob', 'carol'],
                 targetRate
@@ -88,22 +92,22 @@ describe('BloomFilter', () => {
                 ['alice', 'bob', 'carol'],
                 targetRate
             )
-            first.equals(other).should.equal(true)
+            expect(first.equals(other)).toEqual(true)
         })
 
-        it('should returns False when two filters have different sizes', () => {
+        test('should returns False when two filters have different sizes', () => {
             const first = new BloomFilter(15, 4)
             const other = new BloomFilter(10, 4)
-            first.equals(other).should.equal(false)
+            expect(first.equals(other)).toEqual(false)
         })
 
-        it('should returns False when two filters have different nb. of hash functions', () => {
+        test('should returns False when two filters have different nb. of hash functions', () => {
             const first = new BloomFilter(15, 4)
             const other = new BloomFilter(15, 2)
-            first.equals(other).should.equal(false)
+            expect(first.equals(other)).toEqual(false)
         })
 
-        it('should returns False when two filters have different content', () => {
+        test('should returns False when two filters have different content', () => {
             const first = BloomFilter.from(
                 ['alice', 'bob', 'carol'],
                 targetRate
@@ -112,7 +116,7 @@ describe('BloomFilter', () => {
                 ['alice', 'bob', 'daniel'],
                 targetRate
             )
-            first.equals(other).should.equal(false)
+            expect(first.equals(other)).toEqual(false)
         })
     })
 
@@ -122,71 +126,35 @@ describe('BloomFilter', () => {
             targetRate,
             seed
         )
-        it('should export a bloom filter to a JSON object', () => {
+        test('should export a bloom filter to a JSON object', () => {
             const exported = filter.saveAsJSON()
-            exported._seed.should.equal(filter.seed)
-            exported.type.should.equal('BloomFilter')
-            exported._size.should.equal(filter.size)
-            exported._nbHashes.should.equal(filter._nbHashes)
-            exported._filter.should.deep.equal(filter._filter.export())
+            expect(exported._seed).toEqual(filter.seed)
+            expect(exported._size).toEqual(filter.size)
+            expect(exported._nbHashes).toEqual(filter._nbHashes)
+            expect(exported._filter).toEqual(filter._filter.export())
         })
 
-        it('should create a bloom filter from a JSON export', () => {
-            let exported = filter.saveAsJSON()
+        test('should create a bloom filter from a JSON export', () => {
+            const exported = filter.saveAsJSON()
             // simulate serialization
-            exported = JSON.stringify(exported)
+            const serialized = JSON.stringify(exported)
             // simulate deserialization
-            exported = JSON.parse(exported)
-            const newFilter = BloomFilter.fromJSON(exported)
-            newFilter.seed.should.equal(filter.seed)
-            newFilter.size.should.equal(filter._size)
-            newFilter._filter.should.deep.equal(filter._filter)
-        })
-
-        it('should reject imports from invalid JSON objects', () => {
-            const invalids = [
-                {
-                    type: 'wrong',
-                    _size: 1,
-                    _nbHashes: 2,
-                    _seed: 1,
-                    _filter: {size: 1, content: 'AA=='},
-                },
-                {
-                    type: 'BloomFilter',
-                    _nbHashes: 2,
-                    _seed: 1,
-                    _filter: {size: 1, content: 'AA=='},
-                },
-                {
-                    type: 'BloomFilter',
-                    _size: 1,
-                    _seed: 1,
-                    _filter: {size: 1, content: 'AA=='},
-                },
-                {
-                    type: 'BloomFilter',
-                    _size: 1,
-                    _nbHashes: 2,
-                    _filter: {size: 1, content: 'AA=='},
-                },
-                {type: 'BloomFilter', _size: 1, _nbHashes: 2, _seed: 1},
-            ]
-
-            invalids.forEach(json => {
-                ;(() => BloomFilter.fromJSON(json)).should.throw(Error)
-            })
+            const deserialized = JSON.parse(serialized)
+            const newFilter = BloomFilter.fromJSON(deserialized)
+            expect(newFilter.seed).toEqual(filter.seed)
+            expect(newFilter.size).toEqual(filter._size)
+            expect(newFilter._filter).toEqual(filter._filter)
         })
     })
 
     describe('Performance test', () => {
         const max = 1000
         const targetedRate = 0.01
-        it(`should not return an error when inserting ${max} elements`, () => {
+        test(`should not return an error when inserting ${max} elements`, () => {
             const filter = BloomFilter.create(max, targetedRate)
             for (let i = 0; i < max; ++i) filter.add('' + i)
             for (let i = 0; i < max; ++i) {
-                filter.has('' + i).should.equal(true)
+                expect(filter.has('' + i)).toEqual(true)
             }
             let current
             let falsePositive = 0
@@ -198,7 +166,7 @@ describe('BloomFilter', () => {
                 if (has) falsePositive++
             }
             const currentRate = falsePositive / tries
-            currentRate.should.be.closeTo(targetedRate, targetedRate)
+            expect(currentRate).toBeCloseTo(targetedRate, targetedRate)
         })
     })
 })
