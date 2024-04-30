@@ -77,8 +77,8 @@ export const BufferError =
 export function allocateArray<T>(
     size: number,
     defaultValue: T | (() => T)
-): Array<T> {
-    const array: Array<T> = Array.from<T>({length: size})
+): T[] {
+    const array: T[] = Array.from<T>({ length: size })
     const getDefault =
         typeof defaultValue === 'function'
             ? (defaultValue as () => T)
@@ -162,7 +162,7 @@ export function xorBuffer(a: Buffer, b: Buffer): Buffer {
  * @author Arnaud Grall
  */
 export function isEmptyBuffer(buffer: Buffer | null): boolean {
-    if (buffer === null || !buffer) return true
+    if (buffer === null) return true
     for (const value of buffer) {
         if (value !== 0) {
             return false
