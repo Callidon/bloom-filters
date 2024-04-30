@@ -23,14 +23,14 @@ SOFTWARE.
 */
 
 import BaseFilter from '../base-filter'
-import CountMinSketch, {ExportedCountMinSketch} from './count-min-sketch'
-import {sortedIndexBy} from 'lodash'
+import CountMinSketch, { ExportedCountMinSketch } from './count-min-sketch'
+import { sortedIndexBy } from 'lodash'
 
 /**
  * An element in a MinHeap
  * @author Thomas Minier
  */
-interface HeapElement {
+export interface HeapElement {
     value: string
     frequency: number
 }
@@ -39,11 +39,11 @@ interface HeapElement {
  * An element in a TopK
  * @author Thomas Minier
  */
-interface TopkElement extends HeapElement {
+export interface TopkElement extends HeapElement {
     rank: number
 }
 
-export type ExportedMinHeap = {
+export interface ExportedMinHeap {
     _content: HeapElement[]
 }
 
@@ -149,7 +149,7 @@ export class MinHeap {
     }
 }
 
-export type ExportedTopK = {
+export interface ExportedTopK {
     _seed: number
     _k: number
     _errorRate: number
@@ -193,7 +193,7 @@ export default class TopK extends BaseFilter {
      */
     public add(element: string, count = 1): void {
         if (0 >= count) {
-            throw `count must be > 0 (was ${count})`
+            throw new Error(`count must be > 0 (was ${count.toString()})`)
         }
         this._sketch.update(element, count)
         const frequency = this._sketch.count(element)
@@ -254,7 +254,7 @@ export default class TopK extends BaseFilter {
      * while the iteration is not completed, otherwise the generated values may not respect the TopK properties.
      * @return The top-k values as an iterator of object {value: string, frequency: number, rank: number}
      */
-    public iterator(): Iterator<TopkElement> {
+    public iterator(): Generator<TopkElement> {
         const heap = this._heap
         return (function* () {
             for (let i = heap.length - 1; i >= 0; i--) {
