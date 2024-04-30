@@ -26,7 +26,8 @@ jobs:
     - name: Install package
       if: steps.cache.outputs.cache-hit != 'true'
       run: npm install -g yarn && yarn install
-    - name: Build TS
-      run: yarn build
-    - name: Test package and Code coverage
-      run: yarn test:ci
+    - name: Test
+      run: yarn test
+    - name: Bundle
+      run: yarn rbuild
+
