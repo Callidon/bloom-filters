@@ -9,11 +9,6 @@ module.exports = defineConfig({
     resolve: {
         tsConfigPath: path.resolve(__dirname, "tsconfig.json"),
         extensions: ["...", ".ts"],
-        byDependency: {
-            '@node-rs/xxhash-wasm32-wasi': {
-
-            }
-        }
     },
     module: {
         rules: [
@@ -24,7 +19,7 @@ module.exports = defineConfig({
                         loader: 'builtin:swc-loader',
                         options: {
                             sourceMap: false,
-                            target: "es2022",
+                            target: "es6",
                             jsc: {
                                 parser: {
                                     syntax: 'typescript'
