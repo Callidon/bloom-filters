@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {expect, describe, test} from '@jest/globals'
+import { expect, describe, test } from '@jest/globals'
 import CountMinSketch from '../src/sketch/count-min-sketch'
 
 describe('CountMinSketch', () => {
@@ -68,11 +68,15 @@ describe('CountMinSketch', () => {
         const otherSketch = CountMinSketch.create(0.001, delta)
 
         otherSketch._columns++
-        expect(() => sketch.merge(otherSketch)).toThrow(Error)
+        expect(() => {
+            sketch.merge(otherSketch)
+        }).toThrow(Error)
 
         otherSketch._columns--
         otherSketch._rows--
-        expect(() => sketch.merge(otherSketch)).toThrow(Error)
+        expect(() => {
+            sketch.merge(otherSketch)
+        }).toThrow(Error)
     })
 
     test('should the clone operation', () => {

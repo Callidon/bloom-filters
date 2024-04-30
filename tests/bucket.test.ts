@@ -23,21 +23,21 @@ SOFTWARE.
 */
 
 import Bucket from '../src/cuckoo/bucket'
-import {expect, describe, test} from '@jest/globals'
+import { expect, describe, test } from '@jest/globals'
 
 describe('Bucket', () => {
     describe('#isFree', () => {
         it('should return True when the bucket as free space available', () => {
             const bucket = new Bucket(5)
-            expect(bucket.isFree()).toEqual(true)
+            expect(bucket.isFree()).toBe(true)
             bucket.add('foo')
-            expect(bucket.isFree()).toEqual(true)
+            expect(bucket.isFree()).toBe(true)
         })
 
         it('should return False when the bucket is full', () => {
             const bucket = new Bucket(1)
             bucket.add('foo')
-            expect(bucket.isFree()).toEqual(false)
+            expect(bucket.isFree()).toBe(false)
         })
     })
 
@@ -62,7 +62,7 @@ describe('Bucket', () => {
         it('should not add an element when bucket is full', () => {
             const bucket = new Bucket(1)
             bucket.add('foo')
-            expect(bucket.add('bar')).toEqual(false)
+            expect(bucket.add('bar')).toBe(false)
             expect(bucket.length).toEqual(1)
         })
     })
@@ -71,7 +71,7 @@ describe('Bucket', () => {
         it('should remove an element from the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            expect(bucket.remove('foo')).toEqual(true)
+            expect(bucket.remove('foo')).toBe(true)
             expect(bucket.length).toEqual(0)
         })
 
@@ -80,7 +80,7 @@ describe('Bucket', () => {
             bucket.add('foo')
             bucket.add('bar')
             bucket.add('moo')
-            expect(bucket.remove('bar')).toEqual(true)
+            expect(bucket.remove('bar')).toBe(true)
             expect(bucket._elements.indexOf('foo')).toBeGreaterThan(-1)
             expect(bucket._elements.indexOf('moo')).toBeGreaterThan(-1)
             expect(bucket.length).toEqual(2)
@@ -89,7 +89,7 @@ describe('Bucket', () => {
         it('should fail to remove elements that are not in the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            expect(bucket.remove('bar')).toEqual(false)
+            expect(bucket.remove('bar')).toBe(false)
             expect(bucket.length).toEqual(1)
         })
     })
@@ -98,13 +98,13 @@ describe('Bucket', () => {
         it('should return True when the element is in the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            expect(bucket.has('foo')).toEqual(true)
+            expect(bucket.has('foo')).toBe(true)
         })
 
         it('should return False when the element is not in the bucket', () => {
             const bucket = new Bucket(5)
             bucket.add('foo')
-            expect(bucket.has('moo')).toEqual(false)
+            expect(bucket.has('moo')).toBe(false)
         })
     })
 
@@ -115,7 +115,7 @@ describe('Bucket', () => {
             values.forEach(value => bucket.add(value))
             const expected = 'boo'
             expect(values).toContain(bucket.swapRandom(expected))
-            expect(bucket.has(expected)).toEqual(true)
+            expect(bucket.has(expected)).toBe(true)
         })
     })
 
@@ -129,14 +129,14 @@ describe('Bucket', () => {
                 b2.add(value)
             })
 
-            expect(b1.equals(b2)).toEqual(true)
+            expect(b1.equals(b2)).toBe(true)
         })
 
         it('should return False when two buckets are not equals due to their size', () => {
             const b1 = new Bucket(5)
             const b2 = new Bucket(3)
 
-            expect(b1.equals(b2)).toEqual(false)
+            expect(b1.equals(b2)).toBe(false)
         })
 
         it('should return False when two buckets are not equals due to their length', () => {
@@ -146,7 +146,7 @@ describe('Bucket', () => {
             b1.add('bar')
             b2.add('moo')
 
-            expect(b1.equals(b2)).toEqual(false)
+            expect(b1.equals(b2)).toBe(false)
         })
 
         it('should return False when two buckets are not equals due to their content', () => {
@@ -157,7 +157,7 @@ describe('Bucket', () => {
             b2.add('foo')
             b2.add('moo')
 
-            expect(b1.equals(b2)).toEqual(false)
+            expect(b1.equals(b2)).toBe(false)
         })
     })
 

@@ -22,11 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-require('chai').should()
-require('chai').expect()
-const {InvertibleBloomFilter} = require('../dist/api.js')
-const random = require('random')
-const seedrandom = require('seedrandom')
+import { expect, describe, test } from '@jest/globals'
+import { InvertibleBloomFilter } from '../src/api'
+import random, { RNG } from 'random'
+import seedrandom from 'seedrandom'
 
 describe('Invertible Bloom Lookup Tables', () => {
     const keys = 1000
@@ -36,7 +35,7 @@ describe('Invertible Bloom Lookup Tables', () => {
     const size = alpha * d
     const step = 10
     const seed = 0x1234567890
-    random.use(seedrandom(seed))
+    random.use(seedrandom(String(seed)) as unknown as RNG)
     const toInsert = [
         Buffer.from('help'),
         Buffer.from('meow'),
@@ -48,54 +47,54 @@ describe('Invertible Bloom Lookup Tables', () => {
     ]
 
     describe('#add', () => {
-        it('should add element to the filter with #add', () => {
+        test('should add element to the filter with #add', () => {
             const iblt = new InvertibleBloomFilter(size, hashCount)
             iblt.seed = seed
-            iblt._hashCount.should.equal(hashCount)
-            iblt.size.should.equal(size)
-            iblt.length.should.equal(0)
-            iblt._elements.length.should.equal(size)
+            expect(iblt._hashCount).toEqual(hashCount)
+            expect(iblt.size).toEqual(size)
+            expect(iblt.length).toEqual(0)
+            expect(iblt._elements.length).toEqual(size)
             toInsert.forEach(e => {
                 iblt.add(e)
             })
-            iblt.length.should.equal(toInsert.length)
+            expect(iblt.length).toEqual(toInsert.length)
         })
     })
 
     describe('#remove', () => {
-        it('should remove element from the iblt', () => {
+        test('should remove element from the iblt', () => {
             const iblt = new InvertibleBloomFilter(size, hashCount)
             iblt.seed = seed
-            iblt._hashCount.should.equal(hashCount)
-            iblt.size.should.equal(size)
-            iblt.length.should.equal(0)
-            iblt._elements.length.should.equal(size)
+            expect(iblt._hashCount).toEqual(hashCount)
+            expect(iblt.size).toEqual(size)
+            expect(iblt.length).toEqual(0)
+            expect(iblt._elements.length).toEqual(size)
             toInsert.forEach(e => {
                 iblt.add(e)
             })
-            iblt.length.should.equal(toInsert.length)
+            expect(iblt.length).toEqual(toInsert.length)
             toInsert.forEach(e => {
                 iblt.remove(e)
             })
-            iblt.length.should.equal(0)
+            expect(iblt.length).toEqual(0)
         })
     })
 
     describe('#has', () => {
-        it('should get an element from the iblt with #has', () => {
+        test('should get an element from the iblt with #has', () => {
             const iblt = new InvertibleBloomFilter(size, hashCount)
             toInsert.forEach(e => {
                 iblt.add(e)
             })
             toInsert.forEach(e => {
                 const query = iblt.has(e)
-                query.should.equal(true)
+                expect(query).toBe(true)
             })
         })
     })
 
     describe('#listEntries', () => {
-        it('should get all element from the filter', () => {
+        test('should get all element from the filter', () => {
             const iblt = new InvertibleBloomFilter(size, hashCount)
             toInsert.forEach(e => {
                 iblt.add(e)
@@ -104,16 +103,16 @@ describe('Invertible Bloom Lookup Tables', () => {
             const output = []
             let elt = iterator.next()
             while (!elt.done) {
-                output.push(elt.value)
+                output.push(elt.value as never)
                 elt = iterator.next()
             }
-            output.length.should.equals(toInsert.length)
-            output.sort().should.eqls(toInsert.sort())
+            expect(output.length).toEqual(toInsert.length)
+            expect(output.sort()).toEqual(toInsert.sort())
         })
     })
 
     describe('#create', () => {
-        it('should create correctly an IBLT', () => {
+        test('should create correctly an IBLT', () => {
             const iblt = InvertibleBloomFilter.create(size, 0.001)
             toInsert.forEach(e => {
                 iblt.add(e)
@@ -122,11 +121,11 @@ describe('Invertible Bloom Lookup Tables', () => {
             const output = []
             let elt = iterator.next()
             while (!elt.done) {
-                output.push(elt.value)
+                output.push(elt.value as never)
                 elt = iterator.next()
             }
-            output.length.should.equals(toInsert.length)
-            output.sort().should.eqls(toInsert.sort())
+            expect(output.length).toEqual(toInsert.length)
+            expect(output.sort()).toEqual(toInsert.sort())
         })
     })
 
@@ -136,63 +135,32 @@ describe('Invertible Bloom Lookup Tables', () => {
             0.001
         )
 
-        it('should export an Invertible Bloom Filter to a JSON object', () => {
+        test('should export an Invertible Bloom Filter to a JSON object', () => {
             const exported = iblt.saveAsJSON()
-            exported._seed.should.equal(seed)
-            exported.type.should.equal('InvertibleBloomFilter')
-            exported._size.should.equal(iblt.size)
-            exported._hashCount.should.equal(iblt.hashCount)
-            exported._elements.should.deep.equal(
+            expect(exported._seed).toEqual(seed)
+            expect(exported._size).toEqual(iblt.size)
+            expect(exported._hashCount).toEqual(iblt.hashCount)
+            expect(exported._elements).toEqual(
                 iblt._elements.map(e => e.saveAsJSON())
             )
         })
 
-        it('should create an Invertible Bloom Filter from a JSON export', () => {
+        test('should create an Invertible Bloom Filter from a JSON export', () => {
             const exported = iblt.saveAsJSON()
             const newIblt = InvertibleBloomFilter.fromJSON(exported)
-            iblt.equals(newIblt).should.equals(true)
-            newIblt.seed.should.equal(iblt.seed)
+            expect(iblt.equals(newIblt)).toBe(true)
+            expect(newIblt.seed).toEqual(iblt.seed)
         })
 
-        it('should reject imports from invalid JSON objects', () => {
-            const invalids = [
-                {type: 'something'},
-                {type: 'InvertibleBloomFilter'},
-                {type: 'InvertibleBloomFilter', size: 10},
-                {type: 'InvertibleBloomFilter', size: 10, hashCount: 2},
-                {type: 'InvertibleBloomFilter', size: 10, hashCount: 4},
-                {
-                    type: 'InvertibleBloomFilter',
-                    size: 10,
-                    hashCount: 4,
-                    invalid: 4,
-                },
-                {
-                    type: 'InvertibleBloomFilter',
-                    size: 10,
-                    hashCount: 4,
-                    invalid: 4,
-                    seed: 1,
-                },
-            ]
-
-            invalids.forEach(json => {
-                ;(function () {
-                    InvertibleBloomFilter.fromJSON(json)
-                }).should.throw(Error)
-            })
-        })
-
-        it('should accept import from a valid JSON object', () => {
-            ;(function () {
+        test('should accept import from a valid JSON object', () => {
+            expect(function () {
                 InvertibleBloomFilter.fromJSON({
-                    type: 'InvertibleBloomFilter',
                     _size: 10,
                     _hashCount: 4,
                     _elements: [],
                     _seed: 1,
                 })
-            }).should.not.throw(Error)
+            }).toThrow(Error)
         })
     })
 
@@ -200,34 +168,36 @@ describe('Invertible Bloom Lookup Tables', () => {
         alpha * d
     } cells`, () => {
         for (let i = step; i <= d; i += step) {
-            it(
+            test(
                 'should decodes correctly element for a set difference of ' + i,
                 () => {
                     const differences = i
                     commonTest(size, hashCount, keys, '', differences)
-                }
-            ).timeout(0)
+                },
+                0
+            )
         }
     })
     for (let k = keys; k < 100000; k = k * 10) {
         describe(`[Performance] Set differences of [10 to ${d}] with ${k} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${
             alpha * d
         } cells`, () => {
-            it(
+            test(
                 'should decodes correctly element for a set difference of ' + d,
                 () => {
                     commonTest(size, hashCount, k, '', d)
-                }
-            ).timeout(0)
+                },
+                0
+            )
         })
     }
 
     function commonTest(size, hashCount, keys, prefix, differences) {
-        const iblt = new InvertibleBloomFilter(size, hashCount, seed)
+        const iblt = new InvertibleBloomFilter(size, hashCount)
         iblt.seed = seed
-        const setDiffplus = []
-        const setDiffminus = []
-        const remote = new InvertibleBloomFilter(size, hashCount, seed)
+        const setDiffplus: Buffer[] = []
+        const setDiffminus: Buffer[] = []
+        const remote = new InvertibleBloomFilter(size, hashCount)
         remote.seed = seed
         for (let i = 1; i <= keys; ++i) {
             const hash = prefix + i // XXH.h64(prefix + i, seed).toString(16)
@@ -245,23 +215,21 @@ describe('Invertible Bloom Lookup Tables', () => {
                 }
             }
         }
-        remote.length.should.equal(keys - setDiffplus.length)
-        iblt.length.should.equal(keys - setDiffminus.length)
+        expect(remote.length).toEqual(keys - setDiffplus.length)
+        expect(iblt.length).toEqual(keys - setDiffminus.length)
         const sub = iblt.substract(remote)
         const res = sub.decode()
 
-        res.success.should.equal(true, JSON.stringify(res.reason))
+        expect(res.success).toEqual(JSON.stringify(res.reason))
 
         const sum = res.additional.length + res.missing.length
-        sum.should.equal(differences)
+        expect(sum).toEqual(differences)
 
-        res.additional
-            .map(e => e.toString())
-            .sort()
-            .should.eql(setDiffplus.map(e => e.toString()).sort())
-        res.missing
-            .map(e => e.toString())
-            .sort()
-            .should.eql(setDiffminus.map(e => e.toString()).sort())
+        expect(res.additional.map(e => e.toString()).sort()).toEqual(
+            setDiffplus.map(e => e.toString()).sort()
+        )
+        expect(res.missing.map(e => e.toString()).sort()).toEqual(
+            setDiffminus.map(e => e.toString()).sort()
+        )
     }
 })

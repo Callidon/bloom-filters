@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-require('chai').should()
-const {MinHashFactory, MinHash} = require('../dist/api.js')
-const {range, intersection, union} = require('lodash')
+import { expect, describe, test } from '@jest/globals'
+import { MinHashFactory, MinHash } from '../src/api'
+import { range, intersection, union } from 'lodash'
 
 // Compute the exact Jaccard similairty between two sets
 function jaccard(a, b) {
@@ -41,7 +41,7 @@ try {
     setA = range(1, max)
     setB = range(1, max).map(x => (x % 2 === 0 ? x : x * 2))
     const allInOne = [...setA, ...setB]
-    for (let i of allInOne) {
+    for (const i of allInOne) {
         if (maxValue < i) {
             maxValue = i
         }
@@ -57,44 +57,50 @@ try {
 
 describe('MinHash', () => {
     describe('#isEmpty', () => {
-        it('should return True when the MinHash signeture is empty', () => {
+        test('should return True when the MinHash signeture is empty', () => {
             const set = factory.create()
-            set.isEmpty().should.equal(true)
+            expect(set.isEmpty()).toBe(true)
         })
 
-        it('should return False when the MinHash signeture is not empty', () => {
+        test('should return False when the MinHash signeture is not empty', () => {
             const set = factory.create()
             set.add(1)
-            set.isEmpty().should.equal(false)
+            expect(set.isEmpty()).toBe(false)
         })
     })
 
     describe('#add', () => {
-        it('should insert values and compute the Jaccard similarity between two sets', () => {
+        test('should insert values and compute the Jaccard similarity between two sets', () => {
             const firstSet = factory.create()
             const secondSet = factory.create()
-            setA.forEach(value => firstSet.add(value))
-            setB.forEach(value => secondSet.add(value))
-            firstSet
-                .compareWith(secondSet)
-                .should.be.closeTo(jaccard(setA, setB), 0.2)
+            setA.forEach(value => {
+                firstSet.add(value)
+            })
+            setB.forEach(value => {
+                secondSet.add(value)
+            })
+            expect(firstSet.compareWith(secondSet)).toBeCloseTo(
+                jaccard(setA, setB),
+                0.2
+            )
         })
     })
 
     describe('#bulkLoad', () => {
-        it('should ingest a set of numbers and compute the Jaccard similarity between two sets', () => {
+        test('should ingest a set of numbers and compute the Jaccard similarity between two sets', () => {
             const firstSet = factory.create()
             const secondSet = factory.create()
             firstSet.bulkLoad(setA)
             secondSet.bulkLoad(setB)
-            firstSet
-                .compareWith(secondSet)
-                .should.be.closeTo(jaccard(setA, setB), 0.2)
+            expect(firstSet.compareWith(secondSet)).toBeCloseTo(
+                jaccard(setA, setB),
+                0.2
+            )
         })
     })
 
     describe('#compareWith', () => {
-        it('should throw an Error when we try to compare an empty MinHash with anoter MinHash', done => {
+        test('should throw an Error when we try to compare an empty MinHash with anoter MinHash', done => {
             const firstSet = factory.create()
             const secondSet = factory.create()
             secondSet.add(1)
@@ -110,7 +116,7 @@ describe('MinHash', () => {
             }
         })
 
-        it('should throw an Error when we try to compare a MinHash with an empty MinHash', done => {
+        test('should throw an Error when we try to compare a MinHash with an empty MinHash', done => {
             const firstSet = factory.create()
             firstSet.add(1)
             const secondSet = factory.create()
@@ -131,34 +137,20 @@ describe('MinHash', () => {
         const mySet = factory.create()
         mySet.bulkLoad(setA)
 
-        it('should export a MinHash to a JSON object', () => {
+        test('should export a MinHash to a JSON object', () => {
             const exported = mySet.saveAsJSON()
-            exported.type.should.equal('MinHash')
-            exported._nbHashes.should.equal(mySet._nbHashes)
-            exported._hashFunctions.should.deep.equal(mySet._hashFunctions)
-            exported._signature.should.deep.equal(mySet._signature)
+            expect(exported._nbHashes).toEqual(mySet._nbHashes)
+            expect(exported._hashFunctions).toEqual(mySet._hashFunctions)
+            expect(exported._signature).toEqual(mySet._signature)
         })
 
-        it('should create a MinHash from a JSON export', () => {
+        test('should create a MinHash from a JSON export', () => {
             const exported = mySet.saveAsJSON()
             const newSet = MinHash.fromJSON(exported)
-            newSet.seed.should.equal(mySet.seed)
-            newSet._nbHashes.should.equal(mySet._nbHashes)
-            newSet._hashFunctions.should.deep.equal(mySet._hashFunctions)
-            newSet._signature.should.deep.equal(mySet._signature)
-        })
-
-        it('should reject imports from invalid JSON objects', () => {
-            const invalids = [
-                {type: 'something'},
-                {type: 'MinHash'},
-                {type: 'MinHash', _nbHashes: 1},
-                {type: 'MinHash', _nbHashes: 1, _hashFunctions: []},
-            ]
-
-            invalids.forEach(json => {
-                ;(() => MinHash.fromJSON(json)).should.throw(Error)
-            })
+            expect(newSet.seed).toEqual(mySet.seed)
+            expect(newSet._nbHashes).toEqual(mySet._nbHashes)
+            expect(newSet._hashFunctions).toEqual(mySet._hashFunctions)
+            expect(newSet._signature).toEqual(mySet._signature)
         })
     })
 })

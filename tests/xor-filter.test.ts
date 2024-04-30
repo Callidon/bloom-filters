@@ -22,24 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-require('chai').should()
-const {XorFilter} = require('../dist/api.js')
+import { expect, describe, test } from '@jest/globals'
+import { XorFilter } from '../src/api'
+import { XorSize } from '../src/bloom/xor-filter'
 
 describe('XorFilter', () => {
     const elements = ['1']
     const count = 1000
-    const sizes = [8, 16]
+    const sizes: XorSize[] = [8, 16]
     sizes.forEach(size => {
-        it(`[XOR/${size}] should create a xor filter correctly (array of ${elements.length} element(s))`, () => {
+        test(`[XOR/${size.toString()}] should create a xor filter correctly (array of ${elements.length.toString()} element(s))`, () => {
             const filter = XorFilter.create(elements, size)
-            filter.has(elements[0]).should.be.true
-            filter.has('2').should.be.false
+            expect(filter.has(elements[0])).toBe(true)
+            expect(filter.has('2')).toBe(false)
         })
-        it(`[XOR/${size}] should create a xor filter correctly for ${count} elements`, () => {
-            const a = []
-            const format = e => `hash:${e}`
+        test(`[XOR/${size.toString()}] should create a xor filter correctly for ${count.toString()} elements`, () => {
+            const a: string[] = []
+            const format = (e: number) => `hash:${e.toString()}`
             for (let i = 0; i < count; i++) {
-                a.push(format(i))
+                a.push(String(i))
             }
             const filter = XorFilter.create(a, size)
             let truthy = 0,
@@ -52,7 +53,7 @@ describe('XorFilter', () => {
                 }
             }
             let prob = truthy / count
-            prob.should.be.at.least(0.99)
+            expect(prob).toBeGreaterThan(0.99)
             ;(falsy = 0), (truthy = 0)
             for (let i = 0; i < count; i++) {
                 if (filter.has(format(count * 10 + i))) {
@@ -62,14 +63,14 @@ describe('XorFilter', () => {
                 }
             }
             prob = falsy / count
-            prob.should.be.at.least(0.99)
+            expect(prob).toBeGreaterThan(0.99)
         })
-        it(`[XOR/${size}] exported filter should be importable`, () => {
+        test(`[XOR/${size.toString()}] exported filter should be importable`, () => {
             const filter = XorFilter.create(['alice'])
             const json = filter.saveAsJSON()
             const newFilter = XorFilter.fromJSON(json)
-            filter.equals(newFilter)
-            filter.seed.should.equal(newFilter.seed)
+            expect(filter.equals(newFilter)).toBe(true)
+            expect(filter.seed).toEqual(newFilter.seed)
         })
     })
 })

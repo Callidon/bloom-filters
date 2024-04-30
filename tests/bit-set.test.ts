@@ -22,15 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {BitSet} from '../src/api'
-import {expect, describe, test} from '@jest/globals'
+import { BitSet } from '../src/api'
+import { expect, describe, test } from '@jest/globals'
 
 describe('BitSet', () => {
     test('is initially clear', () => {
         const set = new BitSet(50)
         expect(set.size).toEqual(56)
         for (let i = 0; i < set.size; i++) {
-            expect(set.has(i)).toEqual(false)
+            expect(set.has(i)).toBe(false)
         }
     })
 
@@ -38,9 +38,9 @@ describe('BitSet', () => {
         const set = new BitSet(50)
         expect(set.size).toEqual(56)
         for (let i = 0; i < set.size; i++) {
-            expect(set.has(i)).toEqual(false)
+            expect(set.has(i)).toBe(false)
             set.add(i)
-            expect(set.has(i)).toEqual(true)
+            expect(set.has(i)).toBe(true)
         }
     })
 
@@ -74,9 +74,9 @@ describe('BitSet', () => {
         describe('#import', () => {
             test('Throws an Error on bad data', () => {
                 ;[
-                    {size: 1},
-                    {content: 'Ag=='},
-                    {size: 'cow', content: 'Ag=='},
+                    { size: 1 },
+                    { content: 'Ag==' },
+                    { size: 'cow', content: 'Ag==' },
                 ].forEach((json: any) => {
                     expect(() => BitSet.import(json)).toThrow(Error)
                 })
@@ -88,28 +88,28 @@ describe('BitSet', () => {
         test('returns true on identical size and data', () => {
             const a = new BitSet(50)
             const b = new BitSet(50)
-            expect(a.equals(b)).toEqual(true)
+            expect(a.equals(b)).toBe(true)
             for (let i = 0; i < a.size; i += 3) {
                 // 3 is relatively prime to 8, so should hit all edge cases
                 a.add(i)
                 b.add(i)
-                expect(a.equals(b)).toEqual(true)
+                expect(a.equals(b)).toBe(true)
             }
         })
 
         test('returns false on different size', () => {
-            expect(new BitSet(50).equals(new BitSet(150))).toEqual(false)
+            expect(new BitSet(50).equals(new BitSet(150))).toBe(false)
         })
 
         test('returns false on different data', () => {
             let a = new BitSet(50)
             const b = new BitSet(50)
             a.add(3)
-            expect(a.equals(b)).toEqual(false)
+            expect(a.equals(b)).toBe(false)
             a = new BitSet(50)
-            expect(a.equals(b)).toEqual(true)
+            expect(a.equals(b)).toBe(true)
             a.add(49)
-            expect(a.equals(b)).toEqual(false)
+            expect(a.equals(b)).toBe(false)
         })
     })
 

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {expect, describe, test} from '@jest/globals'
+import { expect, describe, test } from '@jest/globals'
 import CuckooFilter from '../src/cuckoo/cuckoo-filter'
 
 describe('CuckooFilter', () => {
@@ -78,8 +78,10 @@ describe('CuckooFilter', () => {
             filter.add(element)
 
             // assert that buckets are full
-            expect(filter._filter[locations.firstIndex].isFree()).toEqual(false)
-            expect(filter._filter[locations.secondIndex].isFree()).toEqual(false)
+            expect(filter._filter[locations.firstIndex].isFree()).toBe(false)
+            expect(filter._filter[locations.secondIndex].isFree()).toEqual(
+                false
+            )
 
             nbElements +=
                 filter._filter[locations.firstIndex].length +
@@ -96,7 +98,7 @@ describe('CuckooFilter', () => {
             filter._filter[locations.firstIndex].add('xyz')
             filter._filter[locations.secondIndex].add('lol')
             filter._length += 2
-            expect(filter.add(element)).toEqual(true)
+            expect(filter.add(element)).toBe(true)
 
             filter._filter.forEach(bucket => {
                 if (bucket.length > 0) {
@@ -104,7 +106,7 @@ describe('CuckooFilter', () => {
                         'xyz',
                         'lol',
                         locations.fingerprint,
-                    ]).toContain(bucket._elements[0])
+                    ]).toContainEqual(bucket._elements[0])
                     nbElements += bucket.length
                 }
             })
@@ -116,7 +118,7 @@ describe('CuckooFilter', () => {
             const filter = new CuckooFilter(1, 3, 1)
             const element = 'foo'
             filter.add(element)
-            expect(filter.add(element, false, true)).toEqual(false)
+            expect(filter.add(element, false, true)).toBe(false)
         })
 
         test('should not rollback to its initial state in case the filter is full with option add(x, false, true)', () => {
@@ -144,18 +146,18 @@ describe('CuckooFilter', () => {
 
         test('should rollback to its initial state in case the filter is full', () => {
             const filter = new CuckooFilter(10, 3, 1)
-            expect(filter.add('a')).toEqual(true)
-            expect(filter.add('b')).toEqual(true)
-            expect(filter.add('c')).toEqual(true)
-            expect(filter.add('d')).toEqual(true)
-            expect(filter.add('e')).toEqual(true)
-            expect(filter.add('f')).toEqual(true)
-            expect(filter.add('h')).toEqual(true)
-            expect(filter.add('i')).toEqual(true)
-            expect(filter.add('j')).toEqual(true)
-            expect(filter.add('k')).toEqual(true)
+            expect(filter.add('a')).toBe(true)
+            expect(filter.add('b')).toBe(true)
+            expect(filter.add('c')).toBe(true)
+            expect(filter.add('d')).toBe(true)
+            expect(filter.add('e')).toBe(true)
+            expect(filter.add('f')).toBe(true)
+            expect(filter.add('h')).toBe(true)
+            expect(filter.add('i')).toBe(true)
+            expect(filter.add('j')).toBe(true)
+            expect(filter.add('k')).toBe(true)
             const snapshot = JSON.stringify(filter.saveAsJSON())
-            expect(filter.add('l')).toEqual(false)
+            expect(filter.add('l')).toBe(false)
             const snapshot2 = JSON.stringify(filter.saveAsJSON())
             expect(snapshot).toEqual(snapshot2)
         })
@@ -168,7 +170,7 @@ describe('CuckooFilter', () => {
             const locations = filter._locations(element)
 
             filter.add(element)
-            expect(filter.remove(element)).toEqual(true)
+            expect(filter.remove(element)).toBe(true)
             expect(filter._filter[locations.firstIndex].length).toEqual(0)
         })
 
@@ -179,16 +181,16 @@ describe('CuckooFilter', () => {
 
             filter.add(element)
             filter.add(element)
-            expect(filter.remove(element)).toEqual(true)
+            expect(filter.remove(element)).toBe(true)
             expect(filter._filter[locations.firstIndex].length).toEqual(0)
-            expect(filter.remove(element)).toEqual(true)
+            expect(filter.remove(element)).toBe(true)
             expect(filter._filter[locations.secondIndex].length).toEqual(0)
         })
 
         test('should fail to remove elements that are not in the filter', () => {
             const filter = new CuckooFilter(15, 3, 1)
             filter.add('foo')
-            expect(filter.remove('moo')).toEqual(false)
+            expect(filter.remove('moo')).toBe(false)
         })
     })
 
@@ -196,13 +198,13 @@ describe('CuckooFilter', () => {
         test('should return True when an element may be in the filter', () => {
             const filter = new CuckooFilter(15, 3, 1)
             filter.add('foo')
-            expect(filter.has('foo')).toEqual(true)
+            expect(filter.has('foo')).toBe(true)
         })
 
         test('should return False when an element is definitively not in the filter', () => {
             const filter = new CuckooFilter(15, 3, 1)
             filter.add('foo')
-            expect(filter.has('moo')).toEqual(false)
+            expect(filter.has('moo')).toBe(false)
         })
 
         test('should look inside every possible bucket', () => {
@@ -210,7 +212,7 @@ describe('CuckooFilter', () => {
             filter.add('foo')
             filter.add('foo')
             filter.remove('foo')
-            expect(filter.has('foo')).toEqual(true)
+            expect(filter.has('foo')).toBe(true)
         })
 
         test('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
@@ -226,15 +228,15 @@ describe('CuckooFilter', () => {
             filter.add('sam')
             // lookup for some data
             const one = filter.has('samx') // output: false [ok]
-            expect(one).toEqual(false)
+            expect(one).toBe(false)
             const two = filter.has('samy') // output: true [?]
-            expect(two).toEqual(false)
+            expect(two).toBe(false)
             const three = filter.has('alice') // output: true [ok]
-            expect(three).toEqual(true)
+            expect(three).toBe(true)
             const four = filter.has('joe') // output: true [?]
-            expect(four).toEqual(false)
+            expect(four).toBe(false)
             const five = filter.has('joe') // output: true [?]
-            expect(five).toEqual(false)
+            expect(five).toBe(false)
         })
     })
 
@@ -246,7 +248,9 @@ describe('CuckooFilter', () => {
         test('should export a cuckoo filter to a JSON object', () => {
             const exported = filter.saveAsJSON()
             expect(exported._size).toEqual(filter.size)
-            expect(exported._fingerprintLength).toEqual(filter.fingerprintLength)
+            expect(exported._fingerprintLength).toEqual(
+                filter.fingerprintLength
+            )
             expect(exported._length).toEqual(filter.length)
             expect(exported._maxKicks).toEqual(filter.maxKicks)
             expect(exported._filter).toEqual(
@@ -259,10 +263,16 @@ describe('CuckooFilter', () => {
             const newFilter = CuckooFilter.fromJSON(exported)
             expect(newFilter.seed).toEqual(filter.seed)
             expect(newFilter.size).toEqual(filter.size)
-            expect(newFilter.fingerprintLength).toEqual(filter.fingerprintLength)
+            expect(newFilter.fingerprintLength).toEqual(
+                filter.fingerprintLength
+            )
             expect(newFilter.length).toEqual(filter.length)
             expect(newFilter.maxKicks).toEqual(filter.maxKicks)
-            expect(newFilter._filter.every((b, index) => filter._filter[index].equals(b))).toEqual(true)
+            expect(
+                newFilter._filter.every((b, index) =>
+                    filter._filter[index].equals(b)
+                )
+            ).toBe(true)
         })
     })
     describe('Performance test', () => {
@@ -279,7 +289,7 @@ describe('CuckooFilter', () => {
             () => {
                 const filter = CuckooFilter.create(max, rate, bucketSize, 500)
                 for (let i = 0; i < max; i++) {
-                    expect(filter.add('' + i)).toEqual(true)
+                    expect(filter.add('' + i)).toBe(true)
                 }
                 let current
                 let falsePositive = 0

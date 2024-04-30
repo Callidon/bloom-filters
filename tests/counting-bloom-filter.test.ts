@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import CountingBloomFilter from '../src/bloom/counting-bloom-filter'
-import {expect, describe, test} from '@jest/globals'
+import { expect, describe, test } from '@jest/globals'
 
 describe('CountingBloomFilter', () => {
     const targetRate = 0.1
@@ -60,15 +60,15 @@ describe('CountingBloomFilter', () => {
             CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
         test('should return false for elements that are definitively not in the set', () => {
             const filter = getFilter()
-            expect(filter.has('daniel')).toEqual(false)
-            expect(filter.has('al')).toEqual(false)
+            expect(filter.has('daniel')).toBe(false)
+            expect(filter.has('al')).toBe(false)
         })
 
         test('should return true for elements that might be in the set', () => {
             const filter = getFilter()
-            expect(filter.has('alice')).toEqual(true)
-            expect(filter.has('bob')).toEqual(true)
-            expect(filter.has('carl')).toEqual(true)
+            expect(filter.has('alice')).toBe(true)
+            expect(filter.has('bob')).toBe(true)
+            expect(filter.has('carl')).toBe(true)
         })
     })
 
@@ -79,9 +79,9 @@ describe('CountingBloomFilter', () => {
                 targetRate
             )
             filter.remove('bob')
-            expect(filter.has('alice')).toEqual(true)
-            expect(filter.has('bob')).toEqual(false)
-            expect(filter.has('carl')).toEqual(true)
+            expect(filter.has('alice')).toBe(true)
+            expect(filter.has('bob')).toBe(false)
+            expect(filter.has('carl')).toBe(true)
         })
     })
 
@@ -95,19 +95,19 @@ describe('CountingBloomFilter', () => {
                 ['alice', 'bob', 'carol'],
                 targetRate
             )
-            expect(first.equals(other)).toEqual(true)
+            expect(first.equals(other)).toBe(true)
         })
 
         test('should returns False when two filters have different sizes', () => {
             const first = new CountingBloomFilter(15, 4)
             const other = new CountingBloomFilter(10, 4)
-            expect(first.equals(other)).toEqual(false)
+            expect(first.equals(other)).toBe(false)
         })
 
         test('should returns False when two filters have different nb. of hash functions', () => {
             const first = new CountingBloomFilter(15, 4)
             const other = new CountingBloomFilter(15, 2)
-            expect(first.equals(other)).toEqual(false)
+            expect(first.equals(other)).toBe(false)
         })
 
         test('should returns False when two filters have different content', () => {
@@ -119,7 +119,7 @@ describe('CountingBloomFilter', () => {
                 ['alice', 'bob', 'daniel'],
                 targetRate
             )
-            expect(first.equals(other)).toEqual(false)
+            expect(first.equals(other)).toBe(false)
         })
     })
 
@@ -157,7 +157,7 @@ describe('CountingBloomFilter', () => {
                 const filter = CountingBloomFilter.create(max, targetedRate)
                 for (let i = 0; i < max; ++i) filter.add('' + i)
                 for (let i = 0; i < max; ++i) {
-                    expect(filter.has('' + i)).toEqual(true)
+                    expect(filter.has('' + i)).toBe(true)
                 }
                 let current
                 let falsePositive = 0
