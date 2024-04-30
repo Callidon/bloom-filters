@@ -4,7 +4,9 @@
     "target": "es6",
     "outDir": "./dist",
     "module": "commonjs",
-    "lib": [ "ES2015" ],
+    "lib": [
+      "ES2015"
+    ],
     "declaration": true,
     "strict": true,
     "allowJs": false,
@@ -14,10 +16,9 @@
     "downlevelIteration": true
   },
   "include": [
-      "./src/api.ts"
+    "./src/**/*.ts",
   ],
   "exclude": [
     "node_modules",
-    "tests"
   ]
 }
