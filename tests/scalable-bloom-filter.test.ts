@@ -22,82 +22,81 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-require('chai').should()
-const {expect} = require('chai')
-const {ScalableBloomFilter} = require('../dist/api.js')
+import { expect, describe, test } from '@jest/globals'
+import { ScalableBloomFilter } from '../src/api'
 
 describe('ScalableBloomFilter', () => {
     const targetRate = 0.1
     const seed = Math.random()
 
     describe('construction', () => {
-        it('should #add add elements without error', () => {
+        test('should #add add elements without error', () => {
             const filter = ScalableBloomFilter.create(3, targetRate)
             filter.seed = seed
             filter.add('alice')
             filter.add('bob')
             filter.add('carl')
-            expect(filter.seed, 'the seed should be defined').to.exist
+            expect(filter.seed).toBeDefined()
         })
-        it('should #has return correct values with added values', () => {
+        test('should #has return correct values with added values', () => {
             const filter = ScalableBloomFilter.create(3, targetRate)
             filter.seed = seed
             filter.add('alice')
             filter.add('bob')
             filter.add('carl')
-            filter.has('alice').should.equal(true)
-            filter.has('bob').should.equal(true)
-            filter.has('carl').should.equal(true)
-            filter.has('somethingwhichdoesnotexist').should.equal(false)
+            expect(filter.has('alice')).toBe(true)
+            expect(filter.has('bob')).toBe(true)
+            expect(filter.has('carl')).toBe(true)
+            expect(filter.has('somethingwhichdoesnotexist')).toBe(false)
         })
 
-        it('should scale Partitioned Bloom Filter', () => {
+        test('should scale Partitioned Bloom Filter', () => {
             const filter = ScalableBloomFilter.create(1, targetRate)
             filter.seed = seed
             filter.add('alice')
             filter.add('bob')
             filter.add('carl')
-            filter._filters.length.should.equal(2)
+            expect(filter._filters.length).toEqual(2)
             for (let i = 0; i < 1024; i++) {
-                filter.add('elem:' + i)
+                filter.add('elem:' + i.toString())
             }
-            filter.has('alice').should.equal(true)
-            filter.has('bob').should.equal(true)
-            filter.has('carl').should.equal(true)
+            expect(filter.has('alice')).toBe(true)
+            expect(filter.has('bob')).toBe(true)
+            expect(filter.has('carl')).toBe(true)
             for (let i = 0; i < 1024; i++) {
-                filter.has('elem:' + i).should.equal(true)
+                expect(filter.has('elem:' + i.toString())).toBe(true)
             }
-            filter.has('elem:' + 1025).should.equal(false)
-            expect(filter.seed, 'the seed should be defined').to.exist
-            filter._filters.forEach(
-                f => expect(f.seed, 'the seed should be defined').to.exist
-            )
-            filter._filters.length.should.equal(10)
+            expect(filter.has('elem:1025')).toBe(false)
+            expect(filter.seed).toBeDefined()
+            filter._filters.forEach(f => {
+                expect(f.seed).toBeDefined()
+            })
+            expect(filter._filters.length).toEqual(10)
         })
 
-        it('should import/export correctly', () => {
+        test('should import/export correctly', () => {
             const filter = ScalableBloomFilter.create(1, targetRate)
             filter.seed = seed
             for (let i = 0; i < 50; i++) {
-                filter.add('elem:' + i)
+                filter.add('elem:' + i.toString())
             }
             const exported = filter.saveAsJSON()
             const imported = ScalableBloomFilter.fromJSON(exported)
-            imported.seed.should.equal(filter.seed)
-            imported.equals(filter).should.equal(true)
+            expect(imported.seed).toEqual(filter.seed)
+            expect(imported.equals(filter)).toBe(true)
             for (let i = 0; i < 50; i++) {
-                imported.has('elem:' + i).should.equal(true)
+                expect(imported.has('elem:' + i.toString())).toBe(true)
             }
         })
     })
     describe('Performance test', () => {
         const max = 1000
         const targetedRate = 0.01
-        it(`should not return an error when inserting ${max} elements`, () => {
+        test(`should not return an error when inserting ${max.toString()} elements`, () => {
             const filter = ScalableBloomFilter.create(max, targetedRate)
-            for (let i = 0; i < max; ++i) filter.add('' + i)
+            for (let i = 0; i < max; ++i) filter.add(i.toString())
             for (let i = 0; i < max; ++i) {
-                filter.has('' + i).should.equal(true)
+                expect(filter.has(i.toString())).toBe(true)
             }
             let current
             let falsePositive = 0
@@ -105,11 +104,11 @@ describe('ScalableBloomFilter', () => {
             for (let i = max; i < max * 11; ++i) {
                 tries++
                 current = i
-                const has = filter.has('' + current)
+                const has = filter.has(current.toString())
                 if (has) falsePositive++
             }
             const currentRate = falsePositive / tries
-            currentRate.should.be.closeTo(targetedRate, targetedRate)
+            expect(currentRate).toBeCloseTo(targetedRate, targetedRate)
         })
     })
 })

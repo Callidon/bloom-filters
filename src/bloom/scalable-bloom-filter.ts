@@ -23,14 +23,14 @@ SOFTWARE.
 */
 
 import ClassicFilter from '../interfaces/classic-filter'
-import BaseFilter, {prng} from '../base-filter'
-import {HashableInput} from '../utils'
+import BaseFilter, { prng } from '../base-filter'
+import { HashableInput } from '../utils'
 import PartitionBloomFilter, {
     ExportedPartitionedBloomFilter,
 } from './partitioned-bloom-filter'
 import seedrandom from 'seedrandom'
 
-export type ExportedScalableBloomFilter = {
+export interface ExportedScalableBloomFilter {
     _seed: number
     _initial_size: number
     _error_rate: number
@@ -108,7 +108,7 @@ export default class ScalableBloomFilter
      */
     public set seed(seed: number) {
         this._seed = seed
-        this._rng = seedrandom(`${this._seed}`) as prng
+        this._rng = seedrandom(this._seed.toString()) as prng
         this._filters.forEach((filter: PartitionBloomFilter) => {
             filter.seed = this.seed
         })
