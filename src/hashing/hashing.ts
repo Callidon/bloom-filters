@@ -1,5 +1,5 @@
 import XXH from '@node-rs/xxhash'
-import {getDefaultSeed, numberToHex, type HashableInput} from '../utils'
+import { getDefaultSeed, numberToHex, type HashableInput } from '../utils'
 
 /**
  * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
@@ -73,12 +73,12 @@ export default class Hashing implements Hashing {
         size: number,
         number: number,
         seed?: number
-    ): Array<number> {
+    ): number[] {
         if (seed === undefined) {
             seed = getDefaultSeed()
         }
         let n = 0
-        const indexes: Set<number> = new Set()
+        const indexes = new Set<number>()
         let hashes = this.hashTwice(element, seed)
         // let cycle = 0
         while (indexes.size < number) {
@@ -117,7 +117,7 @@ export default class Hashing implements Hashing {
         size: number,
         hashCount: number,
         seed?: number
-    ): Array<number> {
+    ): number[] {
         if (seed === undefined) {
             seed = getDefaultSeed()
         }
@@ -174,7 +174,7 @@ export default class Hashing implements Hashing {
         value: HashableInput,
         seed?: number
     ): TwoHashesTemplated<string> {
-        const {first, second} = this.hashTwice(value, seed)
+        const { first, second } = this.hashTwice(value, seed)
         return {
             first: numberToHex(first),
             second: numberToHex(second),
@@ -235,6 +235,6 @@ export default class Hashing implements Hashing {
      */
     public hashIntAndString(elem: HashableInput, seed?: number) {
         const hash = this.hashAsInt(elem, seed)
-        return {int: hash, string: numberToHex(hash)}
+        return { int: hash, string: numberToHex(hash) }
     }
 }

@@ -24,13 +24,13 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import CountingFilter from '../interfaces/counting-filter'
-import {allocateArray, HashableInput} from '../utils'
+import { allocateArray, HashableInput } from '../utils'
 
-export type ExportedCountMinSketch = {
+export interface ExportedCountMinSketch {
     _seed: number
     _columns: number
     _rows: number
-    _matrix: Array<Array<number>>
+    _matrix: number[][]
     _allSums: number
 }
 
@@ -49,7 +49,7 @@ export default class CountMinSketch
 {
     public _columns: number
     public _rows: number
-    public _matrix: Array<Array<number>>
+    public _matrix: number[][]
     public _allSums: number
 
     /**

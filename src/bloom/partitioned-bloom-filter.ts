@@ -24,8 +24,8 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import ClassicFilter from '../interfaces/classic-filter'
-import {HashableInput, allocateArray} from '../utils'
-import BitSet, {ExportedBitSet} from './bit-set'
+import { HashableInput, allocateArray } from '../utils'
+import BitSet, { ExportedBitSet } from './bit-set'
 
 /**
  * Return the optimal number of hashes needed for a given error rate and load factor
@@ -80,7 +80,7 @@ function computeNumberOfItems(
     )
 }
 
-export type ExportedPartitionedBloomFilter = {
+export interface ExportedPartitionedBloomFilter {
     _seed: number
     _size: number
     _nbHashes: number
@@ -111,7 +111,7 @@ export default class PartitionedBloomFilter
     public _nbHashes: number
     public _loadFactor: number
     public _m: number
-    public _filter: Array<BitSet>
+    public _filter: BitSet[]
     public _capacity: number
 
     /**
@@ -182,7 +182,9 @@ export default class PartitionedBloomFilter
             errorRate,
             loadFactor
         )
-        array.forEach(element => filter.add(element))
+        array.forEach(element => {
+            filter.add(element)
+        })
         return filter
     }
 

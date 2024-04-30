@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import BaseFilter from '../base-filter'
-import {HashableInput, allocateArray} from '../utils'
+import { HashableInput, allocateArray } from '../utils'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
 const TWO_POW_32 = Math.pow(2, 32)
@@ -47,12 +47,12 @@ function computeAlpha(m: number): number {
     }
 }
 
-export type ExportedHyperLogLog = {
+export interface ExportedHyperLogLog {
     _seed: number
     _nbRegisters: number
     _nbBytesPerHash: number
     _correctionBias: number
-    _registers: Array<number>
+    _registers: number[]
 }
 
 /**
@@ -79,7 +79,7 @@ export default class HyperLogLog extends BaseFilter {
     /**
      * The registers used to store data
      */
-    public _registers: Array<number>
+    public _registers: number[]
 
     /**
      * Constructor

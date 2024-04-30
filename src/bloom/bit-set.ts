@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {encode, decode} from 'base64-arraybuffer'
+import { encode, decode } from 'base64-arraybuffer'
 
 const bitsPerWord = 8
 
-export type ExportedBitSet = {
+export interface ExportedBitSet {
     size: number
     content: string
 }
@@ -115,7 +115,7 @@ export default class BitSet {
     /**
      * Returns a JSON-encodable object readable by {@link import}.
      */
-    public export(): {size: number; content: string} {
+    public export(): { size: number; content: string } {
         return {
             size: this.size,
             content: encode(this.array),
@@ -126,7 +126,7 @@ export default class BitSet {
      * Returns an object written by {@link export}.
      * @param data an object written by {@link export}
      */
-    public static import(data: {size: number; content: string}): BitSet {
+    public static import(data: { size: number; content: string }): BitSet {
         if (typeof data.size !== 'number') {
             throw Error('BitSet missing size')
         }

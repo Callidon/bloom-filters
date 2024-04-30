@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {xorBuffer} from '../utils'
+import { xorBuffer } from '../utils'
 import BaseFilter from '../base-filter'
 
-export type ExportedCell = {
+export interface ExportedCell {
     _idSum: string
     _hashSum: string
     _count: number

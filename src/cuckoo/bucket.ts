@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {eq, indexOf} from 'lodash'
+import { eq, indexOf } from 'lodash'
 import * as utils from '../utils'
 
-export type ExportedBucket<T> = {
+export interface ExportedBucket<T> {
     _size: number
-    _elements: Array<T | null>
+    _elements: (T | null)[]
     _length: number
 }
 
@@ -38,7 +38,7 @@ export type ExportedBucket<T> = {
  * @private
  */
 export default class Bucket<T> {
-    public _elements: Array<T | null>
+    public _elements: (T | null)[]
     public _size: number
     public _length: number
 

@@ -24,9 +24,9 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
-import Cell, {ExportedCell} from './cell'
-import {allocateArray} from '../utils'
-import {optimalFilterSize, optimalHashes} from '../formulas'
+import Cell, { ExportedCell } from './cell'
+import { allocateArray } from '../utils'
+import { optimalFilterSize, optimalHashes } from '../formulas'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
@@ -46,10 +46,10 @@ export interface IBLTDecodingResults {
     missing: Buffer[]
 }
 
-export type ExportedInvertibleBloomFilter = {
+export interface ExportedInvertibleBloomFilter {
     _size: number
     _hashCount: number
-    _elements: Array<ExportedCell>
+    _elements: ExportedCell[]
     _seed: number
 }
 
@@ -67,7 +67,7 @@ export default class InvertibleBloomFilter
 {
     public _size: number
     public _hashCount: number
-    public _elements: Array<Cell>
+    public _elements: Cell[]
 
     /**
      * Construct an Invertible Bloom Lookup Table
@@ -119,7 +119,9 @@ export default class InvertibleBloomFilter
     ): InvertibleBloomFilter {
         const array = Array.from(items)
         const filter = InvertibleBloomFilter.create(array.length, errorRate)
-        array.forEach(item => filter.add(item))
+        array.forEach(item => {
+            filter.add(item)
+        })
         return filter
     }
 

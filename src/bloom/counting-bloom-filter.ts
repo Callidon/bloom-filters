@@ -24,14 +24,14 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
-import {optimalFilterSize, optimalHashes} from '../formulas'
-import {HashableInput, allocateArray} from '../utils'
+import { optimalFilterSize, optimalHashes } from '../formulas'
+import { HashableInput, allocateArray } from '../utils'
 
-export type ExportedCountingBloomFilter = {
+export interface ExportedCountingBloomFilter {
     _seed: number
     _size: number
     _nbHashes: number
-    _filter: Array<Array<number>>
+    _filter: number[][]
     _length: number
 }
 
@@ -48,7 +48,7 @@ export default class CountingBloomFilter
 {
     public _size: number
     public _nbHashes: number
-    public _filter: Array<Array<number>>
+    public _filter: number[][]
     public _length: number
     /**
      * Constructor
@@ -100,7 +100,9 @@ export default class CountingBloomFilter
     ): CountingBloomFilter {
         const array = Array.from(items)
         const filter = CountingBloomFilter.create(array.length, errorRate)
-        array.forEach(element => filter.add(element))
+        array.forEach(element => {
+            filter.add(element)
+        })
         return filter
     }
 

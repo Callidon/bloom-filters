@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {HashFunction, MinHash} from './min-hash'
-import {random} from 'lodash'
+import { HashFunction, MinHash } from './min-hash'
+import { random } from 'lodash'
 
 /**
  * Test if a number is a prime number
@@ -86,7 +86,7 @@ export default class MinHashFactory {
         for (let i = 0; i < this._nbHashes; i++) {
             const a = random(0, this._maxValue, false)
             const b = random(0, this._maxValue, false)
-            this._hashFunctions.push({a, b, c})
+            this._hashFunctions.push({ a, b, c })
         }
     }
 

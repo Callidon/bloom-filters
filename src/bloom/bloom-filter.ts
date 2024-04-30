@@ -24,11 +24,11 @@ SOFTWARE.
 
 import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter from '../base-filter'
-import BitSet, {type ExportedBitSet} from './bit-set'
-import {optimalFilterSize, optimalHashes} from '../formulas'
-import {HashableInput} from '../utils'
+import BitSet, { type ExportedBitSet } from './bit-set'
+import { optimalFilterSize, optimalHashes } from '../formulas'
+import { HashableInput } from '../utils'
 
-export type ExportedBloomFilter = {
+export interface ExportedBloomFilter {
     _size: number
     _nbHashes: number
     _filter: ExportedBitSet
@@ -103,7 +103,9 @@ export default class BloomFilter
         if (typeof seed === 'number') {
             filter.seed = seed
         }
-        array.forEach(element => filter.add(element))
+        array.forEach(element => {
+            filter.add(element)
+        })
         return filter
     }
 
@@ -218,7 +220,9 @@ export default class BloomFilter
             })
             bl._filter = bs
         } else {
-            bl._filter = BitSet.import(data as {size: number; content: string})
+            bl._filter = BitSet.import(
+                data as { size: number; content: string }
+            )
         }
         return bl
     }

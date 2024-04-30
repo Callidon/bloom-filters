@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import BaseFilter from '../base-filter'
-import {allocateArray} from '../utils'
+import { allocateArray } from '../utils'
 
 /**
  * An error thrown when we try to compute the Jaccard Similarity with an empty MinHash
@@ -51,7 +51,7 @@ function applyHashFunction(x: number, fn: HashFunction): number {
     return (fn.a * x + fn.b) % fn.c
 }
 
-export type ExportedMinHash = {
+export interface ExportedMinHash {
     _seed: number
     _nbHashes: number
     _hashFunctions: HashFunction[]

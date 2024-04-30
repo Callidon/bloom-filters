@@ -24,7 +24,7 @@ SOFTWARE.
 
 import seedrandom from 'seedrandom'
 import Hashing from './hashing/hashing'
-import {getDefaultSeed} from './utils'
+import { getDefaultSeed } from './utils'
 
 /**
  * Exported prng type because it is not from seedrandom

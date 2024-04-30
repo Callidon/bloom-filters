@@ -24,8 +24,8 @@ SOFTWARE.
 
 import WritableFilter from '../interfaces/writable-filter'
 import BaseFilter from '../base-filter'
-import Bucket, {ExportedBucket} from './bucket'
-import {HashableInput, allocateArray, randomInt} from '../utils'
+import Bucket, { ExportedBucket } from './bucket'
+import { HashableInput, allocateArray, randomInt } from '../utils'
 
 /**
  * Compute the optimal fingerprint length in bytes for a given bucket size
@@ -40,12 +40,12 @@ function computeFingerpintLength(size: number, rate: number): number {
     return Math.ceil(f / 8) // because we use 64-bits hashes
 }
 
-export type ExportedCuckooFilter = {
+export interface ExportedCuckooFilter {
     _size: number
     _fingerprintLength: number
     _length: number
     _maxKicks: number
-    _filter: Array<ExportedBucket<string>>
+    _filter: ExportedBucket<string>[]
     _seed: number
     _bucketSize: number
 }
@@ -63,7 +63,7 @@ export default class CuckooFilter
     extends BaseFilter
     implements WritableFilter<HashableInput>
 {
-    public _filter: Array<Bucket<string>>
+    public _filter: Bucket<string>[]
     public _size: number
     public _bucketSize: number
     public _fingerprintLength: number
@@ -207,7 +207,7 @@ export default class CuckooFilter
                     ? locations.firstIndex
                     : locations.secondIndex
             let movedElement: string = locations.fingerprint
-            const logs: Array<[number, number, string | null]> = []
+            const logs: [number, number, string | null][] = []
             for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
                 const rndIndex = randomInt(
                     0,
@@ -386,9 +386,9 @@ export default class CuckooFilter
 
     public static fromJSON(element: ExportedCuckooFilter): CuckooFilter {
         const filter = new CuckooFilter(
-            element._size as number,
-            element._fingerprintLength as number,
-            element._bucketSize as number,
+            element._size,
+            element._fingerprintLength,
+            element._bucketSize,
             element._maxKicks as number | undefined
         )
         filter.seed = element._seed

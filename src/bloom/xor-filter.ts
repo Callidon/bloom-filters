@@ -25,12 +25,14 @@ SOFTWARE.
 // Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
 
 import BaseFilter from '../base-filter'
-import {HashableInput, allocateArray, BufferError} from '../utils'
+import { HashableInput, allocateArray, BufferError } from '../utils'
 import XXH from '@node-rs/xxhash'
 import Long from 'long'
-import {encode, decode} from 'base64-arraybuffer'
+import { encode, decode } from 'base64-arraybuffer'
 
-const CONSTANTS = new Map<number, number>()
+export type XorSize = 8 | 16
+
+const CONSTANTS = new Map<XorSize, number>()
 CONSTANTS.set(8, 0xff)
 CONSTANTS.set(16, 0xffff)
 
@@ -39,9 +41,9 @@ CONSTANTS.set(16, 0xffff)
  */
 export type XorHashableInput = HashableInput | Long
 
-export type ExportedXorFilter = {
+export interface ExportedXorFilter {
     _filter: string[]
-    _bits: 8 | 16
+    _bits: XorSize
     _size: number
     _blockLength: number
     _seed: number
@@ -66,7 +68,7 @@ export type ExportedXorFilter = {
  * ```
  */
 export default class XorFilter extends BaseFilter {
-    public ALLOWED_FINGERPRINT_SIZES: number[] = [8, 16]
+    public ALLOWED_FINGERPRINT_SIZES: XorSize[] = [8, 16]
     public HASHES = 3
     public OFFSET = 32
     public FACTOR_TIMES_100 = 123
@@ -79,7 +81,7 @@ export default class XorFilter extends BaseFilter {
     /**
      * Number of bits per fingerprint
      */
-    public _bits: 8 | 16 = 8
+    public _bits: XorSize = 8
 
     /**
      * Number of elements inserted in the filter
@@ -97,7 +99,7 @@ export default class XorFilter extends BaseFilter {
      * @param size
      * @param bits_per_fingerprint
      */
-    constructor(size: number, bits_per_fingerprint?: 8 | 16) {
+    constructor(size: number, bits_per_fingerprint: XorSize = 8) {
         super()
         // try to use the Buffer class or reject by throwing an error
         if (!Buffer) {
@@ -211,11 +213,12 @@ export default class XorFilter extends BaseFilter {
     /**
      * Return a XorFilter for a specified set of elements
      * @param elements
+     * @param bits_per_fingerprint
      * @returns
      */
     public static create(
         elements: XorHashableInput[],
-        bits_per_fingerprint?: 8 | 16
+        bits_per_fingerprint: XorSize = 8
     ): XorFilter {
         const a = new XorFilter(elements.length, bits_per_fingerprint)
         a.add(elements)
