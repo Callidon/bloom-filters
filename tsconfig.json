@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "target": "es6",
+    "target": "es2022",
     "outDir": "./dist",
     "module": "commonjs",
     "lib": [
-      "ES2015"
+      "ES2022"
     ],
     "declaration": true,
     "strict": true,
@@ -13,7 +13,8 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "isolatedModules": true
   },
   "include": [
     "./src/**/*.ts",
