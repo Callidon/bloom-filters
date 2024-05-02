@@ -43,5 +43,6 @@ docs/
 
 .DS_Store
 .yarn
-dist/build
-dist/bundle
+dist/cjs/dist
+dist/mjs/dist
+dist/bundle/

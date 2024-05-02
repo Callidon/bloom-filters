@@ -3,8 +3,6 @@
 JavaScript/TypeScript implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash.
 **This package relies on [non-cryptographic hash functions](https://www.npmjs.com/package/@node-rs/xxhash)**.
 
-This package is shipped as an ES module with one bundle and one bundle per structure.
-
 📕[Online documentation](https://callidon.github.io/bloom-filters/)
 
 **Keywords:** _bloom filter, cuckoo filter, KyperLogLog, MinHash, Top-K, probabilistic data-structures, XOR-Filter._
