@@ -26,7 +26,7 @@ SOFTWARE.
 
 import BaseFilter from '../base-filter'
 import { HashableInput, allocateArray, BufferError } from '../utils'
-import XXH from '@node-rs/xxhash'
+import Hashing from '../hashing'
 import Long from 'long'
 import { encode, decode } from 'base64-arraybuffer'
 
@@ -288,7 +288,7 @@ export default class XorFilter extends BaseFilter {
      */
     public _hashable_to_long(element: HashableInput, seed: number) {
         return Long.fromString(
-            XXH.xxh64(element, BigInt(seed)).toString(10),
+            Hashing.lib.xxh64(element, BigInt(seed)).toString(10),
             10
         )
     }

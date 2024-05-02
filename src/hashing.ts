@@ -1,5 +1,4 @@
-import XXH from '@node-rs/xxhash'
-import { getDefaultSeed, numberToHex, type HashableInput } from '../utils'
+import { getDefaultSeed, numberToHex, type HashableInput } from './utils'
 
 /**
  * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
@@ -28,7 +27,29 @@ export interface TwoHashesIntAndString {
     string: TwoHashesTemplated<string>
 }
 
-export default class Hashing implements Hashing {
+export default class Hashing {
+    /**
+     * Hashing library to use.
+     * This will be dynamically set when loading the library.
+     * You should not have to worry about this.
+     */
+    static lib: any
+
+    static async loadLib() {
+        // Need to dynamically import @node-rs/xxhash
+        // Will use the WASM from @node-rs/xxhash-wasm32-wasi underthehood
+        // Also need to statically set the hash lib to use in our Hashing class
+        Hashing.lib = await import('@node-rs/xxhash')
+    }
+
+    constructor() {
+        if (!Hashing.lib) {
+            // If you are testing, make sure you imported tests/bootstrap and did not have any describe
+            console.warn('You did not import the Hashing lib so it will be asynchronously loaded for you.')
+            Hashing.loadLib()
+        }
+    }
+
     /**
      * Apply enhanced Double Hashing to produce a n-hash
      * @see {@link http://peterd.org/pcd-diss.pdf} s6.5.4
@@ -143,7 +164,7 @@ export default class Hashing implements Hashing {
         if (!seed) {
             seed = getDefaultSeed()
         }
-        return Number(XXH.xxh32(element, seed))
+        return Number(Hashing.lib.xxh32(element, seed))
     }
 
     /**

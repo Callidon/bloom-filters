@@ -1,41 +1,18 @@
-/* file : min-hash-test.js
-MIT License
-
-Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
+import './bootstrap'
 import { expect, describe, test } from '@jest/globals'
 import { MinHashFactory, MinHash } from '../src/api'
-import { range, intersection, union } from 'lodash'
+import { range, intersection, union, List } from 'lodash'
 
 // Compute the exact Jaccard similairty between two sets
-function jaccard(a, b) {
+function jaccard(a: List<unknown> | null | undefined, b: List<unknown> | null | undefined) {
     return intersection(a, b).length / union(a, b).length
 }
 
-let factory,
-    setA,
-    setB,
+let factory: MinHashFactory,
+    setA: any[],
+    setB: any[],
     maxValue = 0,
-    nbHashes
+    nbHashes: number
 try {
     const max = 10000
     setA = range(1, max)
@@ -73,10 +50,10 @@ describe('MinHash', () => {
         test('should insert values and compute the Jaccard similarity between two sets', () => {
             const firstSet = factory.create()
             const secondSet = factory.create()
-            setA.forEach(value => {
+            setA.forEach((value: any) => {
                 firstSet.add(value)
             })
-            setB.forEach(value => {
+            setB.forEach((value: any) => {
                 secondSet.add(value)
             })
             expect(firstSet.compareWith(secondSet)).toBeCloseTo(
@@ -100,7 +77,7 @@ describe('MinHash', () => {
     })
 
     describe('#compareWith', () => {
-        test('should throw an Error when we try to compare an empty MinHash with anoter MinHash', done => {
+        test('should throw an Error when we try to compare an empty MinHash with anoter MinHash', (done: (arg0: Error | undefined) => void) => {
             const firstSet = factory.create()
             const secondSet = factory.create()
             secondSet.add(1)
@@ -112,11 +89,11 @@ describe('MinHash', () => {
                     )
                 )
             } catch (error) {
-                done()
+                done(error)
             }
         })
 
-        test('should throw an Error when we try to compare a MinHash with an empty MinHash', done => {
+        test('should throw an Error when we try to compare a MinHash with an empty MinHash', (done: (arg0: Error | undefined) => void) => {
             const firstSet = factory.create()
             firstSet.add(1)
             const secondSet = factory.create()
@@ -128,7 +105,7 @@ describe('MinHash', () => {
                     )
                 )
             } catch (error) {
-                done()
+                done(error)
             }
         })
     })

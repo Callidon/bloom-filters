@@ -2,19 +2,15 @@
   "compilerOptions": {
     "rootDir": "./src",
     "target": "es2022",
-    "outDir": "./dist",
-    "module": "commonjs",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["es2020"],
+    "module": "es2022",
+    "moduleResolution": "node",
+    "outDir": "./dist/build",
     "declaration": true,
     "strict": true,
-    "allowJs": false,
+    "allowJs": true,
+    "isolatedModules": true,
     "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "downlevelIteration": true,
-    "isolatedModules": true
   },
   "include": [
     "./src/**/*.ts",
