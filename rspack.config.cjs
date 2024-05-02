@@ -3,33 +3,31 @@ const rspack = require('@rspack/core')
 const path = require('path')
 
 module.exports = defineConfig({
-    mode: 'production',
+    mode: 'production', //''none',
     target: ['web'],
     output: {
-        path: 'dist/bundle',
-        library: {
-            name: 'BloomFilters',
-            type: 'global'
-        }
+        filename: 'browser.js',
+        path: 'dist/cjs/dist',
+        library: 'bloom_filters',
+        clean: true,
     },
     optimization: {
-        splitChunks: false
+        splitChunks: false,
+        mangleExports: false,
     },
     experiments: {
         asyncWebAssembly: true,
     },
     entry: {
-        index: "./src/browser.mts",
+        browser: "./src/browser.mts",
     },
     resolve: {
-        tsConfigPath: path.resolve(__dirname, "tsconfig.cjs.json"),
-        extensions: ["...", ".mts", ".mjs"],
+        tsConfigPath: path.resolve(__dirname, "tsconfig.json"),
+        extensions: ["...", ".mts"],
+        extensionAlias: {
+            '.mjs': ['.mts', '.mjs'],
+        },
     },
-    plugins: [
-        new rspack.HtmlRspackPlugin({
-            title: "BloomFilters Sandbox",
-        })
-    ],
     module: {
         rules: [
             {
