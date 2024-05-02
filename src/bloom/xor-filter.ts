@@ -102,21 +102,18 @@ export default class XorFilter extends BaseFilter {
     constructor(size: number, bits_per_fingerprint: XorSize = 8) {
         super()
         // try to use the Buffer class or reject by throwing an error
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!Buffer) {
             throw new Error(BufferError)
         }
-        if (bits_per_fingerprint) {
-            if (
-                !this.ALLOWED_FINGERPRINT_SIZES.includes(bits_per_fingerprint)
-            ) {
-                throw new Error(
-                    `bits_per_fingerprint parameter must be one of: [${this.ALLOWED_FINGERPRINT_SIZES.join(
-                        ','
-                    )}], got: ${bits_per_fingerprint}`
-                )
-            }
-            this._bits = bits_per_fingerprint
+        if (!this.ALLOWED_FINGERPRINT_SIZES.includes(bits_per_fingerprint)) {
+            throw new Error(
+                `bits_per_fingerprint parameter must be one of: [${this.ALLOWED_FINGERPRINT_SIZES.join(
+                    ','
+                )}], got: ${bits_per_fingerprint.toString()}`
+            )
         }
+        this._bits = bits_per_fingerprint
         if (size <= 0) {
             throw new Error(
                 'a XorFilter must be calibrated for a given number of elements'
@@ -172,7 +169,7 @@ export default class XorFilter extends BaseFilter {
     public add(elements: XorHashableInput[]) {
         if (elements.length !== this._size) {
             throw new Error(
-                `This filter has been created for exactly ${this._size} elements`
+                `This filter has been created for exactly ${this._size.toString()} elements`
             )
         } else {
             this._create(elements, this._filter.length)
@@ -373,7 +370,7 @@ export default class XorFilter extends BaseFilter {
                         if (t2count[h] > 120) {
                             // probably something wrong with the hash function
                             throw new Error(
-                                `Probably something wrong with the hash function, t2count[${h}]=${t2count[h]}`
+                                `Probably something wrong with the hash function, t2count[${h.toString()}]=${t2count[h].toString()}`
                             )
                         }
                         t2count[h]++

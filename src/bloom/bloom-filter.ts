@@ -37,7 +37,7 @@ export default class BloomFilter
         super()
         if (nbHashes < 1) {
             throw new Error(
-                `A BloomFilter cannot uses less than one hash function, while you tried to use ${nbHashes}.`
+                `A BloomFilter cannot uses less than one hash function, while you tried to use ${nbHashes.toString()}.`
             )
         }
         this._size = size
@@ -117,8 +117,8 @@ export default class BloomFilter
             this._nbHashes,
             this.seed
         )
-        for (let i = 0; i < indexes.length; i++) {
-            this._filter.add(indexes[i])
+        for (const value of indexes) {
+            this._filter.add(value)
         }
     }
 
@@ -141,8 +141,8 @@ export default class BloomFilter
             this._nbHashes,
             this.seed
         )
-        for (let i = 0; i < indexes.length; i++) {
-            if (!this._filter.has(indexes[i])) {
+        for (const value of indexes) {
+            if (!this._filter.has(value)) {
                 return false
             }
         }

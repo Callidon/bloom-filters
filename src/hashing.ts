@@ -1,4 +1,11 @@
 import { getDefaultSeed, numberToHex, type HashableInput } from './utils'
+import { type xxh32, type xxh64 } from './typings/xxhash'
+
+// Only importing those types as an interface because we only use this.
+export interface XXH {
+    xxh32: typeof xxh32
+    xxh64: typeof xxh64
+}
 
 /**
  * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
@@ -33,22 +40,26 @@ export default class Hashing {
      * This will be dynamically set when loading the library.
      * You should not have to worry about this.
      */
-    static lib: any
+    static lib: XXH
 
     static async loadLib() {
         // Need to dynamically import @node-rs/xxhash
         // Will use the WASM from @node-rs/xxhash-wasm32-wasi underthehood
         // Also need to statically set the hash lib to use in our Hashing class
-        Hashing.lib = await import('@node-rs/xxhash')
+        Hashing.lib = (await import('@node-rs/xxhash')) as XXH
     }
 
     constructor() {
+        // This is a goody; we need to ignore this rule.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!Hashing.lib) {
             // If you are testing, make sure you imported tests/bootstrap and did not have any describe
             console.warn(
                 'You did not import the Hashing lib so it will be asynchronously loaded for you.'
             )
-            Hashing.loadLib()
+            Hashing.loadLib().catch((e: unknown) => {
+                throw e
+            })
         }
     }
 

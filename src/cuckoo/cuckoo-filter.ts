@@ -313,7 +313,7 @@ export default class CuckooFilter
         const hash = hashes.int
         if (this._fingerprintLength > hashes.string.length) {
             throw new Error(
-                `The fingerprint length (${this._fingerprintLength}) is higher than the hash length (${hashes.string.length}). Please reduce the fingerprint length or report if it is an unexpected behavior.`
+                `The fingerprint length (${this._fingerprintLength.toString()}) is higher than the hash length (${hashes.string.length.toString()}). Please reduce the fingerprint length or report if it is an unexpected behavior.`
             )
         }
         const fingerprint = hashes.string.substring(0, this._fingerprintLength)
@@ -369,7 +369,7 @@ export default class CuckooFilter
         )
         filter.seed = element._seed
         filter._length = element._length
-        filter._filter = element._filter.map(Bucket.fromJSON<string>)
+        filter._filter = element._filter.map(e => Bucket.fromJSON<string>(e))
         return filter
     }
 }

@@ -1,7 +1,7 @@
 import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import Cell, { ExportedCell } from './cell'
-import { allocateArray } from '../utils'
+import { BufferError, allocateArray } from '../utils'
 import { optimalFilterSize, optimalHashes } from '../formulas'
 
 /**
@@ -52,10 +52,10 @@ export default class InvertibleBloomFilter
      */
     constructor(size: number, hashCount = 3) {
         super()
-        if (Buffer === undefined) {
-            throw new Error(
-                'No native Buffer implementation bound in your JavaScript env. If you are in a Web browser, consider importing the polyfill "feross/buffer" (https://github.com/feross/buffer).'
-            )
+        // Goody
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!Buffer) {
+            throw new Error(BufferError)
         }
         if (hashCount <= 0) {
             throw new Error(
@@ -316,12 +316,12 @@ export default class InvertibleBloomFilter
                     this._hashCount,
                     this.seed
                 )
-                for (let i = 0; i < indexes.length; ++i) {
-                    this._elements[indexes[i]] = this._elements[
-                        indexes[i]
-                    ].xorm(new Cell(id, Buffer.from(hashes.first), c))
-                    if (this._elements[indexes[i]].isPure()) {
-                        pureList.push(indexes[i])
+                for (const value of indexes) {
+                    this._elements[value] = this._elements[value].xorm(
+                        new Cell(id, Buffer.from(hashes.first), c)
+                    )
+                    if (this._elements[value].isPure()) {
+                        pureList.push(value)
                     }
                 }
             }
@@ -362,7 +362,7 @@ export default class InvertibleBloomFilter
             element._hashCount
         )
         filter.seed = element._seed
-        filter._elements = element._elements.map(Cell.fromJSON)
+        filter._elements = element._elements.map(e => Cell.fromJSON(e))
         return filter
     }
 }

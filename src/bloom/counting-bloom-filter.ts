@@ -35,7 +35,7 @@ export default class CountingBloomFilter
         super()
         if (nbHashes < 1) {
             throw new Error(
-                `A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes} functions. Consider increasing it.`
+                `A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes.toString()} functions. Consider increasing it.`
             )
         }
         this._size = size // fm.optimalFilterSize(capacity, errorRate)
@@ -112,12 +112,12 @@ export default class CountingBloomFilter
             this._nbHashes,
             this.seed
         )
-        for (let i = 0; i < indexes.length; i++) {
+        for (const value of indexes) {
             // increment counter
-            this._filter[indexes[i]][1] += 1
+            this._filter[value][1] += 1
             // set bit if necessary
-            if (this._filter[indexes[i]][1] > 0) {
-                this._filter[indexes[i]][0] = 1
+            if (this._filter[value][1] > 0) {
+                this._filter[value][0] = 1
             }
         }
         this._length++
@@ -140,12 +140,12 @@ export default class CountingBloomFilter
             this.seed
         )
         const success = true
-        for (let i = 0; i < indexes.length; i++) {
+        for (const value of indexes) {
             // decrement counter
-            this._filter[indexes[i]][1] -= 1
+            this._filter[value][1] -= 1
             // set bit if necessary
-            if (this._filter[indexes[i]][1] <= 0) {
-                this._filter[indexes[i]][0] = 0
+            if (this._filter[value][1] <= 0) {
+                this._filter[value][0] = 0
             }
         }
         this._length--
@@ -171,8 +171,8 @@ export default class CountingBloomFilter
             this._nbHashes,
             this.seed
         )
-        for (let i = 0; i < indexes.length; i++) {
-            if (!this._filter[indexes[i]][0]) {
+        for (const value of indexes) {
+            if (!this._filter[value][0]) {
                 return false
             }
         }

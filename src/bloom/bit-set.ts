@@ -66,8 +66,8 @@ export default class BitSet {
      */
     public bitCount(): number {
         let result = 0
-        for (let i = 0; i < this.array.length; i++) {
-            result += BitSet.countBits(this.array[i]) // Assumes we never have bits set beyond the end
+        for (const value of this.array) {
+            result += BitSet.countBits(value) // Assumes we never have bits set beyond the end
         }
         return result
     }

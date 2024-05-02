@@ -40,8 +40,11 @@ export type HashableInput = string | Uint8Array
 /**
  * BufferError
  */
-export const BufferError =
-    'The buffer class must be available, if you are a browser user use the buffer package (https://www.npmjs.com/package/buffer)'
+export const BufferError = `
+    No native Buffer implementation found.
+    If you are in a Web browser, consider importing the polyfill "feross/buffer".
+    Links: (https://github.com/feross/buffer, https://www.npmjs.com/package/buffer)
+`
 
 /**
  * Create a new array fill with a base value

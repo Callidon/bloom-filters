@@ -150,7 +150,7 @@ export default class HyperLogLog extends BaseFilter {
     public merge(other: HyperLogLog): HyperLogLog {
         if (this.nbRegisters !== other.nbRegisters) {
             throw new Error(
-                `Two HyperLogLog must have the same number of registers to be merged. Tried to merge two HyperLogLog with m = ${this.nbRegisters} and m = ${other.nbRegisters}`
+                `Two HyperLogLog must have the same number of registers to be merged. Tried to merge two HyperLogLog with m = ${this.nbRegisters.toString()} and m = ${other.nbRegisters.toString()}`
             )
         }
         const newSketch = new HyperLogLog(this.nbRegisters)

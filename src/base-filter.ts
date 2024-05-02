@@ -26,7 +26,7 @@ export default abstract class BaseFilter {
 
     constructor() {
         this._seed = getDefaultSeed()
-        this._rng = seedrandom(`${this._seed}`) as prng
+        this._rng = seedrandom(this._seed.toString()) as prng
         this._hashing = new Hashing()
     }
 
@@ -43,7 +43,7 @@ export default abstract class BaseFilter {
      */
     public set seed(seed: number) {
         this._seed = seed
-        this._rng = seedrandom(`${this._seed}`) as prng
+        this._rng = seedrandom(seed.toString()) as prng
     }
 
     /**

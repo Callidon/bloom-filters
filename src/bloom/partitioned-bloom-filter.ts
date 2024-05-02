@@ -110,9 +110,7 @@ export default class PartitionedBloomFilter
         this._m = Math.ceil(this._size / this._nbHashes)
         this._filter = allocateArray(this._nbHashes, () => new BitSet(this._m))
         this._capacity =
-            capacity !== undefined
-                ? capacity
-                : computeNumberOfItems(this._size, loadFactor, nbHashes)
+            capacity ?? computeNumberOfItems(this._size, loadFactor, nbHashes)
     }
 
     /**
