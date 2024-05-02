@@ -68,13 +68,9 @@ test('should produce equivalent TopK estimations when using count parameter', ()
     }
 
     const topkOneAtATimeValues = topkOneAtATime.values()
-    const topkOneAtATimeKeys = topkOneAtATimeValues.map(
-        ({ value }) => value
-    )
+    const topkOneAtATimeKeys = topkOneAtATimeValues.map(({ value }) => value)
     const topkAllAtOnceValues = topkAllAtOnce.values()
-    const topkAllAtOnceKeys = topkAllAtOnceValues.map(
-        ({ value }) => value
-    )
+    const topkAllAtOnceKeys = topkAllAtOnceValues.map(({ value }) => value)
 
     /* Make sure all expected lengths match */
     expect(expectedTop).toHaveLength(k)
@@ -230,7 +226,6 @@ function setupTopk() {
     topk.add('alice')
     return topk
 }
-
 
 test('should export a TopK to a JSON object', () => {
     const topk = setupTopk()

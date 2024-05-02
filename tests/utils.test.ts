@@ -1,6 +1,6 @@
 import './bootstrap'
 import { Hashing, BloomFilter, BaseFilter } from '../src/api'
-import { expect, describe, test } from '@jest/globals'
+import { expect, test } from '@jest/globals'
 import {
     allocateArray,
     randomInt,
@@ -33,9 +33,7 @@ test('should perform a double hashing', () => {
         // The maximum is exclusive and the minimum is inclusive
         const minCeiled = Math.ceil(min)
         const maxFloored = Math.floor(max)
-        return Math.floor(
-            Math.random() * (maxFloored - minCeiled) + minCeiled
-        )
+        return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled)
     }
     const hashA = getRandomInt(Number.MIN_VALUE, Number.MAX_VALUE / 2)
     const hashB = getRandomInt(Number.MAX_VALUE / 2, Number.MAX_VALUE)
@@ -59,9 +57,9 @@ test('should xor correctly 2 Buffers', () => {
     const res = Buffer.allocUnsafe(10).fill(0)
     res[res.length - 1] = 1
     // xor(a, b) = <Buffer 00 00 00 00 00 00 00 00 00 01>
-    expect(
-        xorBuffer(Buffer.from(a), Buffer.from(b)).toString()
-    ).toEqual(b.toString())
+    expect(xorBuffer(Buffer.from(a), Buffer.from(b)).toString()).toEqual(
+        b.toString()
+    )
     // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
     expect(
         xorBuffer(

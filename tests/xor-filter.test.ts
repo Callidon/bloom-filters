@@ -1,5 +1,5 @@
 import './bootstrap'
-import { expect, describe, test } from '@jest/globals'
+import { expect, test } from '@jest/globals'
 import { XorFilter } from '../src/api'
 import { XorSize } from '../src/bloom/xor-filter'
 

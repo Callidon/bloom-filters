@@ -47,8 +47,8 @@ export default abstract class BaseFilter {
     }
 
     /**
-     * Get a function used to draw random number
-     * @return A factory function used to draw random integer
+     * Get a function used to draw a seeded random number
+     * @return A factory function used to draw a seeded random float
      */
     public get random(): prng {
         return this._rng
