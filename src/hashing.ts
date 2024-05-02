@@ -45,7 +45,9 @@ export default class Hashing {
     constructor() {
         if (!Hashing.lib) {
             // If you are testing, make sure you imported tests/bootstrap and did not have any describe
-            console.warn('You did not import the Hashing lib so it will be asynchronously loaded for you.')
+            console.warn(
+                'You did not import the Hashing lib so it will be asynchronously loaded for you.'
+            )
             Hashing.loadLib()
         }
     }
