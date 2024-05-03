@@ -1,7 +1,7 @@
 import BaseFilter from '../base-filter.mjs'
 import CountingFilter from '../interfaces/counting-filter.mjs'
 import { allocateArray } from '../utils.mjs'
-import { HashableInput, SeedType } from "../types.mjs"
+import { HashableInput, SeedType } from '../types.mjs'
 
 export interface ExportedCountMinSketch {
     _seed: SeedType

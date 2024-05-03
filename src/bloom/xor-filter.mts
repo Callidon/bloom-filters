@@ -2,7 +2,7 @@
 
 import BaseFilter from '../base-filter.mjs'
 import { allocateArray, BufferError } from '../utils.mjs'
-import { HashableInput, SeedType } from "../types.mjs"
+import { HashableInput, SeedType } from '../types.mjs'
 import Hashing from '../hashing.mjs'
 import Long from 'long'
 import { encode, decode } from 'base64-arraybuffer'

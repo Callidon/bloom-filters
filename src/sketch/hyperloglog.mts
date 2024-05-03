@@ -1,6 +1,6 @@
 import BaseFilter from '../base-filter.mjs'
 import { allocateArray } from '../utils.mjs'
-import { HashableInput, SeedType } from "../types.mjs"
+import { HashableInput, SeedType } from '../types.mjs'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
 const TWO_POW_32 = Math.pow(2, 32)

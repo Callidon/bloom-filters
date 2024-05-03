@@ -1,4 +1,4 @@
-import { SeedType } from "./types.mjs"
+import { SeedType } from './types.mjs'
 
 /**
  * BufferError

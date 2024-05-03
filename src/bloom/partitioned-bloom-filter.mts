@@ -1,7 +1,7 @@
 import BaseFilter from '../base-filter.mjs'
 import ClassicFilter from '../interfaces/classic-filter.mjs'
 import { allocateArray } from '../utils.mjs'
-import { HashableInput, SeedType } from "../types.mjs"
+import { HashableInput, SeedType } from '../types.mjs'
 import BitSet, { ExportedBitSet } from './bit-set.mjs'
 
 /**

@@ -1,14 +1,12 @@
 import { xxh32, xxh64 } from '@node-rs/xxhash'
-import {
-    numberToHex,
-} from './utils.mjs'
+import { numberToHex } from './utils.mjs'
 import {
     TwoHashes,
     TwoHashesIntAndString,
-    TwoHashesTemplated, 
+    TwoHashesTemplated,
     type HashableInput,
-    SeedType
-} from "./types.mjs"
+    SeedType,
+} from './types.mjs'
 
 export default class Hashing {
     /**
@@ -201,7 +199,7 @@ export default class Hashing {
     /**
      * Hash an item and return its number and HEX string representation
      * @param  elem - Element to hash
-     * @param  seed - The hash seed. 
+     * @param  seed - The hash seed.
      * @param  base - The base in which the string will be returned, default: 16
      * @param  length - The length of hashes (defaults to 32 bits)
      * @return The item hased as an int and a string

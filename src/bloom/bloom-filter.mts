@@ -2,7 +2,7 @@ import ClassicFilter from '../interfaces/classic-filter.mjs'
 import BaseFilter from '../base-filter.mjs'
 import BitSet, { type ExportedBitSet } from './bit-set.mjs'
 import { optimalFilterSize, optimalHashes } from '../formulas.mjs'
-import { HashableInput, SeedType } from "../types.mjs"
+import { HashableInput, SeedType } from '../types.mjs'
 
 export interface ExportedBloomFilter {
     _size: number

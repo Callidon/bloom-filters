@@ -1,6 +1,6 @@
 import ClassicFilter from '../interfaces/classic-filter.mjs'
 import BaseFilter, { prng } from '../base-filter.mjs'
-import { HashableInput, SeedType } from "../types.mjs"
+import { HashableInput, SeedType } from '../types.mjs'
 import PartitionBloomFilter, {
     ExportedPartitionedBloomFilter,
 } from './partitioned-bloom-filter.mjs'

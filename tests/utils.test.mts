@@ -1,4 +1,4 @@
-import { expect, test, describe } from '@jest/globals'
+import { expect, test } from '@jest/globals'
 import {
     Hashing,
     BloomFilter,
@@ -150,7 +150,6 @@ test('should not be endlessly recurive the (Issue: #34)', () => {
         throw e
     }
 })
-
 
 test('overriding serialize function by always returning Number(1)', () => {
     class CustomHashing extends Hashing {
