@@ -3,32 +3,35 @@ const rspack = require('@rspack/core')
 const path = require('path')
 
 module.exports = defineConfig({
-    mode: 'production', //''none',
-    target: ['web'],
+    mode: 'production',
+    target: 'web',
+    devServer: {
+        open: true,
+        host: 'localhost',
+        port: 8001,
+    },
     output: {
-        filename: 'browser.js',
-        path: 'dist/cjs/dist',
-        library: 'bloom_filters',
+        path: path.resolve(__dirname, 'dist/website/rspack/'),
         clean: true,
     },
-    optimization: {
-        splitChunks: false,
-        mangleExports: false,
-    },
-    experiments: {
-        asyncWebAssembly: true,
-    },
-    entry: {
-        browser: "./src/browser.mts",
-    },
+    plugins: [
+        new rspack.HtmlRspackPlugin({
+            template: path.resolve(__dirname, './examples/website/index.html'),
+        })
+    ],
+    entry: path.resolve(__dirname, "./examples/website/rspack.mts"),
     resolve: {
         tsConfigPath: path.resolve(__dirname, "tsconfig.json"),
         extensions: ["...", ".mts"],
         extensionAlias: {
             '.mjs': ['.mts', '.mjs'],
         },
+        alias: {
+            "bloom-filters/dist/mjs/bloom/bloom-filter.mjs": path.resolve(__dirname, './dist/mjs/bloom/bloom-filter.mjs'),
+        }
     },
     module: {
+        // .wasm rule and experiments.asyncWebAssembly=true are required due to the use of @node-rs/xxhash
         rules: [
             {
                 test: /\.(mts|mjs)$/,
@@ -51,5 +54,8 @@ module.exports = defineConfig({
                 type: 'asset/inline'
             }
         ]
+    },
+    experiments: {
+        asyncWebAssembly: true,
     },
 })

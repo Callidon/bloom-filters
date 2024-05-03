@@ -40,3 +40,6 @@ jspm_packages
 
 # jsdoc
 docs/
+
+# only for dev 
+dist/website/

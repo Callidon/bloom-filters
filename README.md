@@ -641,3 +641,10 @@ When submitting pull requests please follow the following guidance:
 ## License
 
 [MIT License](https://github.com/Callidon/bloom-filters/blob/master/LICENSE)
+
+
+## ESM Module TODO list
+
+* Docs for a browser/bundle usage with rspack and webpack examples
+* Docs for node
+* Finish eslint

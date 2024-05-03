@@ -1,4 +1,5 @@
-import { BloomFilter } from '../dist/mjs/dist/browser.mjs'
+// Only import BloomFilter
+import BloomFilter from '../dist/mjs/bloom/bloom-filter.mjs'
 import assert from 'assert'
 assert(BloomFilter, 'BloomFilter should be defined')
 let filter = new BloomFilter(10, 4)

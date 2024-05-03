@@ -5,7 +5,7 @@
     "lib": ["es2020"],
     "module": "es2022",
     "moduleResolution": "node",
-    "outDir": "./dist/mjs/dist",
+    "outDir": "./dist/mjs/",
     "declaration": true,
     "strict": true,
     "allowJs": true,

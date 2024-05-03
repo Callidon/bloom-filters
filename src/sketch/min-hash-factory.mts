@@ -1,4 +1,4 @@
-import { HashFunction, MinHash } from './min-hash.mjs'
+import MinHash, { HashFunction } from './min-hash.mjs'
 import random from 'lodash.random'
 
 /**

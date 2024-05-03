@@ -43,6 +43,6 @@ docs/
 
 .DS_Store
 .yarn
-dist/cjs/dist
-dist/mjs/dist
-dist/bundle/
+dist/website/rspack
+dist/website/webpack
+dist/mjs/

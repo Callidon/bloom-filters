@@ -1,4 +1,0 @@
-{
-    "main": "./dist/browser.js",
-    "type": "commonjs"
-}

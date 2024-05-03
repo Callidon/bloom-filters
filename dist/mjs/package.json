@@ -1,4 +1,0 @@
-{
-    "main": "./dist/node.mjs",
-    "type": "module"
-}

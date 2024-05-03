@@ -43,7 +43,7 @@ export interface ExportedMinHash {
  * @see "On the resemblance and containment of documents", by Andrei Z. Broder, in Compression and Complexity of Sequences: Proceedings, Positano, Amalfitan Coast, Salerno, Italy, June 11-13, 1997.
  * @author Thomas Minier
  */
-export class MinHash extends BaseFilter {
+export default class MinHash extends BaseFilter {
     public _nbHashes: number
     public _hashFunctions: HashFunction[]
     public _signature: number[]
