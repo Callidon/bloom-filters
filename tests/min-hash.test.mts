@@ -66,22 +66,11 @@ test('should ingest a set of numbers and compute the Jaccard similarity between 
         0.2
     )
 })
-test('should throw an Error when we try to compare an empty MinHash with anoter MinHash', (done: (
-    arg0: Error | undefined
-) => void) => {
+test('should throw an Error when we try to compare an empty MinHash with anoter MinHash', () => {
     const firstSet = factory.create()
     const secondSet = factory.create()
     secondSet.add(1)
-    try {
-        firstSet.compareWith(secondSet)
-        done(
-            new Error(
-                'compareWith should throw an error when we try to compare an empty set with another MinHash'
-            )
-        )
-    } catch (error) {
-        done(error)
-    }
+    expect(firstSet.compareWith(secondSet)).toThrow(Error)
 })
 
 test('should throw an Error when we try to compare a MinHash with an empty MinHash', (done: (
