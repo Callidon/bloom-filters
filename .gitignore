@@ -42,7 +42,6 @@ jspm_packages
 docs/
 
 .DS_Store
-.yarn
 dist/website/rspack
 dist/website/webpack
 dist/mjs/
