@@ -651,15 +651,15 @@ When submitting pull requests please follow the following guidance:
 * Docs for node
 
 Versioning/Publishing:
-* version was bumped to 4.0.0-alpha.0 with `npm version premajor --preid alpha` from the 3.0.1
-* incrementing is: `npm version prerelease``
-* publishing is: `npm publish --tag alpha`
+* version was bumped to 4.0.0-alpha.0 with `yarn version premajor --preid alpha` from the 3.0.1
+* incrementing is: `yarn version prerelease`
+* publishing is: `yarn publish --tag alpha`
 
 Fix tests:
-* fix utils ?!? Warning
-* fix Cuckoo
-* fix Hyper log log
-* fix iblt
-* fix min hash
-* fix scalable
-* fix xor
+[x] fix utils: seed mandatory, getDistinctIndices was cycling, the fix is to trigger the randomizer periodically; aka after `size` cycles
+[ ] fix Cuckoo
+[ ] fix Hyper log log
+[ ] fix iblt
+[ ] fix min hash
+[ ] fix scalable
+[ ] fix xor
