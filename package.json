@@ -22,7 +22,7 @@
     "test:node": "node examples/node.mjs",
     "test:lint-build": "yarn lint && yarn build",
     "test": "yarn test:lint-build && yarn test:node > /dev/null && jest",
-    "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/index.ts",
+    "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/index.mts",
     "clean": "rimraf docs/ dist/mjs dist/website/rspack dist/website/webpack"
   },
   "repository": {
