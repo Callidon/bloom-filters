@@ -643,8 +643,16 @@ When submitting pull requests please follow the following guidance:
 [MIT License](https://github.com/Callidon/bloom-filters/blob/master/LICENSE)
 
 
-## ESM Module TODO list
+## Next/v4.0.0 todo list
 
+* Specify this is now an ESM module
+* Specify we do not use xxhashjs but @node-rs/xxashs with a webassembly when bundled and a platform specific binary when using node.
 * Docs for a browser/bundle usage with rspack and webpack examples
 * Docs for node
-* Finish eslint
+
+Versioning/Publishing:
+* version was bumped to 4.0.0-alpha.0 with `npm version premajor --preid alpha` from the 3.0.1
+* incrementing is: `npm version prerelease``
+* publishing is: `npm publish --tag alpha`
+
+
