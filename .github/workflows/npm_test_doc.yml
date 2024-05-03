@@ -25,9 +25,7 @@ jobs:
         key: ${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
     - name: Install package
       if: steps.cache.outputs.cache-hit != 'true'
-      run: npm install -g yarn && yarn install
+      run: npm install -g yarn@berry && yarn install
     - name: Test
       run: yarn test
-    - name: Bundle
-      run: yarn rbuild
 
