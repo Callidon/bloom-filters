@@ -1,7 +1,5 @@
-import './bootstrap.mjs'
 import { expect, test } from '@jest/globals'
-import { XorFilter } from '../src/api.mjs'
-import { XorSize } from '../src/bloom/xor-filter.mjs'
+import { XorFilter, XorSize } from '../src/index.mjs'
 
 const elements = ['1']
 const count = 1000

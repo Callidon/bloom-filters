@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
 import { expect, test } from '@jest/globals'
-import { PartitionedBloomFilter } from '../src/api.mjs'
+import { PartitionedBloomFilter } from '../src/index.mjs'
 
 const targetRate = 0.001
 test('should add element to the filter', () => {
@@ -115,11 +114,11 @@ test('should create a partitioned bloom filter from a JSON export', () => {
 })
 
 const max = 1000
-test(`should not return an error when inserting and querying for ${max} elements`, () => {
+test(`should not return an error when inserting and querying for ${max.toString()} elements`, () => {
     const filter = PartitionedBloomFilter.create(max, targetRate, 0.5)
-    for (let i = 0; i < max; ++i) filter.add('' + i)
+    for (let i = 0; i < max; ++i) filter.add(i.toString())
     for (let i = 0; i < max; ++i) {
-        expect(filter.has('' + i)).toBe(true)
+        expect(filter.has(i.toString())).toBe(true)
     }
     let current
     let falsePositive = 0
@@ -127,7 +126,7 @@ test(`should not return an error when inserting and querying for ${max} elements
     for (let i = max; i < max * 11; ++i) {
         tries++
         current = i
-        const has = filter.has('' + current)
+        const has = filter.has(current.toString())
         if (has) falsePositive++
     }
     const currentrate = falsePositive / tries

@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
-import Bucket from '../src/cuckoo/bucket.mjs'
-import { expect, describe, test } from '@jest/globals'
+import { expect, test } from '@jest/globals'
+import { Bucket } from '../src/index.mjs'
 
 test('should return True when the bucket as free space available', () => {
     const bucket = new Bucket(5)

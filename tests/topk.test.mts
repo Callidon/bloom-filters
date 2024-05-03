@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
 import { expect, test } from '@jest/globals'
-import { TopK } from '../src/api.mjs'
+import { TopK } from '../src/index.mjs'
 
 const lessThanOrEqualTestCaseItems = [
     'alice',
@@ -48,7 +47,7 @@ test('should produce equivalent TopK estimations when using count parameter', ()
 
     /* Ensure the built frequency table is correct. */
     const expectedFreqTable = lessThanOrEqualTestCaseItems.reduce(
-        (acc, curr) => {
+        (acc: Record<string, number>, curr) => {
             if (!Object.hasOwnProperty.call(acc, curr)) {
                 acc[curr] = 1
             } else {
@@ -57,7 +56,7 @@ test('should produce equivalent TopK estimations when using count parameter', ()
 
             return acc
         },
-        {} as Record<string, number>
+        {}
     )
     expect(freqTable).toEqual(expectedFreqTable)
 

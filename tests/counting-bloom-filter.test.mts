@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
-import CountingBloomFilter from '../src/bloom/counting-bloom-filter.mjs'
-import { expect, describe, test } from '@jest/globals'
+import { expect, test } from '@jest/globals'
+import { CountingBloomFilter } from '../src/index.mjs'
 
 const targetRate = 0.1
 test('should add element to the filter with #add', () => {
@@ -110,11 +109,11 @@ test('should create a bloom filter from a JSON export', () => {
 
 const max = 1000
 const targetedRate = 0.01
-test('should not return an error when inserting ' + max + ' elements', () => {
+test(`should not return an error when inserting ${max.toString()} elements`, () => {
     const filter = CountingBloomFilter.create(max, targetedRate)
-    for (let i = 0; i < max; ++i) filter.add('' + i)
+    for (let i = 0; i < max; ++i) filter.add(i.toString())
     for (let i = 0; i < max; ++i) {
-        expect(filter.has('' + i)).toBe(true)
+        expect(filter.has(i.toString())).toBe(true)
     }
     let current
     let falsePositive = 0
@@ -122,7 +121,7 @@ test('should not return an error when inserting ' + max + ' elements', () => {
     for (let i = max; i < max * 11; ++i) {
         tries++
         current = i
-        const has = filter.has('' + current)
+        const has = filter.has(current.toString())
         if (has) falsePositive++
     }
     const currentrate = falsePositive / tries

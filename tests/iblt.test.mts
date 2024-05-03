@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
 import { expect, test } from '@jest/globals'
-import { InvertibleBloomFilter } from '../src/api.mjs'
+import { InvertibleBloomFilter } from '../src/index.mjs'
 
 const keys = 1000
 const hashCount = 3
@@ -152,7 +151,7 @@ function commonTest(
     const remote = new InvertibleBloomFilter(size, hashCount)
     remote.seed = seed
     for (let i = 1; i <= keys; ++i) {
-        const hash = prefix + i // XXH.h64(prefix + i, seed).toString(16)
+        const hash = prefix + i.toString() // XXH.h64(prefix + i, seed).toString(16)
         if (i <= keys - differences) {
             iblt.add(Buffer.from(hash, 'utf8'))
             remote.add(Buffer.from(hash, 'utf8'))

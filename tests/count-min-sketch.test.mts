@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
 import { expect, test } from '@jest/globals'
-import CountMinSketch from '../src/sketch/count-min-sketch.mjs'
+import { CountMinSketch } from '../src/index.mjs'
 
 const delta = 0.999
 
@@ -105,7 +104,7 @@ const range = 1000
 const random = () => {
     return Math.floor(Math.random() * range)
 }
-test('should not return an error when inserting ' + max + ' elements', () => {
+test(`should not return an error when inserting ${max.toString()} elements`, () => {
     const filter = CountMinSketch.create(rate, delta)
     // error rate 0.001, probability of wrong answer: 0.001
     // console.log('number of rows:', filter._rows)
@@ -115,23 +114,28 @@ test('should not return an error when inserting ' + max + ' elements', () => {
     // console.log('Relative accuracy is: ', 1 + errorRate * max, ' with probability: ', 1 - delta)
     // add n times max elements so we got a frequency of 10 for each elements
     let error = 0
-    const map = new Map()
+    const map = new Map<string, number>()
     for (let i = 0; i < max; ++i) {
-        const item = random()
+        const item = random().toString()
         // update
-        filter.update('' + item)
-        if (!map.has(item)) {
+        filter.update(item)
+        let retrievedItem = map.get(item)
+        if (!retrievedItem) {
             map.set(item, 1)
         } else {
-            map.set(item, map.get(item) + 1)
+            map.set(item, retrievedItem + 1)
         }
 
         // check the item
-        const count = filter.count('' + item)
-        const est = map.get(item) + rate * filter.sum
-        if (count > est) {
-            error += 1
-            // console.log('[%d] => â: %d, a: %d', item, count, map.get(item), est)
+        // at this point this item is known
+        retrievedItem = map.get(item)
+        if (retrievedItem) {
+            const count = filter.count(item)
+            const est = retrievedItem + rate * filter.sum
+            if (count > est) {
+                error += 1
+                // console.log('[%d] => â: %d, a: %d', item, count, map.get(item), est)
+            }
         }
     }
 

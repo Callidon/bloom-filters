@@ -1,6 +1,6 @@
-import './bootstrap.mjs'
 import { expect, test } from '@jest/globals'
-import { ScalableBloomFilter } from '../src/api.mjs'
+import { ScalableBloomFilter } from '../src/index.mjs'
+
 const targetRate = 0.1
 const seed = Math.random()
 test('should #add add elements without error', () => {

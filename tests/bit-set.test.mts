@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
-import { BitSet } from '../src/api.mjs'
 import { expect, test } from '@jest/globals'
+import { BitSet, ExportedBitSet } from '../src/index.mjs'
 
 test('is initially clear', () => {
     const set = new BitSet(50)
@@ -49,8 +48,8 @@ test('Throws an Error on bad data', () => {
         { size: 1 },
         { content: 'Ag==' },
         { size: 'cow', content: 'Ag==' },
-    ].forEach((json: any) => {
-        expect(() => BitSet.import(json)).toThrow(Error)
+    ].forEach((json: unknown) => {
+        expect(() => BitSet.import(json as ExportedBitSet)).toThrow(Error)
     })
 })
 

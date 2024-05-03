@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
-import { BloomFilter } from '../src/api.mjs'
-import { expect, describe, test } from '@jest/globals'
+import { expect, test } from '@jest/globals'
+import { BloomFilter, ExportedBloomFilter } from '../src/index.mjs'
 
 const targetRate = 0.1
 const seed = Math.random()
@@ -82,12 +81,12 @@ test('should export a bloom filter to a JSON object', () => {
 
 test('should create a bloom filter from a JSON export', () => {
     const filter = buildFilter()
-    const exported = filter.saveAsJSON()
+    const exported: ExportedBloomFilter = filter.saveAsJSON()
     // simulate serialization
-    const serialized = JSON.stringify(exported)
+    const serialized: string = JSON.stringify(exported)
     // simulate deserialization
-    const deserialized = JSON.parse(serialized)
-    const newFilter = BloomFilter.fromJSON(deserialized)
+    const deserialized: unknown = JSON.parse(serialized)
+    const newFilter = BloomFilter.fromJSON(deserialized as ExportedBloomFilter)
     expect(newFilter.seed).toEqual(filter.seed)
     expect(newFilter.size).toEqual(filter._size)
     expect(newFilter._filter).toEqual(filter._filter)
@@ -95,11 +94,11 @@ test('should create a bloom filter from a JSON export', () => {
 
 const max = 1000
 const targetedRate = 0.01
-test(`should not return an error when inserting ${max} elements`, () => {
+test(`should not return an error when inserting ${max.toString()} elements`, () => {
     const filter = BloomFilter.create(max, targetedRate)
-    for (let i = 0; i < max; ++i) filter.add('' + i)
+    for (let i = 0; i < max; ++i) filter.add(i.toString())
     for (let i = 0; i < max; ++i) {
-        expect(filter.has('' + i)).toBe(true)
+        expect(filter.has(i.toString())).toBe(true)
     }
     let current
     let falsePositive = 0
@@ -107,7 +106,7 @@ test(`should not return an error when inserting ${max} elements`, () => {
     for (let i = max; i < max * 11; ++i) {
         tries++
         current = i
-        const has = filter.has('' + current)
+        const has = filter.has(current.toString())
         if (has) falsePositive++
     }
     const currentRate = falsePositive / tries

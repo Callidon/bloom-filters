@@ -1,19 +1,20 @@
-import './bootstrap.mjs'
 import { expect, test } from '@jest/globals'
-import { MinHashFactory, MinHash } from '../src/api.mjs'
-import { range, intersection, union, List } from 'lodash'
+import { MinHashFactory, MinHash } from '../src/index.mjs'
+import range from 'lodash.range'
+import union from 'lodash.union'
+import intersection from 'lodash.intersection'
 
 // Compute the exact Jaccard similairty between two sets
 function jaccard(
-    a: List<unknown> | null | undefined,
-    b: List<unknown> | null | undefined
+    a: Array<unknown> | null | undefined,
+    b: Array<unknown> | null | undefined
 ) {
     return intersection(a, b).length / union(a, b).length
 }
 
 let factory: MinHashFactory,
-    setA: any[],
-    setB: any[],
+    setA: number[],
+    setB: number[],
     maxValue = 0,
     nbHashes: number
 try {
@@ -29,10 +30,7 @@ try {
     nbHashes = 50
     factory = new MinHashFactory(nbHashes, maxValue)
 } catch (error) {
-    console.error(error)
-    throw new Error(
-        'An error occured when creating the min hash factory: ' + error
-    )
+    throw error
 }
 test('should return True when the MinHash signeture is empty', () => {
     const set = factory.create()
@@ -47,10 +45,10 @@ test('should return False when the MinHash signeture is not empty', () => {
 test('should insert values and compute the Jaccard similarity between two sets', () => {
     const firstSet = factory.create()
     const secondSet = factory.create()
-    setA.forEach((value: any) => {
+    setA.forEach(value => {
         firstSet.add(value)
     })
-    setB.forEach((value: any) => {
+    setB.forEach(value => {
         secondSet.add(value)
     })
     expect(firstSet.compareWith(secondSet)).toBeCloseTo(

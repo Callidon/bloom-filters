@@ -1,14 +1,15 @@
-import './bootstrap.mjs'
 import { expect, test } from '@jest/globals'
-import range from 'lodash.range'
-import { Hashing, BloomFilter, BaseFilter, Utils } from '../src/api.mjs'
-const {
+import {
+    Hashing,
+    BloomFilter,
+    BaseFilter,
     allocateArray,
     randomInt,
     xorBuffer,
     getDefaultSeed,
     isEmptyBuffer,
-} = Utils
+} from '../src/index.mjs'
+import range from 'lodash.range'
 
 const seed = getDefaultSeed()
 
@@ -136,7 +137,7 @@ test(`should return ${desiredIndices.toString()} distinct indices on the interva
             ).toString()} ms`
         )
     } catch (e) {
-        throw Error(e as any)
+        throw e
     }
 })
 test('should the issue be fixed', () => {
@@ -145,7 +146,7 @@ test('should the issue be fixed', () => {
         filter.add(key)
         expect(filter.has(key)).toBe(true)
     } catch (e) {
-        throw Error(e as any)
+        throw e
     }
 })
 

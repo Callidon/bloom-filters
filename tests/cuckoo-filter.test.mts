@@ -1,6 +1,5 @@
-import './bootstrap.mjs'
-import { expect, describe, test } from '@jest/globals'
-import CuckooFilter from '../src/cuckoo/cuckoo-filter.mjs'
+import { expect, test } from '@jest/globals'
+import { CuckooFilter } from '../src/index.mjs'
 
 test('should compute the fingerprint and indexes for an element', () => {
     const filter = new CuckooFilter(15, 3, 2, 1)
@@ -233,28 +232,20 @@ test('should create a cuckoo filter from a JSON export', () => {
 const max = 20
 const rate = 0.000000000000000001
 const bucketSize = 1
-test(
-    'should not return an error when inserting and asking for ' +
-        max +
-        ' elements, rate = ' +
-        rate +
-        ', bucketSize = ' +
-        bucketSize,
-    () => {
-        const filter = CuckooFilter.create(max, rate, bucketSize, 500)
-        for (let i = 0; i < max; i++) {
-            expect(filter.add('' + i)).toBe(true)
-        }
-        let current
-        let falsePositive = 0
-        let tries = 0
-        for (let i = max; i < max * 11; ++i) {
-            tries++
-            current = i
-            const has = filter.has('' + current)
-            if (has) falsePositive++
-        }
-        const currentrate = falsePositive / tries
-        expect(currentrate).toBeCloseTo(rate, rate)
+test(`should not return an error when inserting and asking for ${max.toString()} elements, rate = ${rate.toString()}; bucketSize = ${bucketSize.toString()};`, () => {
+    const filter = CuckooFilter.create(max, rate, bucketSize, 500)
+    for (let i = 0; i < max; i++) {
+        expect(filter.add(i.toString())).toBe(true)
     }
-)
+    let current: number
+    let falsePositive = 0
+    let tries = 0
+    for (let i = max; i < max * 11; ++i) {
+        tries++
+        current = i
+        const has = filter.has(current.toString())
+        if (has) falsePositive++
+    }
+    const currentrate = falsePositive / tries
+    expect(currentrate).toBeCloseTo(rate, rate)
+})

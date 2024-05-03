@@ -1,12 +1,12 @@
-import './bootstrap.mjs'
-import { expect, describe, test } from '@jest/globals'
-const { HyperLogLog } = require('../src/api.mjs')
+import { expect, test } from '@jest/globals'
+import { HyperLogLog } from '../src/index.mjs'
+
 test('should support update and cardinality estimations (count) operations', () => {
     const nbDistinct = 100
     const sketch = new HyperLogLog(110)
     // populate the sketch with some values
     for (let i = 0; i < 10e3; i++) {
-        sketch.update(`${i % nbDistinct}`)
+        sketch.update((i % nbDistinct).toString())
     }
     expect(sketch.count(true)).toBeCloseTo(
         nbDistinct,
