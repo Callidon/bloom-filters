@@ -10,7 +10,6 @@
     "wasm32"
   ],
   "scripts": {
-    "type-check": "tsc --noEmit",
     "build:main": "tsc",
     "build:rspack": "rspack build --config rspack.config.cjs",
     "build:webpack": "webpack --config webpack.config.cjs",
@@ -18,11 +17,11 @@
     "build": "yarn build:main && yarn build:examples",
     "preview:rspack": "rspack preview --config rspack.config.cjs",
     "preview:webpack": "webpack serve --config webpack.config.cjs",
-    "pretest": "yarn type-check && yarn lint",
     "prettier": "prettier --config package.json --write \"(src|tests)/**/*.mts\"",
     "lint": "yarn prettier && eslint -c .eslintrc.cjs src/ tests/",
-    "test:node": "yarn tsc && node examples/node.mjs",
-    "test": "jest",
+    "test:node": "node examples/node.mjs",
+    "test:lint-build": "yarn lint && yarn build",
+    "test": "yarn test:lint-build && yarn test:node > /dev/null && jest",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/index.ts",
     "clean": "rimraf docs/ dist/mjs dist/website/rspack dist/website/webpack"
   },
