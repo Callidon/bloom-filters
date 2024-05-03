@@ -25,7 +25,7 @@ jobs:
         path: node_modules
         key: ${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
     - name: Install yarn@berry
-      run: npm install -g yarn@berry && yarn set version 4.2.1 && yarn --version -y
+      run: npm install -g yarn@berry && yarn set version 4.2.1 && yarn --version
     - name: Package install
       if: steps.cache.outputs.cache-hit != 'true'
       run: yarn install
