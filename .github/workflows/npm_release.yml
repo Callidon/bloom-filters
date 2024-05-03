@@ -9,7 +9,7 @@ jobs:
       name: npm
       url: https://www.npmjs.com/package/bloom-filters
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     # Setup .npmrc file to publish to npm
     - uses: actions/setup-node@v2
       with:

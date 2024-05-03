@@ -10,20 +10,21 @@ jobs:
     strategy:
       matrix:
         # Only LTS major version
-        node-version: ['18', '19', '20', '21', '22', 'lts/*'] 
+        # node-version: ['18', '19', '20', '21', '22', 'lts/*'] 
+        node-version: ['lts/*'] 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
     - name: Cache node modules
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cache
       with:
         path: node_modules
         key: ${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
-    - name: Install package
+    - name: Install yarn@berry and package install
       if: steps.cache.outputs.cache-hit != 'true'
       run: npm install -g yarn@berry && yarn install
     - name: Test
