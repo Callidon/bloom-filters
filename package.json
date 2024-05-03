@@ -5,7 +5,7 @@
   "main": "./dist/mjs/index.mjs",
   "browser": "./dist/mjs/index.mjs",
   "type": "module",
-  "os": [
+  "cpu": [
     "!wasm32",
     "wasm32"
   ],

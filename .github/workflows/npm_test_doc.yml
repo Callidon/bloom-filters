@@ -13,6 +13,8 @@ jobs:
         # node-version: ['18', '19', '20', '21', '22', 'lts/*'] 
         node-version: ['lts/*'] 
     steps:
+    - name: Install yarn@berry first
+      run: npm install -g yarn@berry && yarn set version 4.2.1 && yarn --version
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
@@ -24,8 +26,6 @@ jobs:
       with:
         path: node_modules
         key: ${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}
-    - name: Install yarn@berry
-      run: npm install -g yarn@berry && yarn set version 4.2.1 && yarn --version
     - name: Package install
       if: steps.cache.outputs.cache-hit != 'true'
       run: yarn install
