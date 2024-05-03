@@ -3,6 +3,7 @@ import WritableFilter from '../interfaces/writable-filter.mjs'
 import Cell, { ExportedCell } from './cell.mjs'
 import { BufferError, allocateArray } from '../utils.mjs'
 import { optimalFilterSize, optimalHashes } from '../formulas.mjs'
+import { SeedType } from '../types.mjs'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
@@ -26,7 +27,7 @@ export interface ExportedInvertibleBloomFilter {
     _size: number
     _hashCount: number
     _elements: ExportedCell[]
-    _seed: number
+    _seed: SeedType
 }
 
 /**

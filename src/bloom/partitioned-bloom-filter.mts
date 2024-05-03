@@ -1,6 +1,7 @@
 import BaseFilter from '../base-filter.mjs'
 import ClassicFilter from '../interfaces/classic-filter.mjs'
-import { HashableInput, allocateArray } from '../utils.mjs'
+import { allocateArray } from '../utils.mjs'
+import { HashableInput, SeedType } from "../types.mjs"
 import BitSet, { ExportedBitSet } from './bit-set.mjs'
 
 /**
@@ -57,7 +58,7 @@ function computeNumberOfItems(
 }
 
 export interface ExportedPartitionedBloomFilter {
-    _seed: number
+    _seed: SeedType
     _size: number
     _nbHashes: number
     _loadFactor: number

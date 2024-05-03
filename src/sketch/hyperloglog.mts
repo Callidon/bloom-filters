@@ -1,5 +1,6 @@
 import BaseFilter from '../base-filter.mjs'
-import { HashableInput, allocateArray } from '../utils.mjs'
+import { allocateArray } from '../utils.mjs'
+import { HashableInput, SeedType } from "../types.mjs"
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
 const TWO_POW_32 = Math.pow(2, 32)
@@ -24,7 +25,7 @@ function computeAlpha(m: number): number {
 }
 
 export interface ExportedHyperLogLog {
-    _seed: number
+    _seed: SeedType
     _nbRegisters: number
     _nbBytesPerHash: number
     _correctionBias: number

@@ -1,4 +1,5 @@
 import BaseFilter from '../base-filter.mjs'
+import { SeedType } from '../types.mjs'
 import CountMinSketch, { ExportedCountMinSketch } from './count-min-sketch.mjs'
 import sortedIndexBy from 'lodash.sortedindexby'
 
@@ -126,7 +127,7 @@ export class MinHeap {
 }
 
 export interface ExportedTopK {
-    _seed: number
+    _seed: SeedType
     _k: number
     _errorRate: number
     _accuracy: number

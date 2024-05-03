@@ -1,7 +1,8 @@
 import WritableFilter from '../interfaces/writable-filter.mjs'
 import BaseFilter from '../base-filter.mjs'
 import Bucket, { ExportedBucket } from './bucket.mjs'
-import { HashableInput, allocateArray, randomInt } from '../utils.mjs'
+import { allocateArray, randomInt } from '../utils.mjs'
+import { HashableInput, SeedType } from "../types.mjs"
 
 /**
  * Compute the optimal fingerprint length in bytes for a given bucket size
@@ -22,7 +23,7 @@ export interface ExportedCuckooFilter {
     _length: number
     _maxKicks: number
     _filter: ExportedBucket<string>[]
-    _seed: number
+    _seed: SeedType
     _bucketSize: number
 }
 

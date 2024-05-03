@@ -2,13 +2,13 @@ import ClassicFilter from '../interfaces/classic-filter.mjs'
 import BaseFilter from '../base-filter.mjs'
 import BitSet, { type ExportedBitSet } from './bit-set.mjs'
 import { optimalFilterSize, optimalHashes } from '../formulas.mjs'
-import { HashableInput } from '../utils.mjs'
+import { HashableInput, SeedType } from "../types.mjs"
 
 export interface ExportedBloomFilter {
     _size: number
     _nbHashes: number
     _filter: ExportedBitSet
-    _seed: number
+    _seed: SeedType
 }
 
 /**
@@ -72,11 +72,11 @@ export default class BloomFilter
     public static from(
         items: Iterable<HashableInput>,
         errorRate: number,
-        seed?: number
+        seed?: SeedType
     ): BloomFilter {
         const array = Array.from(items)
         const filter = BloomFilter.create(array.length, errorRate)
-        if (typeof seed === 'number') {
+        if (typeof seed === 'bigint') {
             filter.seed = seed
         }
         array.forEach(element => {

@@ -1,10 +1,11 @@
 import BaseFilter from '../base-filter.mjs'
 import WritableFilter from '../interfaces/writable-filter.mjs'
 import { optimalFilterSize, optimalHashes } from '../formulas.mjs'
-import { HashableInput, allocateArray } from '../utils.mjs'
+import { allocateArray } from '../utils.mjs'
+import { HashableInput, SeedType } from "../types.mjs"
 
 export interface ExportedCountingBloomFilter {
-    _seed: number
+    _seed: SeedType
     _size: number
     _nbHashes: number
     _filter: number[][]

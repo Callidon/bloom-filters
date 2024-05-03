@@ -1,8 +1,8 @@
 import { expect, test } from '@jest/globals'
-import { BloomFilter, ExportedBloomFilter } from '../src/index.mjs'
+import { BloomFilter, ExportedBloomFilter, randomInt } from '../src/index.mjs'
 
 const targetRate = 0.1
-const seed = Math.random()
+const seed = randomInt(0, Number.MAX_SAFE_INTEGER)
 
 test('should add element to the filter with #add', () => {
     const filter = BloomFilter.create(15, targetRate)

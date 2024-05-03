@@ -1,13 +1,13 @@
 import ClassicFilter from '../interfaces/classic-filter.mjs'
 import BaseFilter, { prng } from '../base-filter.mjs'
-import { HashableInput } from '../utils.mjs'
+import { HashableInput, SeedType } from "../types.mjs"
 import PartitionBloomFilter, {
     ExportedPartitionedBloomFilter,
 } from './partitioned-bloom-filter.mjs'
 import seedrandom from 'seedrandom'
 
 export interface ExportedScalableBloomFilter {
-    _seed: number
+    _seed: SeedType
     _initial_size: number
     _error_rate: number
     _ratio: number
@@ -82,7 +82,7 @@ export default class ScalableBloomFilter
      * due to the seed change. So only change it once before adding data.
      * @param  seed the new seed that will be used in this structure
      */
-    public set seed(seed: number) {
+    public set seed(seed: SeedType) {
         this._seed = seed
         this._rng = seedrandom(this._seed.toString()) as prng
         this._filters.forEach((filter: PartitionBloomFilter) => {

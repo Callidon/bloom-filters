@@ -1,7 +1,8 @@
 // Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
 
 import BaseFilter from '../base-filter.mjs'
-import { HashableInput, allocateArray, BufferError } from '../utils.mjs'
+import { allocateArray, BufferError } from '../utils.mjs'
+import { HashableInput, SeedType } from "../types.mjs"
 import Hashing from '../hashing.mjs'
 import Long from 'long'
 import { encode, decode } from 'base64-arraybuffer'
@@ -22,7 +23,7 @@ export interface ExportedXorFilter {
     _bits: XorSize
     _size: number
     _blockLength: number
-    _seed: number
+    _seed: SeedType
 }
 
 /**
@@ -259,7 +260,7 @@ export default class XorFilter extends BaseFilter {
      * @param seed
      * @returns
      */
-    public _hashable_to_long(element: HashableInput, seed: number) {
+    public _hashable_to_long(element: HashableInput, seed: SeedType) {
         return Long.fromString(
             Hashing.lib.xxh64(element, BigInt(seed)).toString(10),
             10
@@ -273,8 +274,8 @@ export default class XorFilter extends BaseFilter {
      * @param element
      * @returns
      */
-    public _hash64(element: Long, seed: number): Long {
-        let h = element.add(seed)
+    public _hash64(element: Long, seed: SeedType): Long {
+        let h = element.add(Number(seed))
         h = h
             .xor(h.shiftRightUnsigned(33))
             .multiply(Long.fromString('0xff51afd7ed558ccd', 16))
@@ -306,7 +307,7 @@ export default class XorFilter extends BaseFilter {
      * @param seed
      * @returns
      */
-    public _getHash(element: Long, seed: number, index: number): number {
+    public _getHash(element: Long, seed: SeedType, index: number): number {
         const hash: Long = this._hash64(element, seed)
         const r: Long = hash.rotl(21 * index)
         const rn = this._reduce(r, this._blockLength)
@@ -328,7 +329,7 @@ export default class XorFilter extends BaseFilter {
         const reverseH: number[] = allocateArray(this._size, 0)
         let reverseOrderPos
         do {
-            this.seed = this.nextInt32()
+            this.seed = BigInt(this.nextInt32())
             const t2count = allocateArray(arrayLength, 0)
             const t2 = allocateArray(arrayLength, Long.ZERO)
             elements

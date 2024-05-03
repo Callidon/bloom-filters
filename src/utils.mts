@@ -1,41 +1,4 @@
-/**
- * Utilitaries functions
- * @namespace Utils
- * @private
- */
-
-/* JSDOC typedef */
-/**
- * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
- * @property {number} first - The result of the first hashing function applied to a value
- * @property {number} second - The result of the second hashing function applied to a value
- * @memberof Utils
- */
-export interface TwoHashes {
-    first: number
-    second: number
-}
-
-/**
- * Templated TwoHashes type
- */
-export interface TwoHashesTemplated<T> {
-    first: T
-    second: T
-}
-
-/**
- * TwoHashes type in number and int format
- */
-export interface TwoHashesIntAndString {
-    int: TwoHashesTemplated<number>
-    string: TwoHashesTemplated<string>
-}
-
-/**
- * Data type of an hashable value, must be string, ArrayBuffer or Buffer.
- */
-export type HashableInput = string | Uint8Array
+import { SeedType } from "./types.mjs"
 
 /**
  * BufferError
@@ -131,7 +94,7 @@ export function xorBuffer(a: Buffer, b: Buffer): Buffer {
         start++
         value = it.next()
     }
-    return buffer.slice(start)
+    return Buffer.from(Uint8Array.prototype.slice.call(buffer, start))
 }
 
 /**
@@ -155,6 +118,6 @@ export function isEmptyBuffer(buffer: Buffer | null): boolean {
  * @return A seed as a floating point number
  * @author Arnaud Grall
  */
-export function getDefaultSeed(): number {
-    return 0x1234567890
+export function getDefaultSeed(): SeedType {
+    return BigInt(0x1234567890)
 }

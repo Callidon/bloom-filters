@@ -73,22 +73,11 @@ test('should throw an Error when we try to compare an empty MinHash with anoter 
     expect(firstSet.compareWith(secondSet)).toThrow(Error)
 })
 
-test('should throw an Error when we try to compare a MinHash with an empty MinHash', (done: (
-    arg0: Error | undefined
-) => void) => {
+test('should throw an Error when we try to compare a MinHash with an empty MinHash', () => {
     const firstSet = factory.create()
     firstSet.add(1)
     const secondSet = factory.create()
-    try {
-        firstSet.compareWith(secondSet)
-        done(
-            new Error(
-                'compareWith should throw an error when we try to compare with an empty MinHash'
-            )
-        )
-    } catch (error) {
-        done(error)
-    }
+    expect(firstSet.compareWith(secondSet)).toThrow(Error)
 })
 
 const mySet = factory.create()

@@ -655,4 +655,11 @@ Versioning/Publishing:
 * incrementing is: `npm version prerelease``
 * publishing is: `npm publish --tag alpha`
 
-
+Fix tests:
+* fix utils ?!? Warning
+* fix Cuckoo
+* fix Hyper log log
+* fix iblt
+* fix min hash
+* fix scalable
+* fix xor

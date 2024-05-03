@@ -1,11 +1,12 @@
 import { xorBuffer } from '../utils.mjs'
 import BaseFilter from '../base-filter.mjs'
+import { SeedType } from '../types.mjs'
 
 export interface ExportedCell {
     _idSum: string
     _hashSum: string
     _count: number
-    _seed: number
+    _seed: SeedType
 }
 
 /**

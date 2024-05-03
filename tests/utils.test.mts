@@ -1,4 +1,4 @@
-import { expect, test } from '@jest/globals'
+import { expect, test, describe } from '@jest/globals'
 import {
     Hashing,
     BloomFilter,
@@ -97,7 +97,7 @@ test('should xor correctly', () => {
     const max = 100
     let last: Buffer = Buffer.allocUnsafe(0)
     for (let i = 0; i < max; i++) {
-        const s = Hashing.lib.xxh32(i.toString(), seed).toString(16)
+        const s = Hashing.lib.xxh64(i.toString(), seed).toString(16)
         const buf = Buffer.from(s)
         a = xorBuffer(a, buf)
         if (i !== max - 1) {
@@ -128,7 +128,7 @@ test(`should return ${desiredIndices.toString()} distinct indices on the interva
         const obj = new (class extends BaseFilter {})()
         const start = new Date().getTime()
         const indices = obj._hashing
-            .getDistinctIndexes(key, desiredIndices, desiredIndices)
+            .getDistinctIndexes(key, desiredIndices, desiredIndices, seed)
             .sort((a, b) => a - b)
         expect(indices).toEqual(result)
         console.log(
@@ -140,7 +140,8 @@ test(`should return ${desiredIndices.toString()} distinct indices on the interva
         throw e
     }
 })
-test('should the issue be fixed', () => {
+
+test('should not be endlessly recurive the (Issue: #34)', () => {
     try {
         const filter = new BloomFilter(39, 28)
         filter.add(key)
@@ -149,6 +150,7 @@ test('should the issue be fixed', () => {
         throw e
     }
 })
+
 
 test('overriding serialize function by always returning Number(1)', () => {
     class CustomHashing extends Hashing {

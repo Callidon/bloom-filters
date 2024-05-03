@@ -1,4 +1,5 @@
 import BaseFilter from '../base-filter.mjs'
+import { SeedType } from '../types.mjs'
 import { allocateArray } from '../utils.mjs'
 
 /**
@@ -28,7 +29,7 @@ function applyHashFunction(x: number, fn: HashFunction): number {
 }
 
 export interface ExportedMinHash {
-    _seed: number
+    _seed: SeedType
     _nbHashes: number
     _hashFunctions: HashFunction[]
     _signature: number[]

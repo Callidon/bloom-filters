@@ -1,6 +1,7 @@
 import seedrandom from 'seedrandom'
 import Hashing from './hashing.mjs'
 import { getDefaultSeed } from './utils.mjs'
+import { SeedType } from './types.mjs'
 
 /**
  * Exported prng type because it is not from seedrandom
@@ -20,7 +21,7 @@ export interface prng {
  * @author Arnaud Grall
  */
 export default abstract class BaseFilter {
-    public _seed: number
+    public _seed: SeedType
     public _rng: prng
     public _hashing: Hashing
 
@@ -33,7 +34,7 @@ export default abstract class BaseFilter {
     /**
      * Get the seed used in this structure
      */
-    public get seed(): number {
+    public get seed(): SeedType {
         return this._seed
     }
 
@@ -41,7 +42,7 @@ export default abstract class BaseFilter {
      * Set the seed for this structure
      * @param  seed the new seed that will be used in this structure
      */
-    public set seed(seed: number) {
+    public set seed(seed: SeedType) {
         this._seed = seed
         this._rng = seedrandom(seed.toString()) as prng
     }

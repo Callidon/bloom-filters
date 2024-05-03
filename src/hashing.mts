@@ -1,12 +1,14 @@
 import { xxh32, xxh64 } from '@node-rs/xxhash'
 import {
+    numberToHex,
+} from './utils.mjs'
+import {
     TwoHashes,
     TwoHashesIntAndString,
-    TwoHashesTemplated,
-    getDefaultSeed,
-    numberToHex,
+    TwoHashesTemplated, 
     type HashableInput,
-} from './utils.mjs'
+    SeedType
+} from "./types.mjs"
 
 export default class Hashing {
     /**
@@ -61,23 +63,18 @@ export default class Hashing {
     public getDistinctIndexes(
         element: HashableInput,
         size: number,
-        number: number,
-        seed?: number
+        count: number,
+        seed: bigint
     ): number[] {
-        if (seed === undefined) {
-            seed = getDefaultSeed()
-        }
         let n = 0
         const indexes = new Set<number>()
         let hashes = this.hashTwice(element, seed)
         // let cycle = 0
-        while (indexes.size < number) {
+        while (indexes.size < count) {
             const ind = hashes.first % size
-            if (!indexes.has(ind)) {
-                indexes.add(ind)
-            }
             hashes.first = (hashes.first + hashes.second) % size
             hashes.second = (hashes.second + n) % size
+            indexes.add(ind)
             n++
 
             if (n > size) {
@@ -85,8 +82,10 @@ export default class Hashing {
                 // size is coprime with the second hash. But you still get cycles of length `size`.
                 // So if we reach there and haven't finished, append a prime to the input and
                 // rehash.
-                seed++
+                seed = BigInt(1) + seed
                 hashes = this.hashTwice(element, seed)
+                // trick is to always reset this number after we found a cycle
+                n = 0
             }
         }
         return [...indexes.values()]
@@ -106,11 +105,8 @@ export default class Hashing {
         element: HashableInput,
         size: number,
         hashCount: number,
-        seed?: number
+        seed: SeedType
     ): number[] {
-        if (seed === undefined) {
-            seed = getDefaultSeed()
-        }
         const arr = []
         const hashes = this.hashTwice(element, seed)
         for (let i = 0; i < hashCount; i++) {
@@ -129,11 +125,8 @@ export default class Hashing {
      * @param seed
      * @returns A 64bits floating point {@link Number}
      */
-    public serialize(element: HashableInput, seed?: number) {
-        if (!seed) {
-            seed = getDefaultSeed()
-        }
-        return Number(Hashing.lib.xxh32(element, seed))
+    public serialize(element: HashableInput, seed: SeedType) {
+        return Number(Hashing.lib.xxh64(element, seed))
     }
 
     /**
@@ -144,13 +137,10 @@ export default class Hashing {
      * @return The results of the hash functions applied to the value (in hex or integer)
      * @author Arnaud Grall & Thomas Minier
      */
-    public hashTwice(value: HashableInput, seed?: number): TwoHashes {
-        if (seed === undefined) {
-            seed = getDefaultSeed()
-        }
+    public hashTwice(value: HashableInput, seed: SeedType): TwoHashes {
         return {
-            first: this.serialize(value, seed + 1),
-            second: this.serialize(value, seed + 2),
+            first: this.serialize(value, seed + BigInt(1)),
+            second: this.serialize(value, seed + BigInt(2)),
         }
     }
 
@@ -162,7 +152,7 @@ export default class Hashing {
      */
     public hashTwiceAsString(
         value: HashableInput,
-        seed?: number
+        seed: SeedType
     ): TwoHashesTemplated<string> {
         const { first, second } = this.hashTwice(value, seed)
         return {
@@ -180,13 +170,10 @@ export default class Hashing {
      */
     public hashTwiceIntAndString(
         val: HashableInput,
-        seed?: number
+        seed: SeedType
     ): TwoHashesIntAndString {
-        if (seed === undefined) {
-            seed = getDefaultSeed()
-        }
-        const one = this.hashIntAndString(val, seed + 1)
-        const two = this.hashIntAndString(val, seed + 2)
+        const one = this.hashIntAndString(val, seed + BigInt(1))
+        const two = this.hashIntAndString(val, seed + BigInt(2))
         return {
             int: {
                 first: one.int,
@@ -202,28 +189,25 @@ export default class Hashing {
     /**
      * Hash an item as an unsigned int
      * @param  elem - Element to hash
-     * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
+     * @param  seed - The hash seed.
      * @param  length - The length of hashes (defaults to 32 bits)
      * @return The hash value as an unsigned int
      * @author Arnaud Grall
      */
-    public hashAsInt(elem: HashableInput, seed?: number): number {
-        if (seed === undefined) {
-            seed = getDefaultSeed()
-        }
-        return this.serialize(elem, seed)
+    public hashAsInt(elem: HashableInput, seed: SeedType): number {
+        return this.serialize(elem, BigInt(seed))
     }
 
     /**
      * Hash an item and return its number and HEX string representation
      * @param  elem - Element to hash
-     * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
+     * @param  seed - The hash seed. 
      * @param  base - The base in which the string will be returned, default: 16
      * @param  length - The length of hashes (defaults to 32 bits)
      * @return The item hased as an int and a string
      * @author Arnaud Grall
      */
-    public hashIntAndString(elem: HashableInput, seed?: number) {
+    public hashIntAndString(elem: HashableInput, seed: SeedType) {
         const hash = this.hashAsInt(elem, seed)
         return { int: hash, string: numberToHex(hash) }
     }
