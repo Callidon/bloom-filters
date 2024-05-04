@@ -1,5 +1,10 @@
 import { expect, test } from '@jest/globals'
-import { InvertibleBloomFilter } from '../src/index.mjs'
+import {
+    Hashing,
+    InvertibleBloomFilter,
+    exportBigInt,
+    getDefaultSeed,
+} from '../src/index.mjs'
 
 const keys = 1000
 const hashCount = 3
@@ -7,7 +12,7 @@ const alpha = 1.5
 const d = 100
 const size = alpha * d
 const step = 10
-const seed = 0x1234567890
+const seed = getDefaultSeed()
 
 const toInsert = [
     Buffer.from('help'),
@@ -101,7 +106,7 @@ function buildIblt() {
 test('should export an Invertible Bloom Filter to a JSON object', () => {
     const iblt = buildIblt()
     const exported = iblt.saveAsJSON()
-    expect(exported._seed).toEqual(seed)
+    expect(exported._seed).toEqual(exportBigInt(seed))
     expect(exported._size).toEqual(iblt.size)
     expect(exported._hashCount).toEqual(iblt.hashCount)
     expect(exported._elements).toEqual(iblt._elements.map(e => e.saveAsJSON()))
@@ -122,7 +127,7 @@ for (let i = step; i <= d; i += step) {
 test.each(values)(
     `should decodes correctly element for a set difference of %i with ${keys.toString()} keys, ${hashCount.toString()} hash functions, [alpha = ${alpha.toString()}, d = ${d.toString()}]`,
     differences => {
-        commonTest(size, hashCount, keys, '', differences)
+        commonTest(size, hashCount, keys, differences)
     }
 )
 
@@ -133,7 +138,7 @@ for (let k = keys; k < 100000; k = k * 10) {
 test.each(values)(
     `should decodes correctly element for a set difference of ${d.toString()} with %i keys, ${hashCount.toString()} hash functions, [alpha = ${alpha.toString()}, d = ${d.toString()}]`,
     k => {
-        commonTest(size, hashCount, k, '', d)
+        commonTest(size, hashCount, k, d)
     }
 )
 
@@ -141,7 +146,6 @@ function commonTest(
     size: number,
     hashCount: number,
     keys: number,
-    prefix: string,
     differences: number
 ) {
     const iblt = new InvertibleBloomFilter(size, hashCount)
@@ -151,7 +155,8 @@ function commonTest(
     const remote = new InvertibleBloomFilter(size, hashCount)
     remote.seed = seed
     for (let i = 1; i <= keys; ++i) {
-        const hash = prefix + i.toString() // XXH.h64(prefix + i, seed).toString(16)
+        // const hash = prefix + i.toString()
+        const hash = Hashing.lib.xxh64(i.toString(), seed).toString(16)
         if (i <= keys - differences) {
             iblt.add(Buffer.from(hash, 'utf8'))
             remote.add(Buffer.from(hash, 'utf8'))

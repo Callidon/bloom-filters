@@ -1,12 +1,12 @@
 /**
  * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
- * @property {number} first - The result of the first hashing function applied to a value
- * @property {number} second - The result of the second hashing function applied to a value
+ * @property {bigint} first - The result of the first hashing function applied to a value
+ * @property {bigint} second - The result of the second hashing function applied to a value
  * @memberof Utils
  */
 export interface TwoHashes {
-    first: number
-    second: number
+    first: bigint
+    second: bigint
 }
 
 /**
@@ -18,10 +18,10 @@ export interface TwoHashesTemplated<T> {
 }
 
 /**
- * TwoHashes type in number and int format
+ * TwoHashes type in bigint and int format
  */
 export interface TwoHashesIntAndString {
-    int: TwoHashesTemplated<number>
+    int: TwoHashesTemplated<bigint>
     string: TwoHashesTemplated<string>
 }
 

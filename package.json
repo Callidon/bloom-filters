@@ -10,11 +10,11 @@
     "wasm32"
   ],
   "scripts": {
-    "build:main": "tsc",
     "build:rspack": "rspack build --config rspack.config.cjs",
     "build:webpack": "webpack --config webpack.config.cjs",
     "build:examples": "yarn build:rspack && yarn build:webpack",
-    "build": "yarn build:main && yarn build:examples",
+    "build": "tsc",
+    "build:ci": "yarn build && yarn examples",
     "preview:rspack": "rspack preview --config rspack.config.cjs",
     "preview:webpack": "webpack serve --config webpack.config.cjs",
     "prettier": "prettier --config package.json --write \"(src|tests)/**/*.mts\"",

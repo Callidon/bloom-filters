@@ -1,12 +1,16 @@
-import { xorBuffer } from '../utils.mjs'
+import {
+    ExportedBigInt,
+    exportBigInt,
+    importBigInt,
+    xorBuffer,
+} from '../utils.mjs'
 import BaseFilter from '../base-filter.mjs'
-import { SeedType } from '../types.mjs'
 
 export interface ExportedCell {
     _idSum: string
     _hashSum: string
     _count: number
-    _seed: SeedType
+    _seed: ExportedBigInt
 }
 
 /**
@@ -141,7 +145,7 @@ export default class Cell extends BaseFilter {
             _idSum: this._idSum.toString(),
             _hashSum: this._hashSum.toString(),
             _count: this._count,
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
         }
     }
 
@@ -151,7 +155,7 @@ export default class Cell extends BaseFilter {
             Buffer.from(element._hashSum),
             element._count
         )
-        filter.seed = element._seed
+        filter.seed = importBigInt(element._seed)
         return filter
     }
 }

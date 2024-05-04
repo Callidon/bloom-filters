@@ -1,9 +1,14 @@
 import BaseFilter from '../base-filter.mjs'
 import WritableFilter from '../interfaces/writable-filter.mjs'
 import Cell, { ExportedCell } from './cell.mjs'
-import { BufferError, allocateArray } from '../utils.mjs'
+import {
+    BufferError,
+    ExportedBigInt,
+    allocateArray,
+    exportBigInt,
+    importBigInt,
+} from '../utils.mjs'
 import { optimalFilterSize, optimalHashes } from '../formulas.mjs'
-import { SeedType } from '../types.mjs'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
@@ -27,7 +32,7 @@ export interface ExportedInvertibleBloomFilter {
     _size: number
     _hashCount: number
     _elements: ExportedCell[]
-    _seed: SeedType
+    _seed: ExportedBigInt
 }
 
 /**
@@ -351,7 +356,7 @@ export default class InvertibleBloomFilter
             _elements: this._elements.map(e => e.saveAsJSON()),
             _size: this._size,
             _hashCount: this._hashCount,
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
         }
     }
 
@@ -362,7 +367,7 @@ export default class InvertibleBloomFilter
             element._size,
             element._hashCount
         )
-        filter.seed = element._seed
+        filter.seed = importBigInt(element._seed)
         filter._elements = element._elements.map(e => Cell.fromJSON(e))
         return filter
     }

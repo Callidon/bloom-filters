@@ -1,11 +1,16 @@
 import BaseFilter from '../base-filter.mjs'
 import WritableFilter from '../interfaces/writable-filter.mjs'
 import { optimalFilterSize, optimalHashes } from '../formulas.mjs'
-import { allocateArray } from '../utils.mjs'
-import { HashableInput, SeedType } from '../types.mjs'
+import {
+    ExportedBigInt,
+    allocateArray,
+    exportBigInt,
+    importBigInt,
+} from '../utils.mjs'
+import { HashableInput } from '../types.mjs'
 
 export interface ExportedCountingBloomFilter {
-    _seed: SeedType
+    _seed: ExportedBigInt
     _size: number
     _nbHashes: number
     _filter: number[][]
@@ -222,7 +227,7 @@ export default class CountingBloomFilter
             _size: this._size,
             _nbHashes: this._nbHashes,
             _filter: this._filter,
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
         }
     }
 
@@ -230,7 +235,7 @@ export default class CountingBloomFilter
         element: ExportedCountingBloomFilter
     ): CountingBloomFilter {
         const bl = new CountingBloomFilter(element._size, element._nbHashes)
-        bl.seed = element._seed
+        bl.seed = importBigInt(element._seed)
         bl._length = element._length
         bl._filter = element._filter
         return bl

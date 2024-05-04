@@ -1,6 +1,11 @@
 import BaseFilter from '../base-filter.mjs'
-import { allocateArray } from '../utils.mjs'
-import { HashableInput, SeedType } from '../types.mjs'
+import {
+    ExportedBigInt,
+    allocateArray,
+    exportBigInt,
+    importBigInt,
+} from '../utils.mjs'
+import { HashableInput } from '../types.mjs'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
 const TWO_POW_32 = Math.pow(2, 32)
@@ -25,7 +30,7 @@ function computeAlpha(m: number): number {
 }
 
 export interface ExportedHyperLogLog {
-    _seed: SeedType
+    _seed: ExportedBigInt
     _nbRegisters: number
     _nbBytesPerHash: number
     _correctionBias: number
@@ -187,13 +192,13 @@ export default class HyperLogLog extends BaseFilter {
             _nbBytesPerHash: this._nbBytesPerHash,
             _correctionBias: this._correctionBias,
             _registers: this._registers,
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
         }
     }
 
     public static fromJSON(element: ExportedHyperLogLog): HyperLogLog {
         const filter = new HyperLogLog(element._nbRegisters)
-        filter.seed = element._seed
+        filter.seed = importBigInt(element._seed)
         filter._correctionBias = element._correctionBias
         filter._nbBytesPerHash = element._nbBytesPerHash
         filter._nbRegisters = element._nbRegisters

@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { TopK } from '../src/index.mjs'
+import { TopK, exportBigInt } from '../src/index.mjs'
 
 const lessThanOrEqualTestCaseItems = [
     'alice',
@@ -232,12 +232,12 @@ test('should export a TopK to a JSON object', () => {
     expect(exported._k).toEqual(topk._k)
     expect(exported._errorRate).toEqual(topk._errorRate)
     expect(exported._accuracy).toEqual(topk._accuracy)
-    expect(exported._seed).toEqual(topk._seed)
+    expect(exported._seed).toEqual(exportBigInt(topk._seed))
     // inner count min sketch
     expect(exported._sketch._columns).toEqual(topk._sketch._columns)
     expect(exported._sketch._rows).toEqual(topk._sketch._rows)
     expect(exported._sketch._allSums).toEqual(topk._sketch._allSums)
-    expect(exported._sketch._seed).toEqual(topk._sketch._seed)
+    expect(exported._sketch._seed).toEqual(exportBigInt(topk._sketch._seed))
     expect(exported._sketch._matrix).toEqual(topk._sketch._matrix)
     // inner MinHeap
     expect(exported._heap._content).toEqual(topk._heap._content)

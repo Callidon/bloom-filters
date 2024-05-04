@@ -32,12 +32,12 @@ export function allocateArray<T>(
 }
 
 /**
- * Return a number to its Hex format by padding zeroes if length mod 4 != 0
+ * Return a bigint to its Hex format by padding zeroes if length mod 4 != 0
  * @param elem the element to transform in HEX
  * @returns the HEX number padded of zeroes
  */
-export function numberToHex(elem: number): string {
-    let e = Number(elem).toString(16)
+export function numberToHex(elem: bigint): string {
+    let e = elem.toString(16)
     if (e.length % 4 !== 0) {
         e = '0'.repeat(4 - (e.length % 4)) + e
     }
@@ -120,4 +120,37 @@ export function isEmptyBuffer(buffer: Buffer | null): boolean {
  */
 export function getDefaultSeed(): SeedType {
     return BigInt(0x1234567890)
+}
+
+/**
+ * Return the absolute value of a bigint
+ * @param n
+ * @returns
+ */
+export function getBigIntAbs(n: bigint): bigint {
+    return n < 0n ? -n : n
+}
+
+export type ExportedBigInt = {
+    $bf$bigint: string
+}
+
+/**
+ * Export a bigint into a serializable format
+ * @param value
+ * @returns
+ */
+export function exportBigInt(value: bigint): ExportedBigInt {
+    return {
+        $bf$bigint: value.toString(),
+    }
+}
+
+/**
+ * Import a serialized bigint into a Bigint
+ * @param value
+ * @returns
+ */
+export function importBigInt(value: ExportedBigInt) {
+    return BigInt(value.$bf$bigint)
 }

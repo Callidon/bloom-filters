@@ -5,9 +5,10 @@ import PartitionBloomFilter, {
     ExportedPartitionedBloomFilter,
 } from './partitioned-bloom-filter.mjs'
 import seedrandom from 'seedrandom'
+import { ExportedBigInt, exportBigInt, importBigInt } from '../utils.mjs'
 
 export interface ExportedScalableBloomFilter {
-    _seed: SeedType
+    _seed: ExportedBigInt
     _initial_size: number
     _error_rate: number
     _ratio: number
@@ -176,7 +177,7 @@ export default class ScalableBloomFilter
             _initial_size: this._initial_size,
             _error_rate: this._error_rate,
             _filters: this._filters.map(filter => filter.saveAsJSON()),
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
             _ratio: this._ratio,
         }
     }
@@ -189,7 +190,7 @@ export default class ScalableBloomFilter
             element._error_rate,
             element._ratio
         )
-        bl.seed = element._seed
+        bl.seed = importBigInt(element._seed)
         bl._filters = element._filters.map(filter =>
             PartitionBloomFilter.fromJSON(filter)
         )

@@ -1,7 +1,13 @@
 // Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
 
 import BaseFilter from '../base-filter.mjs'
-import { allocateArray, BufferError } from '../utils.mjs'
+import {
+    allocateArray,
+    BufferError,
+    exportBigInt,
+    ExportedBigInt,
+    importBigInt,
+} from '../utils.mjs'
 import { HashableInput, SeedType } from '../types.mjs'
 import Hashing from '../hashing.mjs'
 import Long from 'long'
@@ -23,7 +29,7 @@ export interface ExportedXorFilter {
     _bits: XorSize
     _size: number
     _blockLength: number
-    _seed: SeedType
+    _seed: ExportedBigInt
 }
 
 /**
@@ -434,13 +440,13 @@ export default class XorFilter extends BaseFilter {
             _bits: this._bits,
             _blockLength: this._blockLength,
             _filter: this._filter.map(encode),
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
         }
     }
 
     public static fromJSON(element: ExportedXorFilter): XorFilter {
         const bl = new XorFilter(element._size, element._bits)
-        bl.seed = element._seed
+        bl.seed = importBigInt(element._seed)
         bl._size = element._size
         bl._blockLength = element._blockLength
         bl._filter = element._filter.map((e: string) => Buffer.from(decode(e)))

@@ -33,8 +33,9 @@ test('should peforms the union of two HyperLogLog sketches', () => {
 test('should reject the union of two sketches with different number of registers', () => {
     const first = new HyperLogLog(10)
     const second = new HyperLogLog(20)
-    expect(first.merge(second)).toThrow(Error)
+    expect(() => first.merge(second)).toThrow(Error)
 })
+
 test('should returns True when two HyperLogLog sketches are equals', () => {
     const first = new HyperLogLog(10)
     const second = new HyperLogLog(10)

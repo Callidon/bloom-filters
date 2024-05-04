@@ -657,7 +657,9 @@ Versioning/Publishing:
 
 Fix tests:
 [x] fix utils: seed mandatory, getDistinctIndices was cycling, the fix is to trigger the randomizer periodically; aka after `size` cycles
-[ ] fix Cuckoo
+[ ] fix Cuckoo: 
+* The seed is now a BigInt and all functions internally works with bigint.
+* TODO: JSON.stringify can't work with BigInt so we must encode a bigint as `{'$bf$bigint': this.seed.toString()}` and revive the input with `BigInt(input.value)` See: https://github.com/GoogleChromeLabs/jsbi/issues/30 and MDN recommendation https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt#use_within_json . The note mentions to be carefull with the reviver, so if we use `$bf$bigint` it should be enough to not collide with a serialized property. Since we have our own format we don't need to patch JSON. We can adapt our own serializer/deserializer.
 [ ] fix Hyper log log
 [ ] fix iblt
 [ ] fix min hash

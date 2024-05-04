@@ -102,7 +102,7 @@ export default class BitSet {
      * Returns an object written by {@link export}.
      * @param data an object written by {@link export}
      */
-    public static import(data: ExportedBitSet): BitSet {
+    public static import(data: { size: number; content: string }): BitSet {
         if (typeof data.size !== 'number') {
             throw Error('BitSet missing size')
         }

@@ -1,5 +1,5 @@
 import BaseFilter from '../base-filter.mjs'
-import { SeedType } from '../types.mjs'
+import { ExportedBigInt, exportBigInt, importBigInt } from '../utils.mjs'
 import CountMinSketch, { ExportedCountMinSketch } from './count-min-sketch.mjs'
 import sortedIndexBy from 'lodash.sortedindexby'
 
@@ -127,7 +127,7 @@ export class MinHeap {
 }
 
 export interface ExportedTopK {
-    _seed: SeedType
+    _seed: ExportedBigInt
     _k: number
     _errorRate: number
     _accuracy: number
@@ -247,7 +247,7 @@ export default class TopK extends BaseFilter {
 
     public saveAsJSON(): ExportedTopK {
         return {
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
             _accuracy: this._accuracy,
             _errorRate: this._errorRate,
             _heap: this._heap.saveAsJSON(),
@@ -262,7 +262,7 @@ export default class TopK extends BaseFilter {
             element._errorRate,
             element._accuracy
         )
-        filter.seed = element._seed
+        filter.seed = importBigInt(element._seed)
         filter._heap = MinHeap.fromJSON(element._heap)
         filter._sketch = CountMinSketch.fromJSON(element._sketch)
         return filter

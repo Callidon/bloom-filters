@@ -3,12 +3,13 @@ import BaseFilter from '../base-filter.mjs'
 import BitSet, { type ExportedBitSet } from './bit-set.mjs'
 import { optimalFilterSize, optimalHashes } from '../formulas.mjs'
 import { HashableInput, SeedType } from '../types.mjs'
+import { ExportedBigInt, exportBigInt, importBigInt } from '../utils.mjs'
 
 export interface ExportedBloomFilter {
     _size: number
     _nbHashes: number
     _filter: ExportedBitSet
-    _seed: SeedType
+    _seed: ExportedBigInt
 }
 
 /**
@@ -179,13 +180,13 @@ export default class BloomFilter
             _size: this._size,
             _nbHashes: this._nbHashes,
             _filter: this._filter.export(),
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
         }
     }
 
     public static fromJSON(element: ExportedBloomFilter): BloomFilter {
         const bl = new BloomFilter(element._size, element._nbHashes)
-        bl.seed = element._seed
+        bl.seed = importBigInt(element._seed)
         const data = element._filter
         if (Array.isArray(data)) {
             const bs = new BitSet(data.length)

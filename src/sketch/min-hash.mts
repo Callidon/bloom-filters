@@ -1,6 +1,10 @@
 import BaseFilter from '../base-filter.mjs'
-import { SeedType } from '../types.mjs'
-import { allocateArray } from '../utils.mjs'
+import {
+    ExportedBigInt,
+    allocateArray,
+    exportBigInt,
+    importBigInt,
+} from '../utils.mjs'
 
 /**
  * An error thrown when we try to compute the Jaccard Similarity with an empty MinHash
@@ -29,7 +33,7 @@ function applyHashFunction(x: number, fn: HashFunction): number {
 }
 
 export interface ExportedMinHash {
-    _seed: SeedType
+    _seed: ExportedBigInt
     _nbHashes: number
     _hashFunctions: HashFunction[]
     _signature: number[]
@@ -136,13 +140,13 @@ export default class MinHash extends BaseFilter {
             _hashFunctions: this._hashFunctions,
             _nbHashes: this._nbHashes,
             _signature: this._signature,
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
         }
     }
 
     public static fromJSON(element: ExportedMinHash): MinHash {
         const filter = new MinHash(element._nbHashes, element._hashFunctions)
-        filter.seed = element._seed
+        filter.seed = importBigInt(element._seed)
         filter._signature = filter._signature
         return filter
     }

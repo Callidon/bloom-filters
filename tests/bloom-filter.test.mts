@@ -1,8 +1,14 @@
 import { expect, test } from '@jest/globals'
-import { BloomFilter, ExportedBloomFilter, randomInt } from '../src/index.mjs'
+import {
+    BloomFilter,
+    ExportedBloomFilter,
+    exportBigInt,
+    getDefaultSeed,
+    randomInt,
+} from '../src/index.mjs'
 
 const targetRate = 0.1
-const seed = randomInt(0, Number.MAX_SAFE_INTEGER)
+const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
 
 test('should add element to the filter with #add', () => {
     const filter = BloomFilter.create(15, targetRate)
@@ -26,7 +32,7 @@ test('should build a new filter using #from', () => {
     expect(filter.length).toBeGreaterThan(0)
     expect(filter.length).toBeLessThanOrEqual(filter._nbHashes * data.length)
     expect(filter.rate()).toBeCloseTo(targetRate, 0.1)
-    expect(filter.seed).toEqual(0x1234567890) // utils.getDefaultSeed()
+    expect(filter.seed).toEqual(getDefaultSeed())
 })
 
 const getFilter = () => BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
@@ -73,7 +79,7 @@ function buildFilter() {
 test('should export a bloom filter to a JSON object', () => {
     const filter = buildFilter()
     const exported = filter.saveAsJSON()
-    expect(exported._seed).toEqual(filter.seed)
+    expect(exported._seed).toEqual(exportBigInt(filter.seed))
     expect(exported._size).toEqual(filter.size)
     expect(exported._nbHashes).toEqual(filter._nbHashes)
     expect(exported._filter).toEqual(filter._filter.export())

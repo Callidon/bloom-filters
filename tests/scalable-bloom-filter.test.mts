@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 import { ScalableBloomFilter, randomInt } from '../src/index.mjs'
 
 const targetRate = 0.1
-const seed = randomInt(0, Number.MAX_SAFE_INTEGER)
+const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
 test('should #add add elements without error', () => {
     const filter = ScalableBloomFilter.create(3, targetRate)
     filter.seed = seed
@@ -31,15 +31,15 @@ test('should scale Partitioned Bloom Filter', () => {
     filter.add('carl')
     expect(filter._filters.length).toEqual(2)
     for (let i = 0; i < 1024; i++) {
-        filter.add('elem:' + i.toString())
+        filter.add(i.toString())
     }
     expect(filter.has('alice')).toBe(true)
     expect(filter.has('bob')).toBe(true)
     expect(filter.has('carl')).toBe(true)
     for (let i = 0; i < 1024; i++) {
-        expect(filter.has('elem:' + i.toString())).toBe(true)
+        expect(filter.has(i.toString())).toBe(true)
     }
-    expect(filter.has('elem:1025')).toBe(false)
+    expect(filter.has('1025')).toBe(false)
     expect(filter.seed).toBeDefined()
     filter._filters.forEach(f => {
         expect(f.seed).toBeDefined()

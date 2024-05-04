@@ -1,10 +1,15 @@
 import BaseFilter from '../base-filter.mjs'
 import CountingFilter from '../interfaces/counting-filter.mjs'
-import { allocateArray } from '../utils.mjs'
-import { HashableInput, SeedType } from '../types.mjs'
+import {
+    ExportedBigInt,
+    allocateArray,
+    exportBigInt,
+    importBigInt,
+} from '../utils.mjs'
+import { HashableInput } from '../types.mjs'
 
 export interface ExportedCountMinSketch {
-    _seed: SeedType
+    _seed: ExportedBigInt
     _columns: number
     _rows: number
     _matrix: number[][]
@@ -194,13 +199,13 @@ export default class CountMinSketch
             _matrix: this._matrix,
             _rows: this._rows,
             _columns: this._columns,
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
         }
     }
 
     public static fromJSON(element: ExportedCountMinSketch): CountMinSketch {
         const filter = new CountMinSketch(element._columns, element._rows)
-        filter.seed = element._seed
+        filter.seed = importBigInt(element._seed)
         filter._matrix = element._matrix
         filter._allSums = element._allSums
         return filter

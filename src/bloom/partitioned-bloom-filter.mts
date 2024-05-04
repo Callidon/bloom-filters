@@ -1,7 +1,12 @@
 import BaseFilter from '../base-filter.mjs'
 import ClassicFilter from '../interfaces/classic-filter.mjs'
-import { allocateArray } from '../utils.mjs'
-import { HashableInput, SeedType } from '../types.mjs'
+import {
+    ExportedBigInt,
+    allocateArray,
+    exportBigInt,
+    importBigInt,
+} from '../utils.mjs'
+import { HashableInput } from '../types.mjs'
 import BitSet, { ExportedBitSet } from './bit-set.mjs'
 
 /**
@@ -58,7 +63,7 @@ function computeNumberOfItems(
 }
 
 export interface ExportedPartitionedBloomFilter {
-    _seed: SeedType
+    _seed: ExportedBigInt
     _size: number
     _nbHashes: number
     _loadFactor: number
@@ -283,7 +288,7 @@ export default class PartitionedBloomFilter
             _size: this._size,
             _nbHashes: this._nbHashes,
             _filter: this._filter.map(m => m.export()),
-            _seed: this._seed,
+            _seed: exportBigInt(this._seed),
             _capacity: this._capacity,
             _loadFactor: this._loadFactor,
             _m: this._m,
@@ -300,7 +305,7 @@ export default class PartitionedBloomFilter
             element._capacity
         )
         bl._m = element._m
-        bl.seed = element._seed
+        bl.seed = importBigInt(element._seed)
         bl._filter = element._filter.map(b => BitSet.import(b))
         return bl
     }

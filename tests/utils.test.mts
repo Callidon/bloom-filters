@@ -37,13 +37,14 @@ test('should perform a double hashing', () => {
         const maxFloored = Math.floor(max)
         return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled)
     }
-    const hashA = getRandomInt(Number.MIN_VALUE, Number.MAX_VALUE / 2)
-    const hashB = getRandomInt(Number.MAX_VALUE / 2, Number.MAX_VALUE)
+    const hashA = BigInt(getRandomInt(Number.MIN_VALUE, Number.MAX_VALUE / 2))
+    const hashB = BigInt(getRandomInt(Number.MAX_VALUE / 2, Number.MAX_VALUE))
     const size = 1000
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     values.forEach(n => {
         expect(hashing.doubleHashing(n, hashA, hashB, size)).toEqual(
-            (hashA + n * hashB + (n ** 3 - n) / 6) % size
+            (hashA + BigInt(n) * hashB + BigInt((n ** 3 - n) / 6)) %
+                BigInt(size)
         )
     })
 })
@@ -154,7 +155,7 @@ test('should not be endlessly recurive the (Issue: #34)', () => {
 test('overriding serialize function by always returning Number(1)', () => {
     class CustomHashing extends Hashing {
         serialize() {
-            return Number(1)
+            return BigInt(1)
         }
     }
     const bl = BloomFilter.create(2, 0.01)

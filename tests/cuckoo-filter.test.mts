@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { CuckooFilter } from '../src/index.mjs'
+import { CuckooFilter, getBigIntAbs } from '../src/index.mjs'
 
 test('should compute the fingerprint and indexes for an element', () => {
     const filter = new CuckooFilter(15, 3, 2, 1)
@@ -8,16 +8,19 @@ test('should compute the fingerprint and indexes for an element', () => {
     const hash = hashes.int
     const fingerprint = hashes.string.substring(0, 3)
 
-    const firstIndex = Math.abs(hash)
-    const secondIndex = Math.abs(
+    const firstIndex = getBigIntAbs(hash)
+    const secondIndex =
         firstIndex ^
-            Math.abs(filter._hashing.hashAsInt(fingerprint, filter.seed))
-    )
+        getBigIntAbs(filter._hashing.hashAsInt(fingerprint, filter.seed))
 
     const locations = filter._locations(element)
-    expect(locations.fingerprint).toEqual(fingerprint)
-    expect(locations.firstIndex).toEqual(firstIndex % filter.size)
-    expect(locations.secondIndex).toEqual(secondIndex % filter.size)
+    expect(fingerprint).toEqual(locations.fingerprint)
+    expect(Number(firstIndex % BigInt(filter.size))).toEqual(
+        locations.firstIndex
+    )
+    expect(Number(secondIndex % BigInt(filter.size))).toEqual(
+        locations.secondIndex
+    )
 })
 
 test('should add element to the filter with #add', () => {
@@ -119,9 +122,9 @@ test('should rollback to its initial state in case the filter is full', () => {
     expect(filter.add('i')).toBe(true)
     expect(filter.add('j')).toBe(true)
     expect(filter.add('k')).toBe(true)
-    const snapshot = JSON.stringify(filter.saveAsJSON())
+    const snapshot = filter.saveAsJSON()
     expect(filter.add('l')).toBe(false)
-    const snapshot2 = JSON.stringify(filter.saveAsJSON())
+    const snapshot2 = filter.saveAsJSON()
     expect(snapshot).toEqual(snapshot2)
 })
 

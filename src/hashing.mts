@@ -1,5 +1,5 @@
 import { xxh32, xxh64 } from '@node-rs/xxhash'
-import { numberToHex } from './utils.mjs'
+import { getBigIntAbs, numberToHex } from './utils.mjs'
 import {
     TwoHashes,
     TwoHashesIntAndString,
@@ -33,12 +33,13 @@ export default class Hashing {
      */
     public doubleHashing(
         n: number,
-        hashA: number,
-        hashB: number,
+        hashA: bigint,
+        hashB: bigint,
         size: number
-    ): number {
-        return Math.abs(
-            (hashA + n * hashB + Math.floor((n ** 3 - n) / 6)) % size
+    ): bigint {
+        return getBigIntAbs(
+            (hashA + BigInt(n) * hashB + BigInt(Math.floor((n ** 3 - n) / 6))) %
+                BigInt(size)
         )
     }
 
@@ -64,15 +65,16 @@ export default class Hashing {
         count: number,
         seed: bigint
     ): number[] {
-        let n = 0
+        let n = BigInt(0)
         const indexes = new Set<number>()
         let hashes = this.hashTwice(element, seed)
         // let cycle = 0
         while (indexes.size < count) {
-            const ind = hashes.first % size
-            hashes.first = (hashes.first + hashes.second) % size
-            hashes.second = (hashes.second + n) % size
-            indexes.add(ind)
+            const ind = hashes.first % BigInt(size)
+            hashes.first = (hashes.first + hashes.second) % BigInt(size)
+            hashes.second = (hashes.second + n) % BigInt(size)
+            // cast as number, indices should be practically small
+            indexes.add(Number(ind))
             n++
 
             if (n > size) {
@@ -83,7 +85,7 @@ export default class Hashing {
                 seed = BigInt(1) + seed
                 hashes = this.hashTwice(element, seed)
                 // trick is to always reset this number after we found a cycle
-                n = 0
+                n = BigInt(0)
             }
         }
         return [...indexes.values()]
@@ -108,7 +110,9 @@ export default class Hashing {
         const arr = []
         const hashes = this.hashTwice(element, seed)
         for (let i = 0; i < hashCount; i++) {
-            arr.push(this.doubleHashing(i, hashes.first, hashes.second, size))
+            arr.push(
+                Number(this.doubleHashing(i, hashes.first, hashes.second, size))
+            )
         }
         return arr
     }
@@ -124,13 +128,12 @@ export default class Hashing {
      * @returns A 64bits floating point {@link Number}
      */
     public serialize(element: HashableInput, seed: SeedType) {
-        return Number(Hashing.lib.xxh64(element, seed))
+        return Hashing.lib.xxh64(element, seed)
     }
 
     /**
      * (64-bits only) Hash a value into two values (in hex or integer format)
      * @param  value - The value to hash
-     * @param  asInt - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
      * @param seed the seed used for hashing
      * @return The results of the hash functions applied to the value (in hex or integer)
      * @author Arnaud Grall & Thomas Minier
@@ -192,8 +195,8 @@ export default class Hashing {
      * @return The hash value as an unsigned int
      * @author Arnaud Grall
      */
-    public hashAsInt(elem: HashableInput, seed: SeedType): number {
-        return this.serialize(elem, BigInt(seed))
+    public hashAsInt(elem: HashableInput, seed: SeedType): bigint {
+        return this.serialize(elem, seed)
     }
 
     /**
@@ -207,6 +210,6 @@ export default class Hashing {
      */
     public hashIntAndString(elem: HashableInput, seed: SeedType) {
         const hash = this.hashAsInt(elem, seed)
-        return { int: hash, string: numberToHex(hash) }
+        return { int: hash, string: numberToHex(BigInt(hash)) }
     }
 }
