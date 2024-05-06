@@ -1,12 +1,7 @@
 import BaseFilter from '../base-filter.mjs'
 import WritableFilter from '../interfaces/writable-filter.mjs'
 import { optimalFilterSize, optimalHashes } from '../formulas.mjs'
-import {
-    ExportedBigInt,
-    allocateArray,
-    exportBigInt,
-    importBigInt,
-} from '../utils.mjs'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils.mjs'
 import { HashableInput } from '../types.mjs'
 
 export interface ExportedCountingBloomFilter {
@@ -41,7 +36,7 @@ export default class CountingBloomFilter
         super()
         if (nbHashes < 1) {
             throw new Error(
-                `A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes.toString()} functions. Consider increasing it.`
+                `A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes.toString()} functions. Consider increasing it.`,
             )
         }
         this._size = size // fm.optimalFilterSize(capacity, errorRate)
@@ -57,10 +52,7 @@ export default class CountingBloomFilter
      * @param  errorRate - The error rate of the filter
      * @return A new {@link CountingBloomFilter}
      */
-    public static create(
-        capacity: number,
-        errorRate: number
-    ): CountingBloomFilter {
+    public static create(capacity: number, errorRate: number): CountingBloomFilter {
         const s = optimalFilterSize(capacity, errorRate)
         return new CountingBloomFilter(s, optimalHashes(s, capacity))
     }
@@ -76,10 +68,7 @@ export default class CountingBloomFilter
      * const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
      * ```
      */
-    public static from(
-        items: Iterable<HashableInput>,
-        errorRate: number
-    ): CountingBloomFilter {
+    public static from(items: Iterable<HashableInput>, errorRate: number): CountingBloomFilter {
         const array = Array.from(items)
         const filter = CountingBloomFilter.create(array.length, errorRate)
         array.forEach(element => {
@@ -112,12 +101,7 @@ export default class CountingBloomFilter
      * ```
      */
     public add(element: HashableInput): void {
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._size,
-            this._nbHashes,
-            this.seed
-        )
+        const indexes = this._hashing.getIndexes(element, this._size, this._nbHashes, this.seed)
         for (const value of indexes) {
             // increment counter
             this._filter[value][1] += 1
@@ -139,12 +123,7 @@ export default class CountingBloomFilter
      * ```
      */
     public remove(element: HashableInput): boolean {
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._size,
-            this._nbHashes,
-            this.seed
-        )
+        const indexes = this._hashing.getIndexes(element, this._size, this._nbHashes, this.seed)
         const success = true
         for (const value of indexes) {
             // decrement counter
@@ -171,12 +150,7 @@ export default class CountingBloomFilter
      * ```
      */
     public has(element: HashableInput): boolean {
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._size,
-            this._nbHashes,
-            this.seed
-        )
+        const indexes = this._hashing.getIndexes(element, this._size, this._nbHashes, this.seed)
         for (const value of indexes) {
             if (!this._filter[value][0]) {
                 return false
@@ -195,10 +169,7 @@ export default class CountingBloomFilter
      * ```
      */
     public rate(): number {
-        return Math.pow(
-            1 - Math.exp((-this._nbHashes * this._length) / this._size),
-            this._nbHashes
-        )
+        return Math.pow(1 - Math.exp((-this._nbHashes * this._length) / this._size), this._nbHashes)
     }
 
     /**
@@ -216,8 +187,7 @@ export default class CountingBloomFilter
         }
         return this._filter.every(
             (value, index) =>
-                other._filter[index][0] === value[0] &&
-                other._filter[index][1] === value[1]
+                other._filter[index][0] === value[0] && other._filter[index][1] === value[1],
         )
     }
 
@@ -231,9 +201,7 @@ export default class CountingBloomFilter
         }
     }
 
-    public static fromJSON(
-        element: ExportedCountingBloomFilter
-    ): CountingBloomFilter {
+    public static fromJSON(element: ExportedCountingBloomFilter): CountingBloomFilter {
         const bl = new CountingBloomFilter(element._size, element._nbHashes)
         bl.seed = importBigInt(element._seed)
         bl._length = element._length

@@ -1,9 +1,4 @@
-import {
-    ExportedBigInt,
-    exportBigInt,
-    importBigInt,
-    xorBuffer,
-} from '../utils.mjs'
+import { ExportedBigInt, exportBigInt, importBigInt, xorBuffer } from '../utils.mjs'
 import BaseFilter from '../base-filter.mjs'
 
 export interface ExportedCell {
@@ -43,11 +38,7 @@ export default class Cell extends BaseFilter {
      * @return An empty Cell
      */
     public static empty(): Cell {
-        return new Cell(
-            Buffer.allocUnsafe(0).fill(0),
-            Buffer.allocUnsafe(0).fill(0),
-            0
-        )
+        return new Cell(Buffer.allocUnsafe(0).fill(0), Buffer.allocUnsafe(0).fill(0), 0)
     }
 
     /**
@@ -93,7 +84,7 @@ export default class Cell extends BaseFilter {
         return new Cell(
             xorBuffer(this._idSum, cell.idSum),
             xorBuffer(this._hashSum, cell.hashSum),
-            this._count - cell.count
+            this._count - cell.count,
         )
     }
 
@@ -135,7 +126,7 @@ export default class Cell extends BaseFilter {
         // compare the hashes
         const hashes = this._hashing.hashTwiceAsString(
             JSON.stringify(this._idSum.toJSON()),
-            this.seed
+            this.seed,
         )
         return this._hashSum.equals(Buffer.from(hashes.first))
     }
@@ -153,7 +144,7 @@ export default class Cell extends BaseFilter {
         const filter = new Cell(
             Buffer.from(element._idSum),
             Buffer.from(element._hashSum),
-            element._count
+            element._count,
         )
         filter.seed = importBigInt(element._seed)
         return filter

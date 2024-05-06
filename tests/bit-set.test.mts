@@ -44,13 +44,11 @@ test('imports what it exports', () => {
 })
 
 test('Throws an Error on bad data', () => {
-    ;[
-        { size: 1 },
-        { content: 'Ag==' },
-        { size: 'cow', content: 'Ag==' },
-    ].forEach((json: unknown) => {
-        expect(() => BitSet.import(json as ExportedBitSet)).toThrow(Error)
-    })
+    ;[{ size: 1 }, { content: 'Ag==' }, { size: 'cow', content: 'Ag==' }].forEach(
+        (json: unknown) => {
+            expect(() => BitSet.import(json as ExportedBitSet)).toThrow(Error)
+        },
+    )
 })
 
 test('returns true on identical size and data', () => {

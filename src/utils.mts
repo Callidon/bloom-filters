@@ -16,15 +16,10 @@ export const BufferError = `
  * @return A newly allocated array
  * @memberof Utils
  */
-export function allocateArray<T>(
-    size: number,
-    defaultValue: T | (() => T)
-): T[] {
+export function allocateArray<T>(size: number, defaultValue: T | (() => T)): T[] {
     const array: T[] = Array.from<T>({ length: size })
     const getDefault =
-        typeof defaultValue === 'function'
-            ? (defaultValue as () => T)
-            : () => defaultValue
+        typeof defaultValue === 'function' ? (defaultValue as () => T) : () => defaultValue
     for (let ind = 0; ind < size; ind++) {
         array[ind] = getDefault()
     }
@@ -53,11 +48,7 @@ export function numberToHex(elem: bigint): string {
  * @memberof Utils
  * @author Thomas Minier
  */
-export function randomInt(
-    min: number,
-    max: number,
-    random?: () => number
-): number {
+export function randomInt(min: number, max: number, random?: () => number): number {
     if (random === undefined) {
         random = Math.random
     }

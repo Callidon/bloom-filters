@@ -10,17 +10,12 @@ test('should compute the fingerprint and indexes for an element', () => {
 
     const firstIndex = getBigIntAbs(hash)
     const secondIndex =
-        firstIndex ^
-        getBigIntAbs(filter._hashing.hashAsInt(fingerprint, filter.seed))
+        firstIndex ^ getBigIntAbs(filter._hashing.hashAsInt(fingerprint, filter.seed))
 
     const locations = filter._locations(element)
     expect(fingerprint).toEqual(locations.fingerprint)
-    expect(Number(firstIndex % BigInt(filter.size))).toEqual(
-        locations.firstIndex
-    )
-    expect(Number(secondIndex % BigInt(filter.size))).toEqual(
-        locations.secondIndex
-    )
+    expect(Number(firstIndex % BigInt(filter.size))).toEqual(locations.firstIndex)
+    expect(Number(secondIndex % BigInt(filter.size))).toEqual(locations.secondIndex)
 })
 
 test('should add element to the filter with #add', () => {
@@ -52,8 +47,7 @@ test('should store ane element accross two different buckets', () => {
     expect(filter._filter[locations.secondIndex].isFree()).toEqual(false)
 
     nbElements +=
-        filter._filter[locations.firstIndex].length +
-        filter._filter[locations.secondIndex].length
+        filter._filter[locations.firstIndex].length + filter._filter[locations.secondIndex].length
     expect(nbElements).toEqual(4)
 })
 
@@ -70,9 +64,7 @@ test('should perform random kicks when both buckets are full', () => {
 
     filter._filter.forEach(bucket => {
         if (bucket.length > 0) {
-            expect(['xyz', 'lol', locations.fingerprint]).toContainEqual(
-                bucket._elements[0]
-            )
+            expect(['xyz', 'lol', locations.fingerprint]).toContainEqual(bucket._elements[0])
             nbElements += bucket.length
         }
     })
@@ -227,9 +219,7 @@ test('should create a cuckoo filter from a JSON export', () => {
     expect(newFilter.fingerprintLength).toEqual(filter.fingerprintLength)
     expect(newFilter.length).toEqual(filter.length)
     expect(newFilter.maxKicks).toEqual(filter.maxKicks)
-    expect(
-        newFilter._filter.every((b, index) => filter._filter[index].equals(b))
-    ).toBe(true)
+    expect(newFilter._filter.every((b, index) => filter._filter[index].equals(b))).toBe(true)
 })
 
 const max = 20

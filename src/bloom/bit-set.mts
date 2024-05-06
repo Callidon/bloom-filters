@@ -24,7 +24,7 @@ export default class BitSet {
      */
     constructor(size: number) {
         const diff = bitsPerWord - (size % bitsPerWord)
-        this.size = size + ([0, 8].includes(diff) ? 0 : diff)
+        this.size = size + ([0, bitsPerWord].includes(diff) ? 0 : diff)
         this.array = new Uint8Array(Math.ceil(this.size / bitsPerWord))
     }
 

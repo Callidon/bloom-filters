@@ -1,14 +1,7 @@
 import { expect, test } from '@jest/globals'
 import { TopK, exportBigInt } from '../src/index.mjs'
 
-const lessThanOrEqualTestCaseItems = [
-    'alice',
-    'bob',
-    'alice',
-    'carol',
-    'bob',
-    'alice',
-]
+const lessThanOrEqualTestCaseItems = ['alice', 'bob', 'alice', 'carol', 'bob', 'alice']
 
 const moreThanTestCaseItems = [
     'alice',
@@ -56,7 +49,7 @@ test('should produce equivalent TopK estimations when using count parameter', ()
 
             return acc
         },
-        {}
+        {},
     )
     expect(freqTable).toEqual(expectedFreqTable)
 
@@ -92,9 +85,7 @@ test('should produce valid TopK estimations when there are fewer than K items', 
     let i = 0
     let prev = { frequency: Infinity }
     for (const current of topk.values()) {
-        expect([...Object.keys(current)].sort()).toEqual(
-            ['value', 'rank', 'frequency'].sort()
-        )
+        expect([...Object.keys(current)].sort()).toEqual(['value', 'rank', 'frequency'].sort())
         expect(current.value).toEqual(expectedTop[i])
         expect(current.frequency).toBeLessThan(prev.frequency)
         expect(current.rank).toEqual(i + 1)
@@ -114,9 +105,7 @@ test('should produce valid TopK estimations when there are exactly K items', () 
     let i = 0
     let prev = { frequency: Infinity }
     for (const current of topk.values()) {
-        expect([...Object.keys(current)].sort()).toEqual(
-            ['value', 'rank', 'frequency'].sort()
-        )
+        expect([...Object.keys(current)].sort()).toEqual(['value', 'rank', 'frequency'].sort())
         expect(current.value).toEqual(expectedTop[i])
         expect(current.frequency).toBeLessThan(prev.frequency)
         expect(current.rank).toEqual(i + 1)
@@ -136,9 +125,7 @@ test('should produce valid TopK estimations when there are more than K items', (
     let i = 0
     let prev = { frequency: Infinity }
     for (const current of topk.values()) {
-        expect([...Object.keys(current)].sort()).toEqual(
-            ['value', 'rank', 'frequency'].sort()
-        )
+        expect([...Object.keys(current)].sort()).toEqual(['value', 'rank', 'frequency'].sort())
         expect(current.value).toEqual(expectedTop[i])
         expect(current.frequency).toBeLessThan(prev.frequency)
         expect(current.rank).toEqual(i + 1)
@@ -158,9 +145,7 @@ test('should produce valid TopK estimations when there are fewer than K items', 
     let i = 0
     let prev = { frequency: Infinity }
     for (const current of topk.iterator()) {
-        expect([...Object.keys(current)].sort()).toEqual(
-            ['value', 'rank', 'frequency'].sort()
-        )
+        expect([...Object.keys(current)].sort()).toEqual(['value', 'rank', 'frequency'].sort())
         expect(current.value).toEqual(expectedTop[i])
         expect(current.frequency).toBeLessThan(prev.frequency)
         expect(current.rank).toEqual(i + 1)
@@ -180,9 +165,7 @@ test('should produce valid TopK estimations when there are exactly K items', () 
     let i = 0
     let prev = { frequency: Infinity }
     for (const current of topk.iterator()) {
-        expect([...Object.keys(current)].sort()).toEqual(
-            ['value', 'rank', 'frequency'].sort()
-        )
+        expect([...Object.keys(current)].sort()).toEqual(['value', 'rank', 'frequency'].sort())
         expect(current.value).toEqual(expectedTop[i])
         expect(current.frequency).toBeLessThan(prev.frequency)
         expect(current.rank).toEqual(i + 1)
@@ -202,9 +185,7 @@ test('should produce valid estimations when there are more than K items', () => 
     let i = 0
     let prev = { frequency: Infinity }
     for (const current of topk.iterator()) {
-        expect([...Object.keys(current)].sort()).toEqual(
-            ['value', 'rank', 'frequency'].sort()
-        )
+        expect([...Object.keys(current)].sort()).toEqual(['value', 'rank', 'frequency'].sort())
         expect(current.value).toEqual(expectedTop[i])
         expect(current.frequency).toBeLessThan(prev.frequency)
         expect(current.rank).toEqual(i + 1)

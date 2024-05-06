@@ -21,10 +21,7 @@ export interface ExportedBloomFilter {
  * @author Thomas Minier
  * @author Arnaud Grall
  */
-export default class BloomFilter
-    extends BaseFilter
-    implements ClassicFilter<HashableInput>
-{
+export default class BloomFilter extends BaseFilter implements ClassicFilter<HashableInput> {
     public _size: number
     public _nbHashes: number
     public _filter: BitSet
@@ -38,7 +35,7 @@ export default class BloomFilter
         super()
         if (nbHashes < 1) {
             throw new Error(
-                `A BloomFilter cannot uses less than one hash function, while you tried to use ${nbHashes.toString()}.`
+                `A BloomFilter cannot uses less than one hash function, while you tried to use ${nbHashes.toString()}.`,
             )
         }
         this._size = size
@@ -73,7 +70,7 @@ export default class BloomFilter
     public static from(
         items: Iterable<HashableInput>,
         errorRate: number,
-        seed?: SeedType
+        seed?: SeedType,
     ): BloomFilter {
         const array = Array.from(items)
         const filter = BloomFilter.create(array.length, errorRate)
@@ -112,12 +109,7 @@ export default class BloomFilter
      * ```
      */
     public add(element: HashableInput): void {
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._size,
-            this._nbHashes,
-            this.seed
-        )
+        const indexes = this._hashing.getIndexes(element, this._size, this._nbHashes, this.seed)
         for (const value of indexes) {
             this._filter.add(value)
         }
@@ -136,12 +128,7 @@ export default class BloomFilter
      * ```
      */
     public has(element: HashableInput): boolean {
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._size,
-            this._nbHashes,
-            this.seed
-        )
+        const indexes = this._hashing.getIndexes(element, this._size, this._nbHashes, this.seed)
         for (const value of indexes) {
             if (!this._filter.has(value)) {
                 return false
@@ -197,9 +184,7 @@ export default class BloomFilter
             })
             bl._filter = bs
         } else {
-            bl._filter = BitSet.import(
-                data as { size: number; content: string }
-            )
+            bl._filter = BitSet.import(data as { size: number; content: string })
         }
         return bl
     }

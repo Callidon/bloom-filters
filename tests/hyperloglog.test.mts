@@ -8,10 +8,7 @@ test('should support update and cardinality estimations (count) operations', () 
     for (let i = 0; i < 10e3; i++) {
         sketch.update((i % nbDistinct).toString())
     }
-    expect(sketch.count(true)).toBeCloseTo(
-        nbDistinct,
-        nbDistinct * sketch.accuracy()
-    )
+    expect(sketch.count(true)).toBeCloseTo(nbDistinct, nbDistinct * sketch.accuracy())
 })
 test('should peforms the union of two HyperLogLog sketches', () => {
     const first = new HyperLogLog(10)
@@ -24,9 +21,7 @@ test('should peforms the union of two HyperLogLog sketches', () => {
     const merged = first.merge(second)
     expect(merged.nbRegisters).toEqual(first.nbRegisters)
     for (let i = 0; i < merged.nbRegisters; i++) {
-        expect(merged._registers[i]).toEqual(
-            Math.max(first._registers[i], second._registers[i])
-        )
+        expect(merged._registers[i]).toEqual(Math.max(first._registers[i], second._registers[i]))
     }
 })
 

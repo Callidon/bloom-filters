@@ -5,10 +5,7 @@ import union from 'lodash.union'
 import intersection from 'lodash.intersection'
 
 // Compute the exact Jaccard similairty between two sets
-function jaccard(
-    a: Array<unknown> | null | undefined,
-    b: Array<unknown> | null | undefined
-) {
+function jaccard(a: Array<unknown> | null | undefined, b: Array<unknown> | null | undefined) {
     return intersection(a, b).length / union(a, b).length
 }
 
@@ -51,20 +48,14 @@ test('should insert values and compute the Jaccard similarity between two sets',
     setB.forEach(value => {
         secondSet.add(value)
     })
-    expect(firstSet.compareWith(secondSet)).toBeCloseTo(
-        jaccard(setA, setB),
-        0.2
-    )
+    expect(firstSet.compareWith(secondSet)).toBeCloseTo(jaccard(setA, setB), 0.2)
 })
 test('should ingest a set of numbers and compute the Jaccard similarity between two sets', () => {
     const firstSet = factory.create()
     const secondSet = factory.create()
     firstSet.bulkLoad(setA)
     secondSet.bulkLoad(setB)
-    expect(firstSet.compareWith(secondSet)).toBeCloseTo(
-        jaccard(setA, setB),
-        0.2
-    )
+    expect(firstSet.compareWith(secondSet)).toBeCloseTo(jaccard(setA, setB), 0.2)
 })
 test('should throw an Error when we try to compare an empty MinHash with anoter MinHash', () => {
     const firstSet = factory.create()

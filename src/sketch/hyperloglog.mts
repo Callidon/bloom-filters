@@ -1,10 +1,5 @@
 import BaseFilter from '../base-filter.mjs'
-import {
-    ExportedBigInt,
-    allocateArray,
-    exportBigInt,
-    importBigInt,
-} from '../utils.mjs'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils.mjs'
 import { HashableInput } from '../types.mjs'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
@@ -88,25 +83,16 @@ export default class HyperLogLog extends BaseFilter {
      */
     public update(element: HashableInput): void {
         // const hashedValue = Buffer.from(hashAsString(element, this.seed))
-        const hashedValue = this._hashing
-            .hashAsInt(element, this.seed)
-            .toString(2)
-        const registerIndex =
-            1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
+        const hashedValue = this._hashing.hashAsInt(element, this.seed).toString(2)
+        const registerIndex = 1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
         // find the left most 1-bit in the second part of the buffer
         const secondPart = hashedValue.slice(this._nbBytesPerHash)
         let posLeftMost = 0
-        while (
-            secondPart[posLeftMost] !== '1' &&
-            posLeftMost < secondPart.length - 1
-        ) {
+        while (secondPart[posLeftMost] !== '1' && posLeftMost < secondPart.length - 1) {
             posLeftMost++
         }
         // update the register
-        this._registers[registerIndex] = Math.max(
-            this._registers[registerIndex],
-            posLeftMost
-        )
+        this._registers[registerIndex] = Math.max(this._registers[registerIndex], posLeftMost)
     }
 
     /**
@@ -117,11 +103,9 @@ export default class HyperLogLog extends BaseFilter {
         // Use the standard HyperLogLog estimator
         const harmonicMean = this._registers.reduce(
             (acc: number, value: number) => acc + Math.pow(2, -value),
-            0
+            0,
         )
-        let estimation =
-            (this._correctionBias * Math.pow(this._nbRegisters, 2)) /
-            harmonicMean
+        let estimation = (this._correctionBias * Math.pow(this._nbRegisters, 2)) / harmonicMean
 
         // use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
         /*if (estimation < ((5/2) * this._nbRegisters) && this._registers.some(value => value === 0)) {
@@ -156,15 +140,12 @@ export default class HyperLogLog extends BaseFilter {
     public merge(other: HyperLogLog): HyperLogLog {
         if (this.nbRegisters !== other.nbRegisters) {
             throw new Error(
-                `Two HyperLogLog must have the same number of registers to be merged. Tried to merge two HyperLogLog with m = ${this.nbRegisters.toString()} and m = ${other.nbRegisters.toString()}`
+                `Two HyperLogLog must have the same number of registers to be merged. Tried to merge two HyperLogLog with m = ${this.nbRegisters.toString()} and m = ${other.nbRegisters.toString()}`,
             )
         }
         const newSketch = new HyperLogLog(this.nbRegisters)
         for (let i = 0; i < this.nbRegisters - 1; i++) {
-            newSketch._registers[i] = Math.max(
-                this._registers[i],
-                other._registers[i]
-            )
+            newSketch._registers[i] = Math.max(this._registers[i], other._registers[i])
         }
         return newSketch
     }

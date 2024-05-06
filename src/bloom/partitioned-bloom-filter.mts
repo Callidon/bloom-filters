@@ -1,75 +1,16 @@
 import BaseFilter from '../base-filter.mjs'
 import ClassicFilter from '../interfaces/classic-filter.mjs'
-import {
-    ExportedBigInt,
-    allocateArray,
-    exportBigInt,
-    importBigInt,
-} from '../utils.mjs'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils.mjs'
 import { HashableInput } from '../types.mjs'
 import BitSet, { ExportedBitSet } from './bit-set.mjs'
 
-/**
- * Return the optimal number of hashes needed for a given error rate and load factor
- * P = p^k <=> k = ln(P)/ln(p)
- * @param  errorRate - The provided error rate
- * @param  loadFactor - The load factor, ideally 0.5
- * @return The number of hash function to use
- */
-function computeOptimalNumberOfhashes(
-    errorRate: number,
-    loadFactor: number
-): number {
-    // P = p^k <=> k = ln(P)/ln(p)
-    return Math.ceil(Math.log(errorRate) / Math.log(loadFactor))
-}
-
-/**
- * Return the total number of bits needed for this filter
- * n = M*(ln(p)ln(1-p))/(-ln(P)) <=> M = (n*-ln(P)/(ln(p)ln(1-p))
- * @param  size - The number of desired items
- * @param  rate - The error rate desired
- * @param  loadFactor - The load factor desired
- * @return The total number of cells this filter will have
- */
-function computeOptimalNumberOfCells(
-    size: number,
-    rate: number,
-    loadFactor: number
-): number {
-    // n=M*(ln(p)ln(1-p))/(-ln(P)) <=> M=(n*-ln(P)/(ln(p)ln(1-p))
-    return Math.ceil(
-        (size * -Math.log(rate)) /
-            (Math.log(loadFactor) * Math.log(1 - loadFactor))
-    )
-}
-
-/**
- * Return the maximum number of items this filter can store
- * @param  totalBits - The total number of cells in the filter
- * @param  loadFactor - The load factor desired
- * @param  nbHashes - The number of hash functions used
- * @return The maximum number of items this filter store
- */
-function computeNumberOfItems(
-    totalBits: number,
-    loadFactor: number,
-    nbHashes: number
-): number {
-    return Math.ceil(
-        (totalBits * (Math.log(loadFactor) * Math.log(1 - loadFactor))) /
-            -(nbHashes * Math.log(loadFactor))
-    )
-}
-
 export interface ExportedPartitionedBloomFilter {
     _seed: ExportedBigInt
-    _size: number
+    _bits: number
     _nbHashes: number
-    _loadFactor: number
     _m: number
     _filter: ExportedBitSet[]
-    _capacity: number
+    _errorRate: number
 }
 
 /**
@@ -89,34 +30,25 @@ export default class PartitionedBloomFilter
     extends BaseFilter
     implements ClassicFilter<HashableInput>
 {
-    public _size: number
-    public _nbHashes: number
-    public _loadFactor: number
+    public _bits: number
+    public _k: number
     public _m: number
     public _filter: BitSet[]
-    public _capacity: number
+    public _errorRate: number
 
     /**
      * Constructor
-     * @param size - The total number of cells
+     * @param bits - The total number of bits
      * @param nbHashes - The number of hash functions
-     * @param loadFactor - The load factor
-     * @param capacity - The filter capacity
+     * @param errorRate - The expected error rate with respect to bits and nbHashes
      */
-    constructor(
-        size: number,
-        nbHashes: number,
-        loadFactor: number,
-        capacity?: number
-    ) {
+    constructor(bits: number, nbHashes: number, errorRate: number) {
         super()
-        this._size = size
-        this._nbHashes = nbHashes
-        this._loadFactor = loadFactor
-        this._m = Math.ceil(this._size / this._nbHashes)
-        this._filter = allocateArray(this._nbHashes, () => new BitSet(this._m))
-        this._capacity =
-            capacity ?? computeNumberOfItems(this._size, loadFactor, nbHashes)
+        this._bits = bits
+        this._k = nbHashes
+        this._errorRate = errorRate
+        this._m = Math.ceil(this._bits / this._k)
+        this._filter = allocateArray(this._k, () => new BitSet(this._m))
     }
 
     /**
@@ -125,25 +57,17 @@ export default class PartitionedBloomFilter
      * @param  errorRate - The desired error rate
      * @return A new PartitionedBloomFilter optimal for the given parameters
      */
-    public static create(
-        size: number,
-        errorRate: number,
-        loadFactor = 0.5
-    ): PartitionedBloomFilter {
-        const capacity = computeOptimalNumberOfCells(
-            size,
-            errorRate,
-            loadFactor
-        )
-        const nbHashes = computeOptimalNumberOfhashes(errorRate, loadFactor)
-        return new PartitionedBloomFilter(capacity, nbHashes, loadFactor, size)
+    public static create(size: number, errorRate: number): PartitionedBloomFilter {
+        const L = Math.ceil(Math.log2(1 / errorRate))
+        const M = (size * Math.abs(Math.log(errorRate))) / Math.LN2 ** 2
+        // the optimal loadfactor is 0.5 for maximized size
+        return new PartitionedBloomFilter(M, L, errorRate)
     }
 
     /**
      * Build a new Partitioned Bloom Filter from an existing iterable with a fixed error rate
      * @param items - The iterable used to populate the filter
      * @param errorRate - The error rate, i.e. 'false positive' rate, targetted by the filter
-     * @param loadFactor - The filter's load factor
      * @return A new Bloom Filter filled with the iterable's elements
      * @example
      * ```js
@@ -151,17 +75,9 @@ export default class PartitionedBloomFilter
      * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
      * ```
      */
-    public static from(
-        items: Iterable<HashableInput>,
-        errorRate: number,
-        loadFactor = 0.5
-    ): PartitionedBloomFilter {
+    public static from(items: Iterable<HashableInput>, errorRate: number): PartitionedBloomFilter {
         const array = Array.from(items)
-        const filter = PartitionedBloomFilter.create(
-            array.length,
-            errorRate,
-            loadFactor
-        )
+        const filter = PartitionedBloomFilter.create(array.length, errorRate)
         array.forEach(element => {
             filter.add(element)
         })
@@ -169,24 +85,17 @@ export default class PartitionedBloomFilter
     }
 
     /**
-     * Get the filter capacity, i.e. the maximum number of elements it will contains
+     * Get the filter capacity, i.e. the maximum number of elements it can hold
      */
     public get capacity(): number {
-        return this._capacity
+        return Math.floor((this._k * this._m * Math.LN2 ** 2) / Math.abs(Math.log(this._errorRate)))
     }
 
     /**
      * Get the size of the filter
      */
     public get size(): number {
-        return this._size
-    }
-
-    /**
-     * Get the filter's load factor
-     */
-    public get loadFactor(): number {
-        return this._loadFactor
+        return this._bits
     }
 
     /**
@@ -199,13 +108,8 @@ export default class PartitionedBloomFilter
      * ```
      */
     public add(element: HashableInput): void {
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._m,
-            this._nbHashes,
-            this.seed
-        )
-        for (let i = 0; i < this._nbHashes; i++) {
+        const indexes = this._hashing.getIndexes(element, this._m, this._k, this.seed)
+        for (let i = 0; i < this._k; i++) {
             this._filter[i].add(indexes[i])
         }
     }
@@ -223,13 +127,8 @@ export default class PartitionedBloomFilter
      * ```
      */
     public has(element: HashableInput): boolean {
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._m,
-            this._nbHashes,
-            this.seed
-        )
-        for (let i = 0; i < this._nbHashes; i++) {
+        const indexes = this._hashing.getIndexes(element, this._m, this._k, this.seed)
+        for (let i = 0; i < this._k; i++) {
             if (!this._filter[i].has(indexes[i])) {
                 return false
             }
@@ -248,9 +147,9 @@ export default class PartitionedBloomFilter
      */
     public rate(): number {
         // get the error rate for the first bucket (1 - (1 - 1/m)^n), where m is the size of a slice and n is the number of inserted elements
-        const p = this._currentload()
+        const p = this.load()
         // P = p^k
-        return Math.pow(p, this._nbHashes)
+        return Math.pow(p, this._k)
     }
 
     /**
@@ -259,53 +158,36 @@ export default class PartitionedBloomFilter
      * @return True if they are equal, false otherwise
      */
     public equals(other: PartitionedBloomFilter): boolean {
-        if (
-            this._size !== other._size ||
-            this._nbHashes !== other._nbHashes ||
-            this._loadFactor !== other._loadFactor
-        ) {
+        if (this._bits !== other._bits || this._k !== other._k) {
             return false
         }
-        return this._filter.every((array, outerIndex) =>
-            other._filter[outerIndex].equals(array)
-        )
+        return this._filter.every((array, outerIndex) => other._filter[outerIndex].equals(array))
     }
 
     /**
-     * Return the current load of this filter, iterate on all buckets
+     * Return the current load of this filter; number of bits set by the size
      * @return An integer between 0 and 1, where 0 = filter empty and 1 = filter full
      */
-    public _currentload(): number {
-        const values = this._filter.map(bucket => {
-            return bucket.bitCount()
-        })
-        const used = values.reduce((a, b) => a + b, 0)
-        return used / this._size
+    public load(): number {
+        const a = this._filter.reduce((acc, bitSet) => acc + bitSet.bitCount(), 0)
+        return a / this._bits
     }
 
     public saveAsJSON(): ExportedPartitionedBloomFilter {
         return {
-            _size: this._size,
-            _nbHashes: this._nbHashes,
+            _bits: this._bits,
+            _nbHashes: this._k,
             _filter: this._filter.map(m => m.export()),
             _seed: exportBigInt(this._seed),
-            _capacity: this._capacity,
-            _loadFactor: this._loadFactor,
             _m: this._m,
+            _errorRate: this._errorRate,
         }
     }
 
-    public static fromJSON(
-        element: ExportedPartitionedBloomFilter
-    ): PartitionedBloomFilter {
-        const bl = new PartitionedBloomFilter(
-            element._size,
-            element._nbHashes,
-            element._loadFactor,
-            element._capacity
-        )
-        bl._m = element._m
+    public static fromJSON(element: ExportedPartitionedBloomFilter): PartitionedBloomFilter {
+        const bl = new PartitionedBloomFilter(element._bits, element._nbHashes, element._errorRate)
         bl.seed = importBigInt(element._seed)
+        bl._m = element._m
         bl._filter = element._filter.map(b => BitSet.import(b))
         return bl
     }

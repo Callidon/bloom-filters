@@ -1,10 +1,5 @@
 import { expect, test } from '@jest/globals'
-import {
-    Hashing,
-    InvertibleBloomFilter,
-    exportBigInt,
-    getDefaultSeed,
-} from '../src/index.mjs'
+import { Hashing, InvertibleBloomFilter, exportBigInt, getDefaultSeed } from '../src/index.mjs'
 
 const keys = 1000
 const hashCount = 3
@@ -20,7 +15,7 @@ const toInsert = [
     Buffer.from(
         JSON.stringify({
             data: 'hello world',
-        })
+        }),
     ),
 ]
 test('should add element to the filter with #add', () => {
@@ -97,10 +92,7 @@ test('should create correctly an IBLT', () => {
 })
 
 function buildIblt() {
-    return InvertibleBloomFilter.from(
-        [Buffer.from('meow'), Buffer.from('car')],
-        0.001
-    )
+    return InvertibleBloomFilter.from([Buffer.from('meow'), Buffer.from('car')], 0.001)
 }
 
 test('should export an Invertible Bloom Filter to a JSON object', () => {
@@ -128,7 +120,7 @@ test.each(values)(
     `should decodes correctly element for a set difference of %i with ${keys.toString()} keys, ${hashCount.toString()} hash functions, [alpha = ${alpha.toString()}, d = ${d.toString()}]`,
     differences => {
         commonTest(size, hashCount, keys, differences)
-    }
+    },
 )
 
 values = []
@@ -139,15 +131,10 @@ test.each(values)(
     `should decodes correctly element for a set difference of ${d.toString()} with %i keys, ${hashCount.toString()} hash functions, [alpha = ${alpha.toString()}, d = ${d.toString()}]`,
     k => {
         commonTest(size, hashCount, k, d)
-    }
+    },
 )
 
-function commonTest(
-    size: number,
-    hashCount: number,
-    keys: number,
-    differences: number
-) {
+function commonTest(size: number, hashCount: number, keys: number, differences: number) {
     const iblt = new InvertibleBloomFilter(size, hashCount)
     iblt.seed = seed
     const setDiffplus: Buffer[] = []
@@ -182,9 +169,9 @@ function commonTest(
     expect(sum).toEqual(differences)
 
     expect(res.additional.map(e => e.toString()).sort()).toEqual(
-        setDiffplus.map(e => e.toString()).sort()
+        setDiffplus.map(e => e.toString()).sort(),
     )
     expect(res.missing.map(e => e.toString()).sort()).toEqual(
-        setDiffminus.map(e => e.toString()).sort()
+        setDiffminus.map(e => e.toString()).sort(),
     )
 }

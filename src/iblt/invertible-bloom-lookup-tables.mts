@@ -43,10 +43,7 @@ export interface ExportedInvertibleBloomFilter {
  * @author Arnaud Grall
  * @author Thomas Minier
  */
-export default class InvertibleBloomFilter
-    extends BaseFilter
-    implements WritableFilter<Buffer>
-{
+export default class InvertibleBloomFilter extends BaseFilter implements WritableFilter<Buffer> {
     public _size: number
     public _hashCount: number
     public _elements: Cell[]
@@ -64,9 +61,7 @@ export default class InvertibleBloomFilter
             throw new Error(BufferError)
         }
         if (hashCount <= 0) {
-            throw new Error(
-                'The hashCount must be a non-zero, positive integer'
-            )
+            throw new Error('The hashCount must be a non-zero, positive integer')
         }
         this._size = size
         this._hashCount = hashCount
@@ -80,10 +75,7 @@ export default class InvertibleBloomFilter
      * @param errorRate - Expected error rate
      * @return A new Invertible Bloom filter optimal for the given parameters.
      */
-    public static create(
-        nbItems: number,
-        errorRate: number
-    ): InvertibleBloomFilter {
+    public static create(nbItems: number, errorRate: number): InvertibleBloomFilter {
         const size = optimalFilterSize(nbItems, errorRate)
         const nbHashes = optimalHashes(size, nbItems)
         return new InvertibleBloomFilter(size, nbHashes)
@@ -95,10 +87,7 @@ export default class InvertibleBloomFilter
      * @param errorRate - Expected error rate
      * @return A new Invertible Bloom filter filled with the iterable's items.
      */
-    public static from(
-        items: Iterable<Buffer>,
-        errorRate: number
-    ): InvertibleBloomFilter {
+    public static from(items: Iterable<Buffer>, errorRate: number): InvertibleBloomFilter {
         const array = Array.from(items)
         const filter = InvertibleBloomFilter.create(array.length, errorRate)
         array.forEach(item => {
@@ -142,15 +131,12 @@ export default class InvertibleBloomFilter
      * @param element - The element to insert
      */
     public add(element: Buffer): void {
-        const hashes = this._hashing.hashTwiceAsString(
-            JSON.stringify(element.toJSON()),
-            this.seed
-        )
+        const hashes = this._hashing.hashTwiceAsString(JSON.stringify(element.toJSON()), this.seed)
         const indexes = this._hashing.getDistinctIndexes(
             hashes.first,
             this._size,
             this._hashCount,
-            this.seed
+            this.seed,
         )
         for (let i = 0; i < this._hashCount; ++i) {
             this._elements[indexes[i]].add(element, Buffer.from(hashes.first))
@@ -163,19 +149,16 @@ export default class InvertibleBloomFilter
      * @return True if the element has been removed, False otheriwse
      */
     public remove(element: Buffer): boolean {
-        const hashes = this._hashing.hashTwiceAsString(
-            JSON.stringify(element.toJSON()),
-            this.seed
-        )
+        const hashes = this._hashing.hashTwiceAsString(JSON.stringify(element.toJSON()), this.seed)
         const indexes = this._hashing.getDistinctIndexes(
             hashes.first,
             this._size,
             this._hashCount,
-            this.seed
+            this.seed,
         )
         for (let i = 0; i < this._hashCount; ++i) {
             this._elements[indexes[i]] = this._elements[indexes[i]].xorm(
-                new Cell(Buffer.from(element), Buffer.from(hashes.first), 1)
+                new Cell(Buffer.from(element), Buffer.from(hashes.first), 1),
             )
         }
         return true
@@ -187,15 +170,12 @@ export default class InvertibleBloomFilter
      * @return False if the element is not in the filter, true if "may be" in the filter.
      */
     public has(element: Buffer): boolean {
-        const hashes = this._hashing.hashTwiceAsString(
-            JSON.stringify(element.toJSON()),
-            this.seed
-        )
+        const hashes = this._hashing.hashTwiceAsString(JSON.stringify(element.toJSON()), this.seed)
         const indexes = this._hashing.getDistinctIndexes(
             hashes.first,
             this._size,
             this._hashCount,
-            this.seed
+            this.seed,
         )
         for (let i = 0; i < this._hashCount; ++i) {
             if (this._elements[indexes[i]].count === 0) {
@@ -226,9 +206,7 @@ export default class InvertibleBloomFilter
                 const localCell = that._elements[index]
                 if (
                     localCell.count > 0 &&
-                    seenBefore.findIndex((b: Buffer) =>
-                        b.equals(localCell.idSum)
-                    ) === -1
+                    seenBefore.findIndex((b: Buffer) => b.equals(localCell.idSum)) === -1
                 ) {
                     if (that.has(localCell.idSum)) {
                         seenBefore.push(localCell.idSum)
@@ -249,9 +227,7 @@ export default class InvertibleBloomFilter
      */
     public substract(iblt: InvertibleBloomFilter): InvertibleBloomFilter {
         if (this.size !== iblt.size) {
-            throw new Error(
-                'The two Invertible Bloom Filters must be of the same size'
-            )
+            throw new Error('The two Invertible Bloom Filters must be of the same size')
         }
         const res = new InvertibleBloomFilter(iblt._size, iblt._hashCount)
         res.seed = this.seed
@@ -287,10 +263,7 @@ export default class InvertibleBloomFilter
      * Decode an InvertibleBloomFilter based on its substracted version
      * @return The results of the deconding process
      */
-    public decode(
-        additional: Buffer[] = [],
-        missing: Buffer[] = []
-    ): IBLTDecodingResults {
+    public decode(additional: Buffer[] = [], missing: Buffer[] = []): IBLTDecodingResults {
         const pureList: number[] = []
         let cell: Cell | null = null
         // checking for all pure cells
@@ -314,17 +287,17 @@ export default class InvertibleBloomFilter
                 }
                 const hashes = this._hashing.hashTwiceAsString(
                     JSON.stringify(id.toJSON()),
-                    this.seed
+                    this.seed,
                 )
                 const indexes = this._hashing.getDistinctIndexes(
                     hashes.first,
                     this._size,
                     this._hashCount,
-                    this.seed
+                    this.seed,
                 )
                 for (const value of indexes) {
                     this._elements[value] = this._elements[value].xorm(
-                        new Cell(id, Buffer.from(hashes.first), c)
+                        new Cell(id, Buffer.from(hashes.first), c),
                     )
                     if (this._elements[value].isPure()) {
                         pureList.push(value)
@@ -360,13 +333,8 @@ export default class InvertibleBloomFilter
         }
     }
 
-    public static fromJSON(
-        element: ExportedInvertibleBloomFilter
-    ): InvertibleBloomFilter {
-        const filter = new InvertibleBloomFilter(
-            element._size,
-            element._hashCount
-        )
+    public static fromJSON(element: ExportedInvertibleBloomFilter): InvertibleBloomFilter {
+        const filter = new InvertibleBloomFilter(element._size, element._hashCount)
         filter.seed = importBigInt(element._seed)
         filter._elements = element._elements.map(e => Cell.fromJSON(e))
         return filter

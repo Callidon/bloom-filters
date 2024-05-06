@@ -142,7 +142,7 @@ A Scalable Bloom Filter is a variant of Bloom Filters that can adapt dynamically
 number of elements stored, while assuring a maximum false positive probability
 
 **Reference:** ALMEIDA, Paulo Sérgio, BAQUERO, Carlos, PREGUIÇA, Nuno, et al. Scalable bloom filters. Information Processing Letters, 2007, vol. 101, no 6, p. 255-261.
-([Full text article](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.725.390&rep=rep1&type=pdf))
+([Full text article](https://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf))
 
 This filter use internally [Paritionned Bloom Filters](#partitioned-bloom-filter).
 

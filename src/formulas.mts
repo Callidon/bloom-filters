@@ -12,9 +12,7 @@
  * @memberof Formulas
  */
 export function optimalFilterSize(length: number, errorRate: number): number {
-    return Math.ceil(
-        -((length * Math.log(errorRate)) / Math.pow(Math.log(2), 2))
-    )
+    return Math.ceil(-((length * Math.log(errorRate)) / Math.pow(Math.log(2), 2)))
 }
 
 /**

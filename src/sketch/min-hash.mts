@@ -1,10 +1,5 @@
 import BaseFilter from '../base-filter.mjs'
-import {
-    ExportedBigInt,
-    allocateArray,
-    exportBigInt,
-    importBigInt,
-} from '../utils.mjs'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils.mjs'
 
 /**
  * An error thrown when we try to compute the Jaccard Similarity with an empty MinHash
@@ -98,7 +93,7 @@ export default class MinHash extends BaseFilter {
     public bulkLoad(values: number[]): void {
         for (let i = 0; i < this._nbHashes; i++) {
             const candidateSignatures = values.map((value: number) =>
-                applyHashFunction(value, this._hashFunctions[i])
+                applyHashFunction(value, this._hashFunctions[i]),
             )
             // get the minimum of the candidate Signatures
             // dont supply too much parameters to Math.min or Math.max with risk of getting stack error
@@ -121,7 +116,7 @@ export default class MinHash extends BaseFilter {
     public compareWith(other: MinHash): number {
         if (this.isEmpty() || other.isEmpty()) {
             throw new EmptyMinHashError(
-                'Cannot compute a Jaccard similairty with a MinHash that contains no values'
+                'Cannot compute a Jaccard similairty with a MinHash that contains no values',
             )
         }
         // fix: we need to check for the number of equal signatures, not uniq equal signatures

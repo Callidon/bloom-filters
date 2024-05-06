@@ -43,8 +43,7 @@ test('should perform a double hashing', () => {
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     values.forEach(n => {
         expect(hashing.doubleHashing(n, hashA, hashB, size)).toEqual(
-            (hashA + BigInt(n) * hashB + BigInt((n ** 3 - n) / 6)) %
-                BigInt(size)
+            (hashA + BigInt(n) * hashB + BigInt((n ** 3 - n) / 6)) % BigInt(size),
         )
     })
 })
@@ -60,37 +59,23 @@ test('should xor correctly 2 Buffers', () => {
     const res = Buffer.allocUnsafe(10).fill(0)
     res[res.length - 1] = 1
     // xor(a, b) = <Buffer 00 00 00 00 00 00 00 00 00 01>
-    expect(xorBuffer(Buffer.from(a), Buffer.from(b)).toString()).toEqual(
-        b.toString()
-    )
+    expect(xorBuffer(Buffer.from(a), Buffer.from(b)).toString()).toEqual(b.toString())
     // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
-    expect(
-        xorBuffer(
-            xorBuffer(Buffer.from(a), Buffer.from(b)),
-            Buffer.from(b)
-        ).toString()
-    ).toEqual(Buffer.from('').toString())
+    expect(xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(b)).toString()).toEqual(
+        Buffer.from('').toString(),
+    )
     // xor(xor(a, b), a) === b
-    expect(
-        xorBuffer(
-            xorBuffer(Buffer.from(a), Buffer.from(b)),
-            Buffer.from(a)
-        ).toString()
-    ).toEqual(Buffer.from(b).toString())
+    expect(xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(a)).toString()).toEqual(
+        Buffer.from(b).toString(),
+    )
     // xor(xor(a, a), a) === a
-    expect(
-        xorBuffer(
-            xorBuffer(Buffer.from(a), Buffer.from(a)),
-            Buffer.from(a)
-        ).toString()
-    ).toEqual(Buffer.from('').toString())
+    expect(xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(a)), Buffer.from(a)).toString()).toEqual(
+        Buffer.from('').toString(),
+    )
     // xor(xor(b, b), b) === a
-    expect(
-        xorBuffer(
-            xorBuffer(Buffer.from(b), Buffer.from(b)),
-            Buffer.from(b)
-        ).toString()
-    ).toEqual(Buffer.from(b).toString())
+    expect(xorBuffer(xorBuffer(Buffer.from(b), Buffer.from(b)), Buffer.from(b)).toString()).toEqual(
+        Buffer.from(b).toString(),
+    )
 })
 test('should xor correctly', () => {
     let a = Buffer.allocUnsafe(1).fill(1)
@@ -135,7 +120,7 @@ test(`should return ${desiredIndices.toString()} distinct indices on the interva
         console.log(
             `Generated ${indices.length.toString()} distinct indices on the interval [0, ${desiredIndices.toString()}) in ${(
                 new Date().getTime() - start
-            ).toString()} ms`
+            ).toString()} ms`,
         )
     } catch (e) {
         throw e
@@ -154,9 +139,16 @@ test('should not be endlessly recurive the (Issue: #34)', () => {
 
 test('overriding serialize function by always returning Number(1)', () => {
     class CustomHashing extends Hashing {
-        serialize() {
-            return BigInt(1)
+        static lib = {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            xxh128: (input: string | Uint8Array, seed?: bigint | null | undefined) => BigInt(1),
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            xxh64: (input: string | Uint8Array, seed?: bigint | null | undefined) => BigInt(1),
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            xxh32: (input: string | Uint8Array, seed?: number | null | undefined) => Number(1),
         }
+
+        _lib = CustomHashing.lib
     }
     const bl = BloomFilter.create(2, 0.01)
     bl._hashing = new CustomHashing()

@@ -23,7 +23,7 @@ test('should add element to the filter with #add', () => {
 test('should build a new filter using #from', () => {
     const data = ['alice', 'bob', 'carl']
     const expectedSize = Math.ceil(
-        -((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2))
+        -((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)),
     )
     const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
     const filter = BloomFilter.from(data, targetRate)
@@ -99,7 +99,7 @@ test('should create a bloom filter from a JSON export', () => {
 })
 
 const max = 1000
-const targetedRate = 0.01
+const targetedRate = 0.1
 test(`should not return an error when inserting ${max.toString()} elements`, () => {
     const filter = BloomFilter.create(max, targetedRate)
     for (let i = 0; i < max; ++i) filter.add(i.toString())

@@ -92,22 +92,18 @@ export default class XorFilter extends BaseFilter {
         if (!this.ALLOWED_FINGERPRINT_SIZES.includes(bits_per_fingerprint)) {
             throw new Error(
                 `bits_per_fingerprint parameter must be one of: [${this.ALLOWED_FINGERPRINT_SIZES.join(
-                    ','
-                )}], got: ${bits_per_fingerprint.toString()}`
+                    ',',
+                )}], got: ${bits_per_fingerprint.toString()}`,
             )
         }
         this._bits = bits_per_fingerprint
         if (size <= 0) {
-            throw new Error(
-                'a XorFilter must be calibrated for a given number of elements'
-            )
+            throw new Error('a XorFilter must be calibrated for a given number of elements')
         }
         this._size = size
         const arrayLength = this._getOptimalFilterSize(this._size)
         this._blockLength = arrayLength / this.HASHES
-        this._filter = allocateArray(arrayLength, () =>
-            Buffer.allocUnsafe(this._bits / 8).fill(0)
-        )
+        this._filter = allocateArray(arrayLength, () => Buffer.allocUnsafe(this._bits / 8).fill(0))
     }
 
     /**
@@ -117,10 +113,8 @@ export default class XorFilter extends BaseFilter {
      */
     public has(element: XorHashableInput): boolean {
         const hash = this._hash64(
-            element instanceof Long
-                ? element
-                : this._hashable_to_long(element, this.seed),
-            this.seed
+            element instanceof Long ? element : this._hashable_to_long(element, this.seed),
+            this.seed,
         )
         const fingerprint = this._fingerprint(hash).toInt()
         const r0 = Long.fromInt(hash.toInt())
@@ -152,7 +146,7 @@ export default class XorFilter extends BaseFilter {
     public add(elements: XorHashableInput[]) {
         if (elements.length !== this._size) {
             throw new Error(
-                `This filter has been created for exactly ${this._size.toString()} elements`
+                `This filter has been created for exactly ${this._size.toString()} elements`,
             )
         } else {
             this._create(elements, this._filter.length)
@@ -198,7 +192,7 @@ export default class XorFilter extends BaseFilter {
      */
     public static create(
         elements: XorHashableInput[],
-        bits_per_fingerprint: XorSize = 8
+        bits_per_fingerprint: XorSize = 8,
     ): XorFilter {
         const a = new XorFilter(elements.length, bits_per_fingerprint)
         a.add(elements)
@@ -267,10 +261,7 @@ export default class XorFilter extends BaseFilter {
      * @returns
      */
     public _hashable_to_long(element: HashableInput, seed: SeedType) {
-        return Long.fromString(
-            Hashing.lib.xxh64(element, BigInt(seed)).toString(10),
-            10
-        )
+        return Long.fromString(Hashing.lib.xxh64(element, BigInt(seed)).toString(10), 10)
     }
 
     /**
@@ -282,12 +273,8 @@ export default class XorFilter extends BaseFilter {
      */
     public _hash64(element: Long, seed: SeedType): Long {
         let h = element.add(Number(seed))
-        h = h
-            .xor(h.shiftRightUnsigned(33))
-            .multiply(Long.fromString('0xff51afd7ed558ccd', 16))
-        h = h = h
-            .xor(h.shiftRightUnsigned(33))
-            .multiply(Long.fromString('0xc4ceb9fe1a85ec53', 16))
+        h = h.xor(h.shiftRightUnsigned(33)).multiply(Long.fromString('0xff51afd7ed558ccd', 16))
+        h = h = h.xor(h.shiftRightUnsigned(33)).multiply(Long.fromString('0xc4ceb9fe1a85ec53', 16))
         h = h.xor(h.shiftRightUnsigned(33))
         return h
     }
@@ -353,7 +340,7 @@ export default class XorFilter extends BaseFilter {
                         if (t2count[h] > 120) {
                             // probably something wrong with the hash function
                             throw new Error(
-                                `Probably something wrong with the hash function, t2count[${h.toString()}]=${t2count[h].toString()}`
+                                `Probably something wrong with the hash function, t2count[${h.toString()}]=${t2count[h].toString()}`,
                             )
                         }
                         t2count[h]++
@@ -361,14 +348,13 @@ export default class XorFilter extends BaseFilter {
                 })
             reverseOrderPos = 0
             const alone: number[][] = allocateArray(this.HASHES, () =>
-                allocateArray(this._blockLength, 0)
+                allocateArray(this._blockLength, 0),
             )
             const alonePos: number[] = allocateArray(this.HASHES, 0)
             for (let nextAlone = 0; nextAlone < this.HASHES; nextAlone++) {
                 for (let i = 0; i < this._blockLength; i++) {
                     if (t2count[nextAlone * this._blockLength + i] === 1) {
-                        alone[nextAlone][alonePos[nextAlone]++] =
-                            nextAlone * this._blockLength + i
+                        alone[nextAlone][alonePos[nextAlone]++] = nextAlone * this._blockLength + i
                     }
                 }
             }
@@ -392,9 +378,7 @@ export default class XorFilter extends BaseFilter {
                 }
                 const k = t2[i]
                 if (t2count[i] !== 1) {
-                    throw new Error(
-                        'At this step, the count must not be different of 1'
-                    )
+                    throw new Error('At this step, the count must not be different of 1')
                 }
                 --t2count[i]
                 for (let hi = 0; hi < this.HASHES; hi++) {

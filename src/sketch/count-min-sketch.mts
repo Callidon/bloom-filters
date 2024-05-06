@@ -1,11 +1,6 @@
 import BaseFilter from '../base-filter.mjs'
 import CountingFilter from '../interfaces/counting-filter.mjs'
-import {
-    ExportedBigInt,
-    allocateArray,
-    exportBigInt,
-    importBigInt,
-} from '../utils.mjs'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils.mjs'
 import { HashableInput } from '../types.mjs'
 
 export interface ExportedCountMinSketch {
@@ -25,10 +20,7 @@ export interface ExportedCountMinSketch {
  * @extends Exportable
  * @author Thomas Minier & Arnaud Grall
  */
-export default class CountMinSketch
-    extends BaseFilter
-    implements CountingFilter<HashableInput>
-{
+export default class CountMinSketch extends BaseFilter implements CountingFilter<HashableInput> {
     public _columns: number
     public _rows: number
     public _matrix: number[][]
@@ -43,9 +35,7 @@ export default class CountMinSketch
         super()
         this._columns = columns
         this._rows = rows
-        this._matrix = allocateArray(this._rows, () =>
-            allocateArray(this._columns, 0)
-        )
+        this._matrix = allocateArray(this._rows, () => allocateArray(this._columns, 0))
         this._allSums = 0
     }
 
@@ -72,7 +62,7 @@ export default class CountMinSketch
     public static from(
         items: Iterable<HashableInput>,
         errorRate: number,
-        accuracy = 0.999
+        accuracy = 0.999,
     ): CountMinSketch {
         const filter = CountMinSketch.create(errorRate, accuracy)
         for (const item of items) {
@@ -109,12 +99,7 @@ export default class CountMinSketch
      */
     public update(element: HashableInput, count = 1): void {
         this._allSums += count
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._columns,
-            this._rows,
-            this.seed
-        )
+        const indexes = this._hashing.getIndexes(element, this._columns, this._rows, this.seed)
         for (let i = 0; i < this._rows; i++) {
             this._matrix[i][indexes[i]] += count
         }
@@ -127,12 +112,7 @@ export default class CountMinSketch
      */
     public count(element: HashableInput): number {
         let min = Infinity
-        const indexes = this._hashing.getIndexes(
-            element,
-            this._columns,
-            this._rows,
-            this.seed
-        )
+        const indexes = this._hashing.getIndexes(element, this._columns, this._rows, this.seed)
         for (let i = 0; i < this._rows; i++) {
             const v = this._matrix[i][indexes[i]]
             min = Math.min(v, min)
@@ -165,14 +145,10 @@ export default class CountMinSketch
      */
     public merge(sketch: CountMinSketch): void {
         if (this._columns !== sketch._columns) {
-            throw new Error(
-                'Cannot merge two sketches with different number of columns'
-            )
+            throw new Error('Cannot merge two sketches with different number of columns')
         }
         if (this._rows !== sketch._rows) {
-            throw new Error(
-                'Cannot merge two sketches with different number of rows'
-            )
+            throw new Error('Cannot merge two sketches with different number of rows')
         }
 
         for (let i = 0; i < this._rows; i++) {

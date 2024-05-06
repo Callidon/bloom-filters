@@ -65,11 +65,7 @@ export class MinHeap {
      */
     public add(element: HeapElement) {
         // kepp items sorted by frequency
-        const index = sortedIndexBy(
-            this._content,
-            element,
-            heapElement => heapElement.frequency
-        )
+        const index = sortedIndexBy(this._content, element, heapElement => heapElement.frequency)
         this._content.splice(index, 0, element)
     }
 
@@ -96,9 +92,7 @@ export class MinHeap {
      */
     public indexOf(value: string): number {
         // TODO optimize
-        return this._content.findIndex(
-            heapElement => heapElement.value === value
-        )
+        return this._content.findIndex(heapElement => heapElement.value === value)
         // const index = sortedIndexBy(this._content, {value, frequency: 0}, heapElement => heapElement.value)
         // if (this._content[index] !== undefined && this._content[index].value === value) {
         //   return index
@@ -257,11 +251,7 @@ export default class TopK extends BaseFilter {
     }
 
     public static fromJSON(element: ExportedTopK): TopK {
-        const filter = new TopK(
-            element._k,
-            element._errorRate,
-            element._accuracy
-        )
+        const filter = new TopK(element._k, element._errorRate, element._accuracy)
         filter.seed = importBigInt(element._seed)
         filter._heap = MinHeap.fromJSON(element._heap)
         filter._sketch = CountMinSketch.fromJSON(element._sketch)

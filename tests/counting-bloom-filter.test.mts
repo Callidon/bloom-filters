@@ -12,7 +12,7 @@ test('should add element to the filter with #add', () => {
 test('should build a new filter using #from', () => {
     const data = ['alice', 'bob', 'carl']
     const expectedSize = Math.ceil(
-        -((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2))
+        -((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)),
     )
     const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
     const filter = CountingBloomFilter.from(data, targetRate)
@@ -22,8 +22,7 @@ test('should build a new filter using #from', () => {
     expect(filter.rate()).toBeCloseTo(targetRate, 0.1)
 })
 
-const getFilter = () =>
-    CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+const getFilter = () => CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
 test('should return false for elements that are definitively not in the set', () => {
     const filter = getFilter()
     expect(filter.has('daniel')).toBe(false)
@@ -38,10 +37,7 @@ test('should return true for elements that might be in the set', () => {
 })
 
 test('should allow deletion of items', () => {
-    const filter = CountingBloomFilter.from(
-        ['alice', 'bob', 'carl'],
-        targetRate
-    )
+    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
     filter.remove('bob')
     expect(filter.has('alice')).toBe(true)
     expect(filter.has('bob')).toBe(false)
@@ -49,14 +45,8 @@ test('should allow deletion of items', () => {
 })
 
 test('should returns True when two filters are equals', () => {
-    const first = CountingBloomFilter.from(
-        ['alice', 'bob', 'carol'],
-        targetRate
-    )
-    const other = CountingBloomFilter.from(
-        ['alice', 'bob', 'carol'],
-        targetRate
-    )
+    const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+    const other = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
     expect(first.equals(other)).toBe(true)
 })
 
@@ -73,19 +63,12 @@ test('should returns False when two filters have different nb. of hash functions
 })
 
 test('should returns False when two filters have different content', () => {
-    const first = CountingBloomFilter.from(
-        ['alice', 'bob', 'carol'],
-        targetRate
-    )
-    const other = CountingBloomFilter.from(
-        ['alice', 'bob', 'daniel'],
-        targetRate
-    )
+    const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+    const other = CountingBloomFilter.from(['alice', 'bob', 'daniel'], targetRate)
     expect(first.equals(other)).toBe(false)
 })
 
-const getFilter2 = () =>
-    CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+const getFilter2 = () => CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
 test('should export a bloom filter to a JSON object', () => {
     const filter = getFilter2()
     const exported = filter.saveAsJSON()
