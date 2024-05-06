@@ -124,20 +124,6 @@ export default class Hashing {
     }
 
     /**
-     * @internal
-     * Hash an element of type {@link HashableInput} into {@link Number}
-     * Can be overrided as long as you return a value of type {@link Number}
-     * Don't forget to use the seed when hashing, otherwise if some kind of randomness is in the process
-     * you may have inconsistent behaviors between 2 runs.
-     * @param element
-     * @param seed
-     * @returns A 64bits floating point {@link Number}
-     */
-    public serialize(element: HashableInput, seed: SeedType) {
-        return Hashing.lib.xxh128(element, seed)
-    }
-
-    /**
      * (64-bits only) Hash a value into two values (in hex or integer format)
      * @param  value - The value to hash
      * @param seed the seed used for hashing
