@@ -92,18 +92,19 @@ export default class MinHash extends BaseFilter {
      */
     public bulkLoad(values: number[]): void {
         for (let i = 0; i < this._nbHashes; i++) {
-            const candidateSignatures = values.map((value: number) =>
-                applyHashFunction(value, this._hashFunctions[i]),
-            )
-            // get the minimum of the candidate Signatures
-            // dont supply too much parameters to Math.min or Math.max with risk of getting stack error
-            // so we compute an iterative minimum
-            let min = candidateSignatures[0]
-            for (let i = 1; i < candidateSignatures.length; i++) {
-                if (min > candidateSignatures[i]) {
-                    min = candidateSignatures[i]
+            let min: number = Infinity
+            values.forEach((value: number, idx: number) => {
+                const hash = applyHashFunction(value, this._hashFunctions[i])
+                if (idx === 0) {
+                    min = hash
                 }
-            }
+                // get the minimum of the candidate Signatures
+                // dont supply too much parameters to Math.min or Math.max with risk of getting stack error
+                // so we compute an iterative minimum
+                if (min > hash) {
+                    min = hash
+                }
+            })
             this._signature[i] = Math.min(this._signature[i], min)
         }
     }
@@ -142,7 +143,7 @@ export default class MinHash extends BaseFilter {
     public static fromJSON(element: ExportedMinHash): MinHash {
         const filter = new MinHash(element._nbHashes, element._hashFunctions)
         filter.seed = importBigInt(element._seed)
-        filter._signature = filter._signature
+        filter._signature = element._signature
         return filter
     }
 }
