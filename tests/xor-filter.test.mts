@@ -14,7 +14,7 @@ sizes.forEach(size => {
         const a: string[] = []
         const format = (e: number) => `hash:${e.toString()}`
         for (let i = 0; i < count; i++) {
-            a.push(String(i))
+            a.push(format(i))
         }
         const filter = XorFilter.create(a, size)
         let truthy = 0,
