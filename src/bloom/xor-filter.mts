@@ -1,15 +1,8 @@
 // Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
 
 import BaseFilter from '../base-filter.mjs'
-import {
-    allocateArray,
-    BufferError,
-    exportBigInt,
-    ExportedBigInt,
-    importBigInt,
-} from '../utils.mjs'
+import { allocateArray, exportBigInt, ExportedBigInt, importBigInt } from '../utils.mjs'
 import { HashableInput, SeedType } from '../types.mjs'
-import Hashing from '../hashing.mjs'
 import Long from 'long'
 import { encode, decode } from 'base64-arraybuffer'
 
@@ -59,7 +52,7 @@ export default class XorFilter extends BaseFilter {
     /**
      * Buffer array of fingerprints
      */
-    public _filter: Buffer[]
+    public _filter: Uint8Array[]
 
     /**
      * Number of bits per fingerprint
@@ -84,11 +77,6 @@ export default class XorFilter extends BaseFilter {
      */
     constructor(size: number, bits_per_fingerprint: XorSize = 8) {
         super()
-        // try to use the Buffer class or reject by throwing an error
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!Buffer) {
-            throw new Error(BufferError)
-        }
         if (!this.ALLOWED_FINGERPRINT_SIZES.includes(bits_per_fingerprint)) {
             throw new Error(
                 `bits_per_fingerprint parameter must be one of: [${this.ALLOWED_FINGERPRINT_SIZES.join(
@@ -103,7 +91,7 @@ export default class XorFilter extends BaseFilter {
         this._size = size
         const arrayLength = this._getOptimalFilterSize(this._size)
         this._blockLength = arrayLength / this.HASHES
-        this._filter = allocateArray(arrayLength, () => Buffer.allocUnsafe(this._bits / 8).fill(0))
+        this._filter = allocateArray(arrayLength, () => new Uint8Array(this._bits / 8))
     }
 
     /**
@@ -175,7 +163,7 @@ export default class XorFilter extends BaseFilter {
         let broken = true
         let i = 0
         while (broken && i < this._filter.length) {
-            if (!filter._filter[i].equals(this._filter[i])) {
+            if (!filter._filter[i].every((value, index) => value === this._filter[i][index])) {
                 broken = false
             } else {
                 i++
@@ -212,12 +200,11 @@ export default class XorFilter extends BaseFilter {
      */
     public _getOptimalFilterSize(size: number): number {
         // optimal size
-        const s = Long.ONE.multiply(this.FACTOR_TIMES_100)
-            .multiply(size)
-            .divide(100)
-            .add(this.OFFSET)
+        const s =
+            (BigInt(1) * BigInt(this.FACTOR_TIMES_100) * BigInt(size)) / BigInt(100) +
+            BigInt(this.OFFSET)
         // return a size which is a multiple of hashes for optimal blocklength
-        return s.add(-s.mod(this.HASHES)).toInt()
+        return Number(s + (-s % BigInt(this.HASHES)))
     }
 
     /**
@@ -227,15 +214,16 @@ export default class XorFilter extends BaseFilter {
      * @param buffer
      * @returns
      */
-    public _readBuffer(buffer: Buffer): number {
+    public _readBuffer(buffer: Uint8Array): number {
         let val: number
+        const view = new DataView(buffer.buffer)
         switch (this._bits) {
             case 16:
-                val = buffer.readInt16LE()
+                val = view.getUint16(0, true)
                 break
             case 8:
             default:
-                val = buffer.readInt8()
+                val = view.getUint8(0)
                 break
         }
         return val
@@ -261,7 +249,7 @@ export default class XorFilter extends BaseFilter {
      * @returns
      */
     public _hashable_to_long(element: HashableInput, seed: SeedType) {
-        return Long.fromString(Hashing.lib.xxh64(element, BigInt(seed)).toString(10), 10)
+        return Long.fromString(this._hashing._lib.xxh64(element, seed).toString(10), 10)
     }
 
     /**
@@ -412,8 +400,9 @@ export default class XorFilter extends BaseFilter {
                 }
             }
             // the value is in 32 bits format, so we must cast it to the desired number of bytes
-            const buf = Buffer.from(allocateArray(4, 0))
-            buf.writeInt32LE(xor)
+            const buf = new Uint8Array(4)
+            const view = new DataView(buf.buffer)
+            view.setInt32(0, xor, true)
             this._filter[change] = buf.slice(0, this._bits / 8)
         }
     }
@@ -433,7 +422,7 @@ export default class XorFilter extends BaseFilter {
         bl.seed = importBigInt(element._seed)
         bl._size = element._size
         bl._blockLength = element._blockLength
-        bl._filter = element._filter.map((e: string) => Buffer.from(decode(e)))
+        bl._filter = element._filter.map((e: string) => new Uint8Array(decode(e)))
         return bl
     }
 }
