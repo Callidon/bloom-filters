@@ -42,13 +42,6 @@ JavaScript/TypeScript implementation of probabilistic data structures: Bloom Fil
 npm install bloom-filters --save
 ```
 
-**Supported platforms**
-
-- [Node.js](https://nodejs.org): _v4.0.0_ or higher
-- [Google Chrome](https://www.google.com/intl/en/chrome/): _v41_ or higher
-- [Mozilla Firefox](https://www.mozilla.org/en-US/firefox/new/): _v34_ or higher
-- [Microsoft Edge](https://www.microsoft.com/en-US/edge): _v12_ or higher
-
 ## Data structures
 
 ### Classic Bloom Filter
@@ -437,20 +430,18 @@ for (let item of topk.values()) {
 An Invertible Bloom Filters (IBLT), also called Invertible Bloom Lookup Table, is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
 They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction, in that it randomly combines elements using the XOR function.
 
-❗️**WARNING**❗️ An IBLT only accepts [`Buffer`](https://nodejs.org/api/buffer.html) as inputs. If you are using `bloom-filters` in a Web browser, you might consider using the [`feros/buffer`](https://www.npmjs.com/package/buffer) package, which provides a polyfill for `Buffer` in a browser.
-
 **Reference:** Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). _What's the difference?: efficient set reconciliation without prior context._ ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
-([Full text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf))
+([Full text article](https://conferences.sigcomm.org/sigcomm/2011/papers/sigcomm/p218.pdf))
 
 #### Methods
 
-- `add(element: Buffer) -> void`: add an element into the filter.
-- `remove(element: Buffer) -> void`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
-- `has(element: Buffer) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
+- `add(element: string) -> void`: add an element into the filter.
+- `remove(element: string) -> void`: delete an element from the filter, returning True if the deletion was a success and False otherwise.
+- `has(element: string) -> boolean`: Test an element for membership, returning False if the element is definitively not in the filter and True is the element might be in the filter.
 - `equals(other: InvertibleBloomFilter) -> boolean`: Test if two filters are equals.
 - `substract(remote: InvertibleBloomFilter)`: peform the XOR substraction of two IBLTs.
-- `decode() -> {additional: Buffer[], missing: Buffer[]} `: decode an IBLT.
-- `listEntries() -> Generator<Buffer, number, void>`: list all entries in the IBLT using a Generator.
+- `decode() -> {additional: string[], missing: string[]} `: decode an IBLT.
+- `listEntries() -> string[]`: list all entries in the IBLT using a Generator.
 
 ```javascript
 const {InvertibleBloomFilter} = require('bloom-filters')
@@ -460,24 +451,24 @@ const size = 50
 const iblt = new InvertibleBloomFilter(size, hashcount)
 
 // push some data in the IBLT
-iblt.add(Buffer.from('alice'))
-iblt.add(Buffer.from('42'))
-iblt.add(Buffer.from('help'))
-iblt.add(Buffer.from('meow'))
-iblt.add(Buffer.from('json'))
+iblt.add('alice')
+iblt.add('42')
+iblt.add('help')
+iblt.add('meow')
+iblt.add('json')
 
-console.log(ilbt.has(Buffer.from('alice'))) // output: true
-console.log(ilbt.has(Buffer.from('daniel'))) // output: false
+console.log(ilbt.has('alice')) // output: true
+console.log(ilbt.has('daniel')) // output: false
 
-iblt.remove(Buffer.from('alice'))
-console.log(ilbt.has(Buffer.from('alice'))) // output: false
+iblt.remove('alice')
+console.log(ilbt.has('alice')) // output: false
 
 // Now, let's demonstrate the decoding power of IBLT!
 const remote = new InvertibleBloomFilter(size, hashcount)
-remote.add(Buffer.from('alice'))
-remote.add(Buffer.from('car'))
-remote.add(Buffer.from('meow'))
-remote.add(Buffer.from('help'))
+remote.add('alice')
+remote.add('car')
+remote.add('meow')
+remote.add('help')
 
 // decode the difference between the two filters
 const result = iblt.substract(remote).decode()
@@ -489,17 +480,9 @@ console.log(
   `Elements of iblt missing elements from remote: ${result.additional}`
 )
 console.log(`Elements of remote missing elements from iblt: ${result.missing}`)
-
-// alternatively, create an IBLT optimal for a number of items and a desired error rate
-const items = [Buffer.from('alice'), Buffer.from('bob')]
-const errorRate = 0.04 // 4 % error rate
-filter = InvertibleBloomFilter.create(items.length, errorRate)
-
-// or create an IBLT optimal for a collections of items and a desired error rate
-filter = InvertibleBloomFilter.from(items, errorRate)
 ```
 
-**Tuning the IBLT** We recommend to use at least a **hashcount** of 3 and an **alpha** of 1.5 for at least 50 differences, which equals to 1.5\*50 = 75 cells. Then, if you insert a huge number of values in there, the decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic, based on the number of elements inserted (Even for the functions like listEntries). For more details, you should read the seminal research paper on IBLTs ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
+**Tuning the IBLT** We recommend to use at least a **hashcount** of 3 and an **alpha** of 1.5 for at least 50 differences, which equals to 1.5\*50 = 75 cells. Then, if you insert a huge number of values in there, the decoding will work (whatever the number of differences less than 50) but testing the presence of a value is still probabilistic, based on the number of elements inserted (Even for the functions like listEntries). For more details, you should read the research paper on IBLTs ([full-text article](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf)).
 
 ### XOR Filter
 
@@ -519,7 +502,6 @@ Very usefull for space efficiency of readonly sets.
 ---
 
 - Extended input types: `type XorHashableInput = HashableInput | Long`
-- We use Buffers internally which are exported/imported to/from `base64` strings.
 
 ```javascript
 const {XorFilter} = require('bloom-filters')
@@ -619,7 +601,7 @@ When submitting pull requests please follow the following guidance:
 - [Count Min Sketch](http://vaffanculo.twiki.di.uniroma1.it/pub/Ing_algo/WebHome/p14_Cormode_JAl_05.pdf): Cormode, G., & Muthukrishnan, S. (2005). _An improved data stream summary: the count-min sketch and its applications._ Journal of Algorithms, 55(1), 58-75.
 - [HyperLogLog](http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf): Philippe Flajolet, Éric Fusy, Olivier Gandouet and Frédéric Meunier (2007). _"Hyperloglog: The analysis of a near-optimal cardinality estimation algorithm"_. Discrete Mathematics and Theoretical Computer Science Proceedings.
 - [MinHash](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.24.779&rep=rep1&type=pdf): Andrei Z. Broder, _"On the resemblance and containment of documents"_, in Compression and Complexity of Sequences: Proceedings (1997).
-- [Invertible Bloom Filters](http://www.sysnet.ucsd.edu/sysnet/miscpapers/EppGooUye-SIGCOMM-11.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). _What's the difference?: efficient set reconciliation without prior context._ ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
+- [Invertible Bloom Filters](https://conferences.sigcomm.org/sigcomm/2011/papers/sigcomm/p218.pdf): Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). _What's the difference?: efficient set reconciliation without prior context._ ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
 - [Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters](https://arxiv.org/abs/1912.08258) Thomas Mueller Graf, Daniel Lemire, Journal of Experimental Algorithmics 25 (1), 2020. DOI: 10.1145/3376122
 - [Scalable Bloom Filters](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.725.390&rep=rep1&type=pdf) ALMEIDA, Paulo Sérgio, BAQUERO, Carlos, PREGUIÇA, Nuno, et al. _Scalable bloom filters_. Information Processing Letters, 2007, vol. 101, no 6, p. 255-261.
 

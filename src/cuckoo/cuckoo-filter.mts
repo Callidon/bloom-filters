@@ -67,6 +67,10 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         this._maxKicks = maxKicks
     }
 
+    public hash(element: HashableInput) {
+        return this._hashing._lib.xxh64(element, this.seed)
+    }
+
     /**
      * Return a new optimal CuckooFilter given the number of maximum elements to store and the error rate desired
      * @param  size - The number of items to store
@@ -179,7 +183,7 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
                 this._filter[index].set(rndIndex, movedElement)
                 movedElement = tmp
                 // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
-                const newHash = this._hashing.hashAsInt(movedElement, this.seed)
+                const newHash = this.hash(movedElement)
                 index = Number(
                     getBigIntAbs(BigInt(index) ^ getBigIntAbs(newHash)) %
                         BigInt(this._filter.length),
@@ -302,7 +306,7 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         }
         const fingerprint = hashes.string.substring(0, this._fingerprintLength)
         const firstIndex = getBigIntAbs(hash)
-        const secondHash = getBigIntAbs(this._hashing.hashAsInt(fingerprint, this.seed))
+        const secondHash = getBigIntAbs(this.hash(fingerprint))
         const secondIndex = firstIndex ^ secondHash
         const res = {
             fingerprint,

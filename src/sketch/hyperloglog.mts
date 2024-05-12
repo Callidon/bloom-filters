@@ -70,6 +70,10 @@ export default class HyperLogLog extends BaseFilter {
         this._registers = allocateArray(this._nbRegisters, 0)
     }
 
+    public hash(element: HashableInput) {
+        return this._hashing._lib.xxh64(element, this.seed)
+    }
+
     /**
      * Get the number of registers used by the HyperLogLog
      */
@@ -83,7 +87,7 @@ export default class HyperLogLog extends BaseFilter {
      */
     public update(element: HashableInput): void {
         // const hashedValue = Buffer.from(hashAsString(element, this.seed))
-        const hashedValue = this._hashing.hashAsInt(element, this.seed).toString(2)
+        const hashedValue = this.hash(element).toString(2)
         const registerIndex = 1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
         // find the left most 1-bit in the second part of the buffer
         const secondPart = hashedValue.slice(this._nbBytesPerHash)
@@ -108,10 +112,13 @@ export default class HyperLogLog extends BaseFilter {
         let estimation = (this._correctionBias * Math.pow(this._nbRegisters, 2)) / harmonicMean
 
         // use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
-        /*if (estimation < ((5/2) * this._nbRegisters) && this._registers.some(value => value === 0)) {
-      const nbZeroRegisters = this._registers.filter(value => value === 0).length
-      estimation = this._nbRegisters * Math.log(this._nbRegisters / nbZeroRegisters)
-    }*/
+        if (
+            estimation < (5 / 2) * this._nbRegisters &&
+            this._registers.some(value => value === 0)
+        ) {
+            const nbZeroRegisters = this._registers.filter(value => value === 0).length
+            estimation = this._nbRegisters * Math.log(this._nbRegisters / nbZeroRegisters)
+        }
 
         // correct the estimation for very large registers
         if (estimation > TWO_POW_32 / 30) {

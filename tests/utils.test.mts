@@ -1,17 +1,7 @@
 import { expect, test } from '@jest/globals'
-import {
-    Hashing,
-    BloomFilter,
-    BaseFilter,
-    allocateArray,
-    randomInt,
-    xorBuffer,
-    getDefaultSeed,
-    isEmptyBuffer,
-} from '../src/index.mjs'
-import range from 'lodash.range'
+import { Hashing, BloomFilter, allocateArray, randomInt, xorUint8Array } from '../src/index.mjs'
 
-const seed = getDefaultSeed()
+const seed = BigInt(randomInt(1, Number.MAX_SAFE_INTEGER))
 
 test('should allocate an array with the given size and a default value', () => {
     const array = allocateArray(15, 1)
@@ -53,88 +43,67 @@ test('should generate a random int in an interval', () => {
     expect(values).toContain(randomInt(values[0], values[9]))
 })
 
-test('should xor correctly 2 Buffers', () => {
-    const a = Buffer.allocUnsafe(10).fill(0)
-    const b = Buffer.alloc(1, 1)
-    const res = Buffer.allocUnsafe(10).fill(0)
+test('should xor correctly 2 Uint8Array', () => {
+    const a = new Uint8Array(10).fill(0)
+    const b = new Uint8Array([1])
+    const res = new Uint8Array(10).fill(0)
     res[res.length - 1] = 1
-    // xor(a, b) = <Buffer 00 00 00 00 00 00 00 00 00 01>
-    expect(xorBuffer(Buffer.from(a), Buffer.from(b)).toString()).toEqual(b.toString())
-    // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
-    expect(xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(b)).toString()).toEqual(
-        Buffer.from('').toString(),
+    expect(xorUint8Array(Uint8Array.from(a), Uint8Array.from(b)).toString()).toEqual(b.toString())
+    expect(
+        xorUint8Array(
+            xorUint8Array(Uint8Array.from(a), Uint8Array.from(b)),
+            Uint8Array.from(b),
+        ).toString(),
+    ).toEqual(Uint8Array.from([]).toString())
+    expect(
+        xorUint8Array(
+            xorUint8Array(Uint8Array.from(a), Uint8Array.from(b)),
+            Uint8Array.from(a),
+        ).toString(),
+    ).toEqual(Uint8Array.from(b).toString())
+    expect(
+        xorUint8Array(
+            xorUint8Array(Uint8Array.from(a), Uint8Array.from(a)),
+            Uint8Array.from(a),
+        ).toString(),
+    ).toEqual(Uint8Array.from([]).toString())
+    expect(
+        xorUint8Array(
+            xorUint8Array(Uint8Array.from(b), Uint8Array.from(b)),
+            Uint8Array.from(b),
+        ).toString(),
+    ).toEqual(Uint8Array.from(b).toString())
+})
+
+test('should xor resize correctly', () => {
+    expect(xorUint8Array(Uint8Array.from([0, 1]), Uint8Array.from([1, 1, 1, 1, 1]))).toEqual(
+        Uint8Array.from([1, 1, 1, 1, 0]),
     )
-    // xor(xor(a, b), a) === b
-    expect(xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(a)).toString()).toEqual(
-        Buffer.from(b).toString(),
-    )
-    // xor(xor(a, a), a) === a
-    expect(xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(a)), Buffer.from(a)).toString()).toEqual(
-        Buffer.from('').toString(),
-    )
-    // xor(xor(b, b), b) === a
-    expect(xorBuffer(xorBuffer(Buffer.from(b), Buffer.from(b)), Buffer.from(b)).toString()).toEqual(
-        Buffer.from(b).toString(),
+    expect(xorUint8Array(Uint8Array.from([1, 1, 1, 1, 1]), Uint8Array.from([0, 1]))).toEqual(
+        Uint8Array.from([1, 1, 1, 1, 0]),
     )
 })
+
 test('should xor correctly', () => {
-    let a = Buffer.allocUnsafe(1).fill(1)
-    let b = Buffer.allocUnsafe(1).fill(1)
+    const encoder = new TextEncoder()
+    let a = new Uint8Array([1])
+    let b = new Uint8Array([1])
     const max = 100
-    let last: Buffer = Buffer.allocUnsafe(0)
+    let last: Uint8Array = new Uint8Array([])
     for (let i = 0; i < max; i++) {
         const s = Hashing.lib.xxh64(i.toString(), seed).toString(16)
-        const buf = Buffer.from(s)
-        a = xorBuffer(a, buf)
+        const buf = Uint8Array.from(encoder.encode(s))
+        a = xorUint8Array(a, buf)
         if (i !== max - 1) {
-            b = xorBuffer(buf, b)
+            b = xorUint8Array(buf, b)
         } else {
             last = buf
         }
     }
-    expect(xorBuffer(a, b).equals(last)).toBe(true)
-    expect(xorBuffer(a, b).toString()).toEqual(last.toString())
-    expect(xorBuffer(a, a).equals(Buffer.allocUnsafe(0))).toBe(true)
-    expect(xorBuffer(b, b).equals(Buffer.allocUnsafe(0))).toBe(true)
-})
-
-test('should return true if a buffer is empty', () => {
-    expect(isEmptyBuffer(Buffer.allocUnsafe(10).fill(0))).toBe(true)
-    expect(isEmptyBuffer(Buffer.allocUnsafe(0).fill(0))).toBe(true)
-})
-test('should return false if a buffer is not empty', () => {
-    expect(isEmptyBuffer(Buffer.allocUnsafe(10).fill(1))).toBe(false)
-})
-
-const key = 'da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82'
-const desiredIndices = 10000
-const result = range(0, desiredIndices, 1)
-test(`should return ${desiredIndices.toString()} distinct indices on the interval [0, ${desiredIndices.toString()})`, () => {
-    try {
-        const obj = new (class extends BaseFilter {})()
-        const start = new Date().getTime()
-        const indices = obj._hashing
-            .getDistinctIndexes(key, desiredIndices, desiredIndices, seed)
-            .sort((a, b) => a - b)
-        expect(indices).toEqual(result)
-        console.log(
-            `Generated ${indices.length.toString()} distinct indices on the interval [0, ${desiredIndices.toString()}) in ${(
-                new Date().getTime() - start
-            ).toString()} ms`,
-        )
-    } catch (e) {
-        throw e
-    }
-})
-
-test('should not be endlessly recurive the (Issue: #34)', () => {
-    try {
-        const filter = new BloomFilter(39, 28)
-        filter.add(key)
-        expect(filter.has(key)).toBe(true)
-    } catch (e) {
-        throw e
-    }
+    expect(xorUint8Array(a, b)).toEqual(last)
+    expect(xorUint8Array(a, b).toString()).toEqual(last.toString())
+    expect(xorUint8Array(a, a)).toEqual(new Uint8Array([]))
+    expect(xorUint8Array(b, b)).toEqual(new Uint8Array([]))
 })
 
 test('overriding serialize function by always returning Number(1)', () => {

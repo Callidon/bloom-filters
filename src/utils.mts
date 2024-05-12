@@ -1,15 +1,6 @@
 import { SeedType } from './types.mjs'
 
 /**
- * BufferError
- */
-export const BufferError = `
-    No native Buffer implementation found.
-    If you are in a Web browser, consider importing the polyfill "feross/buffer".
-    Links: (https://github.com/feross/buffer, https://www.npmjs.com/package/buffer)
-`
-
-/**
  * Create a new array fill with a base value
  * @param size - The size of the array
  * @param defaultValue - The default value used to fill the array. If it's a function, it will be invoked to get the default value.
@@ -59,15 +50,15 @@ export function randomInt(min: number, max: number, random?: () => number): numb
 }
 
 /**
- * Return the non-destructive XOR of two buffers
- * @param a - The buffer to copy, then to xor with b
- * @param b - The buffer to xor with
- * @return The results of the XOR between the two buffers
+ * Return the non-destructive XOR of two Uint8Array
+ * @param a - The Uint8Array to copy, then to xor with b
+ * @param b - The Uint8Array to xor with
+ * @return The results of the XOR between the two Uint8Array
  * @author Arnaud Grall
  */
-export function xorBuffer(a: Buffer, b: Buffer): Buffer {
+export function xorUint8Array(a: Uint8Array, b: Uint8Array): Uint8Array {
     const length = Math.max(a.length, b.length)
-    const buffer = Buffer.allocUnsafe(length).fill(0)
+    const buffer = new Uint8Array(length).fill(0)
     for (let i = 0; i < length; ++i) {
         if (i < a.length && i < b.length) {
             buffer[length - i - 1] = a[a.length - i - 1] ^ b[b.length - i - 1]
@@ -85,23 +76,7 @@ export function xorBuffer(a: Buffer, b: Buffer): Buffer {
         start++
         value = it.next()
     }
-    return Buffer.from(Uint8Array.prototype.slice.call(buffer, start))
-}
-
-/**
- * Return true if the buffer is empty, i.e., all value are equals to 0.
- * @param  buffer - The buffer to inspect
- * @return True if the buffer only contains zero, False otherwise
- * @author Arnaud Grall
- */
-export function isEmptyBuffer(buffer: Buffer | null): boolean {
-    if (buffer === null) return true
-    for (const value of buffer) {
-        if (value !== 0) {
-            return false
-        }
-    }
-    return true
+    return Uint8Array.prototype.slice.call(buffer, start)
 }
 
 /**
@@ -144,4 +119,10 @@ export function exportBigInt(value: bigint): ExportedBigInt {
  */
 export function importBigInt(value: ExportedBigInt) {
     return BigInt(value.$bf$bigint)
+}
+
+const max = 2n ** (64n - 1n) - 1n
+export function bigIntToNumber(int: bigint): number {
+    if (int > max) throw new Error("Number doesn't fit in signed 64-bit integer!")
+    return Number(BigInt.asIntN(64, int))
 }

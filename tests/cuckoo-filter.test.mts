@@ -9,8 +9,7 @@ test('should compute the fingerprint and indexes for an element', () => {
     const fingerprint = hashes.string.substring(0, 3)
 
     const firstIndex = getBigIntAbs(hash)
-    const secondIndex =
-        firstIndex ^ getBigIntAbs(filter._hashing.hashAsInt(fingerprint, filter.seed))
+    const secondIndex = firstIndex ^ getBigIntAbs(filter.hash(fingerprint))
 
     const locations = filter._locations(element)
     expect(fingerprint).toEqual(locations.fingerprint)

@@ -1,11 +1,9 @@
-import { ExportedBigInt, exportBigInt, importBigInt, xorBuffer } from '../utils.mjs'
-import BaseFilter from '../base-filter.mjs'
+import { xorUint8Array } from '../utils.mjs'
 
 export interface ExportedCell {
-    _idSum: string
-    _hashSum: string
+    _idSum: number[]
+    _hashSum: number
     _count: number
-    _seed: ExportedBigInt
 }
 
 /**
@@ -14,20 +12,19 @@ export interface ExportedCell {
  * @author Arnaud Grall
  * @author Thomas Minier
  */
-export default class Cell extends BaseFilter {
-    public _idSum: Buffer
-    public _hashSum: Buffer
+export default class Cell {
+    public _idSum: Uint8Array
+    public _hashSum: number
     public _count: number
 
     /**
      * Constructor.
      * To create an empty cell, you might want to use the static Cell#empty() method.
      * @param idSum - The XOR of all element inserted in that cell
-     * @param hashSum - The XOR of all hashed element in that cell
+     * @param hashSum - The XOR of all hashed elements in that cell
      * @param count - The number of elements inserted in that cell
      */
-    constructor(idSum: Buffer, hashSum: Buffer, count: number) {
-        super()
+    constructor(idSum: Uint8Array, hashSum: number, count: number) {
         this._idSum = idSum
         this._hashSum = hashSum
         this._count = count
@@ -38,28 +35,7 @@ export default class Cell extends BaseFilter {
      * @return An empty Cell
      */
     public static empty(): Cell {
-        return new Cell(Buffer.allocUnsafe(0).fill(0), Buffer.allocUnsafe(0).fill(0), 0)
-    }
-
-    /**
-     * Get the id sum of the Cell (The XOR of all element inserted in that cell)
-     */
-    public get idSum(): Buffer {
-        return this._idSum
-    }
-
-    /**
-     * Get the hash sum of the Cell (The XOR of all hashed element in that cell)
-     */
-    public get hashSum(): Buffer {
-        return this._hashSum
-    }
-
-    /**
-     * Get the number of elements inserted in that cell
-     */
-    get count(): number {
-        return this._count
+        return new Cell(Uint8Array.from([]), 0, 0)
     }
 
     /**
@@ -67,9 +43,9 @@ export default class Cell extends BaseFilter {
      * @param idSum - The element to XOR in this cell
      * @param hashSum - The hash of the element to XOR in this cell
      */
-    public add(idSum: Buffer, hashSum: Buffer): void {
-        this._idSum = xorBuffer(this._idSum, idSum)
-        this._hashSum = xorBuffer(this._hashSum, hashSum)
+    public add(idSum: Uint8Array, hashSum: number): void {
+        this._idSum = xorUint8Array(this._idSum, idSum)
+        this._hashSum = this._hashSum ^ hashSum
         this._count++
     }
 
@@ -82,9 +58,9 @@ export default class Cell extends BaseFilter {
      */
     public xorm(cell: Cell): Cell {
         return new Cell(
-            xorBuffer(this._idSum, cell.idSum),
-            xorBuffer(this._hashSum, cell.hashSum),
-            this._count - cell.count,
+            xorUint8Array(this._idSum, cell._idSum),
+            this._hashSum ^ cell._hashSum,
+            this._count - cell._count,
         )
     }
 
@@ -94,10 +70,14 @@ export default class Cell extends BaseFilter {
      */
     public isEmpty(): boolean {
         return (
-            this._idSum.equals(Buffer.from('')) &&
-            this._hashSum.equals(Buffer.from('')) &&
+            this.arrayEqual(this._idSum, Uint8Array.from([])) &&
+            this._hashSum === 0 &&
             this._count === 0
         )
+    }
+
+    public arrayEqual(a: Uint8Array, b: Uint8Array): boolean {
+        return a.every((v, i) => v === b[i])
     }
 
     /**
@@ -107,46 +87,21 @@ export default class Cell extends BaseFilter {
      */
     public equals(cell: Cell): boolean {
         return (
-            this._count === cell.count &&
-            this._idSum.equals(cell.idSum) &&
-            this._hashSum.equals(cell.hashSum)
+            this._count === cell._count &&
+            this.arrayEqual(this._idSum, cell._idSum) &&
+            this._hashSum === cell._hashSum
         )
-    }
-
-    /**
-     * Test if the cell is "Pure".
-     * A pure cell is a cell with a counter equal to 1 or -1, and with a hash sum equal to the id sum
-     * @return True if the cell ius pure, False otherwise
-     */
-    public isPure(): boolean {
-        // A pure cell cannot be empty or must have a count equals to 1 or -1
-        if (this.isEmpty() || (this._count !== 1 && this._count !== -1)) {
-            return false
-        }
-        // compare the hashes
-        const hashes = this._hashing.hashTwiceAsString(
-            JSON.stringify(this._idSum.toJSON()),
-            this.seed,
-        )
-        return this._hashSum.equals(Buffer.from(hashes.first))
     }
 
     public saveAsJSON(): ExportedCell {
         return {
-            _idSum: this._idSum.toString(),
-            _hashSum: this._hashSum.toString(),
+            _idSum: Array.from(this._idSum),
+            _hashSum: this._hashSum,
             _count: this._count,
-            _seed: exportBigInt(this._seed),
         }
     }
 
     public static fromJSON(element: ExportedCell): Cell {
-        const filter = new Cell(
-            Buffer.from(element._idSum),
-            Buffer.from(element._hashSum),
-            element._count,
-        )
-        filter.seed = importBigInt(element._seed)
-        return filter
+        return new Cell(Uint8Array.from(element._idSum), element._hashSum, element._count)
     }
 }

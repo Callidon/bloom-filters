@@ -14,7 +14,7 @@
     "build:webpack": "webpack --config webpack.config.cjs",
     "build:examples": "yarn build:rspack && yarn build:webpack",
     "build": "tsc",
-    "build:ci": "yarn build && yarn examples",
+    "build:ci": "yarn build && yarn build:examples",
     "preview:rspack": "rspack preview --config rspack.config.cjs",
     "preview:webpack": "webpack serve --config webpack.config.cjs",
     "prettier": "prettier --config package.json --write \"(src|tests)/**/*.mts\"",
