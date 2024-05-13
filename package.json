@@ -80,6 +80,7 @@
     "html-webpack-plugin": "^5.6.0",
     "jest": "^29.7.0",
     "lodash.intersection": "^4.4.0",
+    "lodash.range": "^3.2.0",
     "lodash.union": "^4.6.0",
     "minify": "^11.1.1",
     "prettier": "^3.2.5",
@@ -102,7 +103,6 @@
     "lodash.eq": "^4.0.0",
     "lodash.indexof": "^4.0.5",
     "lodash.random": "^3.2.0",
-    "lodash.range": "^3.2.0",
     "lodash.sortedindexby": "^4.6.0",
     "long": "^5.2.3",
     "seedrandom": "^3.0.5"
