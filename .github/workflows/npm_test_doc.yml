@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         # Only LTS major version
-        # node-version: ['18', '19', '20', '21', '22', 'lts/*'] 
-        node-version: ['lts/*'] 
+        node-version: ['18', '19', '20', '21', '22', 'lts/*'] 
+        # node-version: ['lts/*'] 
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
