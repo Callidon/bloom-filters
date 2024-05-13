@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { CuckooFilter, getBigIntAbs } from '../src/index.mjs'
+import { CuckooFilter, ExportedCuckooFilter, getBigIntAbs } from '../src/index.mjs'
 
 test('should compute the fingerprint and indexes for an element', () => {
     const filter = new CuckooFilter(15, 3, 2, 1)
@@ -90,14 +90,14 @@ test('should not rollback to its initial state in case the filter is full with o
     expect(filter.add('i')).toBe(true)
     expect(filter.add('j')).toBe(true)
     expect(filter.add('k')).toBe(true)
-    const snapshot = filter.saveAsJSON()
+    const snapshot = JSON.stringify(filter.saveAsJSON())
     // if true should throw
     expect(() => filter.add('l', true, true)).toThrow(Error)
     // if false, true should be destructive and should have changed
-    expect(filter.add('l', false, true)).toBe(false)
-    const snapshot2 = filter.saveAsJSON()
+    expect(filter.add('m', false, true)).toBe(false)
+    const snapshot2 = JSON.stringify(filter.saveAsJSON())
     expect(snapshot2).not.toEqual(snapshot)
-    const imported = CuckooFilter.fromJSON(snapshot)
+    const imported = CuckooFilter.fromJSON(JSON.parse(snapshot) as ExportedCuckooFilter)
     expect(filter.equals(imported)).toBe(false)
 })
 
