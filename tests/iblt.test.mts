@@ -133,9 +133,6 @@ test.each(range(0, 10).map(r => [r, BigInt(randomInt(1, Number.MAX_SAFE_INTEGER)
         expect(sub._elements.some(c => sub.isCellPure(c)))
 
         const res = sub.decode()
-        if (!res.success) {
-            const decoder = new TextDecoder()
-        }
         expect(res.success).toBe(true)
 
         expect(res.additional.sort()).toEqual(setDiffplus.sort())
