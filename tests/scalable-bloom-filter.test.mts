@@ -17,7 +17,7 @@ test('should #has return false for an empty filter', () => {
     expect(filter.has('alice')).toBe(false)
 })
 test('should #has return correct values with added values', () => {
-    const filter = ScalableBloomFilter.create(9, targetRate)
+    const filter = ScalableBloomFilter.create(9, 0.0001)
     filter.seed = seed
     filter.add('alice')
     filter.add('bob')
