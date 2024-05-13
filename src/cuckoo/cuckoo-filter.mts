@@ -4,6 +4,7 @@ import Bucket, { ExportedBucket } from './bucket.mjs'
 import {
     ExportedBigInt,
     allocateArray,
+    bigIntToNumber,
     exportBigInt,
     getBigIntAbs,
     importBigInt,
@@ -172,8 +173,9 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         } else if (this._filter[locations.secondIndex].isFree()) {
             this._filter[locations.secondIndex].add(locations.fingerprint)
         } else {
+            console.log(element, throwError, destructive)
             // buckets are full, we must relocate one of them
-            let index = this.random.quick() < 0.5 ? locations.firstIndex : locations.secondIndex
+            let index = this.random() < 0.5 ? locations.firstIndex : locations.secondIndex
             let movedElement: string = locations.fingerprint
             const logs: [number, number, string | null][] = []
             for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
@@ -184,7 +186,7 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
                 movedElement = tmp
                 // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
                 const newHash = this.hash(movedElement)
-                index = Number(
+                index = bigIntToNumber(
                     getBigIntAbs(BigInt(index) ^ getBigIntAbs(newHash)) %
                         BigInt(this._filter.length),
                 )
@@ -310,8 +312,8 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         const secondIndex = firstIndex ^ secondHash
         const res = {
             fingerprint,
-            firstIndex: Number(firstIndex % BigInt(this._size)),
-            secondIndex: Number(secondIndex % BigInt(this._size)),
+            firstIndex: bigIntToNumber(firstIndex % BigInt(this._size)),
+            secondIndex: bigIntToNumber(secondIndex % BigInt(this._size)),
         }
         return res
     }
