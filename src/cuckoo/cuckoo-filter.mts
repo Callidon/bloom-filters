@@ -173,7 +173,6 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         } else if (this._filter[locations.secondIndex].isFree()) {
             this._filter[locations.secondIndex].add(locations.fingerprint)
         } else {
-            console.log(element, throwError, destructive)
             // buckets are full, we must relocate one of them
             let index = this.random() < 0.5 ? locations.firstIndex : locations.secondIndex
             let movedElement: string = locations.fingerprint

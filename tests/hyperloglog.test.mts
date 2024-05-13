@@ -22,7 +22,6 @@ test('should support update and cardinality estimations (count) operations', () 
 
     for (const relative_err of relative_errors) {
         try {
-            console.log(exact_count, n, n * relative_err)
             expect(n - exact_count).toBeLessThan(n * relative_err)
             error = false
             break
