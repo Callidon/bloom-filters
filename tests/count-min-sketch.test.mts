@@ -106,13 +106,6 @@ const random = () => {
 }
 test(`should not return an error when inserting ${max.toString()} elements`, () => {
     const filter = CountMinSketch.create(rate, delta)
-    // error rate 0.001, probability of wrong answer: 0.001
-    // console.log('number of rows:', filter._rows)
-    // console.log('number of columns:', filter._columns)
-    // console.log('Probability: ', 1 - delta)
-    // console.log('Error rate: ', errorRate)
-    // console.log('Relative accuracy is: ', 1 + errorRate * max, ' with probability: ', 1 - delta)
-    // add n times max elements so we got a frequency of 10 for each elements
     let error = 0
     const map = new Map<string, number>()
     for (let i = 0; i < max; ++i) {
@@ -134,7 +127,6 @@ test(`should not return an error when inserting ${max.toString()} elements`, () 
             const est = retrievedItem + rate * filter.sum
             if (count > est) {
                 error += 1
-                // console.log('[%d] => â: %d, a: %d', item, count, map.get(item), est)
             }
         }
     }

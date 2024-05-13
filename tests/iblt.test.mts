@@ -135,16 +135,6 @@ test.each(range(0, 10).map(r => [r, BigInt(randomInt(1, Number.MAX_SAFE_INTEGER)
         const res = sub.decode()
         if (!res.success) {
             const decoder = new TextDecoder()
-            console.log(
-                res.reason,
-                res.reason?.cells.map(c => [
-                    decoder.decode(c._idSum),
-                    sub.genHash(decoder.decode(c._idSum)),
-                    c._hashSum,
-                    sub.isCellPure(c),
-                    c._count,
-                ]),
-            )
         }
         expect(res.success).toBe(true)
 
