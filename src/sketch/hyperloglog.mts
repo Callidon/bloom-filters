@@ -3,7 +3,7 @@ import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../ut
 import { HashableInput } from '../types.mjs'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
-const TWO_POW_32 = Math.pow(2, 32)
+const TWO_POW_32 = 2 ** 32
 
 /**
  * Estimlate the bias-correction constant, denoted alpha in the algorithm, based on the number of registers.
@@ -12,22 +12,24 @@ const TWO_POW_32 = Math.pow(2, 32)
  * @return The estimated bias-correction constant
  */
 function computeAlpha(m: number): number {
-    switch (m) {
-        case 16:
-            return 0.673
-        case 32:
-            return 0.697
-        case 64:
-            return 0.709
-        default:
-            return 0.7213 / (1.0 + 1.079 / m)
+    if (m < 16) {
+        return 1
+    } else if (m < 32) {
+        return 0.673
+    } else if (m < 64) {
+        return 0.697
+    } else if (m < 128) {
+        return 0.709
+    } else {
+        // >= 128
+        return 0.7213 / (1.0 + 1.079 / m)
     }
 }
 
 export interface ExportedHyperLogLog {
     _seed: ExportedBigInt
-    _nbRegisters: number
-    _nbBytesPerHash: number
+    _m: number
+    _b: number
     _correctionBias: number
     _registers: number[]
 }
@@ -41,12 +43,12 @@ export default class HyperLogLog extends BaseFilter {
     /**
      * The number of registers, denoted m in the algorithm
      */
-    public _nbRegisters: number
+    public _m: number
 
     /**
-     * Number of bytes to take per hash, denoted b in the algorithm (b = log2(m))
+     * Number of bits to take per hash, denoted b in the algorithm (b = log2(m))
      */
-    public _nbBytesPerHash: number
+    public _b: number
 
     /**
      * The bias-correction constant, denoted alpha in the algorithm
@@ -59,26 +61,31 @@ export default class HyperLogLog extends BaseFilter {
     public _registers: number[]
 
     /**
+     * Hash size in bits of the hash function used.
+     * We use 64-bits hash function to avoid collisions for bigger sets but a 32-bits like the standard one would be enough for most cases
+     */
+    public HASH_SIZE = 64
+
+    /**
      * Constructor
-     * @param nbRegisters - The number of registers to use
+     * @param nbRegisters - The number of registers to use; should be a power of 2: 2^b with b in [4..16]
      */
     constructor(nbRegisters: number) {
         super()
-        this._nbRegisters = nbRegisters
-        this._nbBytesPerHash = Math.round(Math.log2(nbRegisters))
+        if ((nbRegisters & (nbRegisters - 1)) !== 0) {
+            throw new Error('The number of registers should be a power of 2')
+        }
+        this._m = nbRegisters
+        this._b = Math.ceil(Math.log2(nbRegisters))
         this._correctionBias = computeAlpha(nbRegisters)
-        this._registers = allocateArray(this._nbRegisters, 0)
-    }
-
-    public hash(element: HashableInput) {
-        return this._hashing._lib.xxh64(element, this.seed)
+        this._registers = allocateArray(this._m, 0)
     }
 
     /**
      * Get the number of registers used by the HyperLogLog
      */
     public get nbRegisters(): number {
-        return this._nbRegisters
+        return this._m
     }
 
     /**
@@ -86,17 +93,30 @@ export default class HyperLogLog extends BaseFilter {
      * @param element - Element to add
      */
     public update(element: HashableInput): void {
-        // const hashedValue = Buffer.from(hashAsString(element, this.seed))
-        const hashedValue = this.hash(element).toString(2)
-        const registerIndex = 1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
+        const x = this._hashing._lib
+            .xxh64(element, this.seed)
+            .toString(2)
+            .padStart(this.HASH_SIZE, '0')
+        const k = this.HASH_SIZE - this._b
+        // the first b bits are from the right
+        const first = x.slice(k)
+        // the last k are the next
+        const second = x.slice(0, k)
+        const registerIndex = parseInt(first, 2)
         // find the left most 1-bit in the second part of the buffer
-        const secondPart = hashedValue.slice(this._nbBytesPerHash)
-        let posLeftMost = 0
-        while (secondPart[posLeftMost] !== '1' && posLeftMost < secondPart.length - 1) {
-            posLeftMost++
+        // simple while loop
+        let leftmost_pos = k - 1
+        let found = false
+        let i = 0
+        while (!found && i < second.length) {
+            if (second[i] === '1') {
+                found = true
+                leftmost_pos = i
+            } else {
+                i++
+            }
         }
-        // update the register
-        this._registers[registerIndex] = Math.max(this._registers[registerIndex], posLeftMost)
+        this._registers[registerIndex] = Math.max(this._registers[registerIndex], leftmost_pos)
     }
 
     /**
@@ -105,38 +125,42 @@ export default class HyperLogLog extends BaseFilter {
      */
     public count(round = false): number {
         // Use the standard HyperLogLog estimator
-        const harmonicMean = this._registers.reduce(
+        const Z = this._registers.reduce(
             (acc: number, value: number) => acc + Math.pow(2, -value),
             0,
         )
-        let estimation = (this._correctionBias * Math.pow(this._nbRegisters, 2)) / harmonicMean
+        const raw_estimation = (this._correctionBias * this._m * this._m * 2) / Z
 
-        // use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
-        if (
-            estimation < (5 / 2) * this._nbRegisters &&
-            this._registers.some(value => value === 0)
-        ) {
-            const nbZeroRegisters = this._registers.filter(value => value === 0).length
-            estimation = this._nbRegisters * Math.log(this._nbRegisters / nbZeroRegisters)
+        let corrected_estimation
+        if (raw_estimation <= (5 / 2) * this._m) {
+            // use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
+            const V = this._registers.filter(value => value === 0).length
+            if (V > 0) {
+                // small range correction: linear counting
+                corrected_estimation = this._m * Math.log(this._m / V)
+            } else {
+                corrected_estimation = raw_estimation
+            }
+        } else if (raw_estimation <= TWO_POW_32 / 30) {
+            // middle range correction; no correction
+            corrected_estimation = raw_estimation
+        } else {
+            // raw_estimation > TWO_POW_32 / 30
+            // large range correction
+            corrected_estimation = -TWO_POW_32 * Math.log(1 - raw_estimation / TWO_POW_32)
         }
-
-        // correct the estimation for very large registers
-        if (estimation > TWO_POW_32 / 30) {
-            estimation = -TWO_POW_32 * Math.log(1 - estimation / TWO_POW_32)
-        }
-        // round if required
         if (round) {
-            estimation = Math.round(estimation)
+            return Math.round(corrected_estimation)
         }
-        return estimation
+        return corrected_estimation
     }
 
     /**
-     * Compute the accuracy of the cardinality estimation produced by this HyperLogLog
-     * @return The accuracy of the cardinality estimation
+     * Compute the relative error of this filter: +/- 1.04/sqrt(m)
+     * @return The relative error
      */
-    public accuracy(): number {
-        return 1.04 / Math.sqrt(this._nbRegisters)
+    public relative_error(): number {
+        return 1.04 / Math.sqrt(this._m)
     }
 
     /**
@@ -176,8 +200,8 @@ export default class HyperLogLog extends BaseFilter {
 
     public saveAsJSON(): ExportedHyperLogLog {
         return {
-            _nbRegisters: this._nbRegisters,
-            _nbBytesPerHash: this._nbBytesPerHash,
+            _m: this._m,
+            _b: this._b,
             _correctionBias: this._correctionBias,
             _registers: this._registers,
             _seed: exportBigInt(this._seed),
@@ -185,12 +209,11 @@ export default class HyperLogLog extends BaseFilter {
     }
 
     public static fromJSON(element: ExportedHyperLogLog): HyperLogLog {
-        const filter = new HyperLogLog(element._nbRegisters)
+        const filter = new HyperLogLog(element._m)
         filter.seed = importBigInt(element._seed)
         filter._correctionBias = element._correctionBias
-        filter._nbBytesPerHash = element._nbBytesPerHash
-        filter._nbRegisters = element._nbRegisters
-        filter._registers = filter._registers
+        filter._b = element._b
+        filter._registers = element._registers
         return filter
     }
 }
