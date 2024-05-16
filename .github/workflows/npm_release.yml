@@ -11,11 +11,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     # Setup .npmrc file to publish to npm
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       with:
         node-version: 'lts/*'
         registry-url: 'https://registry.npmjs.org'
-    - run: yarn install
+    - name: Package install
+      run: npm install -g yarn@berry && yarn install
     - run: yarn build
     - run: yarn publish
       env:
