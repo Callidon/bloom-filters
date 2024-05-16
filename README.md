@@ -313,18 +313,19 @@ The HyperLogLog algorithm is able to estimate cardinalities greather than `10e9`
 const {HyperLogLog} = require('bloom-filters')
 
 // create a new HyperLogLog with 100 registers
-const sketch = new HyperLogLog(100)
+const sketch = new HyperLogLog(128)
+// push 10000 distinct elements
+const n = 2 ** 14
+for (let i = 0; i<n; i++) {
+    sketch.update(i.toString())
+}
 
-// push some occurrences in the sketch
-sketch.update('alice')
-sketch.update('alice')
-sketch.update('bob')
-
-// count occurrences
-console.log(sketch.count())
-
-// print accuracy
-console.log(sketch.accuracy())
+// print the relative error
+console.log(sketch.relative_error()) // 1.04 / Math.sqrt(128)
+// print the approximated number of distinct elements
+console.log(sket.count())
+// print the real error; should always be less than n * sketch.relative_error() * 3
+console.log(n - sketch.count())
 ```
 
 ### MinHash

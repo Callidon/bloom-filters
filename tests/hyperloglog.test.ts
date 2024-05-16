@@ -109,3 +109,16 @@ test('should create an HyperLogLog from a JSON export', () => {
     expect(newFilter._correctionBias).toEqual(sketch._correctionBias)
     expect(newFilter._registers).toEqual(sketch._registers)
 })
+
+test('issue#(https://github.com/Callidon/bloom-filters/issues/69)', () => {
+    // create a new HyperLogLog with 100 registers
+    const sketch = new HyperLogLog(128)
+    // push 10000 distinct elements
+    const n = 2 ** 14
+    for (let i = 0; i<n; i++) {
+        sketch.update(i.toString())
+    }
+    // count occurrences
+    expect(sketch.relative_error()).toEqual(1.04 / Math.sqrt(128))
+    expect(n - sketch.count()).toBeLessThan(n * sketch.relative_error() * 3)
+})
