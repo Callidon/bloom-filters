@@ -31,9 +31,11 @@ export default class CountingBloomFilter
      * Constructor
      * @param size - The size of the filter
      * @param nbHashes - The number of hash functions
+     * @param seed - (optional) the seed to use
      */
-    constructor(size: number, nbHashes: number) {
+    constructor(size: number, nbHashes: number, seed?: bigint) {
         super()
+        if (seed) this.seed = seed
         if (nbHashes < 1) {
             throw new Error(
                 `A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes.toString()} functions. Consider increasing it.`,
@@ -50,17 +52,19 @@ export default class CountingBloomFilter
      * Allocate a CountingBloomFilter with a target maximum capacity and error rate
      * @param  capacity - The maximum capacity of the filter
      * @param  errorRate - The error rate of the filter
+     * @param seed - (optional) the seed to use
      * @return A new {@link CountingBloomFilter}
      */
-    public static create(capacity: number, errorRate: number): CountingBloomFilter {
+    public static create(capacity: number, errorRate: number, seed?: bigint): CountingBloomFilter {
         const s = optimalFilterSize(capacity, errorRate)
-        return new CountingBloomFilter(s, optimalHashes(s, capacity))
+        return new CountingBloomFilter(s, optimalHashes(s, capacity), seed)
     }
 
     /**
      * Build a new Bloom Filter from an iterable with a fixed error rate
      * @param items - Iterable used to populate the filter
      * @param errorRate - The error rate of the filter
+     * @param seed - (optional) the seed to use
      * @return A new Bloom Filter filled with the iterable's elements
      * @example
      * ```js
@@ -68,9 +72,13 @@ export default class CountingBloomFilter
      * const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
      * ```
      */
-    public static from(items: Iterable<HashableInput>, errorRate: number): CountingBloomFilter {
+    public static from(
+        items: Iterable<HashableInput>,
+        errorRate: number,
+        seed?: bigint,
+    ): CountingBloomFilter {
         const array = Array.from(items)
-        const filter = CountingBloomFilter.create(array.length, errorRate)
+        const filter = CountingBloomFilter.create(array.length, errorRate, seed)
         array.forEach(element => {
             filter.add(element)
         })
