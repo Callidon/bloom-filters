@@ -85,7 +85,7 @@ export function xorUint8Array(a: Uint8Array, b: Uint8Array): Uint8Array {
  * @author Arnaud Grall
  */
 export function getDefaultSeed(): SeedType {
-    return BigInt(0x1234567890)
+    return BigInt('0x1234567890')
 }
 
 /**

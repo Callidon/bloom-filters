@@ -139,7 +139,7 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
 
     /**
      * Substract the filter with another {@link InvertibleBloomFilter}, and returns the resulting filter.
-     * @param  remote - The filter to substract with
+     * @param  iblt - The filter to substract with
      * @return A new InvertibleBloomFilter which is the XOR of the local and remote one
      */
     public substract(iblt: InvertibleBloomFilter): InvertibleBloomFilter {

@@ -122,7 +122,7 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
 
     /**
      * Check if another Count Min Sketch is equal to this one
-     * @param  filter - The filter to compare to this one
+     * @param  other - The filter to compare to this one
      * @return True if they are equal, false otherwise
      */
     public equals(other: CountMinSketch): boolean {

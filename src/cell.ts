@@ -7,8 +7,10 @@ export interface ExportedCell {
 }
 
 /**
- * A cell is an internal datastructure of an {@link InvertibleBloomFilter}.
- * It is composed of an idSum (the XOR of all element inserted in that cell), a hashSum (the XOR of all hashed element in that cell) and a counter (the number of elements inserted in that cell).
+ * @internal
+ * @private
+ * @see InvertibleBloomFilter
+ * A cell is composed of an idSum (the XOR of all element inserted in that cell), a hashSum (the XOR of all hashed element in that cell) and a counter (the number of elements inserted in that cell).
  * @author Arnaud Grall
  * @author Thomas Minier
  */

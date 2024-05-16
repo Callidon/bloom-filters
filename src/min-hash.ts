@@ -38,7 +38,7 @@ export interface ExportedMinHash {
  * MinHash (or the min-wise independent permutations locality sensitive hashing scheme) is a technique for quickly estimating how similar two sets are.
  * It is able to estimate the Jaccard similarity between two large sets of numbers using random hashing.
  *
- * **WARNING**: Only the MinHash produced by the same {@link MinHashFactory} can be compared between them.
+ * **WARNING**: Only the MinHash produced by the same @see MinHashFactory can be compared between them.
  *
  * @see "On the resemblance and containment of documents", by Andrei Z. Broder, in Compression and Complexity of Sequences: Proceedings, Positano, Amalfitan Coast, Salerno, Italy, June 11-13, 1997.
  * @author Thomas Minier
