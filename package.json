@@ -104,7 +104,6 @@
     "lodash.indexof": "^4.0.5",
     "lodash.random": "^3.2.0",
     "lodash.sortedindexby": "^4.6.0",
-    "long": "^5.2.3",
     "seedrandom": "^3.0.5"
   },
   "prettier": {

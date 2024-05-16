@@ -1,4 +1,4 @@
-import { xxh3, xxh32 } from '@node-rs/xxhash'
+import { xxh3 } from '@node-rs/xxhash'
 import { bigIntToNumber, getBigIntAbs, numberToHex } from './utils.mjs'
 // import { getBigIntAbs, numberToHex } from './utils.mjs'
 import {
@@ -16,7 +16,6 @@ export default class Hashing {
      * You can override this directly if you want to use your own 32/64bits hashing function.
      */
     static lib = {
-        xxh32: xxh32,
         xxh64: xxh3.xxh64,
         xxh128: xxh3.xxh128,
     }
