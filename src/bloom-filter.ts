@@ -1,9 +1,9 @@
-import ClassicFilter from '../interfaces/classic-filter'
-import BaseFilter from '../base-filter'
-import BitSet, { type ExportedBitSet } from './bit-set'
-import { optimalFilterSize, optimalHashes } from '../formulas'
-import { HashableInput, SeedType } from '../types'
-import { ExportedBigInt, exportBigInt, importBigInt } from '../utils'
+import ClassicFilter from './interfaces/classic-filter.js'
+import BaseFilter from './base-filter.js'
+import BitSet, { type ExportedBitSet } from './bit-set.js'
+import { optimalFilterSize, optimalHashes } from './formulas.js'
+import { HashableInput, SeedType } from './types.js'
+import { ExportedBigInt, exportBigInt, importBigInt } from './utils.js'
 
 export interface ExportedBloomFilter {
     _size: number

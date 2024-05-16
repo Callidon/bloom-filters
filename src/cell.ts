@@ -1,4 +1,4 @@
-import { xorUint8Array } from '../utils'
+import { xorUint8Array } from './utils.js'
 
 export interface ExportedCell {
     _idSum: number[]

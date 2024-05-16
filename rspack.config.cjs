@@ -22,13 +22,7 @@ module.exports = defineConfig({
     entry: path.resolve(__dirname, "./examples/website/rspack.mts"),
     resolve: {
         tsConfigPath: path.resolve(__dirname, "tsconfig.json"),
-        extensions: ["...", ".mts"],
-        extensionAlias: {
-            '.mjs': ['.mts', '.mjs'],
-        },
-        alias: {
-            "bloom-filters/dist/mjs/bloom/bloom-filter.mjs": path.resolve(__dirname, './dist/mjs/bloom/bloom-filter.mjs'),
-        }
+        extensions: ["...", ".ts"],
     },
     module: {
         // .wasm rule and experiments.asyncWebAssembly=true are required due to the use of @node-rs/xxhash

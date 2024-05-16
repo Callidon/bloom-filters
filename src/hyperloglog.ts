@@ -1,6 +1,6 @@
-import BaseFilter from '../base-filter'
-import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils'
-import { HashableInput } from '../types'
+import BaseFilter from './base-filter.js'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from './utils.js'
+import { HashableInput } from './types.js'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
 const TWO_POW_32 = 2 ** 32

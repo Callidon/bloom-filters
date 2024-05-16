@@ -1,6 +1,6 @@
-import WritableFilter from '../interfaces/writable-filter'
-import BaseFilter from '../base-filter'
-import Bucket, { ExportedBucket } from './bucket'
+import WritableFilter from './interfaces/writable-filter.js'
+import BaseFilter from './base-filter.js'
+import Bucket, { ExportedBucket } from './bucket.js'
 import {
     ExportedBigInt,
     allocateArray,
@@ -9,8 +9,8 @@ import {
     getBigIntAbs,
     importBigInt,
     randomInt,
-} from '../utils'
-import { HashableInput } from '../types'
+} from './utils.js'
+import { HashableInput } from './types.js'
 
 /**
  * Compute the optimal fingerprint length in bytes for a given bucket size

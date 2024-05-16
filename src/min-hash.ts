@@ -1,5 +1,5 @@
-import BaseFilter from '../base-filter'
-import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils'
+import BaseFilter from './base-filter.js'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from './utils.js'
 
 /**
  * An error thrown when we try to compute the Jaccard Similarity with an empty MinHash

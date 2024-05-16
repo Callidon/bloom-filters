@@ -1,9 +1,9 @@
-import ClassicFilter from '../interfaces/classic-filter'
-import BaseFilter, { prng } from '../base-filter'
-import { HashableInput, SeedType } from '../types'
-import PartitionBloomFilter, { ExportedPartitionedBloomFilter } from './partitioned-bloom-filter'
+import ClassicFilter from './interfaces/classic-filter.js'
+import BaseFilter, { prng } from './base-filter.js'
+import { HashableInput, SeedType } from './types.js'
+import PartitionBloomFilter, { ExportedPartitionedBloomFilter } from './partitioned-bloom-filter.js'
 import seedrandom from 'seedrandom'
-import { ExportedBigInt, exportBigInt, importBigInt } from '../utils'
+import { ExportedBigInt, exportBigInt, importBigInt } from './utils.js'
 
 export interface ExportedScalableBloomFilter {
     _seed: ExportedBigInt

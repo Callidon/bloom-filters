@@ -10,6 +10,6 @@
         "dist",
         ".github",
         "examples",
-        "*.config.*",
+        "*.config.*"
     ]
 }

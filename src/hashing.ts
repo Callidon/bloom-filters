@@ -1,13 +1,13 @@
 import { xxh3 } from '@node-rs/xxhash'
-import { bigIntToNumber, getBigIntAbs, numberToHex } from './utils'
-// import { getBigIntAbs, numberToHex } from './utils'
+import { bigIntToNumber, getBigIntAbs, numberToHex } from './utils.js'
+
 import {
     TwoHashes,
     TwoHashesIntAndString,
     TwoHashesTemplated,
     type HashableInput,
     SeedType,
-} from './types'
+} from './types.js'
 
 export default class Hashing {
     /**

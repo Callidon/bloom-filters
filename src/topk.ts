@@ -1,7 +1,7 @@
-import BaseFilter from '../base-filter'
-import { ExportedBigInt, exportBigInt, importBigInt } from '../utils'
-import CountMinSketch, { ExportedCountMinSketch } from './count-min-sketch'
 import sortedIndexBy from 'lodash.sortedindexby'
+import BaseFilter from './base-filter.js'
+import { ExportedBigInt, exportBigInt, importBigInt } from './utils.js'
+import CountMinSketch, { ExportedCountMinSketch } from './count-min-sketch.js'
 
 /**
  * An element in a MinHeap

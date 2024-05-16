@@ -1,4 +1,4 @@
-import ClassicFilter from './classic-filter'
+import ClassicFilter from './classic-filter.js'
 
 /**
  * A WritableFilter extends the {@link ClassicFilter} with the ability to remove elements from the filter.

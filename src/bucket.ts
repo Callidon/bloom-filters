@@ -1,6 +1,6 @@
 import eq from 'lodash.eq'
 import indexOf from 'lodash.indexof'
-import * as utils from '../utils'
+import * as utils from './utils.js'
 
 export interface ExportedBucket<T> {
     _size: number

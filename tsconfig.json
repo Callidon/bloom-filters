@@ -2,21 +2,22 @@
   "compilerOptions": {
     "rootDir": "./src",
     "target": "es2022",
-    "lib": ["es2020"],
+    "lib": ["es2022"],
     "module": "es2022",
     "moduleResolution": "node",
-    "outDir": "./dist/mjs/",
-    "declaration": true,
-    "strict": true,
+    "outDir": "./dist/module/dist",
     "allowJs": true,
     "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "inlineSources": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
     "sourceMap": true,
+    "strict": true
   },
-  "include": [
-    "src",
-  ],
-  "exclude": [
-    "node_modules",
-  ]
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

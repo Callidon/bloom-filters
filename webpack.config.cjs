@@ -32,7 +32,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(js|jsx)$/i,
+                test: /\.(js)$/i,
                 loader: 'babel-loader',
             },
             {
@@ -43,11 +43,5 @@ module.exports = {
     },
     experiments: {
         asyncWebAssembly: true
-    },
-    // This part is mandatory to resolve the `import BloomFilters from 'bloom-filters'`
-    resolve: {
-        alias: {
-            "bloom-filters/dist/mjs/bloom/bloom-filter.mjs": path.resolve(__dirname, './dist/mjs/bloom/bloom-filter.mjs'),
-        }
     },
 };

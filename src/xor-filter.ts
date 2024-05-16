@@ -1,8 +1,6 @@
-// Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
-
-import BaseFilter from '../base-filter'
-import { allocateArray, exportBigInt, ExportedBigInt, importBigInt } from '../utils'
-import { HashableInput, SeedType } from '../types'
+import BaseFilter from './base-filter.js'
+import { allocateArray, exportBigInt, ExportedBigInt, importBigInt } from './utils.js'
+import { HashableInput, SeedType } from './types.js'
 
 export type XorSize = 8 | 16 | 32 | 64
 export interface ExportedXorFilter {

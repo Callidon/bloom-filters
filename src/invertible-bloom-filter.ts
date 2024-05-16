@@ -1,8 +1,8 @@
-import BaseFilter from '../base-filter'
-import WritableFilter from '../interfaces/writable-filter'
-import Cell, { ExportedCell } from './cell'
-import { ExportedBigInt, allocateArray, exportBigInt, importBigInt, numberToHex } from '../utils'
-import { SeedType } from '../types'
+import BaseFilter from './base-filter.js'
+import WritableFilter from './interfaces/writable-filter.js'
+import Cell, { ExportedCell } from './cell.js'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt, numberToHex } from './utils.js'
+import { SeedType } from './types.js'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed

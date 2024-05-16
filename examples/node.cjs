@@ -1,5 +1,5 @@
-import * as bfs from '../dist/module/dist/index.js'
-import assert from 'assert'
+const bfs = require('../dist/commonjs')
+const assert = require('assert')
 assert(bfs.BloomFilter, 'BloomFilter should be defined')
 let filter = new bfs.BloomFilter(10, 4)
 filter.add('alice')

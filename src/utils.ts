@@ -1,4 +1,4 @@
-import { SeedType } from './types'
+import { SeedType } from './types.js'
 
 /**
  * Create a new array fill with a base value

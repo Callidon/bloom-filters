@@ -1,8 +1,8 @@
-import BaseFilter from '../base-filter'
-import ClassicFilter from '../interfaces/classic-filter'
-import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils'
-import { HashableInput } from '../types'
-import BitSet, { ExportedBitSet } from './bit-set'
+import BaseFilter from './base-filter.js'
+import ClassicFilter from './interfaces/classic-filter.js'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from './utils.js'
+import { HashableInput } from './types.js'
+import BitSet, { ExportedBitSet } from './bit-set.js'
 
 export interface ExportedPartitionedBloomFilter {
     _seed: ExportedBigInt

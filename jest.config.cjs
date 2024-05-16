@@ -5,11 +5,11 @@ module.exports = {
     preset: 'ts-jest/presets/default-esm',
     resolver: 'ts-jest-resolver',
     testMatch: ['**/*.test.*'],
-    moduleFileExtensions: [...defaults.moduleFileExtensions, 'mts'],
+    moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'],
     transform: {
-        '^.+\\.m(t|j)s$': ['ts-jest', {
+        '^.+\\.(t|j)s$': ['ts-jest', {
             useESM: true,
-            extensionsToTreatAsEsm: '.mts',
+            extensionsToTreatAsEsm: '.ts',
             tsconfig: './tsconfig.eslint.json'
         }]
     },

@@ -1,7 +1,7 @@
-import BaseFilter from '../base-filter'
-import CountingFilter from '../interfaces/counting-filter'
-import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils'
-import { HashableInput } from '../types'
+import BaseFilter from './base-filter.js'
+import CountingFilter from './interfaces/counting-filter.js'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from './utils.js'
+import { HashableInput } from './types.js'
 
 export interface ExportedCountMinSketch {
     _seed: ExportedBigInt

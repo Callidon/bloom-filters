@@ -2,28 +2,129 @@
   "name": "bloom-filters",
   "version": "4.0.0-alpha.0",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
-  "main": "./dist/mjs/index.mjs",
-  "browser": "./dist/mjs/index.mjs",
+  "main": "./dist/module/index.js",
+  "browser": "./dist/commonjs/index.js",
   "type": "module",
-  "cpu": [
-    "!wasm32",
-    "wasm32"
+  "exports": {
+    ".": {
+      "import": "./dist/module/dist/index.js",
+      "require": "./dist/commonjs/dist/index.js"
+    },
+    "./interfaces/counting-filter.js": {
+      "import": "./dist/module/dist/interfaces/counting-filter.js",
+      "require": "./dist/commonjs/dist/interfaces/counting-filter.js"
+    },
+    "./interfaces/writable-filter.js": {
+      "import": "./dist/module/dist/interfaces/writable-filter.js",
+      "require": "./dist/commonjs/dist/interfaces/writable-filter.js"
+    },
+    "./interfaces/classic-filter.js": {
+      "import": "./dist/module/dist/interfaces/classic-filter.js",
+      "require": "./dist/commonjs/dist/interfaces/classic-filter.js"
+    },
+    "./base-filter.js": {
+      "import": "./dist/module/dist/base-filter.js",
+      "require": "./dist/commonjs/dist/base-filter.js"
+    },
+    "./bit-set.js": {
+      "import": "./dist/module/dist/bit-set.js",
+      "require": "./dist/commonjs/dist/bit-set.js"
+    },
+    "./bloom-filter.js": {
+      "import": "./dist/module/dist/bloom-filter.js",
+      "require": "./dist/commonjs/dist/bloom-filter.js"
+    },
+    "./counting-bloom-filter.js": {
+      "import": "./dist/module/dist/counting-bloom-filter.js",
+      "require": "./dist/commonjs/dist/counting-bloom-filter.js"
+    },
+    "./partitionned-filter.js": {
+      "import": "./dist/module/dist/partitionned-bloom-filter.js",
+      "require": "./dist/commonjs/dist/partitionned-bloom-filter.js"
+    },
+    "./scalable-filter.js": {
+      "import": "./dist/module/dist/scalable-bloom-filter.js",
+      "require": "./dist/commonjs/dist/scalable-bloom-filter.js"
+    },
+    "./xor-filter.js": {
+      "import": "./dist/module/dist/xor-filter.js",
+      "require": "./dist/commonjs/dist/xor-filter.js"
+    },
+    "./cell.js": {
+      "import": "./dist/module/dist/cell.js",
+      "require": "./dist/commonjs/dist/cell.js"
+    },
+    "./invertible-bloom-filter.js": {
+      "import": "./dist/module/dist/invertible-bloom-filter.js",
+      "require": "./dist/commonjs/dist/invertible-bloom-filter.js"
+    },
+    "./bucket.js": {
+      "import": "./dist/module/dist/bucket.js",
+      "require": "./dist/commonjs/dist/bucket.js"
+    },
+    "./cuckoo-filter.js": {
+      "import": "./dist/module/dist/cuckoo-filter.js",
+      "require": "./dist/commonjs/dist/cuckoo-filter.js"
+    },
+    "./hyperloglog.js": {
+      "import": "./dist/module/dist/hyperloglog.js",
+      "require": "./dist/commonjs/dist/hyperloglog.js"
+    },
+    "./min-hash-factory.js": {
+      "import": "./dist/module/dist/min-hash-factory.js",
+      "require": "./dist/commonjs/dist/min-hash-factory.js"
+    },
+    "./min-hash.js": {
+      "import": "./dist/module/dist/min-hash.js",
+      "require": "./dist/commonjs/dist/min-hash.js"
+    },
+    "./topk.js": {
+      "import": "./dist/module/dist/topk.js",
+      "require": "./dist/commonjs/dist/topk.js"
+    },
+    "./count-min-sketch.js": {
+      "import": "./dist/module/dist/count-min-sketch.js",
+      "require": "./dist/commonjs/dist/count-min-sketch.js"
+    },
+    "./hashing.js": {
+      "import": "./dist/module/dist/hashing.js",
+      "require": "./dist/commonjs/dist/hashing.js"
+    },
+    "./types.js": {
+      "import": "./dist/module/dist/types.js",
+      "require": "./dist/commonjs/dist/types.js"
+    },
+    "./utils.js": {
+      "import": "./dist/module/dist/utils.js",
+      "require": "./dist/commonjs/dist/utils.js"
+    },
+    "./formulas.js": {
+      "import": "./dist/module/dist/formulas.js",
+      "require": "./dist/commonjs/dist/formulas.js"
+    }
+  },
+  "files": [
+    "dist",
+    "package.json"
   ],
   "scripts": {
     "build:rspack": "rspack build --config rspack.config.cjs",
     "build:webpack": "webpack --config webpack.config.cjs",
     "build:examples": "yarn build:rspack && yarn build:webpack",
-    "build": "tsc",
+    "build:esm": "tsc",
+    "build:commonjs": "tsc -p tsconfig.cjs.json",
+    "build": "yarn build:esm && yarn build:commonjs",
     "build:ci": "yarn build && yarn build:examples",
     "preview:rspack": "rspack preview --config rspack.config.cjs",
     "preview:webpack": "webpack serve --config webpack.config.cjs",
-    "prettier": "prettier --config package.json --write \"(src|tests)/**/*.mts\"",
+    "prettier": "prettier --config package.json --write \"(src|tests)/**/*.ts\"",
     "lint": "yarn prettier && eslint -c .eslintrc.cjs src/ tests/",
-    "test:node": "node examples/node.mjs",
+    "test:commonjs": "node examples/node.cjs",
+    "test:module": "node examples/node.mjs",
     "test:lint-build": "yarn lint && yarn build",
-    "test": "yarn test:lint-build && yarn test:node > /dev/null && jest",
-    "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/index.mts",
-    "clean": "rimraf docs/ dist/mjs dist/website/rspack dist/website/webpack"
+    "test": "yarn test:lint-build && yarn test:commonjs && yarn test:module && jest",
+    "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/index.ts",
+    "clean": "rimraf docs/ dist/module/dist dist/commonjs/dist dist/website/rspack dist/website/webpack"
   },
   "repository": {
     "type": "git",
@@ -61,6 +162,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/preset-env": "^7.24.5",
     "@eslint/js": "^9.1.1",
+    "@jest/globals": "^29.7.0",
     "@rspack/cli": "^0.6.3",
     "@rspack/core": "^0.6.3",
     "@types/babel__preset-env": "^7",

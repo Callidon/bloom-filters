@@ -1,8 +1,8 @@
-import BaseFilter from '../base-filter'
-import WritableFilter from '../interfaces/writable-filter'
-import { optimalFilterSize, optimalHashes } from '../formulas'
-import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from '../utils'
-import { HashableInput } from '../types'
+import BaseFilter from './base-filter.js'
+import WritableFilter from './interfaces/writable-filter.js'
+import { optimalFilterSize, optimalHashes } from './formulas.js'
+import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from './utils.js'
+import { HashableInput } from './types.js'
 
 export interface ExportedCountingBloomFilter {
     _seed: ExportedBigInt

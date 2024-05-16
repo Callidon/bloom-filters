@@ -1,5 +1,5 @@
-import MinHash, { HashFunction } from './min-hash'
 import random from 'lodash.random'
+import MinHash, { HashFunction } from './min-hash.js'
 
 /**
  * Test if a number is a prime number
