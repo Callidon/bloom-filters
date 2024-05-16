@@ -17,17 +17,21 @@ test('should #has return false for an empty filter', () => {
     expect(filter.has('alice')).toBe(false)
 })
 test('should #has return correct values with added values', () => {
-    const filter = ScalableBloomFilter.create(9, 0.0001)
+    let fp = 0
+    const filter = ScalableBloomFilter.create(9, 0.01)
     filter.seed = seed
     filter.add('alice')
     filter.add('bob')
     filter.add('carl')
-    expect(filter.has('alice')).toBe(true)
-    expect(filter.has('bob')).toBe(true)
-    expect(filter.has('carl')).toBe(true)
-
-    // warning the filter is sufficiently big to trigger this at 100%
-    expect(filter.has('somethingwhichdoesnotexist')).toBe(false)
+    for (let i = 0; i < 10000; i++) {
+        expect(filter.has('alice')).toBe(true)
+        expect(filter.has('bob')).toBe(true)
+        expect(filter.has('carl')).toBe(true)
+        if (filter.has('somethingwhichdoesnotexist')) {
+            fp++
+        }
+    }
+    expect(fp / 10000).toBeLessThanOrEqual(0.01)
 })
 
 test('should scale Partitioned Bloom Filter', () => {
