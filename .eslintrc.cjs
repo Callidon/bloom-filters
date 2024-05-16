@@ -8,6 +8,9 @@ module.exports = {
     "plugins": [
         "@typescript-eslint"
     ],
+    "rules": { 
+        "no-console": "error",
+    },
     "ignorePatterns": [
         "./*.config.*",
         "./dist/**/*",
