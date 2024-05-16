@@ -1432,21 +1432,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:8.56.0":
-  version: 8.56.0
-  resolution: "@eslint/js@npm:8.56.0"
-  checksum: 10c0/60b3a1cf240e2479cec9742424224465dc50e46d781da1b7f5ef240501b2d1202c225bd456207faac4b34a64f4765833345bc4ddffd00395e1db40fa8c426f5a
+"@eslint/js@npm:8.57.0":
+  version: 8.57.0
+  resolution: "@eslint/js@npm:8.57.0"
+  checksum: 10c0/9a518bb8625ba3350613903a6d8c622352ab0c6557a59fe6ff6178bf882bf57123f9d92aa826ee8ac3ee74b9c6203fe630e9ee00efb03d753962dcf65ee4bd94
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:^9.1.1":
+"@eslint/js@npm:^9.2.0":
   version: 9.2.0
   resolution: "@eslint/js@npm:9.2.0"
   checksum: 10c0/89632466d329d9dd68c6ec24290e407f0950ca8c4b7f3750b82457daa7f6233799ccbc956cd84231f9544efbefddd69833ee82658883ca673cfca9e4b8e0713a
   languageName: node
   linkType: hard
 
-"@humanwhocodes/config-array@npm:^0.11.13":
+"@humanwhocodes/config-array@npm:^0.11.14":
   version: 0.11.14
   resolution: "@humanwhocodes/config-array@npm:0.11.14"
   dependencies:
@@ -2194,7 +2194,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rspack/cli@npm:^0.6.3":
+"@rspack/cli@npm:^0.6.5":
   version: 0.6.5
   resolution: "@rspack/cli@npm:0.6.5"
   dependencies:
@@ -2215,7 +2215,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rspack/core@npm:^0.6.3":
+"@rspack/core@npm:^0.6.5":
   version: 0.6.5
   resolution: "@rspack/core@npm:0.6.5"
   dependencies:
@@ -2308,7 +2308,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/babel__preset-env@npm:^7":
+"@types/babel__preset-env@npm:^7.9.6":
   version: 7.9.6
   resolution: "@types/babel__preset-env@npm:7.9.6"
   checksum: 10c0/639bcf58094530eb8509b302de9c42fc1a9e44e236bcbfd218e987aba7a2c15052c3a1cac7ca7f260255e74beb3b489ff877b9870f8587394457cd3aa9f64934
@@ -2505,7 +2505,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash.intersection@npm:^4":
+"@types/lodash.intersection@npm:^4.4.9":
   version: 4.4.9
   resolution: "@types/lodash.intersection@npm:4.4.9"
   dependencies:
@@ -2514,7 +2514,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash.random@npm:^3":
+"@types/lodash.random@npm:^3.2.9":
   version: 3.2.9
   resolution: "@types/lodash.random@npm:3.2.9"
   dependencies:
@@ -2523,7 +2523,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash.range@npm:^3":
+"@types/lodash.range@npm:^3.2.9":
   version: 3.2.9
   resolution: "@types/lodash.range@npm:3.2.9"
   dependencies:
@@ -2532,7 +2532,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash.sortedindexby@npm:^4":
+"@types/lodash.sortedindexby@npm:^4.6.9":
   version: 4.6.9
   resolution: "@types/lodash.sortedindexby@npm:4.6.9"
   dependencies:
@@ -2541,7 +2541,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash.union@npm:^4":
+"@types/lodash.union@npm:^4.6.9":
   version: 4.6.9
   resolution: "@types/lodash.union@npm:4.6.9"
   dependencies:
@@ -2573,7 +2573,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^20.12.8":
+"@types/node@npm:*, @types/node@npm:^20.12.12":
   version: 20.12.12
   resolution: "@types/node@npm:20.12.12"
   dependencies:
@@ -2711,7 +2711,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:7.9.0, @typescript-eslint/parser@npm:^7.8.0":
+"@typescript-eslint/parser@npm:7.9.0, @typescript-eslint/parser@npm:^7.9.0":
   version: 7.9.0
   resolution: "@typescript-eslint/parser@npm:7.9.0"
   dependencies:
@@ -3410,27 +3410,27 @@ __metadata:
     "@babel/core": "npm:^7.24.5"
     "@babel/plugin-syntax-dynamic-import": "npm:^7.8.3"
     "@babel/preset-env": "npm:^7.24.5"
-    "@eslint/js": "npm:^9.1.1"
+    "@eslint/js": "npm:^9.2.0"
     "@jest/globals": "npm:^29.7.0"
     "@node-rs/xxhash": "npm:^1.7.3"
     "@node-rs/xxhash-wasm32-wasi": "npm:^1.7.3"
-    "@rspack/cli": "npm:^0.6.3"
-    "@rspack/core": "npm:^0.6.3"
-    "@types/babel__preset-env": "npm:^7"
+    "@rspack/cli": "npm:^0.6.5"
+    "@rspack/core": "npm:^0.6.5"
+    "@types/babel__preset-env": "npm:^7.9.6"
     "@types/lodash.eq": "npm:^4.0.9"
     "@types/lodash.indexof": "npm:^4.0.9"
-    "@types/lodash.intersection": "npm:^4"
-    "@types/lodash.random": "npm:^3"
-    "@types/lodash.range": "npm:^3"
-    "@types/lodash.sortedindexby": "npm:^4"
-    "@types/lodash.union": "npm:^4"
-    "@types/node": "npm:^20.12.8"
+    "@types/lodash.intersection": "npm:^4.4.9"
+    "@types/lodash.random": "npm:^3.2.9"
+    "@types/lodash.range": "npm:^3.2.9"
+    "@types/lodash.sortedindexby": "npm:^4.6.9"
+    "@types/lodash.union": "npm:^4.6.9"
+    "@types/node": "npm:^20.12.12"
     "@types/seedrandom": "npm:^3.0.8"
-    "@typescript-eslint/parser": "npm:^7.8.0"
+    "@typescript-eslint/parser": "npm:^7.9.0"
     babel-jest: "npm:^29.7.0"
     babel-loader: "npm:^9.1.3"
     base64-arraybuffer: "npm:^1.0.2"
-    eslint: "npm:8.56.0"
+    eslint: "npm:8.57.0"
     html-webpack-plugin: "npm:^5.6.0"
     jest: "npm:^29.7.0"
     lodash.eq: "npm:^4.0.0"
@@ -3443,14 +3443,14 @@ __metadata:
     minify: "npm:^11.1.1"
     prettier: "npm:^3.2.5"
     random: "npm:^4.1.0"
-    rimraf: "npm:^5.0.5"
+    rimraf: "npm:^5.0.7"
     seedrandom: "npm:^3.0.5"
     ts-jest: "npm:^29.1.2"
     ts-jest-resolver: "npm:^2.0.1"
     typedoc: "npm:^0.25.13"
     typedoc-plugin-missing-exports: "npm:^2.2.0"
     typescript: "npm:^5.4.5"
-    typescript-eslint: "npm:^7.8.0"
+    typescript-eslint: "npm:^7.9.0"
     webpack: "npm:^5.91.0"
     webpack-cli: "npm:^5.1.4"
     webpack-dev-server: "npm:^5.0.4"
@@ -4470,15 +4470,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:8.56.0":
-  version: 8.56.0
-  resolution: "eslint@npm:8.56.0"
+"eslint@npm:8.57.0":
+  version: 8.57.0
+  resolution: "eslint@npm:8.57.0"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.2.0"
     "@eslint-community/regexpp": "npm:^4.6.1"
     "@eslint/eslintrc": "npm:^2.1.4"
-    "@eslint/js": "npm:8.56.0"
-    "@humanwhocodes/config-array": "npm:^0.11.13"
+    "@eslint/js": "npm:8.57.0"
+    "@humanwhocodes/config-array": "npm:^0.11.14"
     "@humanwhocodes/module-importer": "npm:^1.0.1"
     "@nodelib/fs.walk": "npm:^1.2.8"
     "@ungap/structured-clone": "npm:^1.2.0"
@@ -4514,7 +4514,7 @@ __metadata:
     text-table: "npm:^0.2.0"
   bin:
     eslint: bin/eslint.js
-  checksum: 10c0/2be598f7da1339d045ad933ffd3d4742bee610515cd2b0d9a2b8b729395a01d4e913552fff555b559fccaefd89d7b37632825789d1b06470608737ae69ab43fb
+  checksum: 10c0/00bb96fd2471039a312435a6776fe1fd557c056755eaa2b96093ef3a8508c92c8775d5f754768be6b1dddd09fdd3379ddb231eeb9b6c579ee17ea7d68000a529
   languageName: node
   linkType: hard
 
@@ -7691,7 +7691,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:^5.0.5":
+"rimraf@npm:^5.0.5, rimraf@npm:^5.0.7":
   version: 5.0.7
   resolution: "rimraf@npm:5.0.7"
   dependencies:
@@ -8541,7 +8541,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^7.8.0":
+"typescript-eslint@npm:^7.9.0":
   version: 7.9.0
   resolution: "typescript-eslint@npm:7.9.0"
   dependencies:
