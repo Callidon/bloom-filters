@@ -95,7 +95,7 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
     /**
      * Update the count min sketch with a new occurrence of an element
      * @param element - The new element
-     * @param count - Number of occurences of the elemnt (defauls to one)
+     * @param count - Number of occurrences of the elemnt (defauls to one)
      */
     public update(element: HashableInput, count = 1): void {
         this._allSums += count
@@ -106,9 +106,9 @@ export default class CountMinSketch extends BaseFilter implements CountingFilter
     }
 
     /**
-     * Perform a point query: estimate the number of occurence of an element
+     * Perform a point query: estimate the number of occurrence of an element
      * @param element - The element we want to count
-     * @return The estimate number of occurence of the element
+     * @return The estimate number of occurrence of the element
      */
     public count(element: HashableInput): number {
         let min = Infinity

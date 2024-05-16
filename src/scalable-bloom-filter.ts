@@ -176,7 +176,7 @@ export default class ScalableBloomFilter
     }
 
     /**
-     * Create a Scalable Bloom Filter based on Partitionned Bloom Filter.
+     * Create a Scalable Bloom Filter based on Partitioned Bloom Filter.
      * @param _size the starting size of the filter
      * @param _error_rate ther error rate desired of the filter
      * @param _ratio the tightening ration

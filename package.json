@@ -38,9 +38,9 @@
       "import": "./dist/module/dist/counting-bloom-filter.js",
       "require": "./dist/commonjs/dist/counting-bloom-filter.js"
     },
-    "./partitionned-filter.js": {
-      "import": "./dist/module/dist/partitionned-bloom-filter.js",
-      "require": "./dist/commonjs/dist/partitionned-bloom-filter.js"
+    "./partitioned-filter.js": {
+      "import": "./dist/module/dist/partitioned-bloom-filter.js",
+      "require": "./dist/commonjs/dist/partitioned-bloom-filter.js"
     },
     "./scalable-filter.js": {
       "import": "./dist/module/dist/scalable-bloom-filter.js",
@@ -123,7 +123,7 @@
     "test:module": "node examples/node.mjs",
     "test:lint-build": "yarn lint && yarn build",
     "test": "yarn test:lint-build && yarn test:commonjs && yarn test:module && jest",
-    "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/index.ts",
+    "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/**/*.ts",
     "clean": "rimraf docs/ dist/module/dist dist/commonjs/dist dist/website/rspack dist/website/webpack"
   },
   "repository": {
@@ -136,7 +136,7 @@
     "bloom filter",
     "probabilistic",
     "datastructure",
-    "partitionned bloom filter",
+    "partitioned bloom filter",
     "scalable bloom filter",
     "counting bloom filter",
     "invertible bloom filter",

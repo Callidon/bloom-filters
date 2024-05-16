@@ -36,7 +36,7 @@ test('should support update and cardinality estimations (count) operations', () 
         )
     }
 })
-test('should peforms the union of two HyperLogLog sketches', () => {
+test('should performs the union of two HyperLogLog sketches', () => {
     const first = new HyperLogLog(2 ** 4)
     const second = new HyperLogLog(2 ** 4)
     first.update('alice')
@@ -115,7 +115,7 @@ test('issue#(https://github.com/Callidon/bloom-filters/issues/69)', () => {
     const sketch = new HyperLogLog(128)
     // push 10000 distinct elements
     const n = 2 ** 14
-    for (let i = 0; i<n; i++) {
+    for (let i = 0; i < n; i++) {
         sketch.update(i.toString())
     }
     // count occurrences
