@@ -18,7 +18,8 @@ test('should #has return false for an empty filter', () => {
 })
 test('should #has return correct values with added values', () => {
     let fp = 0
-    const filter = ScalableBloomFilter.create(9, 0.01)
+    const e = 0.0001
+    const filter = ScalableBloomFilter.create(128, e)
     filter.seed = seed
     filter.add('alice')
     filter.add('bob')
@@ -32,7 +33,7 @@ test('should #has return correct values with added values', () => {
             fp++
         }
     }
-    expect(fp / round).toBeLessThanOrEqual(0.01 * 2) // compounded error probability is bounded by P <= 2 * P0
+    expect(fp / round).toBeLessThanOrEqual(e * 2) // compounded error probability is bounded by P <= 2 * P0
 })
 
 test('should scale Partitioned Bloom Filter', () => {

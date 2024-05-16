@@ -153,7 +153,7 @@ export default class ScalableBloomFilter
      * @returns
      */
     public rate(): number {
-        return this.current.rate()
+        return this._filters.reduce((acc, cur) => acc * cur.rate(), 1)
     }
 
     /**
