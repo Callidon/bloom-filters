@@ -23,15 +23,16 @@ test('should #has return correct values with added values', () => {
     filter.add('alice')
     filter.add('bob')
     filter.add('carl')
-    for (let i = 0; i < 10000; i++) {
-        expect(filter.has('alice')).toBe(true)
-        expect(filter.has('bob')).toBe(true)
-        expect(filter.has('carl')).toBe(true)
-        if (filter.has('somethingwhichdoesnotexist')) {
+    const round = 10000
+    expect(filter.has('alice')).toBe(true)
+    expect(filter.has('bob')).toBe(true)
+    expect(filter.has('carl')).toBe(true)
+    for (let i = 0; i < round; i++) {
+        if (filter.has('somethingwhichdoesnotexist' + i.toString())) {
             fp++
         }
     }
-    expect(fp / 10000).toBeLessThanOrEqual(0.01)
+    expect(fp / round).toBeLessThanOrEqual(0.01 * 2) // compounded error probability is bounded by P <= 2 * P0
 })
 
 test('should scale Partitioned Bloom Filter', () => {
