@@ -1,9 +1,11 @@
 import { expect, test } from '@jest/globals'
-import { CountingBloomFilter, exportBigInt } from '../src/index'
+import { CountingBloomFilter, exportBigInt, randomInt } from '../src/index'
 
 const targetRate = 0.1
+const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
+
 test('should add element to the filter with #add', () => {
-    const filter = CountingBloomFilter.create(15, targetRate)
+    const filter = CountingBloomFilter.create(15, targetRate, seed)
     filter.add('alice')
     filter.add('bob')
     expect(filter.length).toEqual(2)
@@ -15,14 +17,14 @@ test('should build a new filter using #from', () => {
         -((data.length * Math.log(targetRate)) / Math.pow(Math.log(2), 2)),
     )
     const expectedHashes = Math.ceil((expectedSize / data.length) * Math.log(2))
-    const filter = CountingBloomFilter.from(data, targetRate)
+    const filter = CountingBloomFilter.from(data, targetRate, seed)
     expect(filter.size).toEqual(expectedSize)
     expect(filter._nbHashes).toEqual(expectedHashes)
     expect(filter.length).toEqual(data.length)
     expect(filter.rate()).toBeCloseTo(targetRate, 0.1)
 })
 
-const getFilter = () => CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+const getFilter = () => CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
 test('should return false for elements that are definitively not in the set', () => {
     const filter = getFilter()
     expect(filter.has('daniel')).toBe(false)
@@ -37,7 +39,7 @@ test('should return true for elements that might be in the set', () => {
 })
 
 test('should allow deletion of items', () => {
-    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+    const filter = CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
     filter.remove('bob')
     expect(filter.has('alice')).toBe(true)
     expect(filter.has('bob')).toBe(false)
@@ -45,8 +47,8 @@ test('should allow deletion of items', () => {
 })
 
 test('should returns True when two filters are equals', () => {
-    const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
-    const other = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+    const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate, seed)
+    const other = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate, seed)
     expect(first.equals(other)).toBe(true)
 })
 
@@ -63,12 +65,12 @@ test('should returns False when two filters have different nb. of hash functions
 })
 
 test('should returns False when two filters have different content', () => {
-    const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate)
-    const other = CountingBloomFilter.from(['alice', 'bob', 'daniel'], targetRate)
+    const first = CountingBloomFilter.from(['alice', 'bob', 'carol'], targetRate, seed)
+    const other = CountingBloomFilter.from(['alice', 'bob', 'daniel'], targetRate, seed)
     expect(first.equals(other)).toBe(false)
 })
 
-const getFilter2 = () => CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+const getFilter2 = () => CountingBloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
 test('should export a bloom filter to a JSON object', () => {
     const filter = getFilter2()
     const exported = filter.saveAsJSON()
@@ -93,7 +95,7 @@ test('should create a bloom filter from a JSON export', () => {
 const max = 1000
 const targetedRate = 0.01
 test(`should not return an error when inserting ${max.toString()} elements`, () => {
-    const filter = CountingBloomFilter.create(max, targetedRate)
+    const filter = CountingBloomFilter.create(max, targetedRate, seed)
     for (let i = 0; i < max; ++i) filter.add(i.toString())
     for (let i = 0; i < max; ++i) {
         expect(filter.has(i.toString())).toBe(true)
