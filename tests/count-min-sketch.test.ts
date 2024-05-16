@@ -1,10 +1,12 @@
 import { expect, test } from '@jest/globals'
-import { CountMinSketch } from '../src/index'
+import { CountMinSketch, randomInt } from '../src/index'
 
 const delta = 0.999
+const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
 
 test('should support update and point query (count) operations', () => {
     const sketch = CountMinSketch.create(0.001, delta)
+    sketch.seed = seed
     // populate the sketch with some values
     sketch.update('foo')
     sketch.update('foo')
@@ -18,7 +20,9 @@ test('should support update and point query (count) operations', () => {
 
 test('should support a merge between two sketches', () => {
     const sketch = CountMinSketch.create(0.001, delta)
+    sketch.seed = seed
     const otherSketch = CountMinSketch.create(0.001, delta)
+    otherSketch.seed = seed
 
     // populate the sketches with some values
     sketch.update('foo')
@@ -40,7 +44,9 @@ test('should support a merge between two sketches', () => {
 
 test('should reject an impossible merge', () => {
     const sketch = CountMinSketch.create(0.001, delta)
+    sketch.seed = seed
     const otherSketch = CountMinSketch.create(0.001, delta)
+    otherSketch.seed = seed
 
     otherSketch._columns++
     expect(() => {
@@ -56,6 +62,7 @@ test('should reject an impossible merge', () => {
 
 test('should the clone operation', () => {
     const sketch = CountMinSketch.create(0.001, delta)
+    sketch.seed = seed
     // populate the sketches with some values
     sketch.update('foo')
     sketch.update('foo')
@@ -71,6 +78,7 @@ test('should the clone operation', () => {
 
 function buildCountMinSketch() {
     const sketch = CountMinSketch.create(0.001, delta)
+    sketch.seed = seed
     sketch.update('foo')
     sketch.update('foo')
     sketch.update('foo')
@@ -106,6 +114,7 @@ const random = () => {
 }
 test(`should not return an error when inserting ${max.toString()} elements`, () => {
     const filter = CountMinSketch.create(rate, delta)
+    filter.seed = seed
     let error = 0
     const map = new Map<string, number>()
     for (let i = 0; i < max; ++i) {
