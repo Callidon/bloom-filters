@@ -241,3 +241,48 @@ test(`should not return an error when inserting and asking for ${max.toString()}
     const currentrate = falsePositive / tries
     expect(currentrate).toBeCloseTo(rate, rate)
 })
+
+test('issue#(https://github.com/Callidon/bloom-filters/issues/68)', () => {
+    const items = [
+        'https://www.youtube.com/watch?v=HJjxN05ewEc',
+        'https://www.youtube.com/watch?v=BZNUo7orS3k',
+        'https://www.youtube.com/watch?v=SD-McWZz_pk',
+        'https://www.youtube.com/watch?v=De4QjH9fpgo',
+        'https://www.youtube.com/watch?v=Hzko-cjHhTg',
+        'https://www.youtube.com/watch?v=vqR-8lgOmBE',
+        'https://www.youtube.com/watch?v=j6u0LH67YLk',
+        'https://www.youtube.com/watch?v=B2z8ikGLRh8',
+        'https://www.youtube.com/watch?v=N3ftBeP16TA',
+        'https://www.youtube.com/watch?v=38RBRPwODUk',
+        'https://www.youtube.com/watch?v=Ry8nSUfX6fY',
+        'https://www.youtube.com/watch?v=-KrYohUJvYw',
+        'https://www.youtube.com/watch?v=zRpl7Pr0fs4',
+        'https://www.youtube.com/watch?v=uYYiypp6WaY',
+        'https://www.youtube.com/watch?v=EPap21FBGbE',
+        'https://www.youtube.com/watch?v=zN2_0WC7UfU',
+        'https://www.youtube.com/watch?v=DNVwnkgTzbY',
+    ]
+
+    const errorRate = 0.04 // 4 % error rate
+
+    const round = 100000
+    let c_false = 0
+
+    const filter = CuckooFilter.from(items, errorRate)
+    for (let i = 0; i < round; i++) {
+        let val = filter.has('https://www.youtube.com/watch?v=HJjxN05ewEc')
+        if (!val) {
+            c_false++
+        }
+
+        val = filter.has('https://www.youtube.com/watch?v=38RBRPwODUk')
+        if (!val) {
+            c_false++
+        }
+        val = filter.has('https://www.youtube.com/watch?v=-KrYohUJvYw')
+        if (!val) {
+            c_false++
+        }
+    }
+    expect(c_false).toEqual(0)
+})
