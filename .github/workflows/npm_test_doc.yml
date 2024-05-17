@@ -30,5 +30,7 @@ jobs:
     - name: Build
       run: yarn build:ci
     - name: Test
+      run: yarn lint
+    - name: Test
       run: yarn test
 

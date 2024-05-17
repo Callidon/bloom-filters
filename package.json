@@ -121,8 +121,7 @@
     "lint": "yarn prettier && eslint -c .eslintrc.cjs src/ tests/",
     "test:commonjs": "node examples/node.cjs",
     "test:module": "node examples/node.mjs",
-    "test:lint-build": "yarn lint && yarn build",
-    "test": "yarn test:lint-build && yarn test:commonjs && yarn test:module && jest",
+    "test": "yarn build && yarn test:commonjs && yarn test:module && jest",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/**/*.ts",
     "clean": "rimraf docs/ dist/module/dist dist/commonjs/dist dist/website/rspack dist/website/webpack"
   },
