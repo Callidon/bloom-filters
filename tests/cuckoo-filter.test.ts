@@ -1,24 +1,30 @@
 import { expect, test } from '@jest/globals'
-import { CuckooFilter, ExportedCuckooFilter, getBigIntAbs } from '../src/index'
+import { CuckooFilter, ExportedCuckooFilter, getBigIntAbs, randomInt } from '../src/index'
+
+// const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
+// const seed = 8959374062914912n
+const seed = 7409732628718466n
+console.log(seed)
 
 test('should compute the fingerprint and indexes for an element', () => {
     const filter = new CuckooFilter(15, 3, 2, 1)
+    filter.seed = seed
     const element = 'foo'
-    const hashes = filter._hashing.hashIntAndString(element, filter.seed)
-    const hash = hashes.int
-    const fingerprint = hashes.string.substring(0, 3)
+    const hash = filter._hashing._lib.xxh64(element, filter.seed)
+    const fingerprint = hash.toString(2).padStart(64, '0').substring(63 - 3)
 
-    const firstIndex = getBigIntAbs(hash)
-    const secondIndex = firstIndex ^ getBigIntAbs(filter.hash(fingerprint))
+    const firstIndex = hash % BigInt(filter.size)
+    const secondIndex = (firstIndex ^ filter.hash(fingerprint)) % BigInt(filter.size)
 
     const locations = filter._locations(element)
     expect(fingerprint).toEqual(locations.fingerprint)
-    expect(Number(firstIndex % BigInt(filter.size))).toEqual(locations.firstIndex)
-    expect(Number(secondIndex % BigInt(filter.size))).toEqual(locations.secondIndex)
+    expect(Number(firstIndex)).toEqual(locations.firstIndex)
+    expect(Number(secondIndex)).toEqual(locations.secondIndex)
 })
 
 test('should add element to the filter with #add', () => {
     const filter = CuckooFilter.create(15, 0.01)
+    filter.seed = seed
     let nbElements = 0
     filter.add('alice')
     filter.add('bob')
@@ -31,6 +37,7 @@ test('should add element to the filter with #add', () => {
 
 test('should store ane element accross two different buckets', () => {
     const filter = CuckooFilter.create(15, 0.01, 2)
+    filter.seed = seed
     const element = 'foo'
     let nbElements = 0
 
@@ -52,6 +59,7 @@ test('should store ane element accross two different buckets', () => {
 
 test('should perform random kicks when both buckets are full', () => {
     const filter = new CuckooFilter(15, 3, 1, 1)
+    filter.seed = seed
     const element = 'foo'
     let nbElements = 0
     const locations = filter._locations(element)
@@ -73,6 +81,7 @@ test('should perform random kicks when both buckets are full', () => {
 
 test("should reject elements that can't be inserted when filter is full", () => {
     const filter = new CuckooFilter(1, 3, 1)
+    filter.seed = seed
     const element = 'foo'
     filter.add(element)
     expect(filter.add(element, false, true)).toBe(false)
@@ -80,6 +89,7 @@ test("should reject elements that can't be inserted when filter is full", () => 
 
 test('should not rollback to its initial state in case the filter is full with option add(x, false, true)', () => {
     const filter = new CuckooFilter(10, 3, 1)
+    filter.seed = seed
     expect(filter.add('a')).toBe(true)
     expect(filter.add('b')).toBe(true)
     expect(filter.add('c')).toBe(true)
@@ -103,6 +113,7 @@ test('should not rollback to its initial state in case the filter is full with o
 
 test('should rollback to its initial state in case the filter is full', () => {
     const filter = new CuckooFilter(10, 3, 1)
+    filter.seed = seed
     expect(filter.add('a')).toBe(true)
     expect(filter.add('b')).toBe(true)
     expect(filter.add('c')).toBe(true)
@@ -121,6 +132,7 @@ test('should rollback to its initial state in case the filter is full', () => {
 
 test('should remove exisiting elements from the filter', () => {
     const filter = new CuckooFilter(15, 3, 1)
+    filter.seed = seed
     const element = 'foo'
     const locations = filter._locations(element)
 
@@ -131,45 +143,54 @@ test('should remove exisiting elements from the filter', () => {
 
 test('should look inside every possible bucket', () => {
     const filter = new CuckooFilter(15, 3, 1)
+    filter.seed = seed
     const element = 'foo'
     const locations = filter._locations(element)
 
     filter.add(element)
+    console.log(filter)
     filter.add(element)
+    console.log(filter)
     expect(filter.remove(element)).toBe(true)
     expect(filter._filter[locations.firstIndex].length).toEqual(0)
+    console.log(filter)
     expect(filter.remove(element)).toBe(true)
     expect(filter._filter[locations.secondIndex].length).toEqual(0)
 })
 
 test('should fail to remove elements that are not in the filter', () => {
     const filter = new CuckooFilter(15, 3, 1)
+    filter.seed = seed
     filter.add('foo')
     expect(filter.remove('moo')).toBe(false)
 })
 
 test('should return True when an element may be in the filter', () => {
     const filter = new CuckooFilter(15, 3, 1)
+    filter.seed = seed
     filter.add('foo')
     expect(filter.has('foo')).toBe(true)
 })
 
 test('should return False when an element is definitively not in the filter', () => {
     const filter = new CuckooFilter(15, 3, 1)
+    filter.seed = seed
     filter.add('foo')
     expect(filter.has('moo')).toBe(false)
 })
 
 test('should look inside every possible bucket', () => {
     const filter = new CuckooFilter(15, 3, 1)
-    filter.add('foo')
-    filter.add('foo')
+    filter.seed = seed
+    expect(filter.add('foo')).toBe(true)
+    expect(filter.add('foo')).toBe(true)
     filter.remove('foo')
     expect(filter.has('foo')).toBe(true)
 })
 
 test('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
     const filter = CuckooFilter.create(15, 0.01)
+    filter.seed = seed
     filter.add('alice')
     filter.add('andrew')
     filter.add('bob')
@@ -194,6 +215,7 @@ test('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
 
 function buildCuckooFilter() {
     const filter = new CuckooFilter(15, 3, 2)
+    filter.seed = seed
     filter.add('alice')
     filter.add('bob')
     return filter
@@ -226,6 +248,7 @@ const rate = 0.000000000000000001
 const bucketSize = 1
 test(`should not return an error when inserting and asking for ${max.toString()} elements, rate = ${rate.toString()}; bucketSize = ${bucketSize.toString()};`, () => {
     const filter = CuckooFilter.create(max, rate, bucketSize, 500)
+    filter.seed = seed
     for (let i = 0; i < max; i++) {
         expect(filter.add(i.toString())).toBe(true)
     }
@@ -268,7 +291,7 @@ test('issue#(https://github.com/Callidon/bloom-filters/issues/68)', () => {
     const round = 100000
     let c_false = 0
 
-    const filter = CuckooFilter.from(items, errorRate)
+    const filter = CuckooFilter.from(items, errorRate, undefined, undefined, 2141419401098886n)
     for (let i = 0; i < round; i++) {
         let val = filter.has('https://www.youtube.com/watch?v=HJjxN05ewEc')
         if (!val) {

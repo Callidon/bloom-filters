@@ -13,16 +13,15 @@ import {
 import { HashableInput } from './types.js'
 
 /**
- * Compute the optimal fingerprint length in bytes for a given bucket size
+ * Compute the optimal fingerprint length in bits for a given bucket size
  * and a false positive rate.
  * @param  {int} size - The filter bucket size
  * @param  {int} rate - The error rate, i.e. 'false positive' rate, targetted by the filter
- * @return {int} The optimal fingerprint length in bytes
+ * @return {int} The optimal fingerprint length in bits
  * @private
  */
 function computeFingerpintLength(size: number, rate: number): number {
-    const f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
-    return Math.ceil(f / 8) // because we use 64-bits hashes
+    return Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
 }
 
 export interface ExportedCuckooFilter {
@@ -95,8 +94,9 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
      * Build a new optimal CuckooFilter from an iterable with a fixed error rate
      * @param items - Iterable used to populate the filter
      * @param errorRate - The error rate of the filter
-     * @param  bucketSize - The number of buckets desired per cell
-     * @param  maxKicks - The number of kicks done when a collision occurs
+     * @param bucketSize - The number of buckets desired per cell
+     * @param maxKicks - The number of kicks done when a collision occurs
+     * @param seed - (optional) the seed to use
      * @return A new Cuckoo Filter filled with the iterable's elements
      */
     public static from(
@@ -104,9 +104,11 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         errorRate: number,
         bucketSize = 4,
         maxKicks = 500,
+        seed?: bigint,
     ): CuckooFilter {
         const array = Array.from(items)
         const filter = CuckooFilter.create(array.length, errorRate, bucketSize, maxKicks)
+        if (seed) filter.seed = seed
         array.forEach(item => filter.add(item))
         return filter
     }
@@ -298,21 +300,20 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
      * @private
      */
     public _locations(element: HashableInput) {
-        const hashes = this._hashing.hashIntAndString(element, this.seed)
-        const hash = hashes.int
-        if (this._fingerprintLength > hashes.string.length) {
+        const hash = this.hash(element)
+        const hashstr = hash.toString(2).padStart(64, '0')
+        if (this._fingerprintLength > hashstr.length) {
             throw new Error(
-                `The fingerprint length (${this._fingerprintLength.toString()}) is higher than the hash length (${hashes.string.length.toString()}). Please reduce the fingerprint length or report if it is an unexpected behavior.`,
+                `The fingerprint length (${this._fingerprintLength.toString()}) is higher than the hash length (${hashstr.length.toString()}). Please reduce the fingerprint length or report if it is an unexpected behavior.`,
             )
         }
-        const fingerprint = hashes.string.substring(0, this._fingerprintLength)
-        const firstIndex = getBigIntAbs(hash)
-        const secondHash = getBigIntAbs(this.hash(fingerprint))
-        const secondIndex = firstIndex ^ secondHash
+        const fingerprint = hashstr.substring(63 - this._fingerprintLength)
+        const firstIndex = hash % BigInt(this._size)
+        const secondIndex = (firstIndex ^ this.hash(fingerprint)) % BigInt(this._size)
         const res = {
             fingerprint,
-            firstIndex: bigIntToNumber(firstIndex % BigInt(this._size)),
-            secondIndex: bigIntToNumber(secondIndex % BigInt(this._size)),
+            firstIndex: Number(BigInt.asUintN(32, firstIndex)),
+            secondIndex: Number(BigInt.asUintN(32, secondIndex)),
         }
         return res
     }
