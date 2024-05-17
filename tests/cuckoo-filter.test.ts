@@ -1,10 +1,9 @@
 import { expect, test } from '@jest/globals'
-import { CuckooFilter, ExportedCuckooFilter, getBigIntAbs, randomInt } from '../src/index'
+import { CuckooFilter, ExportedCuckooFilter } from '../src/index'
 
 // const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
 // const seed = 8959374062914912n
 const seed = 7409732628718466n
-console.log(seed)
 
 test('should compute the fingerprint and indexes for an element', () => {
     const filter = new CuckooFilter(15, 3, 2, 1)
@@ -148,12 +147,9 @@ test('should look inside every possible bucket', () => {
     const locations = filter._locations(element)
 
     filter.add(element)
-    console.log(filter)
     filter.add(element)
-    console.log(filter)
     expect(filter.remove(element)).toBe(true)
     expect(filter._filter[locations.firstIndex].length).toEqual(0)
-    console.log(filter)
     expect(filter.remove(element)).toBe(true)
     expect(filter._filter[locations.secondIndex].length).toEqual(0)
 })
