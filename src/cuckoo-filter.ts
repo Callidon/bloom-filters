@@ -4,9 +4,8 @@ import Bucket, { ExportedBucket } from './bucket.js'
 import {
     ExportedBigInt,
     allocateArray,
-    bigIntToNumber,
     exportBigInt,
-    getBigIntAbs,
+    getNearestPow2,
     importBigInt,
     randomInt,
 } from './utils.js'
@@ -53,16 +52,17 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
     /**
      * Constructor
      * @param size - The filter size
-     * @param fLength - The length of the fingerprints
+     * @param fingerprintSize - The length of the fingerprints in bits
      * @param bucketSize - The size of the buckets in the filter
      * @param maxKicks - (optional) The max number of kicks when resolving collision at insertion, default to 500
      */
-    constructor(size: number, fLength: number, bucketSize: number, maxKicks = 500) {
+    constructor(size: number, fingerprintSize: number, bucketSize: number, maxKicks = 500) {
         super()
-        this._filter = allocateArray(size, () => new Bucket(bucketSize))
-        this._size = size
+        const s = Number(BigInt.asUintN(32, getNearestPow2(BigInt(size))))
+        this._filter = allocateArray(s, () => new Bucket(bucketSize))
+        this._size = s
         this._bucketSize = bucketSize
-        this._fingerprintLength = fLength
+        this._fingerprintLength = fingerprintSize
         this._length = 0
         this._maxKicks = maxKicks
     }
@@ -73,10 +73,10 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
 
     /**
      * Return a new optimal CuckooFilter given the number of maximum elements to store and the error rate desired
-     * @param  size - The number of items to store
-     * @param  errorRate - The desired error rate
-     * @param  bucketSize - The number of buckets desired per cell
-     * @param  maxKicks - The number of kicks done when a collision occurs
+     * @param size - The number of items to store
+     * @param errorRate - (optional, default=0.01) The error rate of the filter
+     * @param bucketSize - (optional, default=4) The number of buckets desired per cell
+     * @param maxKicks - (optional, default=500) The number of kicks done when a collision occurs
      * @return A Cuckoo Filter optimal for these parameters
      */
     public static create(
@@ -93,15 +93,15 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
     /**
      * Build a new optimal CuckooFilter from an iterable with a fixed error rate
      * @param items - Iterable used to populate the filter
-     * @param errorRate - The error rate of the filter
-     * @param bucketSize - The number of buckets desired per cell
-     * @param maxKicks - The number of kicks done when a collision occurs
+     * @param errorRate - (optional, default=0.01) The error rate of the filter
+     * @param bucketSize - (optional, default=4) The number of buckets desired per cell
+     * @param maxKicks - (optional, default=500) The number of kicks done when a collision occurs
      * @param seed - (optional) the seed to use
      * @return A new Cuckoo Filter filled with the iterable's elements
      */
     public static from(
         items: Iterable<HashableInput>,
-        errorRate: number,
+        errorRate: number = 0.01,
         bucketSize = 4,
         maxKicks = 500,
         seed?: bigint,
@@ -167,7 +167,6 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
      * ```
      */
     public add(element: HashableInput, throwError = false, destructive = false): boolean {
-        // TODO do the recovery if return false or throw error because we altered values
         const locations = this._locations(element)
         // store fingerprint in an available empty bucket
         if (this._filter[locations.firstIndex].isFree()) {
@@ -175,39 +174,35 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         } else if (this._filter[locations.secondIndex].isFree()) {
             this._filter[locations.secondIndex].add(locations.fingerprint)
         } else {
+            let fingerprint = locations.fingerprint
             // buckets are full, we must relocate one of them
             let index = this.random() < 0.5 ? locations.firstIndex : locations.secondIndex
-            let movedElement: string = locations.fingerprint
             const logs: [number, number, string | null][] = []
             for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
                 const rndIndex = randomInt(0, this._filter[index].length - 1, this.random)
                 const tmp = this._filter[index].at(rndIndex)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
                 logs.push([index, rndIndex, tmp])
-                this._filter[index].set(rndIndex, movedElement)
-                movedElement = tmp
-                // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
-                const newHash = this.hash(movedElement)
-                index = bigIntToNumber(
-                    getBigIntAbs(BigInt(index) ^ getBigIntAbs(newHash)) %
-                        BigInt(this._filter.length),
-                )
+                // swap f with e's fingerprint
+                this._filter[index].set(rndIndex, fingerprint)
+                fingerprint = tmp
+                // i = i ^ hash(fingerprint)
+                index = Number(BigInt.asUintN(32, BigInt(index) ^ this.hash(tmp))) % this._size
                 // add the moved element to the bucket if possible
                 if (this._filter[index].isFree()) {
-                    this._filter[index].add(movedElement)
+                    this._filter[index].add(fingerprint)
                     this._length++
                     return true
                 }
             }
             if (!destructive) {
                 // rollback all modified entries to their initial states
-                for (let i = logs.length - 1; i >= 0; i--) {
-                    const log = logs[i]
+                let log
+                while ((log = logs.pop())) {
                     this._filter[log[0]].set(log[1], log[2])
                 }
             }
             // considered full
             if (throwError) {
-                // rollback all operations
                 throw new Error(
                     `The Cuckoo Filter is full, cannot insert element "${element}"`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
                 )
@@ -307,13 +302,14 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
                 `The fingerprint length (${this._fingerprintLength.toString()}) is higher than the hash length (${hashstr.length.toString()}). Please reduce the fingerprint length or report if it is an unexpected behavior.`,
             )
         }
-        const fingerprint = hashstr.substring(63 - this._fingerprintLength)
-        const firstIndex = hash % BigInt(this._size)
-        const secondIndex = (firstIndex ^ this.hash(fingerprint)) % BigInt(this._size)
+        // take the first n bits
+        const fingerprint = hashstr.substring(hashstr.length - this._fingerprintLength)
+        const firstIndex = hash
+        const secondIndex = firstIndex ^ this.hash(fingerprint)
         const res = {
             fingerprint,
-            firstIndex: Number(BigInt.asUintN(32, firstIndex)),
-            secondIndex: Number(BigInt.asUintN(32, secondIndex)),
+            firstIndex: Number(BigInt.asUintN(32, firstIndex)) % this._size,
+            secondIndex: Number(BigInt.asUintN(32, secondIndex)) % this._size,
         }
         return res
     }
@@ -336,6 +332,10 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         return res
     }
 
+    /**
+     * Save this filter in JSON format
+     * @returns
+     */
     public saveAsJSON(): ExportedCuckooFilter {
         return {
             _size: this._size,
@@ -348,6 +348,11 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         }
     }
 
+    /**
+     * Import a JSON exported filter into a new CuckooFilter instance
+     * @param element - The JSON exported object to import
+     * @returns
+     */
     public static fromJSON(element: ExportedCuckooFilter): CuckooFilter {
         const filter = new CuckooFilter(
             element._size,

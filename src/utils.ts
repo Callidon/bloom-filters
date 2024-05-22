@@ -126,3 +126,20 @@ export function bigIntToNumber(int: bigint): number {
     if (int > max) throw new Error("Number doesn't fit in signed 64-bit integer!")
     return Number(BigInt.asIntN(64, int))
 }
+
+/**
+ * Return the next nearest power of 2 of the specified input
+ * @param x
+ * @returns
+ */
+export function getNearestPow2(x: bigint) {
+    x--
+    x |= x >> 1n
+    x |= x >> 2n
+    x |= x >> 4n
+    x |= x >> 8n
+    x |= x >> 16n
+    x |= x >> 32n
+    x++
+    return x
+}

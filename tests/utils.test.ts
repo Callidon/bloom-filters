@@ -1,5 +1,12 @@
 import { expect, test } from '@jest/globals'
-import { Hashing, BloomFilter, allocateArray, randomInt, xorUint8Array } from '../src/index'
+import {
+    Hashing,
+    BloomFilter,
+    allocateArray,
+    randomInt,
+    xorUint8Array,
+    getNearestPow2,
+} from '../src/index'
 
 const seed = BigInt(randomInt(1, Number.MAX_SAFE_INTEGER))
 
@@ -127,4 +134,9 @@ test('overriding serialize function by always returning Number(1)', () => {
     bl2.add('b')
     // 2 bloom filters with a hash functions returning everytime the same thing must be equal
     expect(bl.equals(bl2)).toBe(true)
+})
+
+test('should return the next nearest power of 2', () => {
+    expect(getNearestPow2(15n)).toEqual(16n)
+    expect(getNearestPow2(31n)).toEqual(32n)
 })
