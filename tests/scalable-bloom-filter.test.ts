@@ -41,12 +41,13 @@ test('should #has return correct values with added values', () => {
                     fp++
                 }
             }
-            // the error rate is respected but it is still probabilities, 
+            // the error rate is respected but it is still probabilities,
             // with a higher number of lookups the test is green
             // so we multiply by 10 to ensure the test pass
             // and also check it is around the desired error rate
             expect(fp / round).toBeLessThanOrEqual(10 * 2 * e) // compounded error probability is bounded by P <= 2 * P0
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.log(s)
             throw e
         }

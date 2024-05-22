@@ -1,5 +1,5 @@
 import { xxh3 } from '@node-rs/xxhash'
-import { bigIntToNumber, getBigIntAbs, numberToHex } from './utils.js'
+import { getBigIntAbs, numberToHex } from './utils.js'
 
 import {
     TwoHashes,
@@ -60,7 +60,11 @@ export default class Hashing {
         const arr = []
         const hashes = this.hashTwice(element, seed)
         for (let i = 0; i < hashCount; i++) {
-            arr.push(Number(BigInt.asUintN(32, this.doubleHashing(i, hashes.first, hashes.second, size))))
+            arr.push(
+                Number(
+                    BigInt.asUintN(32, this.doubleHashing(i, hashes.first, hashes.second, size)),
+                ),
+            )
         }
         if (arr.length !== hashCount) {
             throw new Error('Please report: wrong number of indexes')

@@ -57,7 +57,11 @@ export default class PartitionedBloomFilter
      * @param  errorRate - The desired error rate
      * @return A new PartitionedBloomFilter optimal for the given parameters
      */
-    public static create(size: number, errorRate: number, nbHashes?: number): PartitionedBloomFilter {
+    public static create(
+        size: number,
+        errorRate: number,
+        nbHashes?: number,
+    ): PartitionedBloomFilter {
         const L = nbHashes ? nbHashes : Math.ceil(Math.log2(1 / errorRate))
         const M = (size * Math.abs(Math.log(errorRate))) / Math.LN2 ** 2
         // the optimal loadfactor is 0.5 for maximized size

@@ -177,7 +177,7 @@ test('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
 
     // false positive rate should stay under the desired one
     let fp = 0
-    let round = 10000
+    const round = 10000
     for (let i = 0; i < round; i++) {
         elems.forEach(e => {
             // should return false
