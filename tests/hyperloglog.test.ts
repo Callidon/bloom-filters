@@ -1,10 +1,13 @@
 import { expect, test } from '@jest/globals'
-import { HyperLogLog } from '../src/index'
+import { HyperLogLog, randomInt } from '../src/index'
+
+const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
 
 test('should support update and cardinality estimations (count) operations', () => {
     const m = 2 ** 8
     const n = 10e4
     const sketch = new HyperLogLog(m)
+    sketch.seed = seed
     // populate the sketch with some values
     for (let i = 0; i < n; i++) {
         sketch.update(i.toString())
@@ -38,7 +41,9 @@ test('should support update and cardinality estimations (count) operations', () 
 })
 test('should performs the union of two HyperLogLog sketches', () => {
     const first = new HyperLogLog(2 ** 4)
+    first.seed = seed
     const second = new HyperLogLog(2 ** 4)
+    second.seed = seed
     first.update('alice')
     first.update('bob')
     second.update('carol')
@@ -53,13 +58,17 @@ test('should performs the union of two HyperLogLog sketches', () => {
 
 test('should reject the union of two sketches with different number of registers', () => {
     const first = new HyperLogLog(2 ** 4)
+    first.seed = seed
     const second = new HyperLogLog(2 ** 5)
+    second.seed = seed
     expect(() => first.merge(second)).toThrow(Error)
 })
 
 test('should returns True when two HyperLogLog sketches are equals', () => {
     const first = new HyperLogLog(2 ** 4)
+    first.seed = seed
     const second = new HyperLogLog(2 ** 4)
+    second.seed = seed
     first.update('alice')
     first.update('bob')
     second.update('alice')
@@ -69,13 +78,17 @@ test('should returns True when two HyperLogLog sketches are equals', () => {
 
 test('should returns False when two sketches have different number of registers', () => {
     const first = new HyperLogLog(2 ** 4)
+    first.seed = seed
     const second = new HyperLogLog(2 ** 5)
+    second.seed = seed
     expect(first.equals(second)).toBe(false)
 })
 
 test('should returns False when two sketches have different content in their registers', () => {
     const first = new HyperLogLog(2 ** 4)
+    first.seed = seed
     const second = new HyperLogLog(2 ** 5)
+    second.seed = seed
     first.update('alice')
     first.update('bob')
     second.update('carol')
@@ -85,6 +98,7 @@ test('should returns False when two sketches have different content in their reg
 
 function buildHyperloglog() {
     const sketch = new HyperLogLog(2 ** 4)
+    sketch.seed = seed
     sketch.update('alice')
     sketch.update('bob')
     return sketch
@@ -113,6 +127,7 @@ test('should create an HyperLogLog from a JSON export', () => {
 test('issue#(https://github.com/Callidon/bloom-filters/issues/69)', () => {
     // create a new HyperLogLog with 100 registers
     const sketch = new HyperLogLog(128)
+    sketch.seed = seed
     // push 10000 distinct elements
     const n = 2 ** 14
     for (let i = 0; i < n; i++) {
