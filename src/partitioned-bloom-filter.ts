@@ -57,8 +57,8 @@ export default class PartitionedBloomFilter
      * @param  errorRate - The desired error rate
      * @return A new PartitionedBloomFilter optimal for the given parameters
      */
-    public static create(size: number, errorRate: number): PartitionedBloomFilter {
-        const L = Math.ceil(Math.log2(1 / errorRate))
+    public static create(size: number, errorRate: number, nbHashes?: number): PartitionedBloomFilter {
+        const L = nbHashes ? nbHashes : Math.ceil(Math.log2(1 / errorRate))
         const M = (size * Math.abs(Math.log(errorRate))) / Math.LN2 ** 2
         // the optimal loadfactor is 0.5 for maximized size
         return new PartitionedBloomFilter(M, L, errorRate)
@@ -166,7 +166,7 @@ export default class PartitionedBloomFilter
 
     /**
      * Return the current load of this filter; number of bits set by the size
-     * @return An integer between 0 and 1, where 0 = filter empty and 1 = filter full
+     * @return An float between 0 and 1, where 0 = filter empty and 1 = filter full
      */
     public load(): number {
         const a = this._filter.reduce((acc, bitSet) => acc + bitSet.bitCount(), 0)

@@ -105,14 +105,16 @@ export default class ScalableBloomFilter
         const index = this._filters.length
         let newSize
         let newErrorRate
+        let newHashes
         if (index === 0) {
             newSize = this._initial_size
             newErrorRate = this._initial_error_rate
         } else {
             newSize = this._filters[0]._m * Math.pow(ScalableBloomFilter._s, index)
             newErrorRate = this.current._errorRate * this._ratio
+            newHashes = Math.ceil(this._filters[0]._k + index * Math.log2(1 / this._ratio))
         }
-        const newFilter = PartitionBloomFilter.create(newSize, newErrorRate)
+        const newFilter = PartitionBloomFilter.create(newSize, newErrorRate, newHashes)
         newFilter._seed = this.seed
         this._filters.push(newFilter)
     }
