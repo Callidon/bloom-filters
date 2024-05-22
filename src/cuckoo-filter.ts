@@ -86,7 +86,7 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
         maxKicks = 500,
     ): CuckooFilter {
         const fl = computeFingerpintLength(bucketSize, errorRate)
-        const capacity = Math.ceil(size / bucketSize / 0.955)
+        const capacity = Math.ceil(Math.max(size, 32) / bucketSize / 0.955)
         return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
     }
 

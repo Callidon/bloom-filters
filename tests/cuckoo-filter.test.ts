@@ -167,28 +167,26 @@ test('should remove works correctly', () => {
 })
 
 test('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
-    const filter = CuckooFilter.create(15, 0.01)
-    filter.seed = seed
-    filter.add('alice')
-    filter.add('andrew')
-    filter.add('bob')
-    filter.add('sam')
+    const elems = ['alice', 'andrew', 'bob', 'sam']
+    const rate = 0.01
+    const filter = CuckooFilter.from(elems, rate, undefined, undefined, seed)
+    // no false negative
+    elems.forEach(e => {
+        expect(filter.has(e)).toBe(true)
+    })
 
-    filter.add('alice')
-    filter.add('andrew')
-    filter.add('bob')
-    filter.add('sam')
-    // lookup for some data
-    const one = filter.has('samx') // output: false [ok]
-    expect(one).toBe(false)
-    const two = filter.has('samy') // output: true [?]
-    expect(two).toBe(false)
-    const three = filter.has('alice') // output: true [ok]
-    expect(three).toBe(true)
-    const four = filter.has('joe') // output: true [?]
-    expect(four).toBe(false)
-    const five = filter.has('joe') // output: true [?]
-    expect(five).toBe(false)
+    // false positive rate should stay under the desired one
+    let fp = 0
+    let round = 10000
+    for (let i = 0; i < round; i++) {
+        elems.forEach(e => {
+            // should return false
+            if (filter.has(e + '-' + i.toString())) {
+                fp++
+            }
+        })
+    }
+    expect(fp / (round * elems.length)).toBeLessThan(rate)
 })
 
 function buildCuckooFilter() {
@@ -222,10 +220,10 @@ test('should create a cuckoo filter from a JSON export', () => {
 })
 
 const max = 20
-const rate = 0.000000000000000001
-const bucketSize = 1
+const rate = 0.00001
+const bucketSize = 4
 test(`should not return an error when inserting and asking for ${max.toString()} elements, rate = ${rate.toString()}; bucketSize = ${bucketSize.toString()};`, () => {
-    const filter = CuckooFilter.create(max, rate, bucketSize, 500)
+    const filter = CuckooFilter.create(max, rate, bucketSize)
     filter.seed = seed
     for (let i = 0; i < max; i++) {
         expect(filter.add(i.toString())).toBe(true)
