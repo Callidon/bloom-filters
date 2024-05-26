@@ -158,6 +158,8 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
     /**
      * Add an element to the filter, if false is returned, it means that the filter is considered as full.
      * @param element - The element to add
+     * @param throwError - Throw an error instead of returning false
+     * @param destructive - By default it rollbacks the changes if it returns false, you can change this behavior if needed
      * @return True if the insertion is a success, False if the filter is full
      * @example
      * ```js

@@ -1,8 +1,9 @@
 import { expect, test } from '@jest/globals'
-import { CountMinSketch, randomInt } from '../src/index'
+import { CountMinSketch } from '../src/index'
+import Global from './global'
 
+const seed = Global.seed(__filename)
 const delta = 0.999
-const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
 
 test('should support update and point query (count) operations', () => {
     const sketch = CountMinSketch.create(0.001, delta)

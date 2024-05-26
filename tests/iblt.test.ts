@@ -1,14 +1,15 @@
 import { expect, test } from '@jest/globals'
 import { InvertibleBloomFilter, exportBigInt, randomInt } from '../src/index'
 import range from 'lodash.range'
+import Global from './global'
 
+const seed = Global.seed(__filename)
 const keys = 10000
 const hashCount = 6
 const alpha = 2 // for the purpose of the tests we use an extremely large filter
 const d = 1000
 let size = Math.ceil(alpha * d)
 size = size + (hashCount - (size % hashCount))
-const seed = BigInt(randomInt(1, Number.MAX_SAFE_INTEGER))
 
 const toInsert = [
     'help',

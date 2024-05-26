@@ -1,8 +1,9 @@
 import { expect, test } from '@jest/globals'
-import { CountingBloomFilter, exportBigInt, randomInt } from '../src/index'
+import { CountingBloomFilter, exportBigInt } from '../src/index'
+import Global from './global'
 
+const seed = Global.seed(__filename)
 const targetRate = 0.001
-const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
 
 test('should add element to the filter with #add', () => {
     const filter = CountingBloomFilter.create(15, targetRate, seed)

@@ -7,8 +7,9 @@ import {
     xorUint8Array,
     getNearestPow2,
 } from '../src/index'
+import Global from './global'
 
-const seed = BigInt(randomInt(1, Number.MAX_SAFE_INTEGER))
+const seed = Global.seed(__filename)
 
 test('should allocate an array with the given size and a default value', () => {
     const array = allocateArray(15, 1)
@@ -139,4 +140,9 @@ test('overriding serialize function by always returning Number(1)', () => {
 test('should return the next nearest power of 2', () => {
     expect(getNearestPow2(15n)).toEqual(16n)
     expect(getNearestPow2(31n)).toEqual(32n)
+})
+
+test('should global seed be used before all tests', () => {
+    expect(seed).toBeDefined()
+    expect(seed).not.toEqual(0n)
 })

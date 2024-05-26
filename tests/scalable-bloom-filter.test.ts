@@ -1,8 +1,9 @@
 import { expect, test } from '@jest/globals'
 import { ScalableBloomFilter, randomInt } from '../src/index'
+import Global from './global'
 
+const seed = Global.seed(__filename)
 const targetRate = 0.1
-const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
 test('should #add add elements without error', () => {
     const filter = ScalableBloomFilter.create(3, targetRate)
     filter.seed = seed

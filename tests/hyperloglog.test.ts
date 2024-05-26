@@ -1,7 +1,8 @@
 import { expect, test } from '@jest/globals'
 import { HyperLogLog, randomInt } from '../src/index'
+import Global from './global'
 
-const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
+const seed = Global.seed(__filename)
 
 test('should support update and cardinality estimations (count) operations', () => {
     const m = 2 ** 8

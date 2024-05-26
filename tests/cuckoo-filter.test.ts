@@ -1,8 +1,8 @@
 import { expect, test } from '@jest/globals'
 import { CuckooFilter, randomInt } from '../src/index'
+import Global from './global'
 
-const seed = BigInt(randomInt(0, Number.MAX_SAFE_INTEGER))
-// console.log('Cuckoo seed: ', seed)
+const seed = Global.seed(__filename)
 
 test('should compute the fingerprint and indexes for an element', () => {
     const filter = new CuckooFilter(15, 3, 2, 1)
@@ -61,7 +61,7 @@ test('should store ane element accross two different buckets', () => {
 })
 
 test('should perform random kicks when both buckets are full', () => {
-    const filter = new CuckooFilter(15, 3, 1)
+    const filter = new CuckooFilter(128, 3, 4)
     filter.seed = seed
     const element = 'foo'
     const locations = filter._locations(element)
@@ -177,7 +177,7 @@ test('issue#(https://github.com/Callidon/bloom-filters/issues/9)', () => {
 
     // false positive rate should stay under the desired one
     let fp = 0
-    const round = 10000
+    let round = 10000
     for (let i = 0; i < round; i++) {
         elems.forEach(e => {
             // should return false
