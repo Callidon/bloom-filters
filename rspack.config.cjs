@@ -28,7 +28,7 @@ module.exports = defineConfig({
         // .wasm rule and experiments.asyncWebAssembly=true are required due to the use of @node-rs/xxhash
         rules: [
             {
-                test: /\.(mts|mjs)$/,
+                test: /\.ts?$/,
                 type: 'javascript/auto',
                 use: [
                     {
