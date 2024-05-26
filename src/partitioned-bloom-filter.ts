@@ -1,7 +1,7 @@
 import BaseFilter from './base-filter.js'
 import ClassicFilter from './interfaces/classic-filter.js'
 import { ExportedBigInt, allocateArray, exportBigInt, importBigInt } from './utils.js'
-import { HashableInput } from './types.js'
+import { HashableInput, SeedType } from './types.js'
 import BitSet, { ExportedBitSet } from './bit-set.js'
 
 export interface ExportedPartitionedBloomFilter {
@@ -79,9 +79,16 @@ export default class PartitionedBloomFilter
      * const filter = PartitionedBloomFilter.from(['alice', 'bob', 'carl'], 0.1);
      * ```
      */
-    public static from(items: Iterable<HashableInput>, errorRate: number): PartitionedBloomFilter {
+    public static from(
+        items: Iterable<HashableInput>,
+        errorRate: number,
+        seed?: SeedType,
+    ): PartitionedBloomFilter {
         const array = Array.from(items)
         const filter = PartitionedBloomFilter.create(array.length, errorRate)
+        if (seed) {
+            filter.seed = seed
+        }
         array.forEach(element => {
             filter.add(element)
         })
