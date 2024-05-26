@@ -65,38 +65,6 @@ test('should reject the union of two sketches with different number of registers
     expect(() => first.merge(second)).toThrow(Error)
 })
 
-test('should returns True when two HyperLogLog sketches are equals', () => {
-    const first = new HyperLogLog(2 ** 4)
-    first.seed = seed
-    const second = new HyperLogLog(2 ** 4)
-    second.seed = seed
-    first.update('alice')
-    first.update('bob')
-    second.update('alice')
-    second.update('bob')
-    expect(first.equals(second)).toBe(true)
-})
-
-test('should returns False when two sketches have different number of registers', () => {
-    const first = new HyperLogLog(2 ** 4)
-    first.seed = seed
-    const second = new HyperLogLog(2 ** 5)
-    second.seed = seed
-    expect(first.equals(second)).toBe(false)
-})
-
-test('should returns False when two sketches have different content in their registers', () => {
-    const first = new HyperLogLog(2 ** 4)
-    first.seed = seed
-    const second = new HyperLogLog(2 ** 5)
-    second.seed = seed
-    first.update('alice')
-    first.update('bob')
-    second.update('carol')
-    second.update('daniel')
-    expect(first.equals(second)).toBe(false)
-})
-
 function buildHyperloglog() {
     const sketch = new HyperLogLog(2 ** 4)
     sketch.seed = seed

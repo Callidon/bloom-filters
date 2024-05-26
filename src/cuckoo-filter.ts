@@ -317,24 +317,6 @@ export default class CuckooFilter extends BaseFilter implements WritableFilter<H
     }
 
     /**
-     * Check if another Cuckoo filter is equal to this one
-     * @param  filter - The cuckoo filter to compare to this one
-     * @return True if they are equal, false otherwise
-     */
-    public equals(filter: CuckooFilter): boolean {
-        let i = 0
-        let res = true
-        while (res && i < this._filter.length) {
-            const bucket = this._filter[i]
-            if (!filter._filter[i].equals(bucket)) {
-                res = false
-            }
-            i++
-        }
-        return res
-    }
-
-    /**
      * Save this filter in JSON format
      * @returns
      */

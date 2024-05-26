@@ -240,37 +240,6 @@ export default class XorFilter extends BaseFilter {
     }
 
     /**
-     * Return True if the other XorFilter is equal
-     * @param filter
-     * @returns
-     */
-    public equals(filter: XorFilter) {
-        // first check the seed
-        if (this.seed !== filter.seed) {
-            return false
-        }
-        // check the number of bits per fingerprint used
-        if (this._bits !== filter._bits) {
-            return false
-        }
-        // check the number of elements inserted
-        if (this._size !== filter._size) {
-            return false
-        }
-        // now check each entry of the filter
-        let broken = true
-        let i = 0
-        while (broken && i < this._filter.length) {
-            if (filter._filter[i] !== this._filter[i]) {
-                broken = false
-            } else {
-                i++
-            }
-        }
-        return broken
-    }
-
-    /**
      * Return a XorFilter for a specified set of elements
      * @param elements
      * @param bits_per_fingerprint

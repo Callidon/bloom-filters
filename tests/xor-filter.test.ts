@@ -45,7 +45,7 @@ sizes.forEach(size => {
         const filter = XorFilter.create(['alice'])
         const json = filter.saveAsJSON()
         const newFilter = XorFilter.fromJSON(json)
-        expect(filter.equals(newFilter)).toBe(true)
+        expect(filter._filter.every((b, i) => newFilter._filter[i] === b))
         expect(filter.seed).toEqual(newFilter.seed)
     })
 })

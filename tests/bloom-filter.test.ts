@@ -44,30 +44,6 @@ test('should return true for elements that might be in the set', () => {
     expect(filter.has('carl')).toBe(true)
 })
 
-test('should returns True when two filters are equals', () => {
-    const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
-    const other = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
-    expect(first.equals(other)).toBe(true)
-})
-
-test('should returns False when two filters have different sizes', () => {
-    const first = new BloomFilter(15, 4)
-    const other = new BloomFilter(10, 4)
-    expect(first.equals(other)).toBe(false)
-})
-
-test('should returns False when two filters have different nb. of hash functions', () => {
-    const first = new BloomFilter(15, 4)
-    const other = new BloomFilter(15, 2)
-    expect(first.equals(other)).toBe(false)
-})
-
-test('should returns False when two filters have different content', () => {
-    const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
-    const other = BloomFilter.from(['alice', 'bob', 'daniel'], targetRate)
-    expect(first.equals(other)).toBe(false)
-})
-
 function buildFilter() {
     return BloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
 }

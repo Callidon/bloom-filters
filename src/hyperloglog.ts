@@ -181,23 +181,6 @@ export default class HyperLogLog extends BaseFilter {
         return newSketch
     }
 
-    /**
-     * Check if another HyperLogLog is equal to this one
-     * @param  other - The HyperLogLog to compare to this one
-     * @return True if they are equal, false otherwise
-     */
-    public equals(other: HyperLogLog): boolean {
-        if (this.nbRegisters !== other.nbRegisters) {
-            return false
-        }
-        for (let i = 0; i < this.nbRegisters - 1; i++) {
-            if (this._registers[i] !== other._registers[i]) {
-                return false
-            }
-        }
-        return true
-    }
-
     public saveAsJSON(): ExportedHyperLogLog {
         return {
             _m: this._m,

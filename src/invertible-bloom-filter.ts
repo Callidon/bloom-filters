@@ -210,30 +210,6 @@ export default class InvertibleBloomFilter extends BaseFilter implements Writabl
     }
 
     /**
-     * Test if two InvertibleBloomFilters are equals
-     * @param iblt - The filter to compare with
-     * @return True if the two filters are equals, False otherwise
-     */
-    public equals(iblt: InvertibleBloomFilter): boolean {
-        if (
-            iblt._size !== this._size ||
-            iblt._hashCount !== this._hashCount ||
-            iblt._seed !== this._seed ||
-            iblt._differences !== this._differences ||
-            iblt._alpha !== this._alpha
-        ) {
-            return false
-        } else {
-            for (let i = 0; i < iblt._elements.length; ++i) {
-                if (!iblt._elements[i].equals(this._elements[i])) {
-                    return false
-                }
-            }
-            return true
-        }
-    }
-
-    /**
      * Decode an InvertibleBloomFilter based on its substracted version
      * @return The results of the deconding process
      */

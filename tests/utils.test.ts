@@ -133,8 +133,7 @@ test('overriding serialize function by always returning Number(1)', () => {
     const bl2 = BloomFilter.create(2, 0.01)
     bl2._hashing = new CustomHashing()
     bl2.add('b')
-    // 2 bloom filters with a hash functions returning everytime the same thing must be equal
-    expect(bl.equals(bl2)).toBe(true)
+    expect(bl._filter.equals(bl2._filter)).toBe(true)
 })
 
 test('should return the next nearest power of 2', () => {

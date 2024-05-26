@@ -150,18 +150,6 @@ export default class BloomFilter extends BaseFilter implements ClassicFilter<Has
         return Math.pow(1 - Math.exp(-this.length / this._size), this._nbHashes)
     }
 
-    /**
-     * Check if another Bloom Filter is equal to this one
-     * @param  other - The filter to compare to this one
-     * @return True if they are equal, false otherwise
-     */
-    public equals(other: BloomFilter): boolean {
-        if (this._size !== other._size || this._nbHashes !== other._nbHashes) {
-            return false
-        }
-        return this._filter.equals(other._filter)
-    }
-
     public saveAsJSON(): ExportedBloomFilter {
         return {
             _size: this._size,

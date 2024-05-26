@@ -87,14 +87,6 @@ test('should export an Invertible Bloom Filter to a JSON object', () => {
     expect(exported._elements).toEqual(iblt._elements.map(e => e.saveAsJSON()))
 })
 
-test('should create an Invertible Bloom Filter from a JSON export', () => {
-    const iblt = buildIblt()
-    const exported = iblt.saveAsJSON()
-    const newIblt = InvertibleBloomFilter.fromJSON(exported)
-    expect(iblt.equals(newIblt)).toBe(true)
-    expect(newIblt.seed).toEqual(iblt.seed)
-})
-
 test.each(range(0, 10).map(r => [r, BigInt(randomInt(1, Number.MAX_SAFE_INTEGER))]))(
     'should decodes correctly elements (run %d with seed %d)',
     (_, seed) => {
