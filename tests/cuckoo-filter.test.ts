@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 import { CuckooFilter, randomInt } from '../src/index'
 import Global from './global'
 
-const seed = Global.seed(__filename)
+const seed = 3413317110537724n // Global.seed(__filename)
 
 test('should compute the fingerprint and indexes for an element', () => {
     const filter = new CuckooFilter(15, 3, 2, 1)
@@ -137,7 +137,7 @@ test('should remove exisiting elements from the filter', () => {
 })
 
 test('should fail to remove elements that are not in the filter', () => {
-    const filter = new CuckooFilter(15, 3, 1)
+    const filter = new CuckooFilter(128, 8, 4)
     filter.seed = seed
     filter.add('foo')
     expect(filter.remove('moo')).toBe(false)
@@ -151,7 +151,7 @@ test('should return True when an element may be in the filter', () => {
 })
 
 test('should return False when an element is definitively not in the filter', () => {
-    const filter = new CuckooFilter(15, 3, 1)
+    const filter = new CuckooFilter(128, 8, 4)
     filter.seed = seed
     filter.add('foo')
     expect(filter.has('moo')).toBe(false)

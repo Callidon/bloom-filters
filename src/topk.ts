@@ -91,13 +91,7 @@ export class MinHeap {
      * @return Index of the element or -1 if it is not in the heap
      */
     public indexOf(value: string): number {
-        // TODO optimize
         return this._content.findIndex(heapElement => heapElement.value === value)
-        // const index = sortedIndexBy(this._content, {value, frequency: 0}, heapElement => heapElement.value)
-        // if (this._content[index] !== undefined && this._content[index].value === value) {
-        //   return index
-        // }
-        // return -1
     }
 
     /**
