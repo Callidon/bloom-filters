@@ -92,6 +92,21 @@ test("should reject elements that can't be inserted when filter is full", () => 
     expect(filter.add(element, false, true)).toBe(false)
 })
 
+test('should throw is throwError is true and add is falsy', () => {
+    const filter = CuckooFilter.create(32, 0.01)
+    filter.seed = seed
+    let hasThrow = false
+    for (let i = 0; i < 1000; i++) {
+        try {
+            filter.add(i.toString(), true, true)
+        } catch (e) {
+            hasThrow = true
+            break
+        }
+    }
+    expect(hasThrow).toBe(true)
+})
+
 test('should not rollback to its initial state in case the filter is full with option add(x, false, true)', () => {
     const filter = CuckooFilter.create(32, 0.01)
     filter.seed = seed
@@ -99,7 +114,6 @@ test('should not rollback to its initial state in case the filter is full with o
     for (let i = 0; i < 1000; i++) {
         if (!filter.add(i.toString())) {
             const snapshot = JSON.stringify(filter.saveAsJSON())
-            expect(() => filter.add(i.toString(), true, true)).toThrow(Error)
             expect(filter.add(i.toString(), false, true)).toBe(false)
             expect(JSON.stringify(filter.saveAsJSON())).not.toEqual(snapshot)
             tested = true
