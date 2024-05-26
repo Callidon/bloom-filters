@@ -175,7 +175,7 @@ export default class HyperLogLog extends BaseFilter {
             )
         }
         const newSketch = new HyperLogLog(this.nbRegisters)
-        for (let i = 0; i < this.nbRegisters - 1; i++) {
+        for (let i = 0; i < this.nbRegisters; i++) {
             newSketch._registers[i] = Math.max(this._registers[i], other._registers[i])
         }
         return newSketch
