@@ -97,9 +97,11 @@ test('should throw is throwError is true and add is falsy', () => {
     filter.seed = seed
     let hasThrow = false
     for (let i = 0; i < 1000; i++) {
+        const snapshot = JSON.stringify(filter.saveAsJSON())
         try {
-            filter.add(i.toString(), true, true)
+            filter.add(i.toString(), true, false)
         } catch (e) {
+            expect(JSON.stringify(filter.saveAsJSON())).toEqual(snapshot)
             hasThrow = true
             break
         }
@@ -112,9 +114,8 @@ test('should not rollback to its initial state in case the filter is full with o
     filter.seed = seed
     let tested = false
     for (let i = 0; i < 1000; i++) {
-        if (!filter.add(i.toString())) {
-            const snapshot = JSON.stringify(filter.saveAsJSON())
-            expect(filter.add(i.toString(), false, true)).toBe(false)
+        const snapshot = JSON.stringify(filter.saveAsJSON())
+        if (!filter.add(i.toString(), false, true)) {
             expect(JSON.stringify(filter.saveAsJSON())).not.toEqual(snapshot)
             tested = true
             break
