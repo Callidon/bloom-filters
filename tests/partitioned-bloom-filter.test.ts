@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 import { PartitionedBloomFilter } from '../src/index'
 import Global from './global'
 
-const seed = 6764197776779098n // Global.seed(__filename)
+const seed = Global.seed(__filename)
 
 const targetRate = 0.001
 test('should add element to the filter', () => {
