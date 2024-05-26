@@ -164,18 +164,6 @@ export default class PartitionedBloomFilter
     }
 
     /**
-     * Check if another Partitioned Bloom Filter is equal to this one
-     * @param  other - The filter to compare to this one
-     * @return True if they are equal, false otherwise
-     */
-    public equals(other: PartitionedBloomFilter): boolean {
-        if (this._bits !== other._bits || this._k !== other._k) {
-            return false
-        }
-        return this._filter.every((array, outerIndex) => other._filter[outerIndex].equals(array))
-    }
-
-    /**
      * Return the current load of this filter; number of bits set by the size
      * @return An float between 0 and 1, where 0 = filter empty and 1 = filter full
      */

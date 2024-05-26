@@ -159,25 +159,6 @@ export default class ScalableBloomFilter
     }
 
     /**
-     * Check if two ScalableBloomFilter are equal
-     * @param filter
-     * @returns
-     */
-    public equals(filter: ScalableBloomFilter) {
-        // assert the seed, the ratio and the capacity are equals
-        if (
-            this.seed !== filter.seed ||
-            this._ratio !== filter._ratio ||
-            this.capacity() !== filter.capacity()
-        ) {
-            return false
-        }
-        return this._filters.every((currentFilter: PartitionBloomFilter, index) =>
-            filter._filters[index].equals(currentFilter),
-        )
-    }
-
-    /**
      * Create a Scalable Bloom Filter based on Partitioned Bloom Filter.
      * @param _size the starting size of the filter
      * @param _error_rate ther error rate desired of the filter

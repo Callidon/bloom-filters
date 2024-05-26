@@ -105,7 +105,6 @@ test('should import/export correctly', () => {
     const exported = filter.saveAsJSON()
     const imported = ScalableBloomFilter.fromJSON(exported)
     expect(imported.seed).toEqual(filter.seed)
-    expect(imported.equals(filter)).toBe(true)
     for (let i = 0; i < 50; i++) {
         expect(imported.has('elem:' + i.toString())).toBe(true)
     }
