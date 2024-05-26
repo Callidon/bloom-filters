@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 import { CuckooFilter, randomInt } from '../src/index'
 import Global from './global'
 
-const seed = 3413317110537724n // Global.seed(__filename)
+const seed = Global.seed(__filename)
 
 test('should compute the fingerprint and indexes for an element', () => {
     const filter = new CuckooFilter(15, 3, 2, 1)
