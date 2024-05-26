@@ -1,5 +1,9 @@
-import { randomInt } from "../src/utils"
+import { randomInt } from '../src/utils'
 
+/**
+ * Global class to expose global utility functions for testing purposes
+ */
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export default class Global {
     static _seed = 0n
     static seed(location: string) {

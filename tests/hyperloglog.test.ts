@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals'
-import { HyperLogLog, randomInt } from '../src/index'
+import { HyperLogLog } from '../src/index'
 import Global from './global'
 
 const seed = Global.seed(__filename)

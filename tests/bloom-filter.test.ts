@@ -1,10 +1,5 @@
 import { expect, test } from '@jest/globals'
-import {
-    BloomFilter,
-    ExportedBloomFilter,
-    exportBigInt,
-    getDefaultSeed,
-} from '../src/index'
+import { BloomFilter, ExportedBloomFilter, exportBigInt, getDefaultSeed } from '../src/index'
 import Global from './global'
 
 const seed = Global.seed(__filename)
