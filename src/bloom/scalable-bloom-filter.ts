@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import ClassicFilter from '../interfaces/classic-filter'
-import BaseFilter, {prng} from '../base-filter'
+import BaseFilter from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput} from '../utils'
 import PartitionBloomFilter from './partitioned-bloom-filter'
@@ -118,7 +118,7 @@ export default class ScalableBloomFilter
    */
   public set seed(seed: number) {
     this._seed = seed
-    this._rng = seedrandom(`${this._seed}`) as prng
+    this._rng = seedrandom(`${this._seed}`)
     this._filters.forEach((filter: PartitionBloomFilter) => {
       filter.seed = this.seed
     })
