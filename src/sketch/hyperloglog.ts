@@ -22,12 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import XXH from 'xxhashjs'
 import BaseFilter from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
 
 // 2^32, computed as a constant as we use it a lot in the HyperLogLog algorithm
-const TWO_POW_32 = Math.pow(2, 32)
+const TWO_POW_32 = 2 ** 32
 
 /**
  * Estimlate the bias-correction constant, denoted alpha in the algorithm, based on the number of registers.
@@ -36,15 +37,17 @@ const TWO_POW_32 = Math.pow(2, 32)
  * @return The estimated bias-correction constant
  */
 function computeAlpha(m: number): number {
-  switch (m) {
-    case 16:
-      return 0.673
-    case 32:
-      return 0.697
-    case 64:
-      return 0.709
-    default:
-      return 0.7213 / (1.0 + 1.079 / m)
+  if (m < 16) {
+    return 1
+  } else if (m < 32) {
+    return 0.673
+  } else if (m < 64) {
+    return 0.697
+  } else if (m < 128) {
+    return 0.709
+  } else {
+    // >= 128
+    return 0.7213 / (1.0 + 1.079 / m)
   }
 }
 
@@ -85,8 +88,11 @@ export default class HyperLogLog extends BaseFilter {
    */
   constructor(@Parameter('_nbRegisters') nbRegisters: number) {
     super()
+    if ((nbRegisters & (nbRegisters - 1)) !== 0) {
+      throw new Error('The number of registers should be a power of 2')
+    }
     this._nbRegisters = nbRegisters
-    this._nbBytesPerHash = Math.round(Math.log2(nbRegisters))
+    this._nbBytesPerHash = Math.ceil(Math.log2(nbRegisters))
     this._correctionBias = computeAlpha(nbRegisters)
     this._registers = allocateArray(this._nbRegisters, 0)
   }
@@ -103,23 +109,28 @@ export default class HyperLogLog extends BaseFilter {
    * @param element - Element to add
    */
   public update(element: HashableInput): void {
-    // const hashedValue = Buffer.from(hashAsString(element, this.seed))
-    const hashedValue = this._hashing.hashAsInt(element, this.seed).toString(2)
-    const registerIndex =
-      1 + parseInt(hashedValue.slice(0, this._nbBytesPerHash - 1), 2)
+    const hashedValue = XXH.h64(element, this.seed)
+      .toString(2)
+      .padStart(64, '0')
+    const k = 64 - this._nbBytesPerHash
+    const registerIndex = parseInt(hashedValue.slice(k), 2)
     // find the left most 1-bit in the second part of the buffer
-    const secondPart = hashedValue.slice(this._nbBytesPerHash)
-    let posLeftMost = 0
-    while (
-      secondPart[posLeftMost] !== '1' &&
-      posLeftMost < secondPart.length - 1
-    ) {
-      posLeftMost++
+    const second = hashedValue.slice(0, k)
+    let leftmost_pos = k - 1
+    let found = false
+    let i = 0
+    while (!found && i < second.length) {
+      if (second[i] === '1') {
+        found = true
+        leftmost_pos = i
+      } else {
+        i++
+      }
     }
     // update the register
     this._registers[registerIndex] = Math.max(
       this._registers[registerIndex],
-      posLeftMost
+      leftmost_pos
     )
   }
 
@@ -129,28 +140,38 @@ export default class HyperLogLog extends BaseFilter {
    */
   public count(round = false): number {
     // Use the standard HyperLogLog estimator
-    const harmonicMean = this._registers.reduce(
+    const Z = this._registers.reduce(
       (acc: number, value: number) => acc + Math.pow(2, -value),
       0
     )
-    let estimation =
-      (this._correctionBias * Math.pow(this._nbRegisters, 2)) / harmonicMean
+    const raw_estimation =
+      (this._correctionBias * this._nbRegisters * this._nbRegisters * 2) / Z
 
-    // use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
-    /*if (estimation < ((5/2) * this._nbRegisters) && this._registers.some(value => value === 0)) {
-      const nbZeroRegisters = this._registers.filter(value => value === 0).length
-      estimation = this._nbRegisters * Math.log(this._nbRegisters / nbZeroRegisters)
-    }*/
+    let corrected_estimation
 
-    // correct the estimation for very large registers
-    if (estimation > TWO_POW_32 / 30) {
-      estimation = -TWO_POW_32 * Math.log(1 - estimation / TWO_POW_32)
+    if (raw_estimation <= (5 / 2) * this._nbRegisters) {
+      // use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
+      const V = this._registers.filter(value => value === 0).length
+      if (V > 0) {
+        // small range correction: linear counting
+        corrected_estimation =
+          this._nbRegisters * Math.log(this._nbRegisters / V)
+      } else {
+        corrected_estimation = raw_estimation
+      }
+    } else if (raw_estimation <= TWO_POW_32 / 30) {
+      // middle range correction; no correction
+      corrected_estimation = raw_estimation
+    } else {
+      // raw_estimation > TWO_POW_32 / 30
+      // large range correction
+      corrected_estimation =
+        -TWO_POW_32 * Math.log(1 - raw_estimation / TWO_POW_32)
     }
-    // round if required
     if (round) {
-      estimation = Math.round(estimation)
+      return Math.round(corrected_estimation)
     }
-    return estimation
+    return corrected_estimation
   }
 
   /**
@@ -173,7 +194,7 @@ export default class HyperLogLog extends BaseFilter {
       )
     }
     const newSketch = new HyperLogLog(this.nbRegisters)
-    for (let i = 0; i < this.nbRegisters - 1; i++) {
+    for (let i = 0; i < this.nbRegisters; i++) {
       newSketch._registers[i] = Math.max(
         this._registers[i],
         other._registers[i]
