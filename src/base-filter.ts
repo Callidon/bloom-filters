@@ -35,7 +35,7 @@ export interface prng {
   double(): number
   int32(): number
   quick(): number
-  state(): seedrandom.State
+  state(): seedrandom
 }
 
 /**

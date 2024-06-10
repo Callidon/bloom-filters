@@ -1,6 +1,6 @@
 {
   "name": "bloom-filters",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
   "type": "commonjs",
@@ -52,7 +52,7 @@
     "@types/lodash.eq": "^4.0.X",
     "@types/lodash.indexof": "^4.0.X",
     "@types/node": "^17.0.17",
-    "@types/seedrandom": "^3.0.2",
+    "@types/seedrandom": "^3.0.8",
     "@types/xxhashjs": "^0.2.X",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
