@@ -1,9 +1,9 @@
 name: 🔎 Tests
 on:
   push:
-    branches: [ master, develop ]
+    branches: [ master, develop, next/* ]
   pull_request:
-    branches: [ master, develop ]
+    branches: [ master, develop, next/* ]
 jobs:
   ubuntu_build:
     runs-on: ubuntu-latest

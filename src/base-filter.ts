@@ -22,21 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import seedrandom from 'seedrandom'
+import seedrandom, {PRNG} from 'seedrandom'
 import Hashing from './hashing/hashing'
 import {getDefaultSeed} from './utils'
-
-/**
- * Exported prng type because it is not from seedrandom
- * Orignal type can be found in: @types/seedrandom
- */
-export interface prng {
-  (): number
-  double(): number
-  int32(): number
-  quick(): number
-  state(): seedrandom.State
-}
 
 /**
  * A base class for implementing probailistic filters
@@ -45,12 +33,12 @@ export interface prng {
  */
 export default abstract class BaseFilter {
   public _seed: number
-  public _rng: prng
+  public _rng: PRNG
   public _hashing: Hashing
 
   constructor() {
     this._seed = getDefaultSeed()
-    this._rng = seedrandom(`${this._seed}`) as prng
+    this._rng = seedrandom(`${this._seed}`)
     this._hashing = new Hashing()
   }
 
@@ -67,14 +55,14 @@ export default abstract class BaseFilter {
    */
   public set seed(seed: number) {
     this._seed = seed
-    this._rng = seedrandom(`${this._seed}`) as prng
+    this._rng = seedrandom(`${this._seed}`)
   }
 
   /**
    * Get a function used to draw random number
    * @return A factory function used to draw random integer
    */
-  public get random(): prng {
+  public get random() {
     return this._rng
   }
 

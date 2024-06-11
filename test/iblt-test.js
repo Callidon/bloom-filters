@@ -174,7 +174,7 @@ describe('Invertible Bloom Lookup Tables', () => {
       invalids.forEach(json => {
         ;(function () {
           InvertibleBloomFilter.fromJSON(json)
-        }.should.throw(Error))
+        }).should.throw(Error)
       })
     })
 
@@ -187,7 +187,7 @@ describe('Invertible Bloom Lookup Tables', () => {
           _elements: [],
           _seed: 1,
         })
-      }.should.not.throw(Error))
+      }).should.not.throw(Error)
     })
   })
 

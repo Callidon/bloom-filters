@@ -28,22 +28,52 @@ const {HyperLogLog} = require('../dist/api.js')
 describe('HyperLogLog', () => {
   describe('#update', () => {
     it('should support update and cardinality estimations (count) operations', () => {
-      const nbDistinct = 100
-      const sketch = new HyperLogLog(110)
+      const m = 2 ** 8
+      const n = 10e4
+      const sketch = new HyperLogLog(m)
       // populate the sketch with some values
-      for (let i = 0; i < 10e3; i++) {
-        sketch.update(`${i % nbDistinct}`)
+      for (let i = 0; i < n; i++) {
+        sketch.update(i.toString())
       }
-      sketch
-        .count(true)
-        .should.be.closeTo(nbDistinct, nbDistinct * sketch.accuracy())
-    })
+
+      // Citation:
+      // "Let σ ≈ 1.04/√m represent the standard error; the estimates provided by HYPERLOGLOG
+      // are expected to be within σ, 2σ, 3σ of the exact count in respectively 65%, 95%, 99% of all
+      // the cases"
+      const exact_count = sketch.count()
+      const relative_error = sketch.accuracy()
+
+      let error
+      const relative_errors = [
+        relative_error,
+        2 * relative_error,
+        3 * relative_error,
+      ]
+
+      for (const relative_err of relative_errors) {
+        try {
+          Math.abs(n - exact_count).should.be.below(n * relative_err)
+          error = false
+          break
+        } catch (e) {
+          error = e
+        }
+      }
+
+      if (error) {
+        throw new Error(
+          `should be withing σ, 2σ or 3σ: ${relative_errors
+            .map(e => e * n)
+            .toString()}: ${error.toString()}`
+        )
+      }
+    }).timeout(0)
   })
 
   describe('#merge', () => {
     it('should peforms the union of two HyperLogLog sketches', () => {
-      const first = new HyperLogLog(10)
-      const second = new HyperLogLog(10)
+      const first = new HyperLogLog(8)
+      const second = new HyperLogLog(8)
       first.update('alice')
       first.update('bob')
       second.update('carol')
@@ -59,8 +89,8 @@ describe('HyperLogLog', () => {
     })
 
     it('should reject the union of two sketches with different number of registers', done => {
-      const first = new HyperLogLog(10)
-      const second = new HyperLogLog(20)
+      const first = new HyperLogLog(8)
+      const second = new HyperLogLog(32)
       try {
         first.merge(second)
         done(
@@ -76,8 +106,8 @@ describe('HyperLogLog', () => {
 
   describe('#equals', () => {
     it('should returns True when two HyperLogLog sketches are equals', () => {
-      const first = new HyperLogLog(10)
-      const second = new HyperLogLog(10)
+      const first = new HyperLogLog(8)
+      const second = new HyperLogLog(8)
       first.update('alice')
       first.update('bob')
       second.update('alice')
@@ -86,14 +116,14 @@ describe('HyperLogLog', () => {
     })
 
     it('should returns False when two sketches have different number of registers', () => {
-      const first = new HyperLogLog(10)
-      const second = new HyperLogLog(11)
+      const first = new HyperLogLog(8)
+      const second = new HyperLogLog(16)
       first.equals(second).should.equal(false)
     })
 
     it('should returns False when two sketches have different content in their registers', () => {
-      const first = new HyperLogLog(10)
-      const second = new HyperLogLog(11)
+      const first = new HyperLogLog(8)
+      const second = new HyperLogLog(16)
       first.update('alice')
       first.update('bob')
       second.update('carol')
@@ -103,7 +133,7 @@ describe('HyperLogLog', () => {
   })
 
   describe('#saveAsJSON', () => {
-    const sketch = new HyperLogLog(10)
+    const sketch = new HyperLogLog(8)
     sketch.update('alice')
     sketch.update('bob')
 
