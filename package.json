@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "build": "tsc",
-    "pretest": "yarn lint && yarn build",
+    "pretest": "yarn clean && yarn lint && yarn build",
     "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
     "lint": "yarn prettier && yarn slint",
@@ -48,35 +48,45 @@
   "homepage": "https://github.com/Callidon/bloom-filters#readme",
   "devDependencies": {
     "@types/cuint": "^0.2.X",
-    "@types/lodash": "^4.14.X",
-    "@types/lodash.eq": "^4.0.X",
-    "@types/lodash.indexof": "^4.0.X",
-    "@types/node": "^17.0.17",
-    "@types/seedrandom": "^3.0.8",
+    "@types/lodash": "^4.17.13",
+    "@types/lodash.eq": "^4.0.9",
+    "@types/lodash.indexof": "^4.0.9",
+    "@types/lodash.random": "^3.2.9",
+    "@types/lodash.sortedindexby": "^4.6.9",
+    "@types/node": "^22.9.0",
     "@types/xxhashjs": "^0.2.X",
-    "@typescript-eslint/eslint-plugin": "^5.11.0",
-    "@typescript-eslint/parser": "^5.11.0",
+    "@typescript-eslint/eslint-plugin": "5.62.0",
+    "@typescript-eslint/parser": "^5.0.0",
     "chai": "^4.3.6",
-    "eslint": "^8.9.0",
+    "eslint": "^8.57.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "mocha": "^9.2.0",
-    "prettier": "^2.5.1",
-    "random": "^3.0.6",
-    "rimraf": "^3.0.2",
-    "typedoc": "^0.22.11",
+    "eslint-plugin-prettier": "^5.2.1",
+    "lodash.intersection": "^4.4.0",
+    "lodash.range": "^3.2.0",
+    "lodash.union": "^4.6.0",
+    "mocha": "10.8.2",
+    "prettier": "^3.3.3",
+    "random": "5.1.1",
+    "rimraf": "^6.0.1",
+    "typedoc": "^0.22.18",
     "typedoc-plugin-missing-exports": "^0.22.6",
-    "typescript": "^4.5.5"
+    "typescript": "4.7.x"
+  },
+  "resolutions": {
+    "mocha/glob": "^11.0.0",
+    "typedoc/glob": "^11.0.0"
   },
   "dependencies": {
+    "@types/seedrandom": "3.0.8",
     "base64-arraybuffer": "^1.0.2",
     "is-buffer": "^2.0.5",
-    "lodash": "^4.17.15",
-    "lodash.eq": "^4.0.0",
-    "lodash.indexof": "^4.0.5",
+    "lodash.eq": "4.0.0",
+    "lodash.indexof": "4.0.5",
+    "lodash.random": "3.2.0",
+    "lodash.sortedindexby": "4.6.0",
     "long": "^5.2.0",
-    "reflect-metadata": "^0.1.13",
+    "reflect-metadata": "^0.2.2",
     "seedrandom": "^3.0.5",
     "xxhashjs": "^0.2.2"
   },
@@ -120,7 +130,8 @@
           "./src"
         ],
         "tryExtensions": [
-          ".ts"
+          ".ts",
+          ".js"
         ]
       }
     },
