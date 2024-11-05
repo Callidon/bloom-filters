@@ -69,8 +69,8 @@
     "prettier": "^3.3.3",
     "random": "5.1.1",
     "rimraf": "^6.0.1",
-    "typedoc": "^0.22.18",
-    "typedoc-plugin-missing-exports": "^0.22.6",
+    "typedoc": "0.26.11",
+    "typedoc-plugin-missing-exports": "^3.0.0",
     "typescript": "4.7.x"
   },
   "resolutions": {
