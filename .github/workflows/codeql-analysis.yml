@@ -51,7 +51,7 @@ jobs:
         # By default, queries listed here will override any specified in a config file.
         # Prefix the list here with "+" to use these queries and those in the config file.
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
-        build-mode: manual
+        build-mode: none
     - uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
