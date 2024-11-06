@@ -101,6 +101,6 @@
     "arrowParens": "avoid"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=20"
   }
 }
