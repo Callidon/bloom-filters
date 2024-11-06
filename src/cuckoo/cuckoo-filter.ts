@@ -51,7 +51,6 @@ function computeFingerpintLength(size: number, rate: number): number {
  * @author Thomas Minier & Arnaud Grall
  */
 @Exportable({
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   export: cloneObject(
     'CuckooFilter',
     '_size',
@@ -61,9 +60,8 @@ function computeFingerpintLength(size: number, rate: number): number {
     '_filter',
     '_seed'
   ),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   import: (json: any) => {
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
     if (
       json.type !== 'CuckooFilter' ||
       !('_size' in json) ||
@@ -84,10 +82,10 @@ function computeFingerpintLength(size: number, rate: number): number {
       json._maxKicks as number | undefined
     )
     filter._length = json._length
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     filter._filter = json._filter.map((j: any) => {
       const bucket = new Bucket<string>(j._size as number)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       j._elements.forEach((elt: any, i: number) => {
         if (elt !== null) {
           bucket._elements[i] = elt
@@ -98,7 +96,6 @@ function computeFingerpintLength(size: number, rate: number): number {
     })
     filter.seed = json._seed
     return filter
-    /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
   },
 })
 export default class CuckooFilter
@@ -254,7 +251,7 @@ export default class CuckooFilter
           this._filter[index].length - 1,
           this.random
         )
-        const tmp = this._filter[index].at(rndIndex)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        const tmp = this._filter[index].at(rndIndex)!
         logs.push([index, rndIndex, tmp])
         this._filter[index].set(rndIndex, movedElement)
         movedElement = tmp
@@ -279,7 +276,7 @@ export default class CuckooFilter
       if (throwError) {
         // rollback all operations
         throw new Error(
-          `The Cuckoo Filter is full, cannot insert element "${element}"` // eslint-disable-line @typescript-eslint/restrict-template-expressions
+          `The Cuckoo Filter is full, cannot insert element "${element}"`
         )
       } else {
         return false

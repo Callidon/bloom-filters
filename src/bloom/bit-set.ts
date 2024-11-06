@@ -136,7 +136,7 @@ export default class BitSet {
 
   /**
    * Returns the index of the maximum bit in the number, or -1 for 0
-   * @bits an unsigned 8-bit number
+   * @param bits an unsigned 8-bit number
    * ```js
    * @example
    * BitSet.highBit(0) // returns -1
@@ -155,7 +155,7 @@ export default class BitSet {
 
   /**
    * Returns the number of true bits in the number
-   * @bits an unsigned 8-bit number
+   * @param bits an unsigned 8-bit number
    * @example
    * ```js
    * BitSet.countBits(0) // returns 0

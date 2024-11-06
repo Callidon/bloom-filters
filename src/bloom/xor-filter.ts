@@ -153,7 +153,7 @@ export default class XorFilter extends BaseFilter {
     const l1 = this._readBuffer(this._filter[h1])
     const l2 = this._readBuffer(this._filter[h2])
     const xored = fingerprint ^ l0 ^ l1 ^ l2
-    const constant = CONSTANTS.get(this._bits)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    const constant = CONSTANTS.get(this._bits)!
     return (xored & constant) === 0
   }
 

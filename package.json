@@ -10,7 +10,7 @@
     "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
     "lint": "yarn prettier && yarn slint",
-    "slint": "eslint --fix src/**/*.ts",
+    "slint": "eslint src --fix",
     "prettier": "prettier --config package.json --write \"(src|test)/**/*.(t|j)s\"",
     "clean": "rimraf docs/ dist/ build/",
     "compile": "tsc"
@@ -47,6 +47,7 @@
   },
   "homepage": "https://github.com/Callidon/bloom-filters#readme",
   "devDependencies": {
+    "@eslint/compat": "^1.2.2",
     "@types/cuint": "^0.2.X",
     "@types/lodash": "^4.17.13",
     "@types/lodash.eq": "^4.0.9",
@@ -55,27 +56,27 @@
     "@types/lodash.sortedindexby": "^4.6.9",
     "@types/node": "^22.9.0",
     "@types/xxhashjs": "^0.2.X",
-    "@typescript-eslint/eslint-plugin": "5.62.0",
-    "@typescript-eslint/parser": "^5.0.0",
-    "chai": "^4.3.6",
-    "eslint": "^8.57.1",
-    "eslint-config-prettier": "^8.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "chai": "4",
+    "eslint": "^9.14.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.12.0",
     "lodash.intersection": "^4.4.0",
     "lodash.range": "^3.2.0",
     "lodash.union": "^4.6.0",
-    "mocha": "10.8.2",
+    "mocha": "^10.8.2",
     "prettier": "^3.3.3",
     "random": "5.1.1",
     "rimraf": "^6.0.1",
     "typedoc": "0.26.11",
     "typedoc-plugin-missing-exports": "^3.0.0",
-    "typescript": "4.7.x"
+    "typescript": "^5.6.3"
   },
   "resolutions": {
-    "mocha/glob": "^11.0.0",
-    "typedoc/glob": "^11.0.0"
+    "mocha/glob": "^11"
   },
   "dependencies": {
     "@types/seedrandom": "3.0.8",
@@ -98,63 +99,6 @@
     "singleQuote": true,
     "trailingComma": "es5",
     "arrowParens": "avoid"
-  },
-  "eslintConfig": {
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "ecmaVersion": 2015,
-      "project": "tsconfig.json"
-    },
-    "extends": [
-      "eslint:recommended",
-      "plugin:@typescript-eslint/recommended",
-      "plugin:node/recommended",
-      "prettier",
-      "plugin:prettier/recommended",
-      "plugin:@typescript-eslint/recommended-requiring-type-checking"
-    ],
-    "plugins": [
-      "@typescript-eslint",
-      "prettier"
-    ],
-    "globals": {
-      "chai": "readonly",
-      "it": "readonly",
-      "expect": "readonly",
-      "describe": "readonly"
-    },
-    "settings": {
-      "node": {
-        "allowModules": [],
-        "resolvePaths": [
-          "./src"
-        ],
-        "tryExtensions": [
-          ".ts",
-          ".js"
-        ]
-      }
-    },
-    "rules": {
-      "node/no-unsupported-features/es-syntax": [
-        "error",
-        {
-          "ignores": [
-            "modules"
-          ]
-        }
-      ],
-      "node/no-unpublished-require": [
-        "error",
-        {
-          "allowModules": [
-            "mocha",
-            "chai",
-            "random"
-          ]
-        }
-      ]
-    }
   },
   "engines": {
     "node": ">=12"

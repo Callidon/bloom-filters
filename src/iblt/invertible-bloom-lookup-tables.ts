@@ -67,7 +67,6 @@ export default class InvertibleBloomFilter
   public _hashCount: number
 
   @Field<Array<Cell>>(undefined, (json: []) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res: Array<Cell> = json.map(
       (elt: {
         _idSum: string
@@ -254,7 +253,6 @@ export default class InvertibleBloomFilter
    * @return A generator that yields all filter's entries.
    */
   public listEntries(): Generator<Buffer, boolean> {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this
     const seenBefore: Buffer[] = []
     return (function* () {
@@ -335,7 +333,7 @@ export default class InvertibleBloomFilter
       }
     }
     while (pureList.length !== 0) {
-      cell = this._elements[pureList.pop()!] // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      cell = this._elements[pureList.pop()!]
       const id = cell.idSum
       const c = cell.count
       if (cell.isPure()) {

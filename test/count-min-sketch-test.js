@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
+const {describe, it} = require('mocha')
 const {CountMinSketch} = require('../dist/api.js')
 
 describe('CountMinSketch', () => {

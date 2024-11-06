@@ -70,7 +70,7 @@ export default class ScalableBloomFilter
    */
   @Field(
     (filters: PartitionBloomFilter[]) =>
-      filters.map(filter => filter.saveAsJSON()), // eslint-disable-line @typescript-eslint/no-unsafe-return
+      filters.map(filter => filter.saveAsJSON()),
     (array: []) =>
       array.map(
         data => PartitionBloomFilter.fromJSON(data) as PartitionBloomFilter

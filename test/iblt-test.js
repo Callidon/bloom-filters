@@ -24,6 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 require('chai').expect()
+const {describe, it} = require('mocha')
 const {InvertibleBloomFilter} = require('../dist/api.js')
 const random = require('random').default
 const seedrandom = require('seedrandom')
