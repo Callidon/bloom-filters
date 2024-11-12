@@ -33,7 +33,7 @@ const {
 } = require('../dist/utils')
 const {BloomFilter, BaseFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
-const range = require('lodash.range')
+const range = require('lodash/range')
 const seed = getDefaultSeed()
 const {Hashing} = require('../dist/api')
 

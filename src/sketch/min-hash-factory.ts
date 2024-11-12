@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import {HashFunction, MinHash} from './min-hash'
-import random from 'lodash.random'
+import random from 'lodash/random'
 
 /**
  * Test if a number is a prime number
