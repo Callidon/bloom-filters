@@ -22,7 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {eq, indexOf} from 'lodash'
+import eq from 'lodash.eq'
+import indexOf from 'lodash.indexof'
 import * as utils from '../utils'
 import {Exportable} from '../exportable'
 import {cloneObject} from '../exportable'
@@ -34,19 +35,18 @@ import {cloneObject} from '../exportable'
  * @private
  */
 @Exportable({
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   export: cloneObject('Bucket', '_size', '_elements'),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   import: (json: any) => {
     if (
-      (json.type !== 'Bucket' || !('_size' in json), !('_elements' in json)) // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+      (json.type !== 'Bucket' || !('_size' in json), !('_elements' in json))
     ) {
       throw new Error(
         'Cannot create a Bucket from a JSON export which does not represent a bucket'
       )
     }
-    const bucket = new Bucket(json._size as number) // eslint-disable-line @typescript-eslint/no-unsafe-member-access
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    const bucket = new Bucket(json._size as number)
+
     json._elements.forEach((elt: any, i: number) => {
       if (elt !== null) {
         bucket._elements[i] = elt

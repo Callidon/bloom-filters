@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
+const {describe, it} = require('mocha')
 const {
   allocateArray,
   randomInt,
@@ -32,7 +33,7 @@ const {
 } = require('../dist/utils')
 const {BloomFilter, BaseFilter} = require('../dist/api.js')
 const XXH = require('xxhashjs')
-const {range} = require('lodash')
+const range = require('lodash.range')
 const seed = getDefaultSeed()
 const {Hashing} = require('../dist/api')
 
@@ -171,7 +172,6 @@ describe('Utils', () => {
     it('overriding serialize function by always returning Number(1)', () => {
       class CustomHashing extends Hashing {
         serialize(_element, _seed = undefined) {
-          // eslint-disable-line
           return Number(1)
         }
       }

@@ -23,8 +23,11 @@ SOFTWARE.
 */
 
 require('chai').should()
+const {describe, it} = require('mocha')
 const {MinHashFactory, MinHash} = require('../dist/api.js')
-const {range, intersection, union} = require('lodash')
+const range = require('lodash.range')
+const intersection = require('lodash.intersection')
+const union = require('lodash.union')
 
 // Compute the exact Jaccard similairty between two sets
 function jaccard(a, b) {

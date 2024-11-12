@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
+const {describe, it} = require('mocha')
 const Bucket = require('../dist/cuckoo/bucket.js').default
 
 describe('Bucket', () => {

@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
+const {describe, it} = require('mocha')
 const {expect} = require('chai')
 const {BloomFilter, DeprecatedHashing} = require('../dist/api.js')
 

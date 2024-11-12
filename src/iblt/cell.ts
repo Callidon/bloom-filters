@@ -36,11 +36,9 @@ const inspect = Symbol.for('nodejs.util.inspect.custom')
  */
 @AutoExportable('Cell', ['_seed'])
 export default class Cell extends BaseFilter {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   @Field<Buffer>(elt => elt.toString(), Buffer.from)
   public _idSum: Buffer
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   @Field<Buffer>(elt => elt.toString(), Buffer.from)
   public _hashSum: Buffer
 
