@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import eq from 'lodash/eq'
-import indexOf from 'lodash/indexof'
+import indexOf from 'lodash/indexOf'
 import * as utils from '../utils'
 import {Exportable} from '../exportable'
 import {cloneObject} from '../exportable'
