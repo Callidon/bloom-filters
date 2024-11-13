@@ -42,7 +42,6 @@ export default class Hashing implements Hashing {
    * @param  hashB - The result of the second hash function applied to a value.
    * @param  size - The size of the datastructures associated to the hash context (ex: the size of a Bloom Filter)
    * @return The result of hash_n applied to a value.
-   * @memberof Hashing
    * @author Thomas Minier
    * @author Arnaud Grall
    */
@@ -134,6 +133,7 @@ export default class Hashing implements Hashing {
 
   /**
    * @internal
+   *
    * Hash an element of type {@link HashableInput} into {@link Number}
    * Can be overrided as long as you return a value of type {@link Number}
    * Don't forget to use the seed when hashing, otherwise if some kind of randomness is in the process
@@ -152,7 +152,6 @@ export default class Hashing implements Hashing {
   /**
    * (64-bits only) Hash a value into two values (in hex or integer format)
    * @param  value - The value to hash
-   * @param  asInt - (optional) If True, the values will be returned as an integer. Otherwise, as hexadecimal values.
    * @param seed the seed used for hashing
    * @return The results of the hash functions applied to the value (in hex or integer)
    * @author Arnaud Grall & Thomas Minier
@@ -216,7 +215,6 @@ export default class Hashing implements Hashing {
    * Hash an item as an unsigned int
    * @param  elem - Element to hash
    * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
-   * @param  length - The length of hashes (defaults to 32 bits)
    * @return The hash value as an unsigned int
    * @author Arnaud Grall
    */
@@ -230,9 +228,7 @@ export default class Hashing implements Hashing {
   /**
    * Hash an item and return its number and HEX string representation
    * @param  elem - Element to hash
-   * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
-   * @param  base - The base in which the string will be returned, default: 16
-   * @param  length - The length of hashes (defaults to 32 bits)
+   * @param  seed - The hash seed
    * @return The item hased as an int and a string
    * @author Arnaud Grall
    */

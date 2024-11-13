@@ -153,7 +153,7 @@ export default class XorFilter extends BaseFilter {
     const l1 = this._readBuffer(this._filter[h1])
     const l2 = this._readBuffer(this._filter[h2])
     const xored = fingerprint ^ l0 ^ l1 ^ l2
-    const constant = CONSTANTS.get(this._bits)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    const constant = CONSTANTS.get(this._bits)!
     return (xored & constant) === 0
   }
 
@@ -343,7 +343,7 @@ export default class XorFilter extends BaseFilter {
    * Follow the algorithm 2 and 3 of the paper (@see https://arxiv.org/pdf/1912.08258.pdf)
    * Inspired by Go impl from (@see https://github.com/FastFilter/xorfilter/blob/master/xorfilter.go)
    * @param elements array of elements to add in the filter
-   * @param arraylength length of the filter
+   * @param arrayLength length of the filter
    * @returns
    */
   public _create(elements: XorHashableInput[], arrayLength: number) {
