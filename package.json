@@ -72,7 +72,7 @@
     "mocha/glob": "^11"
   },
   "dependencies": {
-    "@types/seedrandom": "3.0.8",
+    "@types/seedrandom": "^3.0.8",
     "base64-arraybuffer": "^1.0.2",
     "is-buffer": "^2.0.5",
     "lodash": "4.17.21",

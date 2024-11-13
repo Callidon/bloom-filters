@@ -214,7 +214,7 @@
   dependencies:
     undici-types "~6.19.8"
 
-"@types/seedrandom@3.0.8":
+"@types/seedrandom@^3.0.8":
   version "3.0.8"
   resolved "https://registry.yarnpkg.com/@types/seedrandom/-/seedrandom-3.0.8.tgz#61cc8ed88f93a3c31289c295e6df8ca40be42bdf"
   integrity sha512-TY1eezMU2zH2ozQoAFAQFOPpvP15g+ZgSfTZt31AUUH/Rxtnz3H+A/Sv1Snw2/amp//omibc+AEkTaA8KUeOLQ==
