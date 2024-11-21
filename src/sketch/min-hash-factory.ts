@@ -23,7 +23,6 @@ SOFTWARE.
 */
 
 import {HashFunction, MinHash} from './min-hash'
-// eslint-disable-next-line node/no-missing-import
 import random from 'lodash/random'
 
 /**

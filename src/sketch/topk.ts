@@ -25,7 +25,6 @@ SOFTWARE.
 import BaseFilter from '../base-filter'
 import CountMinSketch from './count-min-sketch'
 import {AutoExportable, Field, Parameter} from '../exportable'
-// eslint-disable-next-line node/no-missing-import
 import sortedIndexBy from 'lodash/sortedIndexBy'
 
 /**
