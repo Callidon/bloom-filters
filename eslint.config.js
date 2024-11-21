@@ -38,16 +38,16 @@ module.exports = [
             node: fixupPluginRules(node),
         },
         settings: {
-        node: {
-            allowModules: [],
-            resolvePaths: [
-                './src'
-            ],
-            tryExtensions: [
-                '.ts',
-                '.js'
-            ]
-        }
+            node: {
+                allowModules: [],
+                resolvePaths: [
+                    './src'
+                ],
+                tryExtensions: [
+                    '.ts',
+                    '.js'
+                ]
+            }
         },
         rules: {
             "no-unused-vars": "off",
