@@ -22,7 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {eq, indexOf} from 'lodash'
+// eslint-disable-next-line node/no-missing-import
+import eq from 'lodash/eq'
+// eslint-disable-next-line node/no-missing-import
+import indexOf from 'lodash/indexOf'
 import * as utils from '../utils'
 import {Exportable} from '../exportable'
 import {cloneObject} from '../exportable'

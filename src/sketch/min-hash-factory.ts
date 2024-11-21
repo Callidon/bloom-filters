@@ -23,7 +23,8 @@ SOFTWARE.
 */
 
 import {HashFunction, MinHash} from './min-hash'
-import {random} from 'lodash'
+// eslint-disable-next-line node/no-missing-import
+import random from 'lodash/random'
 
 /**
  * Test if a number is a prime number
