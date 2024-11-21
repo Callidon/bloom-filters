@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
+const {describe, it} = require('mocha')
 const {
   allocateArray,
   randomInt,
@@ -171,7 +172,6 @@ describe('Utils', () => {
     it('overriding serialize function by always returning Number(1)', () => {
       class CustomHashing extends Hashing {
         serialize(_element, _seed = undefined) {
-          // eslint-disable-line
           return Number(1)
         }
       }
