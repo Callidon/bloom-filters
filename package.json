@@ -49,8 +49,6 @@
   "devDependencies": {
     "@types/cuint": "^0.2.X",
     "@types/lodash": "^4.14.X",
-    "@types/lodash.eq": "^4.0.X",
-    "@types/lodash.indexof": "^4.0.X",
     "@types/node": "^17.0.17",
     "@types/xxhashjs": "^0.2.X",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
@@ -73,8 +71,6 @@
     "base64-arraybuffer": "^1.0.2",
     "is-buffer": "^2.0.5",
     "lodash": "^4.17.15",
-    "lodash.eq": "^4.0.0",
-    "lodash.indexof": "^4.0.5",
     "long": "^5.2.0",
     "reflect-metadata": "^0.1.13",
     "seedrandom": "^3.0.5",
