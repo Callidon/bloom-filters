@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const {MinHashFactory, MinHash} = require('../dist/api.js')
+const {MinHashFactory, MinHash} = require('../dist/cjs/api.js')
 const range = require('lodash/range')
 const intersection = require('lodash/intersection')
 const union = require('lodash/union')

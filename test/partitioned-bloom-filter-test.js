@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const {PartitionedBloomFilter} = require('../dist/api.js')
+const {PartitionedBloomFilter} = require('../dist/cjs/api.js')
 
 describe('PartitionedBloomFilter', () => {
   const targetRate = 0.001

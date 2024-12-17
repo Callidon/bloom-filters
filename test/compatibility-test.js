@@ -24,7 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 const {expect} = require('chai')
-const {BloomFilter, DeprecatedHashing} = require('../dist/api.js')
+const {BloomFilter, DeprecatedHashing} = require('../dist/cjs/api.js')
 
 describe('BloomFilter Compatibility (only) between versions', () => {
   it('1.3.4 compatibility (issue #49)', () => {

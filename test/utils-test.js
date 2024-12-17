@@ -29,12 +29,12 @@ const {
   xorBuffer,
   getDefaultSeed,
   isEmptyBuffer,
-} = require('../dist/utils')
-const {BloomFilter, BaseFilter} = require('../dist/api.js')
+} = require('../dist/cjs/utils.js')
+const {BloomFilter, BaseFilter} = require('../dist/cjs/api.js')
 const XXH = require('xxhashjs')
 const range = require('lodash/range')
 const seed = getDefaultSeed()
-const {Hashing} = require('../dist/api')
+const {Hashing} = require('../dist/cjs/api.js')
 
 describe('Utils', () => {
   describe('#allocateArray', () => {

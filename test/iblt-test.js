@@ -24,7 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 require('chai').expect()
-const {InvertibleBloomFilter} = require('../dist/api.js')
+const {InvertibleBloomFilter} = require('../dist/cjs/api.js')
 const random = require('random')
 const seedrandom = require('seedrandom')
 

@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const {HyperLogLog} = require('../dist/api.js')
+const {HyperLogLog} = require('../dist/cjs/api.js')
 
 describe('HyperLogLog', () => {
   describe('#update', () => {

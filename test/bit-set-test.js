@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const {BitSet} = require('../dist/api')
+const {BitSet} = require('../dist/cjs/api.js')
 
 describe('BitSet', () => {
   it('is initially clear', () => {

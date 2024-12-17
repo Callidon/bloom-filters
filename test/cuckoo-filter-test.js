@@ -25,7 +25,7 @@ SOFTWARE.
 const chai = require('chai')
 chai.should()
 chai.expect()
-const {CuckooFilter} = require('../dist/api.js')
+const {CuckooFilter} = require('../dist/cjs/api.js')
 
 describe('CuckooFilter', () => {
   describe('#_locations', () => {

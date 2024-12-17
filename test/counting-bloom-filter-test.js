@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const {CountingBloomFilter} = require('../dist/api.js')
+const {CountingBloomFilter} = require('../dist/cjs/api.js')
 
 describe('CountingBloomFilter', () => {
   const targetRate = 0.1

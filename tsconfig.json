@@ -2,10 +2,12 @@
   "compilerOptions": {
     "rootDir": "./src",
     "target": "es5",
-    "outDir": "./dist",
+    "outDir": "./dist/cjs",
     "module": "commonjs",
-    "lib": [ "ES2015" ],
-    "declaration": true,
+    "lib": [
+      "ES2015"
+    ],
+    "declaration": false,
     "strict": true,
     "allowJs": true,
     "esModuleInterop": true,
@@ -14,7 +16,7 @@
     "downlevelIteration": true
   },
   "include": [
-      "./src/**/*"
+    "./src/**/*"
   ],
   "exclude": [
     "node_modules/",
