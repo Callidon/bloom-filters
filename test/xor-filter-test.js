@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const {XorFilter} = require('../dist/api.js')
+const {XorFilter} = require('../dist/cjs/api.js')
 
 describe('XorFilter', () => {
   const elements = ['1']

@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const Bucket = require('../dist/cuckoo/bucket.js').default
+const Bucket = require('../dist/cjs/cuckoo/bucket.js').default
 
 describe('Bucket', () => {
   describe('#isFree', () => {

@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const {TopK} = require('../dist/api.js')
+const {TopK} = require('../dist/cjs/api.js')
 
 describe('TopK', () => {
   const lessThanOrEqualTestCaseItems = [

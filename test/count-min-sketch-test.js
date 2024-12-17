@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
-const {CountMinSketch} = require('../dist/api.js')
+const {CountMinSketch} = require('../dist/cjs/api.js')
 
 describe('CountMinSketch', () => {
   const delta = 0.999

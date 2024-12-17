@@ -2,10 +2,21 @@
   "name": "bloom-filters",
   "version": "3.0.4",
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
-  "main": "dist/api.js",
+  "main": "dist/cjs/api.js",
+  "module": "dist/esm/api.js",
+  "types": "dist/esm/api.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/api.js",
+      "import": "./dist/esm/api.js",
+      "types": "./dist/esm/api.d.ts"
+    }
+  },
   "type": "commonjs",
   "scripts": {
-    "build": "tsc",
+    "build": "yarn build:cjs && yarn build:esm",
+    "build:cjs": "tsc -p tsconfig.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
     "pretest": "yarn lint && yarn build",
     "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
