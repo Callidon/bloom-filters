@@ -9,11 +9,11 @@ jobs:
       name: npm
       url: https://www.npmjs.com/package/bloom-filters
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     # Setup .npmrc file to publish to npm
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v4
       with:
-        node-version: 'lts/*'
+        node-version: '20'
         registry-url: 'https://registry.npmjs.org'
     - run: yarn install
     - run: yarn build

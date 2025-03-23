@@ -151,7 +151,6 @@ export default class TopK extends BaseFilter {
   public _accuracy: number
 
   @Field<CountMinSketch>(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     (sketch: CountMinSketch) => sketch.saveAsJSON(),
     (json: JSON) => CountMinSketch.fromJSON(json) as CountMinSketch
   )
@@ -199,7 +198,7 @@ export default class TopK extends BaseFilter {
 
     if (
       this._heap.length < this._k ||
-      frequency >= this._heap.get(0)!.frequency // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      frequency >= this._heap.get(0)!.frequency
     ) {
       const index = this._heap.indexOf(element)
       // remove the entry if it is already in the MinHeap
@@ -233,7 +232,7 @@ export default class TopK extends BaseFilter {
   public values(): TopkElement[] {
     const res = []
     for (let i = this._heap.length - 1; i >= 0; i--) {
-      const elt = this._heap.get(i)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      const elt = this._heap.get(i)!
       res.push({
         value: elt.value,
         frequency: elt.frequency,
@@ -253,7 +252,7 @@ export default class TopK extends BaseFilter {
     const heap = this._heap
     return (function* () {
       for (let i = heap.length - 1; i >= 0; i--) {
-        const elt = heap.get(i)! // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        const elt = heap.get(i)!
         yield {
           value: elt.value,
           frequency: elt.frequency,

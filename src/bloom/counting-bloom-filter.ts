@@ -220,7 +220,7 @@ export default class CountingBloomFilter
 
   /**
    * Check if another Counting Bloom Filter is equal to this one
-   * @param  filter - The filter to compare to this one
+   * @param  other - The filter to compare to this one
    * @return True if they are equal, false otherwise
    */
   public equals(other: CountingBloomFilter): boolean {
