@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import ClassicFilter from '../interfaces/classic-filter'
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput} from '../utils'
 import PartitionBloomFilter from './partitioned-bloom-filter'
@@ -39,7 +39,7 @@ number of elements stored, while assuring a maximum false positive probability
  */
 @AutoExportable<ScalableBloomFilter>('ScalableBloomFilter', ['_seed'])
 export default class ScalableBloomFilter
-  extends BaseFilter
+  extends AutoExportableBaseFilter
   implements ClassicFilter<HashableInput>
 {
   /**

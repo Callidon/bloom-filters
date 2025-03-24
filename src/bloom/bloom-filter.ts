@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import ClassicFilter from '../interfaces/classic-filter'
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import BitSet from './bit-set'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {optimalFilterSize, optimalHashes} from '../formulas'
@@ -40,7 +40,7 @@ import {HashableInput} from '../utils'
  */
 @AutoExportable<BloomFilter>('BloomFilter', ['_seed'])
 export default class BloomFilter
-  extends BaseFilter
+  extends AutoExportableBaseFilter
   implements ClassicFilter<HashableInput>
 {
   @Field()

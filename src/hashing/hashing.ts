@@ -55,56 +55,6 @@ export default class Hashing implements Hashing {
   }
 
   /**
-   * Generate a set of distinct indexes on interval [0, size) using the double hashing technique
-   * For generating efficiently distinct indexes we re-hash after detecting a cycle by changing slightly the seed.
-   * It has the effect of generating faster distinct indexes without loosing entirely the utility of the double hashing.
-   * For small number of indexes it will work perfectly. For a number close to the size, and size very large
-   * Advise: do not generate `size` indexes for a large interval. In practice, size should be equal
-   * to the number of hash functions used and is often low.
-   *
-   * @param  element  - The element to hash
-   * @param  size     - the range on which we can generate an index [0, size) = size
-   * @param  number   - The number of indexes desired
-   * @param  seed     - The seed used
-   * @return Array<number>
-   * @author Arnaud Grall
-   * @author Simon Woolf (SimonWoolf)
-   */
-  public getDistinctIndexes(
-    element: HashableInput,
-    size: number,
-    number: number,
-    seed?: number
-  ): Array<number> {
-    if (seed === undefined) {
-      seed = getDefaultSeed()
-    }
-    let n = 0
-    const indexes: Set<number> = new Set()
-    let hashes = this.hashTwice(element, seed)
-    // let cycle = 0
-    while (indexes.size < number) {
-      const ind = hashes.first % size
-      if (!indexes.has(ind)) {
-        indexes.add(ind)
-      }
-      hashes.first = (hashes.first + hashes.second) % size
-      hashes.second = (hashes.second + n) % size
-      n++
-
-      if (n > size) {
-        // Enhanced double hashing stops cycles of length less than `size` in the case where
-        // size is coprime with the second hash. But you still get cycles of length `size`.
-        // So if we reach there and haven't finished, append a prime to the input and
-        // rehash.
-        seed++
-        hashes = this.hashTwice(element, seed)
-      }
-    }
-    return [...indexes.values()]
-  }
-
-  /**
    * Generate N indexes on range [0, size)
    * It uses the double hashing technique to generate the indexes.
    * It hash twice the value only once before generating the indexes.

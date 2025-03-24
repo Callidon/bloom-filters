@@ -26,7 +26,9 @@ require('chai').should()
 require('chai').expect()
 const {describe, it} = require('mocha')
 const {InvertibleBloomFilter} = require('../dist/api.js')
+const {randomInt} = require('../dist/utils.js')
 const random = require('random').default
+const range = require('lodash/range')
 const seedrandom = require('seedrandom')
 
 describe('Invertible Bloom Lookup Tables', () => {
@@ -34,26 +36,24 @@ describe('Invertible Bloom Lookup Tables', () => {
   const hashCount = 3
   const alpha = 1.5
   const d = 100
-  const size = alpha * d
+  let size = Math.ceil(alpha * d)
+  size = size + (hashCount - (size % hashCount))
   const step = 10
   const seed = 0x1234567890
   random.use(seedrandom(seed))
   const toInsert = [
-    Buffer.from('help'),
-    Buffer.from('meow'),
-    Buffer.from(
-      JSON.stringify({
-        data: 'hello world',
-      })
-    ),
+    'help',
+    'meow',
+    JSON.stringify({
+      data: 'hello world',
+    }),
   ]
 
   describe('#add', () => {
     it('should add element to the filter with #add', () => {
-      const iblt = new InvertibleBloomFilter(size, hashCount)
-      iblt.seed = seed
+      const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
       iblt._hashCount.should.equal(hashCount)
-      iblt.size.should.equal(size)
+      iblt._size.should.equal(size)
       iblt.length.should.equal(0)
       iblt._elements.length.should.equal(size)
       toInsert.forEach(e => {
@@ -61,14 +61,19 @@ describe('Invertible Bloom Lookup Tables', () => {
       })
       iblt.length.should.equal(toInsert.length)
     })
+    it('adding one element should be a pure cell', () => {
+      const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
+      iblt.add('meow')
+      const cell = iblt._elements.find(c => c._count !== 0)
+      iblt.isCellPure(cell).should.equal(true)
+    })
   })
 
   describe('#remove', () => {
     it('should remove element from the iblt', () => {
-      const iblt = new InvertibleBloomFilter(size, hashCount)
-      iblt.seed = seed
+      const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
       iblt._hashCount.should.equal(hashCount)
-      iblt.size.should.equal(size)
+      iblt._size.should.equal(size)
       iblt.length.should.equal(0)
       iblt._elements.length.should.equal(size)
       toInsert.forEach(e => {
@@ -84,7 +89,7 @@ describe('Invertible Bloom Lookup Tables', () => {
 
   describe('#has', () => {
     it('should get an element from the iblt with #has', () => {
-      const iblt = new InvertibleBloomFilter(size, hashCount)
+      const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
       toInsert.forEach(e => {
         iblt.add(e)
       })
@@ -97,17 +102,11 @@ describe('Invertible Bloom Lookup Tables', () => {
 
   describe('#listEntries', () => {
     it('should get all element from the filter', () => {
-      const iblt = new InvertibleBloomFilter(size, hashCount)
+      const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
       toInsert.forEach(e => {
         iblt.add(e)
       })
-      const iterator = iblt.listEntries()
-      const output = []
-      let elt = iterator.next()
-      while (!elt.done) {
-        output.push(elt.value)
-        elt = iterator.next()
-      }
+      const output = iblt.listEntries()
       output.length.should.equals(toInsert.length)
       output.sort().should.eqls(toInsert.sort())
     })
@@ -115,149 +114,80 @@ describe('Invertible Bloom Lookup Tables', () => {
 
   describe('#create', () => {
     it('should create correctly an IBLT', () => {
-      const iblt = InvertibleBloomFilter.create(size, 0.001)
+      const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
       toInsert.forEach(e => {
         iblt.add(e)
       })
-      const iterator = iblt.listEntries()
-      const output = []
-      let elt = iterator.next()
-      while (!elt.done) {
-        output.push(elt.value)
-        elt = iterator.next()
-      }
+      const output = iblt.listEntries()
       output.length.should.equals(toInsert.length)
       output.sort().should.eqls(toInsert.sort())
     })
   })
 
-  describe('#saveAsJSON', () => {
-    const iblt = InvertibleBloomFilter.from(
-      [Buffer.from('meow'), Buffer.from('car')],
-      0.001
-    )
-
-    it('should export an Invertible Bloom Filter to a JSON object', () => {
-      const exported = iblt.saveAsJSON()
-      exported._seed.should.equal(seed)
-      exported.type.should.equal('InvertibleBloomFilter')
-      exported._size.should.equal(iblt.size)
-      exported._hashCount.should.equal(iblt.hashCount)
-      exported._elements.should.deep.equal(
-        iblt._elements.map(e => e.saveAsJSON())
+  it('should export an Invertible Bloom Filter to a JSON object', () => {
+    const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
+    toInsert.forEach(e => {
+      iblt.add(e)
+    })
+    const exported = iblt.saveAsJSON()
+    exported._seed.should.equals(seed)
+    exported._size.should.equals(iblt._size)
+    exported._hashCount.should.equals(iblt._hashCount)
+    exported._alpha.should.equals(iblt._alpha)
+    exported._differences.should.equals(iblt._differences)
+    exported._elements.forEach((item, index) => {
+      JSON.stringify(item).should.equals(
+        JSON.stringify(iblt._elements[index].saveAsJSON())
       )
     })
+  })
 
-    it('should create an Invertible Bloom Filter from a JSON export', () => {
-      const exported = iblt.saveAsJSON()
-      const newIblt = InvertibleBloomFilter.fromJSON(exported)
-      iblt.equals(newIblt).should.equals(true)
-      newIblt.seed.should.equal(iblt.seed)
-    })
+  describe(`Multiple run with different seeds for d=${d}`, () => {
+    range(0, 10)
+      .map(r => [r, randomInt(1, Number.MAX_SAFE_INTEGER)])
+      .forEach(([r, seed]) => {
+        it(`should decodes correctly elements (run ${r} with seed ${seed})`, () => {
+          const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
+          const setDiffplus = []
+          const setDiffminus = []
+          const remote = new InvertibleBloomFilter(d, alpha, hashCount, seed)
+          for (let i = 0; i < keys; ++i) {
+            const hash = i.toString()
+            if (i < keys - d) {
+              iblt.add(hash)
+              remote.add(hash)
+            } else {
+              // randomly allocate the element one of plus or minus set
+              const rn = iblt.random()
+              if (rn < 0.5) {
+                setDiffplus.push(hash)
+                iblt.add(hash)
+              } else {
+                setDiffminus.push(hash)
+                remote.add(hash)
+              }
+            }
+          }
+          remote.length.should.equals(keys - setDiffplus.length)
+          iblt.length.should.equals(keys - setDiffminus.length)
+          const diff = setDiffplus.length + setDiffminus.length
+          diff.should.equals(d)
 
-    it('should reject imports from invalid JSON objects', () => {
-      const invalids = [
-        {type: 'something'},
-        {type: 'InvertibleBloomFilter'},
-        {type: 'InvertibleBloomFilter', size: 10},
-        {type: 'InvertibleBloomFilter', size: 10, hashCount: 2},
-        {type: 'InvertibleBloomFilter', size: 10, hashCount: 4},
-        {type: 'InvertibleBloomFilter', size: 10, hashCount: 4, invalid: 4},
-        {
-          type: 'InvertibleBloomFilter',
-          size: 10,
-          hashCount: 4,
-          invalid: 4,
-          seed: 1,
-        },
-      ]
+          // substract
+          const sub = iblt.substract(remote)
+          // if no pure = no decode; we must have at least one pure cell
+          sub._elements.some(c => sub.isCellPure(c)).should.equals(true)
 
-      invalids.forEach(json => {
-        ;(function () {
-          InvertibleBloomFilter.fromJSON(json)
-        }).should.throw(Error)
-      })
-    })
+          const res = sub.decode()
+          res.success.should.equals(true, JSON.stringify(res))
 
-    it('should accept import from a valid JSON object', () => {
-      ;(function () {
-        InvertibleBloomFilter.fromJSON({
-          type: 'InvertibleBloomFilter',
-          _size: 10,
-          _hashCount: 4,
-          _elements: [],
-          _seed: 1,
+          JSON.stringify(res.additional.sort()).should.equals(
+            JSON.stringify(setDiffplus.sort())
+          )
+          JSON.stringify(res.missing.sort()).should.equals(
+            JSON.stringify(setDiffminus.sort())
+          )
         })
-      }).should.not.throw(Error)
-    })
+      })
   })
-
-  describe(`Set differences of [10 to ${d}] with ${keys} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${
-    alpha * d
-  } cells`, () => {
-    for (let i = step; i <= d; i += step) {
-      it(
-        'should decodes correctly element for a set difference of ' + i,
-        () => {
-          const differences = i
-          commonTest(size, hashCount, keys, '', differences)
-        }
-      ).timeout(0)
-    }
-  })
-  for (let k = keys; k < 100000; k = k * 10) {
-    describe(`[Performance] Set differences of [10 to ${d}] with ${k} keys, ${hashCount} hash functions, [alpha = ${alpha}, d = ${d}]=${
-      alpha * d
-    } cells`, () => {
-      it(
-        'should decodes correctly element for a set difference of ' + d,
-        () => {
-          commonTest(size, hashCount, k, '', d)
-        }
-      ).timeout(0)
-    })
-  }
-
-  function commonTest(size, hashCount, keys, prefix, differences) {
-    const iblt = new InvertibleBloomFilter(size, hashCount, seed)
-    iblt.seed = seed
-    const setDiffplus = []
-    const setDiffminus = []
-    const remote = new InvertibleBloomFilter(size, hashCount, seed)
-    remote.seed = seed
-    for (let i = 1; i <= keys; ++i) {
-      const hash = prefix + i // XXH.h64(prefix + i, seed).toString(16)
-      if (i <= keys - differences) {
-        iblt.add(Buffer.from(hash, 'utf8'))
-        remote.add(Buffer.from(hash, 'utf8'))
-      } else {
-        // randomly allocate the element one of plus or minus set
-        if (random.float() < 0.5) {
-          setDiffplus.push(Buffer.from(hash, 'utf8'))
-          iblt.add(Buffer.from(hash, 'utf8'))
-        } else {
-          setDiffminus.push(Buffer.from(hash, 'utf8'))
-          remote.add(Buffer.from(hash, 'utf8'))
-        }
-      }
-    }
-    remote.length.should.equal(keys - setDiffplus.length)
-    iblt.length.should.equal(keys - setDiffminus.length)
-    const sub = iblt.substract(remote)
-    const res = sub.decode()
-
-    res.success.should.equal(true, JSON.stringify(res.reason))
-
-    const sum = res.additional.length + res.missing.length
-    sum.should.equal(differences)
-
-    res.additional
-      .map(e => e.toString())
-      .sort()
-      .should.eql(setDiffplus.map(e => e.toString()).sort())
-    res.missing
-      .map(e => e.toString())
-      .sort()
-      .should.eql(setDiffminus.map(e => e.toString()).sort())
-  }
 })

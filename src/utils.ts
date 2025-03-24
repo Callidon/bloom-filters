@@ -126,36 +126,6 @@ export function randomInt(
 }
 
 /**
- * Return the non-destructive XOR of two buffers
- * @param a - The buffer to copy, then to xor with b
- * @param b - The buffer to xor with
- * @return The results of the XOR between the two buffers
- * @author Arnaud Grall
- */
-export function xorBuffer(a: Buffer, b: Buffer): Buffer {
-  const length = Math.max(a.length, b.length)
-  const buffer = Buffer.allocUnsafe(length).fill(0)
-  for (let i = 0; i < length; ++i) {
-    if (i < a.length && i < b.length) {
-      buffer[length - i - 1] = a[a.length - i - 1] ^ b[b.length - i - 1]
-    } else if (i < a.length && i >= b.length) {
-      buffer[length - i - 1] ^= a[a.length - i - 1]
-    } else if (i < b.length && i >= a.length) {
-      buffer[length - i - 1] ^= b[b.length - i - 1]
-    }
-  }
-  // now need to remove leading zeros in the buffer if any
-  let start = 0
-  const it = buffer.values()
-  let value = it.next()
-  while (!value.done && value.value === 0) {
-    start++
-    value = it.next()
-  }
-  return buffer.slice(start)
-}
-
-/**
  * Return true if the buffer is empty, i.e., all value are equals to 0.
  * @param  buffer - The buffer to inspect
  * @return True if the buffer only contains zero, False otherwise
@@ -178,4 +148,48 @@ export function isEmptyBuffer(buffer: Buffer | null): boolean {
  */
 export function getDefaultSeed(): number {
   return 0x1234567890
+}
+
+/**
+ * Return the non-destructive XOR of two Uint8Array
+ * @param a - The Uint8Array to copy, then to xor with b
+ * @param b - The Uint8Array to xor with
+ * @return The results of the XOR between the two Uint8Array
+ * @author Arnaud Grall
+ */
+export function xorUint8Array(a: Uint8Array, b: Uint8Array): Uint8Array {
+  const length = Math.max(a.length, b.length)
+  const buffer = new Uint8Array(length).fill(0)
+  for (let i = 0; i < length; ++i) {
+    if (i < a.length && i < b.length) {
+      buffer[length - i - 1] = a[a.length - i - 1] ^ b[b.length - i - 1]
+    } else if (i < a.length && i >= b.length) {
+      buffer[length - i - 1] ^= a[a.length - i - 1]
+    } else if (i < b.length && i >= a.length) {
+      buffer[length - i - 1] ^= b[b.length - i - 1]
+    }
+  }
+  // now need to remove leading zeros in the buffer if any
+  let start = 0
+  const it = buffer.values()
+  let value = it.next()
+  while (!value.done && value.value === 0) {
+    start++
+    value = it.next()
+  }
+  return Uint8Array.prototype.slice.call(buffer, start)
+}
+
+/**
+ * Perform an equality check between 2 Uint8Array
+ * @param a
+ * @param b
+ * @returns
+ */
+export function arraysEqual(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false
+  }
+  return true
 }

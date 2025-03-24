@@ -72,6 +72,7 @@
     "mocha/glob": "^11"
   },
   "dependencies": {
+    "@node-rs/xxhash": "^1.7.6",
     "@types/seedrandom": "^3.0.8",
     "base64-arraybuffer": "^1.0.2",
     "is-buffer": "^2.0.5",

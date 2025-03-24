@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {optimalFilterSize, optimalHashes} from '../formulas'
@@ -37,7 +37,7 @@ import {HashableInput, allocateArray} from '../utils'
  */
 @AutoExportable('CountingBloomFilter', ['_seed'])
 export default class CountingBloomFilter
-  extends BaseFilter
+  extends AutoExportableBaseFilter
   implements WritableFilter<HashableInput>
 {
   @Field()

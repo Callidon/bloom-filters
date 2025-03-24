@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import CountingFilter from '../interfaces/counting-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {allocateArray, HashableInput} from '../utils'
@@ -38,7 +38,7 @@ import {allocateArray, HashableInput} from '../utils'
  */
 @AutoExportable<CountMinSketch>('CountMinSketch', ['_seed'])
 export default class CountMinSketch
-  extends BaseFilter
+  extends AutoExportableBaseFilter
   implements CountingFilter<HashableInput>
 {
   @Field()

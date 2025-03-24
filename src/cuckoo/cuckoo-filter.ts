@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import WritableFilter from '../interfaces/writable-filter'
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import Bucket from './bucket'
 import {Exportable, cloneObject} from '../exportable'
 import {HashableInput, allocateArray, randomInt} from '../utils'
@@ -99,7 +99,7 @@ function computeFingerpintLength(size: number, rate: number): number {
   },
 })
 export default class CuckooFilter
-  extends BaseFilter
+  extends AutoExportableBaseFilter
   implements WritableFilter<HashableInput>
 {
   public _filter: Array<Bucket<string>>

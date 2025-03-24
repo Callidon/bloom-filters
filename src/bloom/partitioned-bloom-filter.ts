@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import ClassicFilter from '../interfaces/classic-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
@@ -95,7 +95,7 @@ function computeNumberOfItems(
  */
 @AutoExportable('PartitionedBloomFilter', ['_seed'])
 export default class PartitionedBloomFilter
-  extends BaseFilter
+  extends AutoExportableBaseFilter
   implements ClassicFilter<HashableInput>
 {
   @Field()

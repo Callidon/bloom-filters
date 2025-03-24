@@ -24,7 +24,7 @@ SOFTWARE.
 
 // Code inspired by the java implementation (https://github.com/FastFilter/fastfilter_java/blob/master/fastfilter/src/main/java/org/fastfilter/xor/Xor8.java)
 
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray, BufferError} from '../utils'
 import XXH from 'xxhashjs'
@@ -59,7 +59,7 @@ export type XorHashableInput = HashableInput | Long
  * ```
  */
 @AutoExportable<XorFilter>('XorFilter', ['_seed'])
-export default class XorFilter extends BaseFilter {
+export default class XorFilter extends AutoExportableBaseFilter {
   public ALLOWED_FINGERPRINT_SIZES: number[] = [8, 16]
   public HASHES = 3
   public OFFSET = 32
