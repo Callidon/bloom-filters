@@ -1,32 +1,15 @@
-/* file : counting-bloom-filter.ts
-MIT License
-
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-import {AutoExportableBaseFilter} from '../base-filter'
+import BaseFilter from '../base-filter'
 import WritableFilter from '../interfaces/writable-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 import {HashableInput, allocateArray} from '../utils'
+
+export type ExportedCountingBloomFilter = {
+  _seed: number
+  _size: number
+  _nbHashes: number
+  _filter: number[][]
+  _length: number
+}
 
 /**
  * A Counting Bloom filter works in a similar manner as a regular Bloom filter; however, it is able to keep track of insertions and deletions. In a counting Bloom filter, each entry in the Bloom filter is a small counter associated with a basic Bloom filter bit.
@@ -35,28 +18,20 @@ import {HashableInput, allocateArray} from '../utils'
 684–695.
  * @author Thomas Minier & Arnaud Grall
  */
-@AutoExportable('CountingBloomFilter', ['_seed'])
 export default class CountingBloomFilter
-  extends AutoExportableBaseFilter
+  extends BaseFilter
   implements WritableFilter<HashableInput>
 {
-  @Field()
   public _size: number
-  @Field()
   public _nbHashes: number
-  @Field()
   public _filter: Array<Array<number>>
-  @Field()
   public _length: number
   /**
    * Constructor
    * @param size - The size of the filter
    * @param nbHashes - The number of hash functions
    */
-  constructor(
-    @Parameter('_size') size: number,
-    @Parameter('_nbHashes') nbHashes: number
-  ) {
+  constructor(size: number, nbHashes: number) {
     super()
     if (nbHashes < 1) {
       throw new Error(
@@ -236,5 +211,25 @@ export default class CountingBloomFilter
         other._filter[index][0] === value[0] &&
         other._filter[index][1] === value[1]
     )
+  }
+
+  public saveAsJSON(): ExportedCountingBloomFilter {
+    return {
+      _length: this._length,
+      _size: this._size,
+      _nbHashes: this._nbHashes,
+      _filter: this._filter,
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(
+    element: ExportedCountingBloomFilter
+  ): CountingBloomFilter {
+    const bl = new CountingBloomFilter(element._size, element._nbHashes)
+    bl.seed = element._seed
+    bl._length = element._length
+    bl._filter = element._filter
+    return bl
   }
 }

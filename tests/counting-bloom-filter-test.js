@@ -129,7 +129,6 @@ describe('CountingBloomFilter', () => {
       const filter = getFilter()
       const exported = filter.saveAsJSON()
       exported._seed.should.equal(filter.seed)
-      exported.type.should.equal('CountingBloomFilter')
       exported._size.should.equal(filter.size)
       exported._length.should.equal(filter.length)
       exported._nbHashes.should.equal(filter._nbHashes)
@@ -145,27 +144,6 @@ describe('CountingBloomFilter', () => {
       newFilter.length.should.equal(filter._length)
       newFilter._nbHashes.should.equal(filter._nbHashes)
       newFilter._filter.should.deep.equal(filter._filter)
-    })
-
-    it('should reject imports from invalid JSON objects', () => {
-      const invalids = [
-        {type: 'something'},
-        {type: 'CountingBloomFilter'},
-        {type: 'CountingBloomFilter', _size: 1},
-        {type: 'CountingBloomFilter', _size: 1, _length: 1},
-        {type: 'CountingBloomFilter', size: 1, length: 1, _nbHashes: 2},
-        {
-          type: 'CountingBloomFilter',
-          _size: 1,
-          _length: 1,
-          _nbHashes: 2,
-          _seed: 1,
-        },
-      ]
-
-      invalids.forEach(json => {
-        ;(() => CountingBloomFilter.fromJSON(json)).should.throw(Error)
-      })
     })
   })
 

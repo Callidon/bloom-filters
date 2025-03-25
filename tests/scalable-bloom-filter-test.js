@@ -54,27 +54,43 @@ describe('ScalableBloomFilter', () => {
     })
 
     it('should scale Partitioned Bloom Filter', () => {
-      const filter = ScalableBloomFilter.create(1, targetRate)
+      const rate = 0.0001
+      const filter = ScalableBloomFilter.create(128, rate)
       filter.seed = seed
       filter.add('alice')
       filter.add('bob')
       filter.add('carl')
-      filter._filters.length.should.equal(2)
-      for (let i = 0; i < 1024; i++) {
-        filter.add('elem:' + i)
+      const offset = 1024 * 10
+      for (let i = 0; i < offset; i++) {
+        filter.add(i.toString())
       }
       filter.has('alice').should.equal(true)
       filter.has('bob').should.equal(true)
       filter.has('carl').should.equal(true)
-      for (let i = 0; i < 1024; i++) {
-        filter.has('elem:' + i).should.equal(true)
+
+      // no false negative
+      for (let i = 0; i < offset; i++) {
+        // should be in!
+        filter.has(i.toString()).should.be.true
       }
-      filter.has('elem:' + 1025).should.equal(false)
-      expect(filter.seed, 'the seed should be defined').to.exist
-      filter._filters.forEach(
-        f => expect(f.seed, 'the seed should be defined').to.exist
-      )
-      filter._filters.length.should.equal(10)
+
+      filter._filters.length.should.be.greaterThan(1)
+
+      const rates = filter._filters.map(f => f.rate())
+
+      const globalRate = rates.reduce((a, b) => a + b, 0) / rates.length
+      const P = (rate * 1) / (1 - filter._ratio)
+      globalRate.should.be.lessThan(P)
+
+      const compounded = Math.pow(2, 1 - filter._filters[0]._k)
+      const compunded_rates = rates.reduce((a, b) => a * b, 1)
+      compunded_rates.should.be.lessThanOrEqual(compounded)
+
+      filter.seed.should.equal(seed)
+      filter._filters.forEach(f => {
+        f.seed.should.equal(seed)
+      })
+      filter._filters.length.should.equal(7)
     })
 
     it('should import/export correctly', () => {
@@ -86,7 +102,6 @@ describe('ScalableBloomFilter', () => {
       const exported = filter.saveAsJSON()
       const imported = ScalableBloomFilter.fromJSON(exported)
       imported.seed.should.equal(filter.seed)
-      imported.equals(filter).should.equal(true)
       for (let i = 0; i < 50; i++) {
         imported.has('elem:' + i).should.equal(true)
       }

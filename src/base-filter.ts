@@ -74,22 +74,3 @@ export default abstract class BaseFilter {
     return this._rng.int32()
   }
 }
-
-export abstract class AutoExportableBaseFilter extends BaseFilter {
-  /**
-   * Save the current structure as a JSON
-   */
-  public saveAsJSON(): any {
-    throw new Error('not-implemented')
-  }
-
-  /**
-   * Load an Object from a provided JSON object
-   * @param json the JSON object to load
-   * @return Return the Object loaded from the provided JSON object
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static fromJSON(json: JSON): any {
-    throw new Error(`not-implemented`)
-  }
-}

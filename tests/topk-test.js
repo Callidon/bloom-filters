@@ -247,21 +247,18 @@ describe('TopK', () => {
 
     it('should export a TopK to a JSON object', () => {
       const exported = topk.saveAsJSON()
-
-      exported.type.should.equal('TopK')
       exported._k.should.equal(topk._k)
       exported._errorRate.should.equal(topk._errorRate)
       exported._accuracy.should.equal(topk._accuracy)
       exported._seed.should.equal(topk._seed)
       // inner count min sketch
-      exported._sketch.type.should.equal('CountMinSketch')
       exported._sketch._columns.should.equal(topk._sketch._columns)
       exported._sketch._rows.should.equal(topk._sketch._rows)
       exported._sketch._allSums.should.equal(topk._sketch._allSums)
       exported._sketch._seed.should.equal(topk._sketch._seed)
       exported._sketch._matrix.should.deep.equal(topk._sketch._matrix)
       // inner MinHeap
-      exported._heap.should.deep.equal(topk._heap._content)
+      exported._heap._content.should.deep.equal(topk._heap._content)
     })
 
     it('should create a TopK from a JSON export', () => {

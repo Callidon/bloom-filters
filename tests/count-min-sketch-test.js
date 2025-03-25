@@ -100,7 +100,6 @@ describe('CountMinSketch', () => {
 
     it('should export a count-min sketch to a JSON object', () => {
       const exported = sketch.saveAsJSON()
-      exported.type.should.equal('CountMinSketch')
       exported._rows.should.equal(sketch._rows)
       exported._columns.should.equal(sketch._columns)
       exported._allSums.should.be.equal(sketch._allSums)
@@ -115,20 +114,6 @@ describe('CountMinSketch', () => {
       newSketch.rows.should.equal(sketch.rows)
       newSketch.sum.should.be.equal(sketch.sum)
       newSketch._matrix.should.deep.equal(sketch._matrix)
-    })
-
-    it('should reject imports from invalid JSON objects', () => {
-      const invalids = [
-        {type: 'something'},
-        {type: 'CountMinSketch'},
-        {type: 'CountMinSketch', _columns: 1},
-        {type: 'CountMinSketch', _columns: 1, _rows: 1},
-        {type: 'CountMinSketch', _columns: 1, _rows: 1, seed: 1},
-      ]
-
-      invalids.forEach(json => {
-        ;(() => CountMinSketch.fromJSON(json)).should.throw(Error)
-      })
     })
   })
   describe('Performance test', () => {

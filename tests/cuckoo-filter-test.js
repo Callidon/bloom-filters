@@ -241,7 +241,6 @@ describe('CuckooFilter', () => {
 
     it('should export a cuckoo filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
-      exported.type.should.equal('CuckooFilter')
       exported._size.should.equal(filter.size)
       exported._fingerprintLength.should.equal(filter.fingerprintLength)
       exported._length.should.equal(filter.length)
@@ -262,38 +261,6 @@ describe('CuckooFilter', () => {
       newFilter._filter
         .every((b, index) => filter._filter[index].equals(b))
         .should.equal(true)
-    })
-
-    it('should reject imports from invalid JSON objects', () => {
-      const invalids = [
-        {type: 'something'},
-        {type: 'CuckooFilter'},
-        {type: 'CuckooFilter', _size: 1},
-        {type: 'CuckooFilter', _size: 1, _fingerprintLength: 1},
-        {type: 'CuckooFilter', _size: 1, _fingerprintLength: 1, _length: 2},
-        {
-          type: 'CuckooFilter',
-          _size: 1,
-          _fingerprintLength: 1,
-          _length: 2,
-          _maxKicks: 1,
-        },
-        {
-          type: 'CuckooFilter',
-          _size: 1,
-          _fingerprintLength: 1,
-          _length: 2,
-          _maxKicks: 1,
-          _seed: 1,
-        },
-      ]
-
-      invalids.forEach(json => {
-        ;(() => CuckooFilter.fromJSON(json)).should.throw(
-          Error,
-          'Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter'
-        )
-      })
     })
   })
   describe('Performance test', () => {

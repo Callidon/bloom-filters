@@ -169,7 +169,6 @@ describe('Bucket', () => {
 
     it('should export a bucket to a JSON object', () => {
       const exported = bucket.saveAsJSON()
-      exported.type.should.equal('Bucket')
       exported._size.should.equal(bucket.size)
       exported._elements.should.deep.equal(bucket._elements)
     })
@@ -180,22 +179,6 @@ describe('Bucket', () => {
       newBucket.size.should.equal(bucket.size)
       newBucket.length.should.equal(bucket.length)
       newBucket._elements.should.deep.equals(bucket._elements)
-    })
-
-    it('should reject imports from invalid JSON objects', () => {
-      const invalids = [
-        {type: 'something'},
-        {type: 'Bucket'},
-        {type: 'Bucket', size: 1},
-        {type: 'Bucket', size: 1, seed: 1},
-      ]
-
-      invalids.forEach(json => {
-        ;(() => Bucket.fromJSON(json)).should.throw(
-          Error,
-          'Cannot create a Bucket from a JSON export which does not represent a bucket'
-        )
-      })
     })
   })
 })

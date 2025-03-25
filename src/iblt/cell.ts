@@ -1,6 +1,6 @@
 import {xorUint8Array} from '../utils.js'
 
-export interface ExportedCell {
+export type ExportedCell = {
   _idSum: number[]
   _hashSum: number
   _count: number

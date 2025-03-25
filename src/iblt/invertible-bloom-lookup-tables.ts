@@ -7,7 +7,7 @@ import {xxh3} from '@node-rs/xxhash'
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
  */
-export interface IBLTDecodingErrorReason {
+export type IBLTDecodingErrorReason = {
   cells: Cell[]
   iblt: InvertibleBloomFilter
   decoded: number
@@ -16,14 +16,14 @@ export interface IBLTDecodingErrorReason {
 /**
  * The results of decoding an Invertible Bloom Lookup Table
  */
-export interface IBLTDecodingResults {
+export type IBLTDecodingResults = {
   success: boolean
   reason?: IBLTDecodingErrorReason
   additional: string[]
   missing: string[]
 }
 
-export interface ExportedInvertibleBloomFilter {
+export type ExportedInvertibleBloomFilter = {
   _size: number
   _hashCount: number
   _elements: ExportedCell[]

@@ -9,7 +9,7 @@ import {HashableInput, SeedType} from '../types.js'
 import {xxh3} from '@node-rs/xxhash'
 
 export type XorSize = 8 | 16 | 32 | 64
-export interface ExportedXorFilter {
+export type ExportedXorFilter = {
   _filter: ExportedBigInt[]
   _bits: XorSize
   _size: number

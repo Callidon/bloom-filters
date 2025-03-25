@@ -1,31 +1,14 @@
-/* file : count-min-sketch.ts
-MIT License
-
-Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-import {AutoExportableBaseFilter} from '../base-filter'
+import BaseFilter from '../base-filter'
 import CountingFilter from '../interfaces/counting-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
 import {allocateArray, HashableInput} from '../utils'
+
+export type ExportedCountMinSketch = {
+  _seed: number
+  _columns: number
+  _rows: number
+  _matrix: number[][]
+  _allSums: number
+}
 
 /**
  * The count–min sketch (CM sketch) is a probabilistic data structure that serves as a frequency table of events in a stream of data.
@@ -36,18 +19,13 @@ import {allocateArray, HashableInput} from '../utils'
  * @extends Exportable
  * @author Thomas Minier & Arnaud Grall
  */
-@AutoExportable<CountMinSketch>('CountMinSketch', ['_seed'])
 export default class CountMinSketch
-  extends AutoExportableBaseFilter
+  extends BaseFilter
   implements CountingFilter<HashableInput>
 {
-  @Field()
   public _columns: number
-  @Field()
   public _rows: number
-  @Field()
   public _matrix: Array<Array<number>>
-  @Field()
   public _allSums: number
 
   /**
@@ -55,10 +33,7 @@ export default class CountMinSketch
    * @param columns - Number of columns
    * @param rows - Number of rows
    */
-  constructor(
-    @Parameter('_columns') columns: number,
-    @Parameter('_rows') rows: number
-  ) {
+  constructor(columns: number, rows: number) {
     super()
     this._columns = columns
     this._rows = rows
@@ -208,5 +183,23 @@ export default class CountMinSketch
     sketch.merge(this)
     sketch.seed = this.seed
     return sketch
+  }
+
+  public saveAsJSON(): ExportedCountMinSketch {
+    return {
+      _allSums: this._allSums,
+      _matrix: this._matrix,
+      _rows: this._rows,
+      _columns: this._columns,
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(element: ExportedCountMinSketch): CountMinSketch {
+    const filter = new CountMinSketch(element._columns, element._rows)
+    filter.seed = element._seed
+    filter._matrix = element._matrix
+    filter._allSums = element._allSums
+    return filter
   }
 }

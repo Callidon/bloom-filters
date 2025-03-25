@@ -110,8 +110,7 @@
     "lint": "yarn prettier && yarn slint",
     "slint": "eslint src --fix",
     "prettier": "prettier --config package.json --write \"(src|tests)/**/*.(t|j)s\"",
-    "clean": "rimraf docs/ dist/ build/",
-    "compile": "tsc"
+    "clean": "rimraf docs/ dist/ build/"
   },
   "repository": {
     "type": "git",

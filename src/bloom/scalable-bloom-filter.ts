@@ -1,33 +1,19 @@
-/* file : scalable-bloom-filter.ts
-MIT License
-
-Copyright (c) 2022 Thomas Minier & Arnaud Grall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-import ClassicFilter from '../interfaces/classic-filter'
-import {AutoExportableBaseFilter} from '../base-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
-import {HashableInput} from '../utils'
-import PartitionBloomFilter from './partitioned-bloom-filter'
+import ClassicFilter from '../interfaces/classic-filter.js'
+import BaseFilter from '../base-filter.js'
+import {SeedType} from '../types.js'
+import PartitionBloomFilter, {
+  ExportedPartitionedBloomFilter,
+} from './partitioned-bloom-filter.js'
 import seedrandom from 'seedrandom'
+import {HashableInput} from '../utils.js'
+
+export type ExportedScalableBloomFilter = {
+  _seed: number
+  _initial_size: number
+  _initial_error_rate: number
+  _ratio: number
+  _filters: ExportedPartitionedBloomFilter[]
+}
 
 /**
  * A Scalable Bloom Filter is a variant of Bloom Filters that can adapt dynamically to the
@@ -37,9 +23,8 @@ number of elements stored, while assuring a maximum false positive probability
  * @see {@link https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.725.390&rep=rep1&type=pdf}
  * @author Thomas Minier & Arnaud Grall
  */
-@AutoExportable<ScalableBloomFilter>('ScalableBloomFilter', ['_seed'])
 export default class ScalableBloomFilter
-  extends AutoExportableBaseFilter
+  extends BaseFilter
   implements ClassicFilter<HashableInput>
 {
   /**
@@ -48,56 +33,43 @@ export default class ScalableBloomFilter
   public static _s = 2
 
   /**
-   * The initial size of this filter in number of elements, not in bytes.
+   * The initial size of this filter in number of elements, not in bits.
    */
-  @Field()
   public _initial_size: number
 
   /**
-   * The error rate desired.
+   * The initial error rate desired.
    */
-  @Field()
-  public _error_rate: number
+  public _initial_error_rate: number
 
   /**
-   * The load factor of each filter, By default: 0.5 half of the set
+   * The tightening error probability ratio, each new filter will get its new error rate decrease by this ratio
+   * Default: DEFAULT_RATIO=0.8
    */
-  @Field()
   public _ratio: number
+
+  /**
+   * Default rato 0.8 - 0.9
+   * Citation: "We will see below that choosing r around 0.8 – 0.9 will
+   * result in better average space usage for wide ranges of growth."
+   */
+  public static DEFAULT_RATIO = 0.8
 
   /**
    * Internal Partition Bloom Filters
    */
-  @Field(
-    (filters: PartitionBloomFilter[]) =>
-      filters.map(filter => filter.saveAsJSON()),
-    (array: []) =>
-      array.map(
-        data => PartitionBloomFilter.fromJSON(data) as PartitionBloomFilter
-      )
-  )
   public _filters: PartitionBloomFilter[] = []
 
   constructor(
-    @Parameter('_initial_size')
-    _initial_size = 8,
-    @Parameter('_error_rate')
-    _error_rate = 0.01,
-    @Parameter('_ratio')
-    _ratio = 0.5
+    _initial_size = 128,
+    _initial_error_rate = 0.001,
+    _ratio = ScalableBloomFilter.DEFAULT_RATIO
   ) {
     super()
     this._initial_size = _initial_size
-    this._error_rate = _error_rate
+    this._initial_error_rate = _initial_error_rate
     this._ratio = _ratio
-    this._filters.push(
-      PartitionBloomFilter.create(
-        this._initial_size,
-        this._error_rate,
-        this._ratio
-      )
-    )
-    this._filters[this._filters.length - 1].seed = this.seed
+    this.addFilter()
   }
 
   /**
@@ -116,12 +88,43 @@ export default class ScalableBloomFilter
    * due to the seed change. So only change it once before adding data.
    * @param  seed the new seed that will be used in this structure
    */
-  public set seed(seed: number) {
+  public set seed(seed: SeedType) {
     this._seed = seed
-    this._rng = seedrandom(`${this._seed}`)
+    this._rng = seedrandom(this._seed.toString())
     this._filters.forEach((filter: PartitionBloomFilter) => {
       filter.seed = this.seed
     })
+  }
+
+  /**
+   * Get the current filter to use
+   */
+  public get current(): PartitionBloomFilter {
+    return this._filters[this._filters.length - 1]
+  }
+
+  public addFilter() {
+    const index = this._filters.length
+    let newSize
+    let newErrorRate
+    let newHashes
+    if (index === 0) {
+      newSize = this._initial_size
+      newErrorRate = this._initial_error_rate
+    } else {
+      newSize = this._filters[0]._m * Math.pow(ScalableBloomFilter._s, index)
+      newErrorRate = this.current._errorRate * this._ratio
+      newHashes = Math.ceil(
+        this._filters[0]._k + index * Math.log2(1 / this._ratio)
+      )
+    }
+    const newFilter = PartitionBloomFilter.create(
+      newSize,
+      newErrorRate,
+      newHashes
+    )
+    newFilter._seed = this.seed
+    this._filters.push(newFilter)
   }
 
   /**
@@ -130,22 +133,11 @@ export default class ScalableBloomFilter
    */
   public add(element: HashableInput) {
     // determine if we need to create a new filter
-    const currentFilter = this._filters[this._filters.length - 1]
-    if (currentFilter._currentload() > currentFilter._loadFactor) {
-      // create a new filter
-      const newSize =
-        this._initial_size *
-        Math.pow(ScalableBloomFilter._s, this._filters.length + 1) *
-        Math.LN2
-      const newErrorRate =
-        this._error_rate * Math.pow(this._ratio, this._filters.length)
-      this._filters.push(
-        PartitionBloomFilter.create(newSize, newErrorRate, this._ratio)
-      )
-      this._filters[this._filters.length - 1].seed = this.seed
+    if (this.current.load() >= 0.5) {
+      this.addFilter()
     }
     // get the newly created filter
-    this._filters[this._filters.length - 1].add(element)
+    this.current.add(element)
   }
 
   /**
@@ -159,11 +151,11 @@ export default class ScalableBloomFilter
   }
 
   /**
-   * Return the current capacity (number of elements) of this filter
+   * Return the capacity of this filter
    * @returns
    */
   public capacity(): number {
-    return this._filters.map(f => f._capacity).reduce((p, c) => p + c, 0)
+    return this._filters.map(f => f.capacity).reduce((p, c) => p + c, 0)
   }
 
   /**
@@ -171,36 +163,46 @@ export default class ScalableBloomFilter
    * @returns
    */
   public rate(): number {
-    return this._filters[this._filters.length - 1].rate()
+    return this._filters.reduce((acc, cur) => acc * cur.rate(), 1)
   }
 
   /**
-   * Check if two ScalableBloomFilter are equal
-   * @param filter
-   * @returns
-   */
-  public equals(filter: ScalableBloomFilter) {
-    // assert the seed, the ratio and the capacity are equals
-    if (
-      this.seed !== filter.seed ||
-      this._ratio !== filter._ratio ||
-      this.capacity() !== filter.capacity()
-    ) {
-      return false
-    }
-    return this._filters.every((currentFilter: PartitionBloomFilter, index) =>
-      filter._filters[index].equals(currentFilter)
-    )
-  }
-
-  /**
-   * Create a Scalable Bloom Filter based on Partitionned Bloom Filter.
+   * Create a Scalable Bloom Filter based on Partitioned Bloom Filter.
    * @param _size the starting size of the filter
    * @param _error_rate ther error rate desired of the filter
-   * @param _ratio the load factor desired
+   * @param _ratio the tightening ration
    * @returns
    */
-  public static create(_size: number, _error_rate: number, _ratio = 0.5) {
+  public static create(
+    _size: number,
+    _error_rate: number,
+    _ratio = ScalableBloomFilter.DEFAULT_RATIO
+  ) {
     return new ScalableBloomFilter(_size, _error_rate, _ratio)
+  }
+
+  public saveAsJSON(): ExportedScalableBloomFilter {
+    return {
+      _initial_size: this._initial_size,
+      _initial_error_rate: this._initial_error_rate,
+      _filters: this._filters.map(filter => filter.saveAsJSON()),
+      _seed: this._seed,
+      _ratio: this._ratio,
+    }
+  }
+
+  public static fromJSON(
+    element: ExportedScalableBloomFilter
+  ): ScalableBloomFilter {
+    const bl = new ScalableBloomFilter(
+      element._initial_size,
+      element._initial_error_rate,
+      element._ratio
+    )
+    bl.seed = element._seed
+    bl._filters = element._filters.map(filter =>
+      PartitionBloomFilter.fromJSON(filter)
+    )
+    return bl
   }
 }
