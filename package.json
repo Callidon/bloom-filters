@@ -4,14 +4,112 @@
   "description": "JS implementation of probabilistic data structures: Bloom Filter (and its derived), HyperLogLog, Count-Min Sketch, Top-K and MinHash",
   "main": "dist/api.js",
   "type": "commonjs",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/api.js",
+      "require": "./dist/cjs/api.js"
+    },
+    "./interfaces/counting-filter": {
+      "import": "./dist/esm/dist/interfaces/counting-filter.js",
+      "require": "./dist/cjs/interfaces/counting-filter.js"
+    },
+    "./interfaces/writable-filter": {
+      "import": "./dist/esm/interfaces/writable-filter.js",
+      "require": "./dist/cjs/interfaces/writable-filter.js"
+    },
+    "./interfaces/classic-filter": {
+      "import": "./dist/esm/interfaces/classic-filter.js",
+      "require": "./dist/cjs/interfaces/classic-filter.js"
+    },
+    "./base-filter": {
+      "import": "./dist/esm/base-filter.js",
+      "require": "./dist/cjs/base-filter.js"
+    },
+    "./bloom/bit-set": {
+      "import": "./dist/esm/bloom/bit-set.js",
+      "require": "./dist/cjs/bloom/bit-set.js"
+    },
+    "./bloom/bloom-filter": {
+      "import": "./dist/esm/bloom/bloom-filter.js",
+      "require": "./dist/cjs/bloom/bloom-filter.js"
+    },
+    "./bloom/counting-bloom-filter": {
+      "import": "./dist/esm/bloom/counting-bloom-filter.js",
+      "require": "./dist/cjs/bloom/counting-bloom-filter.js"
+    },
+    "./bloom/partitioned-bloom-filter": {
+      "import": "./dist/esm/bloom/partitioned-bloom-filter.js",
+      "require": "./dist/cjs/bloom/partitioned-bloom-filter.js"
+    },
+    "./bloom/scalable-bloom-filter": {
+      "import": "./dist/esm/bloom/scalable-bloom-filter.js",
+      "require": "./dist/cjs/bloom/scalable-bloom-filter.js"
+    },
+    "./bloom/xor-filter": {
+      "import": "./dist/esm/bloom/xor-filter.js",
+      "require": "./dist/cjs/bloom/xor-filter.js"
+    },
+    "./iblt/cell": {
+      "import": "./dist/esm/iblt/cell.js",
+      "require": "./dist/cjs/iblt/cell.js"
+    },
+    "./iblt/invertible-bloom-lookup-tables": {
+      "import": "./dist/esm/iblt/invertible-bloom-lookup-tables.js",
+      "require": "./dist/cjs/iblt/invertible-bloom-lookup-tables.js"
+    },
+    "./cuckoo/bucket": {
+      "import": "./dist/esm/cuckoo/bucket.js",
+      "require": "./dist/cjs/cuckoo/bucket.js"
+    },
+    "./cuckoo/cuckoo-filter": {
+      "import": "./dist/esm/cuckoo/cuckoo-filter.js",
+      "require": "./dist/cjs/cuckoo/cuckoo-filter.js"
+    },
+    "./sketch/hyperloglog": {
+      "import": "./dist/esm/sketch/hyperloglog.js",
+      "require": "./dist/cjs/sketch/hyperloglog.js"
+    },
+    "./sketch/min-hash-factory": {
+      "import": "./dist/esm/sketch/min-hash-factory.js",
+      "require": "./dist/cjs/sketch/min-hash-factory.js"
+    },
+    "./sketch/min-hash": {
+      "import": "./dist/esm/sketch/min-hash.js",
+      "require": "./dist/cjs/sketch/min-hash.js"
+    },
+    "./sketch/topk": {
+      "import": "./dist/esm/sketch/topk.js",
+      "require": "./dist/cjs/sketch/topk.js"
+    },
+    "./sketch/count-min-sketch": {
+      "import": "./dist/esm/sketch/count-min-sketch.js",
+      "require": "./dist/cjs/sketch/count-min-sketch.js"
+    },
+    "./hashing": {
+      "import": "./dist/esm/hashing.js",
+      "require": "./dist/cjs/hashing.js"
+    },
+    "./types": {
+      "import": "./dist/esm/types.js",
+      "require": "./dist/cjs/types.js"
+    },
+    "./utils": {
+      "import": "./dist/esm/utils.js",
+      "require": "./dist/cjs/utils.js"
+    },
+    "./formulas": {
+      "import": "./dist/esm/formulas.js",
+      "require": "./dist/cjs/formulas.js"
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc -p tsconfig.esm.json",
     "pretest": "yarn clean && yarn lint && yarn build",
-    "test": "mocha test/**/*-test.js --trace-deprecation --timeout=60000",
+    "test": "mocha tests/**/*-test.js --trace-deprecation --timeout=60000",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
     "lint": "yarn prettier && yarn slint",
     "slint": "eslint src --fix",
-    "prettier": "prettier --config package.json --write \"(src|test)/**/*.(t|j)s\"",
+    "prettier": "prettier --config package.json --write \"(src|tests)/**/*.(t|j)s\"",
     "clean": "rimraf docs/ dist/ build/",
     "compile": "tsc"
   },
@@ -77,7 +175,6 @@
     "base64-arraybuffer": "^1.0.2",
     "is-buffer": "^2.0.5",
     "lodash": "^4.17.21",
-    "long": "^5.2.0",
     "reflect-metadata": "^0.2.2",
     "seedrandom": "^3.0.5",
     "xxhashjs": "^0.2.2"

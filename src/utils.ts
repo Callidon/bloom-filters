@@ -1,61 +1,3 @@
-/* file : utils.ts
-MIT License
-
-Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-/**
- * Utilitaries functions
- * @namespace Utils
- * @private
- */
-
-/* JSDOC typedef */
-/**
- * @typedef {TwoHashes} Two hashes of the same value, as computed by {@link hashTwice}.
- * @property {number} first - The result of the first hashing function applied to a value
- * @property {number} second - The result of the second hashing function applied to a value
- * @memberof Utils
- */
-export interface TwoHashes {
-  first: number
-  second: number
-}
-
-/**
- * Templated TwoHashes type
- */
-export interface TwoHashesTemplated<T> {
-  first: T
-  second: T
-}
-
-/**
- * TwoHashes type in number and int format
- */
-export interface TwoHashesIntAndString {
-  int: TwoHashesTemplated<number>
-  string: TwoHashesTemplated<string>
-}
-
 /**
  * Data type of an hashable value, must be string, ArrayBuffer or Buffer.
  */
@@ -192,4 +134,60 @@ export function arraysEqual(a: Uint8Array, b: Uint8Array): boolean {
     if (a[i] !== b[i]) return false
   }
   return true
+}
+
+/**
+ * Return the absolute value of a bigint
+ * @param n
+ * @returns
+ */
+export function getBigIntAbs(n: bigint): bigint {
+  return n < 0n ? -n : n
+}
+
+export type ExportedBigInt = {
+  $bf$bigint: string
+}
+
+/**
+ * Export a bigint into a serializable format
+ * @param value
+ * @returns
+ */
+export function exportBigInt(value: bigint): ExportedBigInt {
+  return {
+    $bf$bigint: value.toString(),
+  }
+}
+
+/**
+ * Import a serialized bigint into a Bigint
+ * @param value
+ * @returns
+ */
+export function importBigInt(value: ExportedBigInt) {
+  return BigInt(value.$bf$bigint)
+}
+
+const max = 2n ** (64n - 1n) - 1n
+export function bigIntToNumber(int: bigint): number {
+  if (int > max) throw new Error("Number doesn't fit in signed 64-bit integer!")
+  return Number(BigInt.asIntN(64, int))
+}
+
+/**
+ * Return the next nearest power of 2 of the specified input
+ * @param x
+ * @returns
+ */
+export function getNearestPow2(x: bigint) {
+  x--
+  x |= x >> 1n
+  x |= x >> 2n
+  x |= x >> 4n
+  x |= x >> 8n
+  x |= x >> 16n
+  x |= x >> 32n
+  x++
+  return x
 }

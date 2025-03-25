@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import {HashFunction, MinHash} from './min-hash'
+import MinHash, {HashFunction} from './min-hash'
 import random from 'lodash/random'
 
 /**

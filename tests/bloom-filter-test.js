@@ -24,7 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const {BloomFilter} = require('../dist/api.js')
+const BloomFilter = require('bloom-filters/bloom/bloom-filter').default
 
 describe('BloomFilter', () => {
   const targetRate = 0.1

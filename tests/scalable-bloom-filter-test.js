@@ -25,7 +25,8 @@ SOFTWARE.
 require('chai').should()
 const {describe, it} = require('mocha')
 const {expect} = require('chai')
-const {ScalableBloomFilter} = require('../dist/api.js')
+const ScalableBloomFilter =
+  require('bloom-filters/bloom/scalable-bloom-filter').default
 
 describe('ScalableBloomFilter', () => {
   const targetRate = 0.1

@@ -26,7 +26,7 @@ const chai = require('chai')
 chai.should()
 chai.expect()
 const {describe, it} = require('mocha')
-const {CuckooFilter} = require('../dist/api.js')
+const CuckooFilter = require('bloom-filters/cuckoo/cuckoo-filter').default
 
 describe('CuckooFilter', () => {
   describe('#_locations', () => {

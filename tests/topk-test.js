@@ -24,7 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const {TopK} = require('../dist/api.js')
+const TopK = require('bloom-filters/sketch/topk').default
 
 describe('TopK', () => {
   const lessThanOrEqualTestCaseItems = [

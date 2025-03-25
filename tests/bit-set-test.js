@@ -24,7 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const {BitSet} = require('../dist/api')
+const BitSet = require('bloom-filters/bloom/bit-set').default
 
 describe('BitSet', () => {
   it('is initially clear', () => {

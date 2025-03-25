@@ -24,7 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const {CountMinSketch} = require('../dist/api.js')
+const CountMinSketch = require('bloom-filters/sketch/count-min-sketch').default
 
 describe('CountMinSketch', () => {
   const delta = 0.999

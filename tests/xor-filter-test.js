@@ -24,17 +24,18 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const {XorFilter} = require('../dist/api.js')
+const XorFilter = require('bloom-filters/bloom/xor-filter').default
 
 describe('XorFilter', () => {
   const elements = ['1']
   const count = 1000
-  const sizes = [8, 16]
+  const sizes = [8, 16, 32, 64]
   sizes.forEach(size => {
     it(`[XOR/${size}] should create a xor filter correctly (array of ${elements.length} element(s))`, () => {
       const filter = XorFilter.create(elements, size)
-      filter.has(elements[0]).should.be.true
+      filter.has('1').should.be.true
       filter.has('2').should.be.false
+      filter._filter.some(e => e !== 0n).should.be.true
     })
     it(`[XOR/${size}] should create a xor filter correctly for ${count} elements`, () => {
       const a = []
@@ -69,8 +70,8 @@ describe('XorFilter', () => {
       const filter = XorFilter.create(['alice'])
       const json = filter.saveAsJSON()
       const newFilter = XorFilter.fromJSON(json)
-      filter.equals(newFilter)
-      filter.seed.should.equal(newFilter.seed)
+      filter._filter.every((b, i) => newFilter._filter[i] === b).should.be.true
+      filter.seed.should.equals(newFilter.seed)
     })
   })
 })

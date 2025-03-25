@@ -62,7 +62,7 @@ function applyHashFunction(x: number, fn: HashFunction): number {
  * @author Thomas Minier
  */
 @AutoExportable('MinHash', ['_seed'])
-export class MinHash extends AutoExportableBaseFilter {
+export default class MinHash extends AutoExportableBaseFilter {
   @Field()
   public _nbHashes: number
 

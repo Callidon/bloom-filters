@@ -29,12 +29,12 @@ const {
   randomInt,
   xorUint8Array,
   getDefaultSeed,
-} = require('../dist/utils')
-const {BloomFilter, BaseFilter} = require('../dist/api.js')
+} = require('bloom-filters/utils')
+const BaseFilter = require('bloom-filters/base-filter').default
+const BloomFilter = require('bloom-filters/bloom/bloom-filter').default
 const XXH = require('xxhashjs')
-const range = require('lodash/range')
 const seed = getDefaultSeed()
-const {Hashing} = require('../dist/api')
+const Hashing = require('bloom-filters/hashing').default
 
 describe('Utils', () => {
   describe('#allocateArray', () => {

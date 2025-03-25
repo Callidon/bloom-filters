@@ -24,7 +24,8 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const {PartitionedBloomFilter} = require('../dist/api.js')
+const PartitionedBloomFilter =
+  require('bloom-filters/bloom/partitioned-bloom-filter').default
 
 describe('PartitionedBloomFilter', () => {
   const targetRate = 0.001

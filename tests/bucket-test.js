@@ -24,7 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const Bucket = require('../dist/cuckoo/bucket.js').default
+const Bucket = require('bloom-filters/cuckoo/bucket').default
 
 describe('Bucket', () => {
   describe('#isFree', () => {

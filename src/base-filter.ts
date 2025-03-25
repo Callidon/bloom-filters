@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import seedrandom, {PRNG} from 'seedrandom'
-import Hashing from './hashing/hashing'
+import Hashing from './hashing'
 import {getDefaultSeed} from './utils'
 
 /**
