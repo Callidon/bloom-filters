@@ -71,11 +71,9 @@ describe('CuckooFilter', () => {
 
       filter._filter.forEach(bucket => {
         if (bucket.length > 0) {
-          expect([
-            'xyz',
-            'lol',
-            locations.fingerprint,
-          ]).toContain(bucket._elements[0])
+          expect(['xyz', 'lol', locations.fingerprint]).toContain(
+            bucket._elements[0]
+          )
           nbElements += bucket.length
         }
       })
@@ -106,9 +104,9 @@ describe('CuckooFilter', () => {
       expect(filter.add('l', false, true)).toEqual(false)
       const snapshot2 = JSON.stringify(filter.saveAsJSON())
       expect(snapshot).not.toEqual(snapshot2)
-      expect(filter
-        .equals(CuckooFilter.fromJSON(JSON.parse(snapshot))))
-        .toEqual(false)
+      expect(
+        filter.equals(CuckooFilter.fromJSON(JSON.parse(snapshot)))
+      ).toEqual(false)
     })
 
     test('should rollback to its initial state in case the filter is full', () => {
@@ -218,9 +216,7 @@ describe('CuckooFilter', () => {
       expect(exported._fingerprintLength).toEqual(filter.fingerprintLength)
       expect(exported._length).toEqual(filter.length)
       expect(exported._maxKicks).toEqual(filter.maxKicks)
-      expect(exported._filter).toEqual(
-        filter._filter.map(b => b.saveAsJSON())
-      )
+      expect(exported._filter).toEqual(filter._filter.map(b => b.saveAsJSON()))
     })
 
     test('should create a cuckoo filter from a JSON export', () => {
@@ -231,9 +227,9 @@ describe('CuckooFilter', () => {
       expect(newFilter.fingerprintLength).toEqual(filter.fingerprintLength)
       expect(newFilter.length).toEqual(filter.length)
       expect(newFilter.maxKicks).toEqual(filter.maxKicks)
-      expect(newFilter._filter
-        .every((b, index) => filter._filter[index].equals(b)))
-        .toEqual(true)
+      expect(
+        newFilter._filter.every((b, index) => filter._filter[index].equals(b))
+      ).toEqual(true)
     })
   })
   describe('Performance test', () => {
