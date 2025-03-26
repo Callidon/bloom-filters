@@ -7,105 +7,129 @@
   "exports": {
     ".": {
       "import": "./dist/esm/api.js",
-      "require": "./dist/cjs/api.js"
+      "require": "./dist/cjs/api.js",
+      "types": "./dist/esm/api.d.ts"
     },
     "./interfaces/counting-filter": {
-      "import": "./dist/esm/dist/interfaces/counting-filter.js",
-      "require": "./dist/cjs/interfaces/counting-filter.js"
+      "import": "./dist/esm/interfaces/counting-filter.js",
+      "require": "./dist/cjs/interfaces/counting-filter.js",
+      "types": "./dist/esm/interfaces/counting-filter.d.ts"
     },
     "./interfaces/writable-filter": {
       "import": "./dist/esm/interfaces/writable-filter.js",
-      "require": "./dist/cjs/interfaces/writable-filter.js"
+      "require": "./dist/cjs/interfaces/writable-filter.js",
+      "types": "./dist/esm/interfaces/writable-filter.d.ts"
     },
     "./interfaces/classic-filter": {
       "import": "./dist/esm/interfaces/classic-filter.js",
-      "require": "./dist/cjs/interfaces/classic-filter.js"
+      "require": "./dist/cjs/interfaces/classic-filter.js",
+      "types": "./dist/esm/interfaces/classic-filter.d.ts"
     },
     "./base-filter": {
       "import": "./dist/esm/base-filter.js",
-      "require": "./dist/cjs/base-filter.js"
+      "require": "./dist/cjs/base-filter.js",
+      "types": "./dist/esm/base-filter.d.ts"
     },
     "./bloom/bit-set": {
       "import": "./dist/esm/bloom/bit-set.js",
-      "require": "./dist/cjs/bloom/bit-set.js"
+      "require": "./dist/cjs/bloom/bit-set.js",
+      "types": "./dist/esm/bloom/bit-set.d.ts"
     },
     "./bloom/bloom-filter": {
       "import": "./dist/esm/bloom/bloom-filter.js",
-      "require": "./dist/cjs/bloom/bloom-filter.js"
+      "require": "./dist/cjs/bloom/bloom-filter.js",
+      "types": "./dist/esm/bloom/bloom-filter.d.ts"
     },
     "./bloom/counting-bloom-filter": {
       "import": "./dist/esm/bloom/counting-bloom-filter.js",
-      "require": "./dist/cjs/bloom/counting-bloom-filter.js"
+      "require": "./dist/cjs/bloom/counting-bloom-filter.js",
+      "types": "./dist/esm/bloom/counting-bloom-filter.d.ts"
     },
     "./bloom/partitioned-bloom-filter": {
       "import": "./dist/esm/bloom/partitioned-bloom-filter.js",
-      "require": "./dist/cjs/bloom/partitioned-bloom-filter.js"
+      "require": "./dist/cjs/bloom/partitioned-bloom-filter.js",
+      "types": "./dist/esm/bloom/partitioned-bloom-filter.d.ts"
     },
     "./bloom/scalable-bloom-filter": {
       "import": "./dist/esm/bloom/scalable-bloom-filter.js",
-      "require": "./dist/cjs/bloom/scalable-bloom-filter.js"
+      "require": "./dist/cjs/bloom/scalable-bloom-filter.js",
+      "types": "./dist/esm/bloom/scalable-bloom-filter.d.ts"
     },
     "./bloom/xor-filter": {
       "import": "./dist/esm/bloom/xor-filter.js",
-      "require": "./dist/cjs/bloom/xor-filter.js"
+      "require": "./dist/cjs/bloom/xor-filter.js",
+      "types": "./dist/esm/bloom/xor-filter.d.ts"
     },
     "./iblt/cell": {
       "import": "./dist/esm/iblt/cell.js",
-      "require": "./dist/cjs/iblt/cell.js"
+      "require": "./dist/cjs/iblt/cell.js",
+      "types": "./dist/esm/iblt/cell.d.ts"
     },
     "./iblt/invertible-bloom-lookup-tables": {
       "import": "./dist/esm/iblt/invertible-bloom-lookup-tables.js",
-      "require": "./dist/cjs/iblt/invertible-bloom-lookup-tables.js"
+      "require": "./dist/cjs/iblt/invertible-bloom-lookup-tables.js",
+      "types": "./dist/esm/iblt/invertible-bloom-lookup-tables.d.ts"
     },
     "./cuckoo/bucket": {
       "import": "./dist/esm/cuckoo/bucket.js",
-      "require": "./dist/cjs/cuckoo/bucket.js"
+      "require": "./dist/cjs/cuckoo/bucket.js",
+      "types": "./dist/esm/cuckoo/bucket.d.ts"
     },
     "./cuckoo/cuckoo-filter": {
       "import": "./dist/esm/cuckoo/cuckoo-filter.js",
-      "require": "./dist/cjs/cuckoo/cuckoo-filter.js"
+      "require": "./dist/cjs/cuckoo/cuckoo-filter.js",
+      "types": "./dist/esm/cuckoo/cuckoo-filter.d.ts"
     },
     "./sketch/hyperloglog": {
       "import": "./dist/esm/sketch/hyperloglog.js",
-      "require": "./dist/cjs/sketch/hyperloglog.js"
+      "require": "./dist/cjs/sketch/hyperloglog.js",
+      "types": "./dist/esm/sketch/hyperloglog.d.ts"
     },
     "./sketch/min-hash-factory": {
       "import": "./dist/esm/sketch/min-hash-factory.js",
-      "require": "./dist/cjs/sketch/min-hash-factory.js"
+      "require": "./dist/cjs/sketch/min-hash-factory.js",
+      "types": "./dist/esm/sketch/min-hash-factory.d.ts"
     },
     "./sketch/min-hash": {
       "import": "./dist/esm/sketch/min-hash.js",
-      "require": "./dist/cjs/sketch/min-hash.js"
+      "require": "./dist/cjs/sketch/min-hash.js",
+      "types": "./dist/esm/sketch/min-hash.d.ts"
     },
     "./sketch/topk": {
       "import": "./dist/esm/sketch/topk.js",
-      "require": "./dist/cjs/sketch/topk.js"
+      "require": "./dist/cjs/sketch/topk.js",
+      "types": "./dist/esm/sketch/topk.d.ts"
     },
     "./sketch/count-min-sketch": {
       "import": "./dist/esm/sketch/count-min-sketch.js",
-      "require": "./dist/cjs/sketch/count-min-sketch.js"
+      "require": "./dist/cjs/sketch/count-min-sketch.js",
+      "types": "./dist/esm/sketch/count-min-sketch.d.ts"
     },
     "./hashing": {
       "import": "./dist/esm/hashing.js",
-      "require": "./dist/cjs/hashing.js"
+      "require": "./dist/cjs/hashing.js",
+      "types": "./dist/esm/hashing.d.ts"
     },
     "./types": {
       "import": "./dist/esm/types.js",
-      "require": "./dist/cjs/types.js"
+      "require": "./dist/cjs/types.js",
+      "types": "./dist/esm/types.d.ts"
     },
     "./utils": {
       "import": "./dist/esm/utils.js",
-      "require": "./dist/cjs/utils.js"
+      "require": "./dist/cjs/utils.js",
+      "types": "./dist/esm/utils.d.ts"
     },
     "./formulas": {
       "import": "./dist/esm/formulas.js",
-      "require": "./dist/cjs/formulas.js"
+      "require": "./dist/cjs/formulas.js",
+      "types": "./dist/esm/formulas.d.ts"
     }
   },
   "scripts": {
     "build": "tsc && tsc -p tsconfig.esm.json",
     "pretest": "yarn clean && yarn lint && yarn build",
-    "test": "mocha tests/**/*-test.js --trace-deprecation --timeout=60000",
+    "test": "jest",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
     "lint": "yarn prettier && yarn slint",
     "slint": "eslint src --fix",
@@ -146,6 +170,7 @@
   "devDependencies": {
     "@eslint/compat": "^1.2.2",
     "@types/cuint": "^0.2.X",
+    "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.13",
     "@types/node": "^22.9.0",
     "@types/xxhashjs": "^0.2.X",
@@ -157,10 +182,13 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.12.0",
+    "jest": "^29.7.0",
     "mocha": "^10.8.2",
     "prettier": "^3.3.3",
     "random": "5.1.1",
     "rimraf": "^6.0.1",
+    "ts-jest": "^29.3.0",
+    "ts-jest-resolver": "^2.0.1",
     "typedoc": "^0.26.11",
     "typedoc-plugin-missing-exports": "^3.0.0",
     "typescript": "^5.6.3"
