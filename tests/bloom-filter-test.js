@@ -107,7 +107,6 @@ describe('BloomFilter', () => {
     it('should export a bloom filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
       exported._seed.should.equal(filter.seed)
-      exported.type.should.equal('BloomFilter')
       exported._size.should.equal(filter.size)
       exported._nbHashes.should.equal(filter._nbHashes)
       exported._filter.should.deep.equal(filter._filter.export())
@@ -123,41 +122,6 @@ describe('BloomFilter', () => {
       newFilter.seed.should.equal(filter.seed)
       newFilter.size.should.equal(filter._size)
       newFilter._filter.should.deep.equal(filter._filter)
-    })
-
-    it('should reject imports from invalid JSON objects', () => {
-      const invalids = [
-        {
-          type: 'wrong',
-          _size: 1,
-          _nbHashes: 2,
-          _seed: 1,
-          _filter: {size: 1, content: 'AA=='},
-        },
-        {
-          type: 'BloomFilter',
-          _nbHashes: 2,
-          _seed: 1,
-          _filter: {size: 1, content: 'AA=='},
-        },
-        {
-          type: 'BloomFilter',
-          _size: 1,
-          _seed: 1,
-          _filter: {size: 1, content: 'AA=='},
-        },
-        {
-          type: 'BloomFilter',
-          _size: 1,
-          _nbHashes: 2,
-          _filter: {size: 1, content: 'AA=='},
-        },
-        {type: 'BloomFilter', _size: 1, _nbHashes: 2, _seed: 1},
-      ]
-
-      invalids.forEach(json => {
-        ;(() => BloomFilter.fromJSON(json)).should.throw(Error)
-      })
     })
   })
 

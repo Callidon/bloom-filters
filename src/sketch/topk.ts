@@ -1,30 +1,5 @@
-/* file: topk.ts
-MIT License
-
-Copyright (c) 2019-2020 Thomas Minier
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the 'Software'), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-import {AutoExportableBaseFilter} from '../base-filter'
-import CountMinSketch from './count-min-sketch'
-import {AutoExportable, Field, Parameter} from '../exportable'
+import BaseFilter from '../base-filter'
+import CountMinSketch, {ExportedCountMinSketch} from './count-min-sketch'
 import sortedIndexBy from 'lodash/sortedIndexBy'
 
 /**
@@ -44,11 +19,15 @@ interface TopkElement extends HeapElement {
   rank: number
 }
 
+export type ExportedMinHeap = {
+  _content: HeapElement[]
+}
+
 /**
  * A MinHeap stores items sorted by ascending frequency
  * @author Thomas Minier
  */
-class MinHeap {
+export class MinHeap {
   public _content: HeapElement[]
 
   constructor() {
@@ -115,13 +94,7 @@ class MinHeap {
    * @return Index of the element or -1 if it is not in the heap
    */
   public indexOf(value: string): number {
-    // TODO optimize
     return this._content.findIndex(heapElement => heapElement.value === value)
-    // const index = sortedIndexBy(this._content, {value, frequency: 0}, heapElement => heapElement.value)
-    // if (this._content[index] !== undefined && this._content[index].value === value) {
-    //   return index
-    // }
-    // return -1
   }
 
   /**
@@ -130,6 +103,27 @@ class MinHeap {
   public clear() {
     this._content = []
   }
+
+  public saveAsJSON(): ExportedMinHeap {
+    return {
+      _content: this._content,
+    }
+  }
+
+  public static fromJSON(element: ExportedMinHeap): MinHeap {
+    const filter = new MinHeap()
+    filter._content = element._content
+    return filter
+  }
+}
+
+export type ExportedTopK = {
+  _seed: number
+  _k: number
+  _errorRate: number
+  _accuracy: number
+  _sketch: ExportedCountMinSketch
+  _heap: ExportedMinHeap
 }
 
 /**
@@ -139,31 +133,11 @@ class MinHeap {
  * @author Thomas Minier
  * @author Arnaud Grall
  */
-@AutoExportable('TopK', ['_seed'])
-export default class TopK extends AutoExportableBaseFilter {
-  @Field()
+export default class TopK extends BaseFilter {
   public _k: number
-
-  @Field()
   public _errorRate: number
-
-  @Field()
   public _accuracy: number
-
-  @Field<CountMinSketch>(
-    (sketch: CountMinSketch) => sketch.saveAsJSON(),
-    (json: JSON) => CountMinSketch.fromJSON(json) as CountMinSketch
-  )
   public _sketch: CountMinSketch
-
-  @Field<MinHeap>(
-    (heap: MinHeap) => heap.content,
-    (json: HeapElement[]) => {
-      const heap = new MinHeap()
-      heap.content = json
-      return heap
-    }
-  )
   public _heap: MinHeap
 
   /**
@@ -172,11 +146,7 @@ export default class TopK extends AutoExportableBaseFilter {
    * @param errorRate - The error rate
    * @param accuracy  - The probability of accuracy
    */
-  constructor(
-    @Parameter('_k') k: number,
-    @Parameter('_errorRate') errorRate: number,
-    @Parameter('_accuracy') accuracy: number
-  ) {
+  constructor(k: number, errorRate: number, accuracy: number) {
     super()
     this._k = k
     this._errorRate = errorRate
@@ -260,5 +230,24 @@ export default class TopK extends AutoExportableBaseFilter {
         }
       }
     })()
+  }
+
+  public saveAsJSON(): ExportedTopK {
+    return {
+      _seed: this._seed,
+      _accuracy: this._accuracy,
+      _errorRate: this._errorRate,
+      _heap: this._heap.saveAsJSON(),
+      _k: this._k,
+      _sketch: this._sketch.saveAsJSON(),
+    }
+  }
+
+  public static fromJSON(element: ExportedTopK): TopK {
+    const filter = new TopK(element._k, element._errorRate, element._accuracy)
+    filter.seed = element._seed
+    filter._heap = MinHeap.fromJSON(element._heap)
+    filter._sketch = CountMinSketch.fromJSON(element._sketch)
+    return filter
   }
 }

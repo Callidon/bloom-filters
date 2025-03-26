@@ -1,30 +1,12 @@
-/* file: min-hash.ts
-MIT License
-
-Copyright (c) 2019-2020 Thomas Minier
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the 'Software'), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-import {AutoExportableBaseFilter} from '../base-filter'
-import {AutoExportable, Field, Parameter} from '../exportable'
+import BaseFilter from '../base-filter'
 import {allocateArray} from '../utils'
+
+export type ExportedMinHash = {
+  _seed: number
+  _nbHashes: number
+  _hashFunctions: HashFunction[]
+  _signature: number[]
+}
 
 /**
  * An error thrown when we try to compute the Jaccard Similarity with an empty MinHash
@@ -36,7 +18,7 @@ class EmptyMinHashError extends Error {}
  * The parameters of a Hash function used in the MinHash algorithm
  * @author Thomas Minier
  */
-export interface HashFunction {
+export type HashFunction = {
   a: number
   b: number
   c: number
@@ -61,15 +43,9 @@ function applyHashFunction(x: number, fn: HashFunction): number {
  * @see "On the resemblance and containment of documents", by Andrei Z. Broder, in Compression and Complexity of Sequences: Proceedings, Positano, Amalfitan Coast, Salerno, Italy, June 11-13, 1997.
  * @author Thomas Minier
  */
-@AutoExportable('MinHash', ['_seed'])
-export default class MinHash extends AutoExportableBaseFilter {
-  @Field()
+export default class MinHash extends BaseFilter {
   public _nbHashes: number
-
-  @Field()
   public _hashFunctions: HashFunction[]
-
-  @Field()
   public _signature: number[]
 
   /**
@@ -77,10 +53,7 @@ export default class MinHash extends AutoExportableBaseFilter {
    * @param nbHashes - Number of hash functions to use for comouting the MinHash signature
    * @param hashFunctions - Hash functions used to compute the signature
    */
-  constructor(
-    @Parameter('_nbHashes') nbHashes: number,
-    @Parameter('_hashFunctions') hashFunctions: HashFunction[]
-  ) {
+  constructor(nbHashes: number, hashFunctions: HashFunction[]) {
     super()
     this._nbHashes = nbHashes
     this._hashFunctions = hashFunctions
@@ -155,5 +128,21 @@ export default class MinHash extends AutoExportableBaseFilter {
       }
     }
     return count / this._nbHashes
+  }
+
+  public saveAsJSON(): ExportedMinHash {
+    return {
+      _hashFunctions: this._hashFunctions,
+      _nbHashes: this._nbHashes,
+      _signature: this._signature,
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(element: ExportedMinHash): MinHash {
+    const filter = new MinHash(element._nbHashes, element._hashFunctions)
+    filter.seed = element._seed
+    filter._signature = element._signature
+    return filter
   }
 }

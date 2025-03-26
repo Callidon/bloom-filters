@@ -42,7 +42,7 @@ describe('HyperLogLog', () => {
       // are expected to be within σ, 2σ, 3σ of the exact count in respectively 65%, 95%, 99% of all
       // the cases"
       const exact_count = sketch.count()
-      const relative_error = sketch.accuracy()
+      const relative_error = sketch.relative_error()
 
       let error
       const relative_errors = [
@@ -113,13 +113,13 @@ describe('HyperLogLog', () => {
       first.update('bob')
       second.update('alice')
       second.update('bob')
-      first.equals(second).should.equal(true)
+      first.saveAsJSON().should.deep.equal(second.saveAsJSON())
     })
 
     it('should returns False when two sketches have different number of registers', () => {
       const first = new HyperLogLog(8)
       const second = new HyperLogLog(16)
-      first.equals(second).should.equal(false)
+      first.saveAsJSON().should.not.deep.equal(second.saveAsJSON())
     })
 
     it('should returns False when two sketches have different content in their registers', () => {
@@ -129,7 +129,7 @@ describe('HyperLogLog', () => {
       first.update('bob')
       second.update('carol')
       second.update('daniel')
-      first.equals(second).should.equal(false)
+      first.saveAsJSON().should.not.deep.equal(second.saveAsJSON())
     })
   })
 
@@ -140,9 +140,8 @@ describe('HyperLogLog', () => {
 
     it('should export an HyperLogLog to a JSON object', () => {
       const exported = sketch.saveAsJSON()
-      exported.type.should.equal('HyperLogLog')
-      exported._nbRegisters.should.equal(sketch._nbRegisters)
-      exported._nbBytesPerHash.should.equal(sketch._nbBytesPerHash)
+      exported._m.should.equal(sketch._m)
+      exported._b.should.equal(sketch._b)
       exported._correctionBias.should.equal(sketch._correctionBias)
       exported._registers.should.deep.equal(sketch._registers)
     })
@@ -151,29 +150,10 @@ describe('HyperLogLog', () => {
       const exported = sketch.saveAsJSON()
       const newFilter = HyperLogLog.fromJSON(exported)
       newFilter.seed.should.equal(sketch.seed)
-      newFilter._nbRegisters.should.equal(sketch._nbRegisters)
-      newFilter._nbBytesPerHash.should.equal(sketch._nbBytesPerHash)
+      exported._m.should.equal(sketch._m)
+      exported._b.should.equal(sketch._b)
       newFilter._correctionBias.should.equal(sketch._correctionBias)
       newFilter._registers.should.deep.equal(sketch._registers)
-    })
-
-    it('should reject imports from invalid JSON objects', () => {
-      const invalids = [
-        {type: 'something'},
-        {type: 'HyperLogLog'},
-        {type: 'HyperLogLog', _nbRegisters: 1},
-        {type: 'HyperLogLog', _nbRegisters: 1, _nbBytesPerHash: 1},
-        {
-          type: 'HyperLogLog',
-          _nbRegisters: 1,
-          _nbBytesPerHash: 1,
-          _correctionBias: 2,
-        },
-      ]
-
-      invalids.forEach(json => {
-        ;(() => HyperLogLog.fromJSON(json)).should.throw(Error)
-      })
     })
   })
 })

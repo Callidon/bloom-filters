@@ -1,32 +1,17 @@
-/* file : cuckoo-filter.ts
-MIT License
-
-Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
 import WritableFilter from '../interfaces/writable-filter'
-import {AutoExportableBaseFilter} from '../base-filter'
-import Bucket from './bucket'
-import {Exportable, cloneObject} from '../exportable'
+import BaseFilter from '../base-filter'
+import Bucket, {ExportedBucket} from './bucket'
 import {HashableInput, allocateArray, randomInt} from '../utils'
+
+export type ExportedCuckooFilter = {
+  _size: number
+  _fingerprintLength: number
+  _length: number
+  _maxKicks: number
+  _filter: ExportedBucket<string>[]
+  _seed: number
+  _bucketSize: number
+}
 
 /**
  * Compute the optimal fingerprint length in bytes for a given bucket size
@@ -50,56 +35,8 @@ function computeFingerpintLength(size: number, rate: number): number {
  * @see {@link https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf} for more details about Cuckoo filters
  * @author Thomas Minier & Arnaud Grall
  */
-@Exportable({
-  export: cloneObject(
-    'CuckooFilter',
-    '_size',
-    '_fingerprintLength',
-    '_length',
-    '_maxKicks',
-    '_filter',
-    '_seed'
-  ),
-
-  import: (json: any) => {
-    if (
-      json.type !== 'CuckooFilter' ||
-      !('_size' in json) ||
-      !('_fingerprintLength' in json) ||
-      !('_length' in json) ||
-      !('_maxKicks' in json) ||
-      !('_filter' in json) ||
-      !('_seed' in json)
-    ) {
-      throw new Error(
-        'Cannot create a CuckooFilter from a JSON export which does not represent a cuckoo filter'
-      )
-    }
-    const filter = new CuckooFilter(
-      json._size as number,
-      json._fingerprintLength as number,
-      json._bucketSize as number,
-      json._maxKicks as number | undefined
-    )
-    filter._length = json._length
-
-    filter._filter = json._filter.map((j: any) => {
-      const bucket = new Bucket<string>(j._size as number)
-
-      j._elements.forEach((elt: any, i: number) => {
-        if (elt !== null) {
-          bucket._elements[i] = elt
-          bucket._length++
-        }
-      })
-      return bucket
-    })
-    filter.seed = json._seed
-    return filter
-  },
-})
 export default class CuckooFilter
-  extends AutoExportableBaseFilter
+  extends BaseFilter
   implements WritableFilter<HashableInput>
 {
   public _filter: Array<Bucket<string>>
@@ -402,5 +339,39 @@ export default class CuckooFilter
       i++
     }
     return res
+  }
+
+  /**
+   * Save this filter in JSON format
+   * @returns
+   */
+  public saveAsJSON(): ExportedCuckooFilter {
+    return {
+      _size: this._size,
+      _fingerprintLength: this._fingerprintLength,
+      _length: this._length,
+      _maxKicks: this._maxKicks,
+      _filter: this._filter.map(f => f.saveAsJSON()),
+      _seed: this._seed,
+      _bucketSize: this._bucketSize,
+    }
+  }
+
+  /**
+   * Import a JSON exported filter into a new CuckooFilter instance
+   * @param element - The JSON exported object to import
+   * @returns
+   */
+  public static fromJSON(element: ExportedCuckooFilter): CuckooFilter {
+    const filter = new CuckooFilter(
+      element._size,
+      element._fingerprintLength,
+      element._bucketSize,
+      element._maxKicks as number | undefined
+    )
+    filter.seed = element._seed
+    filter._length = element._length
+    filter._filter = element._filter.map(e => Bucket.fromJSON<string>(e))
+    return filter
   }
 }

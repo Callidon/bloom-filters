@@ -23,6 +23,7 @@ SOFTWARE.
 */
 
 require('chai').should()
+const {error} = require('console')
 const {describe, it} = require('mocha')
 const PartitionedBloomFilter =
   require('bloom-filters/bloom/partitioned-bloom-filter').default
@@ -70,54 +71,6 @@ describe('PartitionedBloomFilter', () => {
     })
   })
 
-  describe('#equals', () => {
-    it('should returns True when two filters are equals', () => {
-      const first = PartitionedBloomFilter.from(
-        ['alice', 'bob', 'carol'],
-        targetRate,
-        0.5
-      )
-      const other = PartitionedBloomFilter.from(
-        ['alice', 'bob', 'carol'],
-        targetRate,
-        0.5
-      )
-      first.equals(other).should.equal(true)
-    })
-
-    it('should returns False when two filters have different sizes', () => {
-      const first = new PartitionedBloomFilter(15, 4, 0.5)
-      const other = new PartitionedBloomFilter(10, 4, 0.5)
-      first.equals(other).should.equal(false)
-    })
-
-    it('should returns False when two filters have different nb. of hash functions', () => {
-      const first = new PartitionedBloomFilter(15, 4, 0.5)
-      const other = new PartitionedBloomFilter(15, 2, 0.5)
-      first.equals(other).should.equal(false)
-    })
-
-    it('should returns False when two filters have different load factor', () => {
-      const first = new PartitionedBloomFilter(15, 4, 0.5)
-      const other = new PartitionedBloomFilter(15, 2, 0.4)
-      first.equals(other).should.equal(false)
-    })
-
-    it('should returns False when two filters have different content', () => {
-      const first = PartitionedBloomFilter.from(
-        ['alice', 'bob', 'carol'],
-        targetRate,
-        0.5
-      )
-      const other = PartitionedBloomFilter.from(
-        ['alice', 'bob', 'daniel'],
-        targetRate,
-        0.5
-      )
-      first.equals(other).should.equal(false)
-    })
-  })
-
   describe('#saveAsJSON', () => {
     const getFilter = () => {
       const filter = PartitionedBloomFilter.create(15, targetRate)
@@ -130,11 +83,10 @@ describe('PartitionedBloomFilter', () => {
     it('should export a partitioned bloom filter to a JSON object', () => {
       const filter = getFilter()
       const exported = filter.saveAsJSON()
-      exported.type.should.equal('PartitionedBloomFilter')
-      exported._capacity.should.equal(15)
-      exported._size.should.equal(filter._size)
-      exported._loadFactor.should.equal(filter._loadFactor)
-      exported._nbHashes.should.equal(filter._nbHashes)
+      exported._bits.should.equal(filter._bits)
+      exported._k.should.equal(filter._k)
+      exported._m.should.equal(filter._m)
+      exported._errorRate.should.equal(filter._errorRate)
       exported._filter.should.deep.equal(filter._filter.map(f => f.export()))
     })
 
@@ -143,11 +95,10 @@ describe('PartitionedBloomFilter', () => {
       const exported = filter.saveAsJSON()
       const newFilter = PartitionedBloomFilter.fromJSON(exported)
       newFilter.seed.should.equal(filter.seed)
-      newFilter._capacity.should.equal(filter._capacity)
-      newFilter._size.should.equal(filter._size)
-      newFilter._loadFactor.should.equal(filter._loadFactor)
+      newFilter._bits.should.equal(filter._bits)
+      newFilter._errorRate.should.equal(filter._errorRate)
       newFilter._m.should.equal(filter._m)
-      newFilter._nbHashes.should.equal(filter._nbHashes)
+      newFilter._k.should.equal(filter._k)
       newFilter._filter.should.deep.equal(filter._filter)
     })
 
@@ -165,9 +116,9 @@ describe('PartitionedBloomFilter', () => {
     })
   })
   describe('Performance test', () => {
-    const max = 1000
+    const max = 10000
     it(`should not return an error when inserting and querying for ${max} elements`, () => {
-      const filter = PartitionedBloomFilter.create(max, targetRate, 0.5)
+      const filter = PartitionedBloomFilter.create(max, targetRate)
       for (let i = 0; i < max; ++i) filter.add('' + i)
       for (let i = 0; i < max; ++i) {
         filter.has('' + i).should.equal(true)

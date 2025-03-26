@@ -137,7 +137,6 @@ describe('MinHash', () => {
 
     it('should export a MinHash to a JSON object', () => {
       const exported = mySet.saveAsJSON()
-      exported.type.should.equal('MinHash')
       exported._nbHashes.should.equal(mySet._nbHashes)
       exported._hashFunctions.should.deep.equal(mySet._hashFunctions)
       exported._signature.should.deep.equal(mySet._signature)
@@ -150,19 +149,6 @@ describe('MinHash', () => {
       newSet._nbHashes.should.equal(mySet._nbHashes)
       newSet._hashFunctions.should.deep.equal(mySet._hashFunctions)
       newSet._signature.should.deep.equal(mySet._signature)
-    })
-
-    it('should reject imports from invalid JSON objects', () => {
-      const invalids = [
-        {type: 'something'},
-        {type: 'MinHash'},
-        {type: 'MinHash', _nbHashes: 1},
-        {type: 'MinHash', _nbHashes: 1, _hashFunctions: []},
-      ]
-
-      invalids.forEach(json => {
-        ;(() => MinHash.fromJSON(json)).should.throw(Error)
-      })
     })
   })
 })

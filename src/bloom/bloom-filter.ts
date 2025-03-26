@@ -1,33 +1,15 @@
-/* file : bloom-filter.ts
-MIT License
-
-Copyright (c) 2017 Thomas Minier & Arnaud Grall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
 import ClassicFilter from '../interfaces/classic-filter'
-import {AutoExportableBaseFilter} from '../base-filter'
-import BitSet from './bit-set'
-import {AutoExportable, Field, Parameter} from '../exportable'
+import BaseFilter from '../base-filter'
+import BitSet, {ExportedBitSet} from './bit-set'
 import {optimalFilterSize, optimalHashes} from '../formulas'
 import {HashableInput} from '../utils'
+
+export type ExportedBloomFilter = {
+  _size: number
+  _nbHashes: number
+  _filter: ExportedBitSet
+  _seed: number
+}
 
 /**
  * A Bloom filter is a space-efficient probabilistic data structure, conceived by Burton Howard Bloom in 1970,
@@ -38,34 +20,12 @@ import {HashableInput} from '../utils'
  * @author Thomas Minier
  * @author Arnaud Grall
  */
-@AutoExportable<BloomFilter>('BloomFilter', ['_seed'])
 export default class BloomFilter
-  extends AutoExportableBaseFilter
+  extends BaseFilter
   implements ClassicFilter<HashableInput>
 {
-  @Field()
   public _size: number
-
-  @Field()
   public _nbHashes: number
-
-  @Field<BitSet>(
-    f => f.export(),
-    data => {
-      // create the bitset from new and old array-based exported structure
-      if (Array.isArray(data)) {
-        const bs = new BitSet(data.length)
-        data.forEach((val: number, index: number) => {
-          if (val !== 0) {
-            bs.add(index)
-          }
-        })
-        return bs
-      } else {
-        return BitSet.import(data as {size: number; content: string})
-      }
-    }
-  )
   public _filter: BitSet
 
   /**
@@ -73,10 +33,7 @@ export default class BloomFilter
    * @param size - The number of cells
    * @param nbHashes - The number of hash functions used
    */
-  constructor(
-    @Parameter('_size') size: number,
-    @Parameter('_nbHashes') nbHashes: number
-  ) {
+  constructor(size: number, nbHashes: number) {
     super()
     if (nbHashes < 1) {
       throw new Error(
@@ -213,5 +170,32 @@ export default class BloomFilter
       return false
     }
     return this._filter.equals(other._filter)
+  }
+
+  public saveAsJSON(): ExportedBloomFilter {
+    return {
+      _size: this._size,
+      _nbHashes: this._nbHashes,
+      _filter: this._filter.export(),
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(element: ExportedBloomFilter): BloomFilter {
+    const bl = new BloomFilter(element._size, element._nbHashes)
+    bl.seed = element._seed
+    const data = element._filter
+    if (Array.isArray(data)) {
+      const bs = new BitSet(data.length)
+      data.forEach((val: number, index: number) => {
+        if (val !== 0) {
+          bs.add(index)
+        }
+      })
+      bl._filter = bs
+    } else {
+      bl._filter = BitSet.import(data as {size: number; content: string})
+    }
+    return bl
   }
 }
