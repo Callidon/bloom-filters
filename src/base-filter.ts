@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import seedrandom, {PRNG} from 'seedrandom'
-import Hashing from './hashing/hashing'
+import Hashing from './hashing'
 import {getDefaultSeed} from './utils'
 
 /**
@@ -73,7 +73,9 @@ export default abstract class BaseFilter {
   public nextInt32(): number {
     return this._rng.int32()
   }
+}
 
+export abstract class AutoExportableBaseFilter extends BaseFilter {
   /**
    * Save the current structure as a JSON
    */

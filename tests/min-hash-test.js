@@ -24,7 +24,8 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const {MinHashFactory, MinHash} = require('../dist/api.js')
+const MinHash = require('bloom-filters/sketch/min-hash').default
+const MinHashFactory = require('bloom-filters/sketch/min-hash-factory').default
 const range = require('lodash/range')
 const intersection = require('lodash/intersection')
 const union = require('lodash/union')

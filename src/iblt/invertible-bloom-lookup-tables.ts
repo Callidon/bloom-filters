@@ -1,40 +1,16 @@
-/* file : invertible-bloom-lookup-tables.ts
-MIT License
-
-Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-import BaseFilter from '../base-filter'
-import WritableFilter from '../interfaces/writable-filter'
-import Cell from './cell'
-import {AutoExportable, Field, Parameter} from '../exportable'
-import {allocateArray} from '../utils'
-import {optimalFilterSize, optimalHashes} from '../formulas'
+import BaseFilter from '../base-filter.js'
+import WritableFilter from '../interfaces/writable-filter.js'
+import Cell, {ExportedCell} from './cell.js'
+import {allocateArray} from '../utils.js'
+import {xxh3} from '@node-rs/xxhash'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
  */
 export interface IBLTDecodingErrorReason {
-  cell: Cell | null
+  cells: Cell[]
   iblt: InvertibleBloomFilter
+  decoded: number
 }
 
 /**
@@ -43,118 +19,58 @@ export interface IBLTDecodingErrorReason {
 export interface IBLTDecodingResults {
   success: boolean
   reason?: IBLTDecodingErrorReason
-  additional: Buffer[]
-  missing: Buffer[]
+  additional: string[]
+  missing: string[]
+}
+
+export interface ExportedInvertibleBloomFilter {
+  _size: number
+  _hashCount: number
+  _elements: ExportedCell[]
+  _differences: number
+  _alpha: number
+  _seed: number
 }
 
 /**
  * An Invertible Bloom Lookup Table is a space-efficient and probabilistic data-structure for solving the set-difference problem efficiently without the use of logs or other prior context. It computes the set difference with communication proportional to the size of the difference between the sets being compared.
  * They can simultaneously calculate D(A−B) and D(B−A) using O(d) space. This data structure encodes sets in a fashion that is similar in spirit to Tornado codes’ construction [6], in that it randomly combines elements using the XOR function
- * Reference: Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). What's the difference?: efficient set reconciliation without prior context. ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
- * @see {@link http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.220.6282&rep=rep1&type=pdf} for more details about Invertible Bloom Lookup Tables
+ * Reference: Eppstein, D., Goodrich, M. T., Uyeda, F., & Varghese, G. (2011). What's the difference? Efficient set reconciliation without prior context. ACM SIGCOMM Computer Communication Review, 41(4), 218-229.
+ * @see {@link https://conferences.sigcomm.org/sigcomm/2011/papers/sigcomm/p218.pdf} for more details about Invertible Bloom Lookup Tables
  * @author Arnaud Grall
  * @author Thomas Minier
  */
-@AutoExportable('InvertibleBloomFilter', ['_seed'])
 export default class InvertibleBloomFilter
   extends BaseFilter
-  implements WritableFilter<Buffer>
+  implements WritableFilter<string>
 {
-  @Field()
   public _size: number
-
-  @Field()
+  public _differences: number
+  public _alpha: number
   public _hashCount: number
+  public _elements: Cell[]
 
-  @Field<Array<Cell>>(undefined, (json: []) => {
-    const res: Array<Cell> = json.map(
-      (elt: {
-        _idSum: string
-        _hashSum: string
-        _count: number
-        _seed: number
-      }) => {
-        const c = new Cell(
-          Buffer.from(elt._idSum),
-          Buffer.from(elt._hashSum),
-          elt._count
-        )
-        c.seed = elt._seed
-        return c
-      }
-    )
-    return res
-  })
-  public _elements: Array<Cell>
+  public static encoder = new TextEncoder()
+  public static decoder = new TextDecoder()
 
   /**
    * Construct an Invertible Bloom Lookup Table
-   * @param size - The number of cells in the InvertibleBloomFilter. It should be set to d * alpha, where d is the number of difference and alpha is a constant
-   * @param hashCount - The number of hash functions used (empirically studied to be 3 or 4 in most cases)
+   * @param differences the expected number of differences
+   * @param alpha the ratio used for determining the number of cells in the IBLT
+   * @param hashCount the number of hash functions used
+   * @param seed (Optional) the seed to assign to the IBLT and its cells
    */
-  constructor(
-    @Parameter('_size') size: number,
-    @Parameter('_hashCount') hashCount = 3
-  ) {
+  constructor(differences: number, alpha = 2, hashCount = 6, seed?: number) {
     super()
-    if (Buffer === undefined) {
-      throw new Error(
-        'No native Buffer implementation bound in your JavaScript env. If you are in a Web browser, consider importing the polyfill "feross/buffer" (https://github.com/feross/buffer).'
-      )
+    if (seed) {
+      this.seed = seed
     }
-    if (hashCount <= 0) {
-      throw new Error('The hashCount must be a non-zero, positive integer')
-    }
-    this._size = size
+    this._differences = differences
+    this._alpha = alpha
     this._hashCount = hashCount
-    // the number of elements in the array is n = alpha * size
+    this._size = Math.ceil(differences * alpha)
+    this._size = this._size + (this._hashCount - (this._size % this._hashCount))
     this._elements = allocateArray(this._size, () => Cell.empty())
-  }
-
-  /**
-   * Create an Invertible Bloom filter optimal for an expected size and error rate.
-   * @param nbItems - Number of items expected to insert into the IBLT
-   * @param errorRate - Expected error rate
-   * @return A new Invertible Bloom filter optimal for the given parameters.
-   */
-  public static create(
-    nbItems: number,
-    errorRate: number
-  ): InvertibleBloomFilter {
-    const size = optimalFilterSize(nbItems, errorRate)
-    const nbHashes = optimalHashes(size, nbItems)
-    return new InvertibleBloomFilter(size, nbHashes)
-  }
-
-  /**
-   * Create an Invertible Bloom filter from a set of Buffer and optimal for an error rate.
-   * @param items - An iterable to yield Buffers to be inserted into the filter
-   * @param errorRate - Expected error rate
-   * @return A new Invertible Bloom filter filled with the iterable's items.
-   */
-  public static from(
-    items: Iterable<Buffer>,
-    errorRate: number
-  ): InvertibleBloomFilter {
-    const array = Array.from(items)
-    const filter = InvertibleBloomFilter.create(array.length, errorRate)
-    array.forEach(item => filter.add(item))
-    return filter
-  }
-
-  /**
-   * Return the number of hash functions used
-   * @return {Number}
-   */
-  public get hashCount() {
-    return this._hashCount
-  }
-
-  /**
-   * Get the number of cells of the filter
-   */
-  public get size(): number {
-    return this._size
   }
 
   /**
@@ -162,33 +78,18 @@ export default class InvertibleBloomFilter
    * Complexity in time: O(alpha*d)
    */
   public get length(): number {
-    return this._elements.reduce((a, b) => a + b.count, 0) / this._hashCount
-  }
-
-  /**
-   * Return the cells used to store elements in this InvertibleBloomFilter
-   */
-  public get elements(): Cell[] {
-    return this._elements
+    return this._elements.reduce((a, b) => a + b._count, 0) / this._hashCount
   }
 
   /**
    * Add an element to the InvertibleBloomFilter
    * @param element - The element to insert
    */
-  public add(element: Buffer): void {
-    const hashes = this._hashing.hashTwiceAsString(
-      JSON.stringify(element.toJSON()),
-      this.seed
-    )
-    const indexes = this._hashing.getDistinctIndexes(
-      hashes.first,
-      this._size,
-      this._hashCount,
-      this.seed
-    )
-    for (let i = 0; i < this._hashCount; ++i) {
-      this._elements[indexes[i]].add(element, Buffer.from(hashes.first))
+  public add(element: string): void {
+    const value = InvertibleBloomFilter.encoder.encode(element)
+    const hash = this.genHash(element)
+    for (const index of this.genIndexes(element)) {
+      this._elements[index].add(value, hash)
     }
   }
 
@@ -197,21 +98,12 @@ export default class InvertibleBloomFilter
    * @param element - The element to remove
    * @return True if the element has been removed, False otheriwse
    */
-  public remove(element: Buffer): boolean {
-    const hashes = this._hashing.hashTwiceAsString(
-      JSON.stringify(element.toJSON()),
-      this.seed
-    )
-    const indexes = this._hashing.getDistinctIndexes(
-      hashes.first,
-      this._size,
-      this._hashCount,
-      this.seed
-    )
-    for (let i = 0; i < this._hashCount; ++i) {
-      this._elements[indexes[i]] = this._elements[indexes[i]].xorm(
-        new Cell(Buffer.from(element), Buffer.from(hashes.first), 1)
-      )
+  public remove(element: string): boolean {
+    const value = InvertibleBloomFilter.encoder.encode(element)
+    const hash = this.genHash(element)
+    for (const index of this.genIndexes(element)) {
+      const cell = new Cell(value, hash, 1)
+      this._elements[index] = this._elements[index].xorm(cell)
     }
     return true
   }
@@ -221,57 +113,33 @@ export default class InvertibleBloomFilter
    * @param  element - The element to test
    * @return False if the element is not in the filter, true if "may be" in the filter.
    */
-  public has(element: Buffer): boolean {
-    const hashes = this._hashing.hashTwiceAsString(
-      JSON.stringify(element.toJSON()),
-      this.seed
-    )
-    const indexes = this._hashing.getDistinctIndexes(
-      hashes.first,
-      this._size,
-      this._hashCount,
-      this.seed
-    )
-    for (let i = 0; i < this._hashCount; ++i) {
-      if (this._elements[indexes[i]].count === 0) {
+  public has(element: string): boolean {
+    const indexes = this.genIndexes(element)
+    for (const index of indexes) {
+      if (this._elements[index]._count === 0) {
         return false
-      } else if (this._elements[indexes[i]].count === 1) {
-        if (this._elements[indexes[i]].idSum.equals(element)) {
-          return true
-        } else {
-          return false
-        }
       }
     }
     return true
   }
 
   /**
-   * List all entries from the filter using a Generator.
-   * The generator ends with True if the operation has not failed, False otheriwse.
-   * It is not recommended to modify an IBLT while listing its entries!
-   * @return A generator that yields all filter's entries.
+   * List all entries from the filter
+   * @return A list of entries in this filter
    */
-  public listEntries(): Generator<Buffer, boolean> {
-    const that = this
-    const seenBefore: Buffer[] = []
-    return (function* () {
-      for (let index = 0; index < that._elements.length - 1; index++) {
-        const localCell = that._elements[index]
-        if (
-          localCell.count > 0 &&
-          seenBefore.findIndex((b: Buffer) => b.equals(localCell.idSum)) === -1
-        ) {
-          if (that.has(localCell.idSum)) {
-            seenBefore.push(localCell.idSum)
-            yield localCell.idSum
-          } else {
-            return false
-          }
-        }
-      }
-      return true
-    })()
+  public listEntries(): string[] {
+    const copy = InvertibleBloomFilter.fromJSON(this.saveAsJSON())
+    const result: string[] = []
+
+    let cell: Cell | undefined
+    while (
+      (cell = copy._elements.find(c => c._count === 1 || c._count === -1))
+    ) {
+      const value = InvertibleBloomFilter.decoder.decode(cell._idSum)
+      result.push(value)
+      copy.remove(value)
+    }
+    return result
   }
 
   /**
@@ -280,39 +148,73 @@ export default class InvertibleBloomFilter
    * @return A new InvertibleBloomFilter which is the XOR of the local and remote one
    */
   public substract(iblt: InvertibleBloomFilter): InvertibleBloomFilter {
-    if (this.size !== iblt.size) {
+    if (this._size !== iblt._size) {
       throw new Error(
         'The two Invertible Bloom Filters must be of the same size'
       )
     }
-    const res = new InvertibleBloomFilter(iblt._size, iblt._hashCount)
-    res.seed = this.seed
-    for (let i = 0; i < this.size; ++i) {
+    const res = new InvertibleBloomFilter(
+      iblt._differences,
+      iblt._alpha,
+      iblt._hashCount,
+      this.seed
+    )
+    for (let i = 0; i < this._size; ++i) {
       res._elements[i] = this._elements[i].xorm(iblt._elements[i])
     }
     return res
   }
 
-  /**
-   * Test if two InvertibleBloomFilters are equals
-   * @param iblt - The filter to compare with
-   * @return True if the two filters are equals, False otherwise
-   */
-  public equals(iblt: InvertibleBloomFilter): boolean {
-    if (
-      iblt._size !== this._size ||
-      iblt._hashCount !== this._hashCount ||
-      iblt.seed !== this.seed
-    ) {
-      return false
-    } else {
-      for (let i = 0; i < iblt._elements.length; ++i) {
-        if (!iblt._elements[i].equals(this._elements[i])) {
-          return false
-        }
-      }
-      return true
+  public genHash(element: string): number {
+    const value = InvertibleBloomFilter.encoder.encode(element)
+    const hash = xxh3.xxh128(value, BigInt(125)).toString(16)
+
+    const match = hash.match(/../g)!
+    const digest = new Uint8Array(match.map(h => parseInt(h, 16)))
+    let h = 0
+    for (let j = 0; j < 4; j++) {
+      h <<= 8
+      h |= digest[j] & 0xff
     }
+    return h
+  }
+
+  public genIndexes(element: string): number[] {
+    const value = InvertibleBloomFilter.encoder.encode(element)
+    const indexes = new Array<number>(this._hashCount)
+    let k = 0
+    let salt = BigInt(0)
+    while (k < this._hashCount) {
+      const hash = xxh3.xxh128(value, salt).toString(16)
+
+      const match = hash.match(/../g)!
+      const digest = new Uint8Array(match.map(h => parseInt(h, 16)))
+      salt++
+
+      for (let i = 0; i < digest.length / 4 && k < this._hashCount; i++) {
+        let h = 0
+        for (let j = i * 4; j < i * 4 + 4; j++) {
+          h <<= 8
+          h |= digest[j] & 0xff
+        }
+        indexes[k] = h
+        k++
+      }
+    }
+    return indexes.map(idx => Math.abs(idx % this._size))
+  }
+
+  /**
+   * Test if the cell is "Pure".
+   * A pure cell is a cell with a counter equal to 1 or -1, and the hash of the idSum is equal to the hashSum
+   * @return True if the cell is pure, False otherwise
+   */
+  public isCellPure(cell: Cell): boolean {
+    return (
+      (cell._count === 1 || cell._count == -1) &&
+      this.genHash(InvertibleBloomFilter.decoder.decode(cell._idSum)) ===
+        cell._hashSum
+    )
   }
 
   /**
@@ -320,60 +222,58 @@ export default class InvertibleBloomFilter
    * @return The results of the deconding process
    */
   public decode(
-    additional: Buffer[] = [],
-    missing: Buffer[] = []
+    additional: string[] = [],
+    missing: string[] = []
   ): IBLTDecodingResults {
-    const pureList: number[] = []
-    let cell: Cell | null = null
-    // checking for all pure cells
-    for (let i = 0; i < this._elements.length; ++i) {
-      cell = this._elements[i]
-      if (cell.isPure()) {
-        pureList.push(i)
+    const pureCells = new Array<number>()
+    for (let i = 0; i < this._elements.length; i++) {
+      if (this.isCellPure(this._elements[i])) {
+        pureCells.push(i)
       }
     }
-    while (pureList.length !== 0) {
-      cell = this._elements[pureList.pop()!]
-      const id = cell.idSum
-      const c = cell.count
-      if (cell.isPure()) {
-        if (c === 1) {
-          additional.push(id)
-        } else if (c === -1) {
-          missing.push(id)
-        } else {
-          throw new Error('Please report, not possible')
-        }
-        const hashes = this._hashing.hashTwiceAsString(
-          JSON.stringify(id.toJSON()),
-          this.seed
+
+    let cell: Cell | undefined
+    while (pureCells.length > 0) {
+      const idx: number = pureCells.shift()!
+      cell = this._elements[idx]
+      if (!this.isCellPure(cell)) {
+        continue
+      }
+      const id = cell._idSum
+      const value = InvertibleBloomFilter.decoder.decode(id)
+      const c = cell._count
+      if (c > 0) {
+        additional.push(value)
+      } else {
+        missing.push(value)
+      }
+      const hash = this.genHash(value)
+      for (const index of this.genIndexes(value)) {
+        this._elements[index] = this._elements[index].xorm(
+          new Cell(id, hash, c)
         )
-        const indexes = this._hashing.getDistinctIndexes(
-          hashes.first,
-          this._size,
-          this._hashCount,
-          this.seed
-        )
-        for (let i = 0; i < indexes.length; ++i) {
-          this._elements[indexes[i]] = this._elements[indexes[i]].xorm(
-            new Cell(id, Buffer.from(hashes.first), c)
-          )
-          if (this._elements[indexes[i]].isPure()) {
-            pureList.push(indexes[i])
-          }
+        if (this.isCellPure(this._elements[index])) {
+          pureCells.push(index)
         }
       }
     }
-    if (this._elements.findIndex(e => !e.isEmpty()) > -1) {
-      return {
+
+    if (this._elements.some(c => this.isCellPure(c))) {
+      throw new Error('Please report: should not have pure cells at this point')
+    }
+
+    if (this._elements.some(e => !e.isEmpty())) {
+      const res = {
         success: false,
         reason: {
-          cell: cell,
+          cells: this._elements.filter(e => !e.isEmpty()),
           iblt: this,
+          decoded: missing.length + additional.length,
         },
         additional,
         missing,
       }
+      return res
     } else {
       return {
         success: true,
@@ -381,5 +281,29 @@ export default class InvertibleBloomFilter
         missing,
       }
     }
+  }
+
+  public saveAsJSON(): ExportedInvertibleBloomFilter {
+    return {
+      _alpha: this._alpha,
+      _differences: this._differences,
+      _elements: this._elements.map(e => e.saveAsJSON()),
+      _size: this._size,
+      _hashCount: this._hashCount,
+      _seed: this._seed,
+    }
+  }
+
+  public static fromJSON(
+    element: ExportedInvertibleBloomFilter
+  ): InvertibleBloomFilter {
+    const filter = new InvertibleBloomFilter(
+      element._differences,
+      element._alpha,
+      element._hashCount,
+      element._seed
+    )
+    filter._elements = element._elements.map(e => Cell.fromJSON(e))
+    return filter
   }
 }

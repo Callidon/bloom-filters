@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import CountMinSketch from './count-min-sketch'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import sortedIndexBy from 'lodash/sortedIndexBy'
@@ -140,7 +140,7 @@ class MinHeap {
  * @author Arnaud Grall
  */
 @AutoExportable('TopK', ['_seed'])
-export default class TopK extends BaseFilter {
+export default class TopK extends AutoExportableBaseFilter {
   @Field()
   public _k: number
 

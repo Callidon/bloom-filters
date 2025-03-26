@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "target": "ES5",
-    "outDir": "./dist",
+    "target": "es2023",
+    "outDir": "./dist/cjs",
     "module": "commonjs",
-    "lib": [ "ES2015" ],
+    "lib": [ "es2023" ],
     "declaration": true,
     "strict": true,
     "allowJs": true,

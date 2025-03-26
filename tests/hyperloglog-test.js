@@ -24,7 +24,7 @@ SOFTWARE.
 
 require('chai').should()
 const {describe, it} = require('mocha')
-const {HyperLogLog} = require('../dist/api.js')
+const HyperLogLog = require('bloom-filters/sketch/hyperloglog').default
 
 describe('HyperLogLog', () => {
   describe('#update', () => {

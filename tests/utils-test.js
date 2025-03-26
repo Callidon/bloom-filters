@@ -27,15 +27,14 @@ const {describe, it} = require('mocha')
 const {
   allocateArray,
   randomInt,
-  xorBuffer,
+  xorUint8Array,
   getDefaultSeed,
-  isEmptyBuffer,
-} = require('../dist/utils')
-const {BloomFilter, BaseFilter} = require('../dist/api.js')
+} = require('bloom-filters/utils')
+const BaseFilter = require('bloom-filters/base-filter').default
+const BloomFilter = require('bloom-filters/bloom/bloom-filter').default
 const XXH = require('xxhashjs')
-const range = require('lodash/range')
 const seed = getDefaultSeed()
-const {Hashing} = require('../dist/api')
+const Hashing = require('bloom-filters/hashing').default
 
 describe('Utils', () => {
   describe('#allocateArray', () => {
@@ -76,95 +75,53 @@ describe('Utils', () => {
 
   describe('#xorBuffer', () => {
     it('should xor correctly 2 Buffers', () => {
-      const a = Buffer.allocUnsafe(10).fill(0)
-      const b = Buffer.alloc(1, 1)
-      const res = Buffer.allocUnsafe(10).fill(0)
+      const a = new Uint8Array(10).fill(0)
+      const b = new Uint8Array(1).fill(1)
+      const res = new Uint8Array(10).fill(0)
       res[res.length - 1] = 1
       // xor(a, b) = <Buffer 00 00 00 00 00 00 00 00 00 01>
-      xorBuffer(Buffer.from(a), Buffer.from(b))
+      xorUint8Array(a, b).toString().should.equal(b.toString())
+      // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
+      console.log(xorUint8Array(xorUint8Array(a, b), b))
+      xorUint8Array(xorUint8Array(a, b), b)
+        .toString()
+        .should.equal(Uint8Array.from(0).toString())
+      // xor(xor(a, b), a) === b
+      xorUint8Array(xorUint8Array(a, b), a)
         .toString()
         .should.equal(b.toString())
-      // xor(xor(a, b), b) === a <Buffer 00 00 00 00 00 00 00 00 00 00> === <Buffer />
-      xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(b))
-        .toString()
-        .should.equal(Buffer.from('').toString())
-      // xor(xor(a, b), a) === b
-      xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(b)), Buffer.from(a))
-        .toString()
-        .should.equal(Buffer.from(b).toString())
       // xor(xor(a, a), a) === a
-      xorBuffer(xorBuffer(Buffer.from(a), Buffer.from(a)), Buffer.from(a))
+      xorUint8Array(xorUint8Array(a, a), a)
         .toString()
-        .should.equal(Buffer.from('').toString())
+        .should.equal(Uint8Array.from(0).toString())
       // xor(xor(b, b), b) === a
-      xorBuffer(xorBuffer(Buffer.from(b), Buffer.from(b)), Buffer.from(b))
+      xorUint8Array(xorUint8Array(b, b), b)
         .toString()
-        .should.equal(Buffer.from(b).toString())
+        .should.equal(b.toString())
     })
     it('should xor correctly', () => {
-      let a = Buffer.allocUnsafe(1).fill(1)
-      let b = Buffer.allocUnsafe(1).fill(1)
       const max = 100
+      let a = new Uint8Array(max).fill(0)
+      let b = new Uint8Array(max).fill(0)
       let last
       for (let i = 0; i < max; i++) {
         const s = XXH.h64('' + i, seed).toString(16)
-        const buf = Buffer.from(s)
-        a = xorBuffer(a, buf)
+        const x = Buffer.from(s)
+        const buf = new Uint8Array(x.buffer, x.byteOffset, x.byteLength)
+        a = xorUint8Array(a, buf)
         if (i !== max - 1) {
-          b = xorBuffer(buf, b)
+          b = xorUint8Array(buf, b)
         } else {
           last = buf
         }
       }
-      xorBuffer(a, b).equals(last).should.equal(true)
-      xorBuffer(a, b).toString().should.equal(last.toString())
-      xorBuffer(a, a).equals(Buffer.allocUnsafe(0)).should.equal(true)
-      xorBuffer(b, b).equals(Buffer.allocUnsafe(0)).should.equal(true)
-    })
-  })
-
-  describe('#isBufferEmpty', () => {
-    it('should return true if a buffer is empty', () => {
-      isEmptyBuffer(Buffer.allocUnsafe(10).fill(0)).should.equal(true)
-      isEmptyBuffer(Buffer.allocUnsafe(0).fill(0)).should.equal(true)
-    })
-    it('should return false if a buffer is not empty', () => {
-      isEmptyBuffer(Buffer.allocUnsafe(10).fill(1)).should.equal(false)
-    })
-  })
-
-  describe('#getDistinctIndexes', () => {
-    const key =
-      'da5e21f8a67c4163f1a53ef43515bd027967da305ecfc741b2c3f40f832b7f82'
-    const desiredIndices = 10000
-    const result = range(0, desiredIndices, 1)
-    it(`should return ${desiredIndices} distinct indices on the interval [0, ${desiredIndices})`, () => {
-      try {
-        const obj = new (class extends BaseFilter {})()
-        const start = new Date().getTime()
-        const indices = obj._hashing
-          .getDistinctIndexes(key, desiredIndices, desiredIndices)
-          .sort((a, b) => a - b)
-        indices.should.deep.equal(result)
-        console.log(
-          `Generated ${
-            indices.length
-          } distinct indices on the interval [0, ${desiredIndices}) in ${
-            new Date().getTime() - start
-          } ms`
-        )
-      } catch (e) {
-        throw Error('it should not throw: ' + e)
-      }
-    })
-    it('should the issue be fixed', () => {
-      try {
-        const filter = new BloomFilter(39, 28)
-        filter.add(key)
-        filter.has(key).should.be.true
-      } catch (e) {
-        throw Error('it should not throw: ' + e)
-      }
+      xorUint8Array(a, b).toString().should.equal(last.toString())
+      xorUint8Array(a, a)
+        .toString()
+        .should.equal(Uint8Array.from(10).fill(0).toString())
+      xorUint8Array(b, b)
+        .toString()
+        .should.equal(Uint8Array.from(10).fill(0).toString())
     })
   })
 

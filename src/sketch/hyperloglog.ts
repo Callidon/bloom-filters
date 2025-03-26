@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 import XXH from 'xxhashjs'
-import BaseFilter from '../base-filter'
+import {AutoExportableBaseFilter} from '../base-filter'
 import {AutoExportable, Field, Parameter} from '../exportable'
 import {HashableInput, allocateArray} from '../utils'
 
@@ -57,7 +57,7 @@ function computeAlpha(m: number): number {
  * @author Thomas Minier
  */
 @AutoExportable('HyperLogLog', ['_seed'])
-export default class HyperLogLog extends BaseFilter {
+export default class HyperLogLog extends AutoExportableBaseFilter {
   /**
    * The number of registers, denoted m in the algorithm
    */
