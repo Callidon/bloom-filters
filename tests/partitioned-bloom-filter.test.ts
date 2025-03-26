@@ -1,7 +1,5 @@
 import {expect, test, describe} from '@jest/globals'
-import PartitionedBloomFilter, {
-  ExportedPartitionedBloomFilter,
-} from 'bloom-filters/bloom/partitioned-bloom-filter'
+import PartitionedBloomFilter from 'bloom-filters/bloom/partitioned-bloom-filter'
 
 describe('PartitionedBloomFilter', () => {
   const targetRate = 0.001
