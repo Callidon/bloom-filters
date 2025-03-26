@@ -54,8 +54,10 @@ describe('MinHash', () => {
       const secondSet = factory.create()
       setA.forEach(value => firstSet.add(value))
       setB.forEach(value => secondSet.add(value))
-      expect(firstSet
-        .compareWith(secondSet)).toBeCloseTo(jaccard(setA, setB), 0.2)
+      expect(firstSet.compareWith(secondSet)).toBeCloseTo(
+        jaccard(setA, setB),
+        0.2
+      )
     })
   })
 
