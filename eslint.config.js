@@ -21,7 +21,7 @@ module.exports = [
         languageOptions: {
             parser,
             parserOptions: {
-                ecmaVersion: '2015',
+                ecmaVersion: '2023',
                 project: 'tsconfig.json'
             },
             globals: {

@@ -1,0 +1,12 @@
+{
+    "extends": "./tsconfig.esm.json",
+    "compilerOptions": {
+        "rootDir": "./dist/esm",
+        "outDir": "./dist/esm/tests",
+        "paths": {
+            "bloom-filters/*": ["./dist/esm/*"]
+        }
+    },
+    "include": ["./dist/esm/**/*"],
+    "exclude": ["node_modules/","src/", "dist/cjs/**/*"]
+}

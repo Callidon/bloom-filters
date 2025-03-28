@@ -6,7 +6,7 @@ import sortedIndexBy from 'lodash/sortedIndexBy'
  * An element in a MinHeap
  * @author Thomas Minier
  */
-interface HeapElement {
+type HeapElement = {
   value: string
   frequency: number
 }
@@ -15,7 +15,7 @@ interface HeapElement {
  * An element in a TopK
  * @author Thomas Minier
  */
-interface TopkElement extends HeapElement {
+export type TopkElement = HeapElement & {
   rank: number
 }
 
