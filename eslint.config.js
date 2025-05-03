@@ -10,7 +10,7 @@ const globals = require('globals')
 module.exports = [
     js.configs.recommended,
     {
-        files: ['src/**/*.ts'],
+        files: ['src/**/*.ts', 'tests/**/*.ts'],
         ignores: [
             'dist/',
             'docs/',
@@ -22,7 +22,7 @@ module.exports = [
             parser,
             parserOptions: {
                 ecmaVersion: '2023',
-                project: 'tsconfig.json'
+                project: ['tsconfig.json', './tsconfig.eslint.json'],
             },
             globals: {
                 ...globals.browser,
@@ -41,7 +41,8 @@ module.exports = [
             node: {
                 allowModules: [],
                 resolvePaths: [
-                    './src'
+                    './src',
+                    './tests'
                 ],
                 tryExtensions: [
                     '.ts',

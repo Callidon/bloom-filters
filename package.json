@@ -131,8 +131,9 @@
     "pretest": "yarn clean && yarn lint && yarn build",
     "test": "jest",
     "doc": "typedoc --sort alphabetical --out docs/ --emit both --includeVersion src/api.ts",
-    "lint": "yarn prettier && yarn slint",
+    "lint": "yarn prettier && yarn slint && yarn tlint",
     "slint": "eslint src --fix",
+    "tlint": "eslint tests --fix",
     "prettier": "prettier --config package.json --write \"(src|tests)/**/*.(t|j)s\"",
     "clean": "rimraf docs/ dist/ build/"
   },

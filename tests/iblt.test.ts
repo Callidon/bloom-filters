@@ -12,7 +12,6 @@ describe('Invertible Bloom Lookup Tables', () => {
   const d = 100
   let size = Math.ceil(alpha * d)
   size = size + (hashCount - (size % hashCount))
-  const step = 10
   const seed = 0x1234567890
   random.use(seedrandom('' + seed))
   const toInsert = [
