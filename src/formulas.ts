@@ -1,4 +1,4 @@
-/* file : formulas.ts
+/* File : formulas.ts
 MIT License
 
 Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
@@ -36,7 +36,7 @@ SOFTWARE.
  * @memberof Formulas
  */
 export function optimalFilterSize(length: number, errorRate: number): number {
-  return Math.ceil(-((length * Math.log(errorRate)) / Math.pow(Math.log(2), 2)))
+  return Math.ceil(-((length * Math.log(errorRate)) / Math.log(2) ** 2))
 }
 
 /**

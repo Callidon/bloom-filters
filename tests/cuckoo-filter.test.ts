@@ -1,5 +1,6 @@
 import {expect, test, describe} from '@jest/globals'
 import CuckooFilter from 'bloom-filters/cuckoo/cuckoo-filter'
+import {bigIntToNumber, getBigIntAbs} from 'bloom-filters/utils'
 
 describe('CuckooFilter', () => {
   describe('#_locations', () => {
@@ -10,16 +11,19 @@ describe('CuckooFilter', () => {
       const hash = hashes.int
       const fingerprint = hashes.string.substring(0, 3)
 
-      const firstIndex = Math.abs(hash)
-      const secondIndex = Math.abs(
-        firstIndex ^
-          Math.abs(filter._hashing.hashAsInt(fingerprint, filter.seed))
-      )
-
+      const firstIndex = getBigIntAbs(hash)
+      let secondHash = filter._hashing.hashAsInt(fingerprint, filter.seed)
+      secondHash = getBigIntAbs(secondHash)
+      let secondIndex = firstIndex ^ secondHash
+      secondIndex = getBigIntAbs(secondIndex)
       const locations = filter._locations(element)
       expect(locations.fingerprint).toBe(fingerprint)
-      expect(locations.firstIndex).toBe(firstIndex % filter.size)
-      expect(locations.secondIndex).toBe(secondIndex % filter.size)
+      expect(locations.firstIndex).toBe(
+        bigIntToNumber(firstIndex % BigInt(filter.size))
+      )
+      expect(locations.secondIndex).toBe(
+        bigIntToNumber(secondIndex % BigInt(filter.size))
+      )
     })
   })
 

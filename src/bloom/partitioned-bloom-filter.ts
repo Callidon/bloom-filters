@@ -1,11 +1,12 @@
 import BaseFilter from '../base-filter.js'
 import ClassicFilter from '../interfaces/classic-filter.js'
-import {HashableInput, allocateArray} from '../utils.js'
-import {SeedType} from '../types.js'
+import {allocateArray, exportBigInt, importBigInt} from '../utils.js'
+import {ExportedBigInt} from '../types.js'
+import {HashableInput, SeedType} from '../types.js'
 import BitSet, {ExportedBitSet} from './bit-set.js'
 
 export type ExportedPartitionedBloomFilter = {
-  _seed: number
+  _seed: ExportedBigInt
   _bits: number
   _k: number
   _m: number
@@ -63,11 +64,11 @@ export default class PartitionedBloomFilter
     nbHashes?: number
   ): PartitionedBloomFilter {
     const L = Math.max(
-      nbHashes ? nbHashes : Math.ceil(Math.log2(1 / errorRate)),
-      2
-    )
-    const M = (size * Math.abs(Math.log(errorRate))) / Math.LN2 ** 2
-    // the optimal loadfactor is 0.5 for maximized size
+        nbHashes ? nbHashes : Math.ceil(Math.log2(1 / errorRate)),
+        2
+      ),
+      M = (size * Math.abs(Math.log(errorRate))) / Math.LN2 ** 2
+    // The optimal loadfactor is 0.5 for maximized size
     return new PartitionedBloomFilter(M, L, errorRate)
   }
 
@@ -87,8 +88,8 @@ export default class PartitionedBloomFilter
     errorRate: number,
     seed?: SeedType
   ): PartitionedBloomFilter {
-    const array = Array.from(items)
-    const filter = PartitionedBloomFilter.create(array.length, errorRate)
+    const array = Array.from(items),
+      filter = PartitionedBloomFilter.create(array.length, errorRate)
     if (seed) {
       filter.seed = seed
     }
@@ -172,10 +173,10 @@ export default class PartitionedBloomFilter
    * ```
    */
   public rate(): number {
-    // get the error rate for the first bucket (1 - (1 - 1/m)^n), where m is the size of a slice and n is the number of inserted elements
+    // Get the error rate for the first bucket (1 - (1 - 1/m)^n), where m is the size of a slice and n is the number of inserted elements
     const p = this.load()
     // P = p^k
-    return Math.pow(p, this._k)
+    return p ** this._k
   }
 
   /**
@@ -192,7 +193,7 @@ export default class PartitionedBloomFilter
       _bits: this._bits,
       _k: this._k,
       _filter: this._filter.map(m => m.export()),
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
       _m: this._m,
       _errorRate: this._errorRate,
     }
@@ -206,7 +207,7 @@ export default class PartitionedBloomFilter
       element._k,
       element._errorRate
     )
-    bl.seed = element._seed
+    bl.seed = importBigInt(element._seed)
     bl._m = element._m
     bl._filter = element._filter.map(b => BitSet.import(b))
     return bl

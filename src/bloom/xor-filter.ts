@@ -1,10 +1,6 @@
 import BaseFilter from '../base-filter.js'
-import {
-  allocateArray,
-  exportBigInt,
-  ExportedBigInt,
-  importBigInt,
-} from '../utils.js'
+import {allocateArray, exportBigInt, importBigInt} from '../utils.js'
+import {ExportedBigInt} from '../types.js'
 import {HashableInput, SeedType} from '../types.js'
 import {xxh3} from '@node-rs/xxhash'
 
@@ -14,7 +10,7 @@ export type ExportedXorFilter = {
   _bits: XorSize
   _size: number
   _blockLength: number
-  _seed: number
+  _seed: ExportedBigInt
 }
 
 /**
@@ -94,11 +90,11 @@ export default class XorFilter extends BaseFilter {
    * @returns
    */
   public has(element: HashableInput): boolean {
-    const hash = BigInt(this._hash64(element, this.seed))
-    const hashes = new Array(this.HASHES)
-      .fill(0)
-      .map((_, i) => this._createHx(i, hash, this._blockLength))
-    const fp = this._fingerprint(hash)
+    const hash = BigInt(this._hash64(element, this.seed)),
+      hashes = new Array(this.HASHES)
+        .fill(0)
+        .map((_, i) => this._createHx(i, hash, this._blockLength)),
+      fp = this._fingerprint(hash)
 
     let xor
     for (let i = 0; i < this.HASHES; i++) {
@@ -123,12 +119,14 @@ export default class XorFilter extends BaseFilter {
         `This filter has been created for exactly ${this._size.toString()} elements`
       )
     } else {
-      // check for unicity
-      if (new Set(elements).size === elements.length) this._create(elements)
-      else
+      // Check for unicity
+      if (new Set(elements).size === elements.length) {
+        this._create(elements)
+      } else {
         throw new Error(
           'This filter has duplicate values; remove them and recreate the filter before proceeding.'
         )
+      }
     }
     return this
   }
@@ -157,16 +155,16 @@ export default class XorFilter extends BaseFilter {
    * @returns
    */
   public _create(elements: HashableInput[]) {
-    // work only on bigint(s)
-    this.seed = 0
+    // Work only on bigint(s)
+    this.seed = 0n
 
-    const reverseOrder: bigint[] = allocateArray(this._size, 0n)
-    const reverseH: number[] = allocateArray(this._size, 0)
+    const reverseOrder: bigint[] = allocateArray(this._size, 0n),
+      reverseH: number[] = allocateArray(this._size, 0)
     let reverseOrderPos
     do {
-      this.seed = this.nextInt32()
-      const t2count = allocateArray(this._filter.length, 0)
-      const t2 = allocateArray(this._filter.length, 0n)
+      this.seed = BigInt(this.nextInt32())
+      const t2count = allocateArray(this._filter.length, 0),
+        t2 = allocateArray(this._filter.length, 0n)
       elements.forEach(k => {
         const hash = BigInt(this._hash64(k, this.seed))
         for (let hi = 0; hi < this.HASHES; hi++) {
@@ -174,7 +172,7 @@ export default class XorFilter extends BaseFilter {
             this._createHx(hi, hash, this._blockLength) + hi * this._blockLength
           t2[h] = t2[h] ^ hash
           if (t2count[h] > 120) {
-            // probably something wrong with the hash function
+            // Probably something wrong with the hash function
             throw new Error(
               `Probably something wrong with the hash function, t2count[${h.toString()}]=${t2count[h].toString()}`
             )
@@ -184,9 +182,9 @@ export default class XorFilter extends BaseFilter {
       })
       reverseOrderPos = 0
       const alone: number[][] = allocateArray(this.HASHES, () =>
-        allocateArray(this._blockLength, 0)
-      )
-      const alonePos: number[] = allocateArray(this.HASHES, 0)
+          allocateArray(this._blockLength, 0)
+        ),
+        alonePos: number[] = allocateArray(this.HASHES, 0)
       for (let nextAlone = 0; nextAlone < this.HASHES; nextAlone++) {
         for (let i = 0; i < this._blockLength; i++) {
           if (t2count[nextAlone * this._blockLength + i] === 1) {
@@ -195,8 +193,8 @@ export default class XorFilter extends BaseFilter {
           }
         }
       }
-      let found = -1
-      let i = 0
+      let found = -1,
+        i = 0
       while (i !== -1) {
         i = -1
         for (let hi = 0; hi < this.HASHES; hi++) {
@@ -207,7 +205,7 @@ export default class XorFilter extends BaseFilter {
           }
         }
         if (i === -1) {
-          // no entry found
+          // No entry found
           break
         }
         if (t2count[i] <= 0) {
@@ -221,8 +219,9 @@ export default class XorFilter extends BaseFilter {
         for (let hi = 0; hi < this.HASHES; hi++) {
           if (hi !== found) {
             const h =
-              this._createHx(hi, k, this._blockLength) + hi * this._blockLength
-            const newCount = --t2count[h]
+                this._createHx(hi, k, this._blockLength) +
+                hi * this._blockLength,
+              newCount = --t2count[h]
             if (newCount === 1) {
               alone[hi][alonePos[hi]++] = h
             }
@@ -236,10 +235,10 @@ export default class XorFilter extends BaseFilter {
     } while (reverseOrderPos !== this._size)
 
     for (let i = reverseOrderPos - 1; i >= 0; i--) {
-      const k = reverseOrder[i]
-      const found = reverseH[i]
-      let change = -1
-      let xor = this._fingerprint(k)
+      const k = reverseOrder[i],
+        found = reverseH[i]
+      let change = -1,
+        xor = this._fingerprint(k)
       for (let hi = 0; hi < this.HASHES; hi++) {
         const h =
           this._createHx(hi, k, this._blockLength) + hi * this._blockLength
@@ -274,9 +273,9 @@ export default class XorFilter extends BaseFilter {
    * @returns
    */
   public _getOptimalFilterSize(size: number): number {
-    // optimal size
+    // Optimal size
     const s = (1 * this.FACTOR_TIMES_100 * size) / 100 + this.OFFSET
-    // return a size which is a multiple of hashes for optimal blocklength
+    // Return a size which is a multiple of hashes for optimal blocklength
     return s + (-s % this.HASHES)
   }
 
@@ -301,7 +300,7 @@ export default class XorFilter extends BaseFilter {
       _bits: this._bits,
       _blockLength: this._blockLength,
       _filter: this._filter.map(e => exportBigInt(e)),
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
     }
   }
 
@@ -311,7 +310,7 @@ export default class XorFilter extends BaseFilter {
    */
   public static fromJSON(element: ExportedXorFilter): XorFilter {
     const bl = new XorFilter(element._size, element._bits)
-    bl.seed = element._seed
+    bl.seed = importBigInt(element._seed)
     bl._size = element._size
     bl._blockLength = element._blockLength
     bl._filter = element._filter.map(e => importBigInt(e))

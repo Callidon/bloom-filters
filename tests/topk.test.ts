@@ -1,5 +1,6 @@
 import {expect, test, describe} from '@jest/globals'
 import TopK, {TopkElement} from 'bloom-filters/sketch/topk'
+import {exportBigInt, getDefaultSeed} from 'bloom-filters/utils'
 
 describe('TopK', () => {
   const lessThanOrEqualTestCaseItems = [
@@ -228,6 +229,17 @@ describe('TopK', () => {
     })
   })
 
+  describe('#seed', () => {
+    test('should declare the same seed for the internal sketch', () => {
+      let topk = new TopK(3, 0.001, 0.999)
+      expect(topk.seed).toEqual(getDefaultSeed())
+      expect(topk._sketch.seed).toEqual(getDefaultSeed())
+      topk = new TopK(3, 0.001, 0.999, 1n)
+      expect(topk.seed).toEqual(1n)
+      expect(topk._sketch.seed).toEqual(1n)
+    })
+  })
+
   describe('#saveAsJSON', () => {
     const topk = new TopK(3, 0.001, 0.999)
     topk.add('alice')
@@ -242,12 +254,12 @@ describe('TopK', () => {
       expect(exported._k).toEqual(topk._k)
       expect(exported._errorRate).toEqual(topk._errorRate)
       expect(exported._accuracy).toEqual(topk._accuracy)
-      expect(exported._seed).toEqual(topk._seed)
+      expect(exported._seed).toEqual(exportBigInt(topk._seed))
       // inner count min sketch
       expect(exported._sketch._columns).toEqual(topk._sketch._columns)
       expect(exported._sketch._rows).toEqual(topk._sketch._rows)
       expect(exported._sketch._allSums).toEqual(topk._sketch._allSums)
-      expect(exported._sketch._seed).toEqual(topk._sketch._seed)
+      expect(exported._sketch._seed).toEqual(exportBigInt(topk._sketch._seed))
       expect(exported._sketch._matrix).toEqual(topk._sketch._matrix)
       // inner MinHeap
       expect(exported._heap._content).toEqual(topk._heap._content)

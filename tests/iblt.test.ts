@@ -1,9 +1,10 @@
 import {expect, test, describe} from '@jest/globals'
 import InvertibleBloomFilter from 'bloom-filters/iblt/invertible-bloom-lookup-tables'
-import {randomInt} from 'bloom-filters/utils'
+import {exportBigInt, randomInt} from 'bloom-filters/utils'
 import random from 'random'
 import range from 'lodash/range'
 import seedrandom from 'seedrandom'
+import {getSeedTest} from './common'
 
 describe('Invertible Bloom Lookup Tables', () => {
   const keys = 1000
@@ -12,7 +13,7 @@ describe('Invertible Bloom Lookup Tables', () => {
   const d = 100
   let size = Math.ceil(alpha * d)
   size = size + (hashCount - (size % hashCount))
-  const seed = 0x1234567890
+  const seed = getSeedTest()
   random.use(seedrandom('' + seed))
   const toInsert = [
     'help',
@@ -104,7 +105,7 @@ describe('Invertible Bloom Lookup Tables', () => {
       iblt.add(e)
     })
     const exported = iblt.saveAsJSON()
-    expect(exported._seed).toEqual(seed)
+    expect(exported._seed).toEqual(exportBigInt(seed))
     expect(exported._size).toEqual(iblt._size)
     expect(exported._hashCount).toEqual(iblt._hashCount)
     expect(exported._alpha).toEqual(iblt._alpha)
@@ -118,13 +119,23 @@ describe('Invertible Bloom Lookup Tables', () => {
 
   describe(`Multiple run with different seeds for d=${d}`, () => {
     range(0, 10)
-      .map(r => [r, randomInt(1, Number.MAX_SAFE_INTEGER)])
+      .map(r => [r, BigInt(randomInt(1, Number.MAX_SAFE_INTEGER))])
       .forEach(([r, seed]) => {
         test(`should decodes correctly elements (run ${r} with seed ${seed})`, () => {
-          const iblt = new InvertibleBloomFilter(d, alpha, hashCount, seed)
+          const iblt = new InvertibleBloomFilter(
+            d,
+            alpha,
+            hashCount,
+            seed as bigint
+          )
           const setDiffplus: string[] = []
           const setDiffminus: string[] = []
-          const remote = new InvertibleBloomFilter(d, alpha, hashCount, seed)
+          const remote = new InvertibleBloomFilter(
+            d,
+            alpha,
+            hashCount,
+            seed as bigint
+          )
           for (let i = 0; i < keys; ++i) {
             const hash = i.toString()
             if (i < keys - d) {

@@ -1,4 +1,4 @@
-import {encode, decode} from 'base64-arraybuffer'
+import {decode, encode} from 'base64-arraybuffer'
 
 const bitsPerWord = 8
 
@@ -33,8 +33,8 @@ export default class BitSet {
    * @param index position of the bit, zero-indexed
    */
   public has(index: number): boolean {
-    const wordIndex = Math.floor(index / bitsPerWord)
-    const mask = 1 << index % bitsPerWord
+    const wordIndex = Math.floor(index / bitsPerWord),
+      mask = 1 << index % bitsPerWord
     return (this.array[wordIndex] & mask) !== 0
   }
 
@@ -43,8 +43,8 @@ export default class BitSet {
    * @param index position of the bit, zero-indexed
    */
   public add(index: number) {
-    const wordIndex = Math.floor(index / bitsPerWord)
-    const mask = 1 << index % bitsPerWord
+    const wordIndex = Math.floor(index / bitsPerWord),
+      mask = 1 << index % bitsPerWord
     this.array[wordIndex] = this.array[wordIndex] | mask
   }
 
@@ -109,8 +109,8 @@ export default class BitSet {
     if (typeof data.content !== 'string') {
       throw Error('BitSet: missing content')
     }
-    const result = new BitSet(data.size)
-    const buffer = decode(data.content)
+    const result = new BitSet(data.size),
+      buffer = decode(data.content)
     result.array = new Uint8Array(buffer)
     return result
   }
@@ -125,8 +125,8 @@ export default class BitSet {
    * ```
    */
   public static highBit(bits: number): number {
-    let result = bitsPerWord - 1
-    let mask = 1 << result
+    let result = bitsPerWord - 1,
+      mask = 1 << result
     while (result >= 0 && (mask & bits) !== mask) {
       mask >>>= 1
       result--
@@ -146,7 +146,7 @@ export default class BitSet {
   public static countBits(bits: number): number {
     let result = bits & 1
     while (bits !== 0) {
-      bits = bits >>> 1
+      bits >>>= 1
       result += bits & 1
     }
     return result

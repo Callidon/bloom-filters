@@ -32,7 +32,7 @@ describe('package.json should exports correctly things', () => {
     })
     test(`#import statements ${getModuleName(key)} should correctly work (${getModuleName(value.import!)})`, async () => {
       expect(value.import).toBeDefined()
-      // eslint-disable-next-line node/no-unsupported-features/es-syntax
+
       const module = await import(getModuleName(value.import!))
       expect(module).toBeDefined()
     })

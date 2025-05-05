@@ -24,9 +24,9 @@ function isPrime(x: number): boolean {
  * @return The fist prime number superior to the input number
  */
 function closestPrime(x: number): number {
-  let i = 0
-  let stop = false
-  let to_return = i
+  let i = 0,
+    stop = false,
+    to_return = i
   while (!stop) {
     if (isPrime(x + i)) {
       to_return = x + i
@@ -57,11 +57,11 @@ export default class MinHashFactory {
     this._nbHashes = nbHashes
     this._maxValue = maxValue
     this._hashFunctions = []
-    // generate hash functions
+    // Generate hash functions
     const c = closestPrime(this._maxValue)
     for (let i = 0; i < this._nbHashes; i++) {
-      const a = random(0, this._maxValue, false)
-      const b = random(0, this._maxValue, false)
+      const a = random(0, this._maxValue, false),
+        b = random(0, this._maxValue, false)
       this._hashFunctions.push({a, b, c})
     }
   }

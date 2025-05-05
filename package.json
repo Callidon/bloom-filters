@@ -200,8 +200,7 @@
     "is-buffer": "^2.0.5",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.2.2",
-    "seedrandom": "^3.0.5",
-    "xxhashjs": "^0.2.2"
+    "seedrandom": "^3.0.5"
   },
   "prettier": {
     "semi": false,
