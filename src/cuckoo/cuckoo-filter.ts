@@ -5,6 +5,7 @@ import {
   allocateArray,
   bigIntToNumber,
   exportBigInt,
+  getBigIntAbs,
   importBigInt,
   randomInt,
 } from '../utils'
@@ -31,7 +32,7 @@ export type ExportedCuckooFilter = {
  */
 function computeFingerpintLength(size: number, rate: number): number {
   const f = Math.ceil(Math.log2(1 / rate) + Math.log2(2 * size))
-  return Math.ceil(f / 8) // because we use 64-bits hashes
+  return Math.ceil(f / 8) // Because we use 64-bits hashes
 }
 
 /**
@@ -89,8 +90,8 @@ export default class CuckooFilter
     bucketSize = 4,
     maxKicks = 500
   ): CuckooFilter {
-    const fl = computeFingerpintLength(bucketSize, errorRate)
-    const capacity = Math.ceil(size / bucketSize / 0.955)
+    const fl = computeFingerpintLength(bucketSize, errorRate),
+      capacity = Math.ceil(size / bucketSize / 0.955)
     return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
   }
 
@@ -108,13 +109,13 @@ export default class CuckooFilter
     bucketSize = 4,
     maxKicks = 500
   ): CuckooFilter {
-    const array = Array.from(items)
-    const filter = CuckooFilter.create(
-      array.length,
-      errorRate,
-      bucketSize,
-      maxKicks
-    )
+    const array = Array.from(items),
+      filter = CuckooFilter.create(
+        array.length,
+        errorRate,
+        bucketSize,
+        maxKicks
+      )
     array.forEach(item => filter.add(item))
     return filter
   }
@@ -179,35 +180,35 @@ export default class CuckooFilter
   ): boolean {
     // TODO do the recovery if return false or throw error because we altered values
     const locations = this._locations(element)
-    // store fingerprint in an available empty bucket
+    // Store fingerprint in an available empty bucket
     if (this._filter[locations.firstIndex].isFree()) {
       this._filter[locations.firstIndex].add(locations.fingerprint)
     } else if (this._filter[locations.secondIndex].isFree()) {
       this._filter[locations.secondIndex].add(locations.fingerprint)
     } else {
-      // buckets are full, we must relocate one of them
+      // Buckets are full, we must relocate one of them
       let index =
-        this.random() < 0.5 ? locations.firstIndex : locations.secondIndex
-      let movedElement: string = locations.fingerprint
+          this.random() < 0.5 ? locations.firstIndex : locations.secondIndex,
+        movedElement: string = locations.fingerprint
       const logs: Array<[number, number, string | null]> = []
       for (let nbTry = 0; nbTry < this._maxKicks; nbTry++) {
         const rndIndex = randomInt(
-          0,
-          this._filter[index].length - 1,
-          this.random
-        )
-        const tmp = this._filter[index].at(rndIndex)!
+            0,
+            this._filter[index].length - 1,
+            this.random
+          ),
+          tmp = this._filter[index].at(rndIndex)!
         logs.push([index, rndIndex, tmp])
         this._filter[index].set(rndIndex, movedElement)
         movedElement = tmp
-        // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
-        const newHash = this._hashing.hashAsInt(movedElement, this.seed)
-        const absNewHash = newHash < 0n ? -newHash : newHash
+        // MovedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
+        const newHash = this._hashing.hashAsInt(movedElement, this.seed),
+          absNewHash = getBigIntAbs(newHash)
         let _index = BigInt(index) ^ absNewHash
-        _index = _index < 0n ? -_index : _index
-        _index = _index % BigInt(this._filter.length)
+        _index = getBigIntAbs(_index)
+        _index %= BigInt(this._filter.length)
         index = bigIntToNumber(_index)
-        // add the moved element to the bucket if possible
+        // Add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {
           this._filter[index].add(movedElement)
           this._length++
@@ -215,15 +216,15 @@ export default class CuckooFilter
         }
       }
       if (!destructive) {
-        // rollback all modified entries to their initial states
+        // Rollback all modified entries to their initial states
         for (let i = logs.length - 1; i >= 0; i--) {
           const log = logs[i]
           this._filter[log[0]].set(log[1], log[2])
         }
       }
-      // considered full
+      // Considered full
       if (throwError) {
-        // rollback all operations
+        // Rollback all operations
         throw new Error(
           `The Cuckoo Filter is full, cannot insert element "${element}"`
         )
@@ -289,9 +290,9 @@ export default class CuckooFilter
    * @return The false positive rate
    */
   public rate(): number {
-    const load = this._computeHashTableLoad()
-    const c = this._fingerprintLength / load.load
-    return Math.pow(2, Math.log2(2 * this._bucketSize) - load.load * c)
+    const load = this._computeHashTableLoad(),
+      c = this._fingerprintLength / load.load
+    return 2 ** (Math.log2(2 * this._bucketSize) - load.load * c)
   }
 
   /**
@@ -299,8 +300,8 @@ export default class CuckooFilter
    * @return {Object} load: is the load, size is the number of entries, free is the free number of entries, used is the number of entry used
    */
   public _computeHashTableLoad() {
-    const max = this._filter.length * this._bucketSize
-    const used = this._filter.reduce((acc, val) => acc + val.length, 0)
+    const max = this._filter.length * this._bucketSize,
+      used = this._filter.reduce((acc, val) => acc + val.length, 0)
     return {
       used,
       free: max - used,
@@ -316,15 +317,15 @@ export default class CuckooFilter
    * @private
    */
   public _locations(element: HashableInput) {
-    const hashes = this._hashing.hashIntAndString(element, this.seed)
-    const hash = hashes.int
+    const hashes = this._hashing.hashIntAndString(element, this.seed),
+      hash = hashes.int
     if (this._fingerprintLength > hashes.string.length) {
       throw new Error(
         `The fingerprint length (${this._fingerprintLength}) is higher than the hash length (${hashes.string.length}). Please reduce the fingerprint length or report if it is an unexpected behavior.`
       )
     }
-    const fingerprint = hashes.string.substring(0, this._fingerprintLength)
-    const firstIndex = hash < 0n ? -hash : hash
+    const fingerprint = hashes.string.substring(0, this._fingerprintLength),
+      firstIndex = hash < 0n ? -hash : hash
     let secondHash = this._hashing.hashAsInt(fingerprint, this.seed)
     secondHash = secondHash < 0n ? -secondHash : secondHash
     let secondIndex = firstIndex ^ secondHash
@@ -343,8 +344,8 @@ export default class CuckooFilter
    * @return True if they are equal, false otherwise
    */
   public equals(filter: CuckooFilter): boolean {
-    let i = 0
-    let res = true
+    let i = 0,
+      res = true
     while (res && i < this._filter.length) {
       const bucket = this._filter[i]
       if (!filter._filter[i].equals(bucket)) {

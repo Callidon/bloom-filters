@@ -47,7 +47,7 @@ export default class Cell {
    */
   public add(idSum: Uint8Array, hashSum: number): void {
     this._idSum = xorUint8Array(this._idSum, idSum)
-    this._hashSum = this._hashSum ^ hashSum
+    this._hashSum ^= hashSum
     this._count++
   }
 

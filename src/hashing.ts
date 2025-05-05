@@ -1,4 +1,4 @@
-import {bigIntToNumber, getDefaultSeed} from './utils'
+import {bigIntToNumber, getBigIntAbs, getDefaultSeed} from './utils'
 import {
   HashableInput,
   SeedType,
@@ -26,10 +26,10 @@ export default class Hashing implements Hashing {
     hashB: bigint,
     size: number
   ): bigint {
-    const bigN = BigInt(n)
-    const floor = bigN ** 3n - bigN / 6n
-    const value = (hashA + bigN * hashB + floor) % BigInt(size)
-    return value < 0n ? -value : value
+    const bigN = BigInt(n),
+      floor = bigN ** 3n - bigN / 6n,
+      value = (hashA + bigN * hashB + floor) % BigInt(size)
+    return getBigIntAbs(value)
   }
 
   /**
@@ -51,8 +51,8 @@ export default class Hashing implements Hashing {
     if (seed === undefined) {
       seed = getDefaultSeed()
     }
-    const arr = []
-    const hashes = this.hashTwice(element, seed)
+    const arr = [],
+      hashes = this.hashTwice(element, seed)
     for (let i = 0; i < hashCount; i++) {
       arr.push(this.doubleHashing(i, hashes.first, hashes.second, size))
     }
@@ -125,8 +125,8 @@ export default class Hashing implements Hashing {
     if (seed === undefined) {
       seed = getDefaultSeed()
     }
-    const one = this.hashIntAndString(val, seed + 1n)
-    const two = this.hashIntAndString(val, seed + 2n)
+    const one = this.hashIntAndString(val, seed + 1n),
+      two = this.hashIntAndString(val, seed + 2n)
     return {
       int: {
         first: one.int,

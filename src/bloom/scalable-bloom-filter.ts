@@ -106,14 +106,12 @@ export default class ScalableBloomFilter
 
   public addFilter() {
     const index = this._filters.length
-    let newSize
-    let newErrorRate
-    let newHashes
+    let newErrorRate, newHashes, newSize
     if (index === 0) {
       newSize = this._initial_size
       newErrorRate = this._initial_error_rate
     } else {
-      newSize = this._filters[0]._m * Math.pow(ScalableBloomFilter._s, index)
+      newSize = this._filters[0]._m * ScalableBloomFilter._s ** index
       newErrorRate = this.current._errorRate * this._ratio
       newHashes = Math.ceil(
         this._filters[0]._k + index * Math.log2(1 / this._ratio)
@@ -133,11 +131,11 @@ export default class ScalableBloomFilter
    * @param element
    */
   public add(element: HashableInput) {
-    // determine if we need to create a new filter
+    // Determine if we need to create a new filter
     if (this.current.load() >= 0.5) {
       this.addFilter()
     }
-    // get the newly created filter
+    // Get the newly created filter
     this.current.add(element)
   }
 

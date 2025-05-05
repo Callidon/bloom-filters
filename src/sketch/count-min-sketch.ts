@@ -36,7 +36,9 @@ export default class CountMinSketch
    */
   constructor(columns: number, rows: number, seed?: SeedType) {
     super()
-    if (seed) this.seed = seed
+    if (seed) {
+      this.seed = seed
+    }
     this._columns = columns
     this._rows = rows
     this._matrix = allocateArray(this._rows, () =>
@@ -52,9 +54,9 @@ export default class CountMinSketch
    * @return A new Count Min Sketch optimal for the input parameters
    */
   public static create(errorRate: number, accuracy = 0.999): CountMinSketch {
-    // columns = Math.ceil(Math.E / epsilon) and rows = Math.ceil(Math.log(1 / delta))
-    const columns = Math.ceil(Math.E / errorRate)
-    const rows = Math.ceil(Math.log(1 / accuracy))
+    // Columns = Math.ceil(Math.E / epsilon) and rows = Math.ceil(Math.log(1 / delta))
+    const columns = Math.ceil(Math.E / errorRate),
+      rows = Math.ceil(Math.log(1 / accuracy))
     return new CountMinSketch(columns, rows)
   }
 
@@ -72,7 +74,9 @@ export default class CountMinSketch
     seed?: SeedType
   ): CountMinSketch {
     const filter = CountMinSketch.create(errorRate, accuracy)
-    if (seed) filter.seed = seed
+    if (seed) {
+      filter.seed = seed
+    }
     for (const item of items) {
       filter.update(item)
     }

@@ -11,5 +11,5 @@ export default interface WritableFilter<T> extends ClassicFilter<T> {
    * @param element - The element to remove
    * @return True if the element has been removed from the filter, False otherwise
    */
-  remove(element: T): boolean
+  remove(element: T): boolean // eslint-disable-line no-unused-vars
 }

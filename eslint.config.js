@@ -49,34 +49,6 @@ module.exports = [
                     '.js'
                 ]
             }
-        },
-        rules: {
-            "no-unused-vars": "off",
-            "@typescript-eslint/no-unused-vars": ["error"],
-            'node/no-unsupported-features/es-syntax': [
-                'error',
-                {
-                    ignores: [
-                        'modules'
-                    ]
-                }
-            ],
-            'node/no-unsupported-features/es-builtins': [
-                'error',
-                {
-                    ignores: []
-                }
-            ],
-            'node/no-unpublished-require': [
-                'error',
-                {
-                    allowModules: [
-                        'mocha',
-                        'chai',
-                        'random'
-                    ]
-                }
-            ]
         }
     }
 ]

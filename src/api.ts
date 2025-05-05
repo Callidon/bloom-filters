@@ -1,4 +1,4 @@
-/* file : api.ts
+/* File : api.ts
 MIT License
 
 Copyright (c) 2017-2020 Thomas Minier & Arnaud Grall
@@ -23,9 +23,9 @@ SOFTWARE.
 */
 
 // For documentation
-export {type HashableInput as HashableInput} from './types'
+export {HashableInput} from './types'
 
-// export all default
+// Export all default
 export {default as BaseFilter} from './base-filter'
 export {default as BloomFilter} from './bloom/bloom-filter'
 export {default as BitSet} from './bloom/bit-set'
@@ -44,7 +44,7 @@ export {default as InvertibleBloomFilter} from './iblt/invertible-bloom-lookup-t
 export {default as Cell} from './iblt/cell'
 export {default as Hashing} from './hashing'
 
-// export the rest
+// Export the rest
 export * from './base-filter'
 export * from './bloom/bloom-filter'
 export * from './bloom/bit-set'

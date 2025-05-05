@@ -71,7 +71,7 @@ export default class InvertibleBloomFilter
     this._alpha = alpha
     this._hashCount = hashCount
     this._size = Math.ceil(differences * alpha)
-    this._size = this._size + (this._hashCount - (this._size % this._hashCount))
+    this._size += this._hashCount - (this._size % this._hashCount)
     this._elements = allocateArray(this._size, () => Cell.empty())
   }
 
@@ -88,8 +88,8 @@ export default class InvertibleBloomFilter
    * @param element - The element to insert
    */
   public add(element: string): void {
-    const value = InvertibleBloomFilter.encoder.encode(element)
-    const hash = this.genHash(element)
+    const value = InvertibleBloomFilter.encoder.encode(element),
+      hash = this.genHash(element)
     for (const index of this.genIndexes(element)) {
       this._elements[index].add(value, hash)
     }
@@ -101,8 +101,8 @@ export default class InvertibleBloomFilter
    * @return True if the element has been removed, False otheriwse
    */
   public remove(element: string): boolean {
-    const value = InvertibleBloomFilter.encoder.encode(element)
-    const hash = this.genHash(element)
+    const value = InvertibleBloomFilter.encoder.encode(element),
+      hash = this.genHash(element)
     for (const index of this.genIndexes(element)) {
       const cell = new Cell(value, hash, 1)
       this._elements[index] = this._elements[index].xorm(cell)
@@ -130,8 +130,8 @@ export default class InvertibleBloomFilter
    * @return A list of entries in this filter
    */
   public listEntries(): string[] {
-    const copy = InvertibleBloomFilter.fromJSON(this.saveAsJSON())
-    const result: string[] = []
+    const copy = InvertibleBloomFilter.fromJSON(this.saveAsJSON()),
+      result: string[] = []
 
     let cell: Cell | undefined
     while (
@@ -168,11 +168,10 @@ export default class InvertibleBloomFilter
   }
 
   public genHash(element: string): number {
-    const value = InvertibleBloomFilter.encoder.encode(element)
-    const hash = xxh3.xxh128(value, BigInt(125)).toString(16)
-
-    const match = hash.match(/../g)!
-    const digest = new Uint8Array(match.map(h => parseInt(h, 16)))
+    const value = InvertibleBloomFilter.encoder.encode(element),
+      hash = xxh3.xxh128(value, BigInt(125)).toString(16),
+      match = hash.match(/../g)!,
+      digest = new Uint8Array(match.map(h => parseInt(h, 16)))
     let h = 0
     for (let j = 0; j < 4; j++) {
       h <<= 8
@@ -182,15 +181,14 @@ export default class InvertibleBloomFilter
   }
 
   public genIndexes(element: string): number[] {
-    const value = InvertibleBloomFilter.encoder.encode(element)
-    const indexes = new Array<number>(this._hashCount)
-    let k = 0
-    let salt = BigInt(0)
+    const value = InvertibleBloomFilter.encoder.encode(element),
+      indexes = new Array<number>(this._hashCount)
+    let k = 0,
+      salt = BigInt(0)
     while (k < this._hashCount) {
-      const hash = xxh3.xxh128(value, salt).toString(16)
-
-      const match = hash.match(/../g)!
-      const digest = new Uint8Array(match.map(h => parseInt(h, 16)))
+      const hash = xxh3.xxh128(value, salt).toString(16),
+        match = hash.match(/../g)!,
+        digest = new Uint8Array(match.map(h => parseInt(h, 16)))
       salt++
 
       for (let i = 0; i < digest.length / 4 && k < this._hashCount; i++) {
@@ -241,9 +239,9 @@ export default class InvertibleBloomFilter
       if (!this.isCellPure(cell)) {
         continue
       }
-      const id = cell._idSum
-      const value = InvertibleBloomFilter.decoder.decode(id)
-      const c = cell._count
+      const id = cell._idSum,
+        value = InvertibleBloomFilter.decoder.decode(id),
+        c = cell._count
       if (c > 0) {
         additional.push(value)
       } else {
@@ -276,12 +274,11 @@ export default class InvertibleBloomFilter
         missing,
       }
       return res
-    } else {
-      return {
-        success: true,
-        additional,
-        missing,
-      }
+    }
+    return {
+      success: true,
+      additional,
+      missing,
     }
   }
 

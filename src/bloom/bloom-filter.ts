@@ -54,8 +54,8 @@ export default class BloomFilter
    * @return A new {@link BloomFilter}
    */
   public static create(nbItems: number, errorRate: number): BloomFilter {
-    const size = optimalFilterSize(nbItems, errorRate)
-    const hashes = optimalHashes(size, nbItems)
+    const size = optimalFilterSize(nbItems, errorRate),
+      hashes = optimalHashes(size, nbItems)
     return new this(size, hashes)
   }
 
@@ -76,8 +76,8 @@ export default class BloomFilter
     errorRate: number,
     seed?: SeedType
   ): BloomFilter {
-    const array = Array.from(items)
-    const filter = BloomFilter.create(array.length, errorRate)
+    const array = Array.from(items),
+      filter = BloomFilter.create(array.length, errorRate)
     if (seed) {
       filter.seed = seed
     }
@@ -159,7 +159,7 @@ export default class BloomFilter
    * ```
    */
   public rate(): number {
-    return Math.pow(1 - Math.exp(-this.length / this._size), this._nbHashes)
+    return (1 - Math.exp(-this.length / this._size)) ** this._nbHashes
   }
 
   /**

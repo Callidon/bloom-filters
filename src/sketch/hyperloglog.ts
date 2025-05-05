@@ -21,10 +21,9 @@ function computeAlpha(m: number): number {
     return 0.697
   } else if (m < 128) {
     return 0.709
-  } else {
-    // >= 128
-    return 0.7213 / (1.0 + 1.079 / m)
   }
+  // >= 128
+  return 0.7213 / (1.0 + 1.079 / m)
 }
 
 export type ExportedHyperLogLog = {
@@ -95,20 +94,20 @@ export default class HyperLogLog extends BaseFilter {
    */
   public update(element: HashableInput): void {
     const x = xxh3
-      .xxh64(element, BigInt(this.seed))
-      .toString(2)
-      .padStart(this.HASH_SIZE, '0')
-    const k = this.HASH_SIZE - this._b
-    // the first b bits are from the right
-    const first = x.slice(k)
-    // the last k are the next
-    const second = x.slice(0, k)
-    const registerIndex = parseInt(first, 2)
-    // find the left most 1-bit in the second part of the buffer
-    // simple while loop
-    let leftmost_pos = k - 1
-    let found = false
-    let i = 0
+        .xxh64(element, BigInt(this.seed))
+        .toString(2)
+        .padStart(this.HASH_SIZE, '0'),
+      k = this.HASH_SIZE - this._b,
+      // The first b bits are from the right
+      first = x.slice(k),
+      // The last k are the next
+      second = x.slice(0, k),
+      registerIndex = parseInt(first, 2)
+    // Find the left most 1-bit in the second part of the buffer
+    // Simple while loop
+    let leftmost_pos = k - 1,
+      found = false,
+      i = 0
     while (!found && i < second.length) {
       if (second[i] === '1') {
         found = true
@@ -130,27 +129,27 @@ export default class HyperLogLog extends BaseFilter {
   public count(round = false): number {
     // Use the standard HyperLogLog estimator
     const Z = this._registers.reduce(
-      (acc: number, value: number) => acc + Math.pow(2, -value),
-      0
-    )
-    const raw_estimation = (this._correctionBias * this._m * this._m * 2) / Z
+        (acc: number, value: number) => acc + 2 ** -value,
+        0
+      ),
+      raw_estimation = (this._correctionBias * this._m * this._m * 2) / Z
 
     let corrected_estimation
     if (raw_estimation <= (5 / 2) * this._m) {
-      // use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
+      // Use linear counting to correct the estimation if E < 5m/2 and some registers are set to zero
       const V = this._registers.filter(value => value === 0).length
       if (V > 0) {
-        // small range correction: linear counting
+        // Small range correction: linear counting
         corrected_estimation = this._m * Math.log(this._m / V)
       } else {
         corrected_estimation = raw_estimation
       }
     } else if (raw_estimation <= TWO_POW_32 / 30) {
-      // middle range correction; no correction
+      // Middle range correction; no correction
       corrected_estimation = raw_estimation
     } else {
-      // raw_estimation > TWO_POW_32 / 30
-      // large range correction
+      // Raw_estimation > TWO_POW_32 / 30
+      // Large range correction
       corrected_estimation =
         -TWO_POW_32 * Math.log(1 - raw_estimation / TWO_POW_32)
     }

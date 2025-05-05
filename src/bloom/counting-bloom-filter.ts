@@ -40,9 +40,9 @@ export default class CountingBloomFilter
         `A CountingBloomFilter must used at least one hash function, but you tried to use ${nbHashes} functions. Consider increasing it.`
       )
     }
-    this._size = size // fm.optimalFilterSize(capacity, errorRate)
-    this._nbHashes = nbHashes // fm.optimalHashes(this._size, capacity)
-    // the filter contains tuples [bit, counter]
+    this._size = size // Fm.optimalFilterSize(capacity, errorRate)
+    this._nbHashes = nbHashes // Fm.optimalHashes(this._size, capacity)
+    // The filter contains tuples [bit, counter]
     this._filter = allocateArray(this._size, () => [0, 0])
     this._length = 0
   }
@@ -76,8 +76,8 @@ export default class CountingBloomFilter
     items: Iterable<HashableInput>,
     errorRate: number
   ): CountingBloomFilter {
-    const array = Array.from(items)
-    const filter = CountingBloomFilter.create(array.length, errorRate)
+    const array = Array.from(items),
+      filter = CountingBloomFilter.create(array.length, errorRate)
     array.forEach(element => filter.add(element))
     return filter
   }
@@ -113,9 +113,9 @@ export default class CountingBloomFilter
       this.seed
     )
     for (let i = 0; i < indexes.length; i++) {
-      // increment counter
+      // Increment counter
       this._filter[indexes[i]][1] += 1
-      // set bit if necessary
+      // Set bit if necessary
       if (this._filter[indexes[i]][1] > 0) {
         this._filter[indexes[i]][0] = 1
       }
@@ -134,16 +134,16 @@ export default class CountingBloomFilter
    */
   public remove(element: HashableInput): boolean {
     const indexes = this._hashing.getIndexes(
-      element,
-      this._size,
-      this._nbHashes,
-      this.seed
-    )
-    const success = true
+        element,
+        this._size,
+        this._nbHashes,
+        this.seed
+      ),
+      success = true
     for (let i = 0; i < indexes.length; i++) {
-      // decrement counter
+      // Decrement counter
       this._filter[indexes[i]][1] -= 1
-      // set bit if necessary
+      // Set bit if necessary
       if (this._filter[indexes[i]][1] <= 0) {
         this._filter[indexes[i]][0] = 0
       }
@@ -189,8 +189,8 @@ export default class CountingBloomFilter
    * ```
    */
   public rate(): number {
-    return Math.pow(
-      1 - Math.exp((-this._nbHashes * this._length) / this._size),
+    return (
+      (1 - Math.exp((-this._nbHashes * this._length) / this._size)) **
       this._nbHashes
     )
   }

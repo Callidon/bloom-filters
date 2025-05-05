@@ -117,7 +117,7 @@ describe('Utils', () => {
   describe('Use different hash functions', () => {
     test('overriding serialize function by always returning Number(1)', () => {
       class CustomHashing extends Hashing {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line no-unused-vars
         serialize(_element: string, _seed?: SeedType) {
           return BigInt(1)
         }

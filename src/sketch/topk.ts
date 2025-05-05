@@ -65,7 +65,7 @@ export class MinHeap {
    * @param element - Element to insert
    */
   public add(element: HeapElement) {
-    // kepp items sorted by frequency
+    // Kepp items sorted by frequency
     const index = sortedIndexBy(
       this._content,
       element,
@@ -151,12 +151,16 @@ export default class TopK extends BaseFilter {
    */
   constructor(k: number, errorRate: number, accuracy: number, seed?: SeedType) {
     super()
-    if (seed) this.seed = seed
+    if (seed) {
+      this.seed = seed
+    }
     this._k = k
     this._errorRate = errorRate
     this._accuracy = accuracy
     this._sketch = CountMinSketch.create(errorRate, accuracy)
-    if (seed) this._sketch.seed = seed
+    if (seed) {
+      this._sketch.seed = seed
+    }
     this._heap = new MinHeap()
   }
 
@@ -165,7 +169,7 @@ export default class TopK extends BaseFilter {
    * @param element - Element to add
    */
   public add(element: string, count = 1): void {
-    if (0 >= count) {
+    if (count <= 0) {
       throw `count must be > 0 (was ${count})`
     }
     this._sketch.update(element, count)
@@ -176,16 +180,16 @@ export default class TopK extends BaseFilter {
       frequency >= this._heap.get(0)!.frequency
     ) {
       const index = this._heap.indexOf(element)
-      // remove the entry if it is already in the MinHeap
+      // Remove the entry if it is already in the MinHeap
       if (index > -1) {
         this._heap.remove(index)
       }
-      // add the new entry
+      // Add the new entry
       this._heap.add({
         value: element,
         frequency,
       })
-      // if there is more items than K, then remove the smallest item in the heap
+      // If there is more items than K, then remove the smallest item in the heap
       if (this._heap.length > this._k) {
         this._heap.popMin()
       }
