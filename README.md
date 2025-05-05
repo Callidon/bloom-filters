@@ -574,7 +574,7 @@ bl.seed = 0xABCD
 console.log(bl.seed) // 43981
 ```
 
-By default we hash elements using `XXH.h64` function from [`xxhashjs`](https://github.com/pierrec/js-xxhash).
+By default we hash elements using `xxh64` function from [`@node-rs/xxhash`](https://www.npmjs.com/package/@node-rs/xxhash).
 In the case you want to use your own hash functions, you can use your own Hashing class by extending the default one. Example:
 
 ```js
@@ -582,7 +582,7 @@ const {BloomFilter, Hashing} = require('bloom-filters')
 
 class CustomHashing extends Hashing {
   serialize(_element, _seed) {
-    return Number(1)
+    return BigInt(1)
   }
 }
 
@@ -592,7 +592,7 @@ bl._hashing = new CustomHashing()
 bl.add('a')
 ```
 
-See `test/utils-test.js` "_Use different hash functions_" describe close.
+See `test/utils.test.ts` "_Use different hash functions_" describe close.
 
 ## Documentation
 
