@@ -1,11 +1,11 @@
 import {expect, test, describe} from '@jest/globals'
 import BloomFilter from 'bloom-filters/bloom/bloom-filter'
 import {exportBigInt, getDefaultSeed} from 'bloom-filters/utils'
-import {getNewSeed} from './common'
+import {getSeedTest} from './common'
 
 describe('BloomFilter', () => {
   const targetRate = 0.1
-  const seed = getNewSeed()
+  const seed = getSeedTest()
 
   describe('construction', () => {
     test('should add element to the filter with #add', () => {
@@ -38,7 +38,7 @@ describe('BloomFilter', () => {
 
   describe('#has', () => {
     const getFilter = () =>
-      BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+      BloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
     test('should return false for elements that are definitively not in the set', () => {
       const filter = getFilter()
       expect(filter.has('daniel')).toEqual(false)
@@ -55,8 +55,16 @@ describe('BloomFilter', () => {
 
   describe('#equals', () => {
     test('should returns True when two filters are equals', () => {
-      const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
-      const other = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const first = BloomFilter.from(
+        ['alice', 'bob', 'carol'],
+        targetRate,
+        seed
+      )
+      const other = BloomFilter.from(
+        ['alice', 'bob', 'carol'],
+        targetRate,
+        seed
+      )
       expect(first.equals(other)).toEqual(true)
     })
 

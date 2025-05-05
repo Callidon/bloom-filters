@@ -1,6 +1,6 @@
 import BaseFilter from '../base-filter'
-import { ExportedBigInt, SeedType } from '../types'
-import { exportBigInt, importBigInt } from '../utils'
+import {ExportedBigInt, SeedType} from '../types'
+import {exportBigInt, importBigInt} from '../utils'
 import CountMinSketch, {ExportedCountMinSketch} from './count-min-sketch'
 import sortedIndexBy from 'lodash/sortedIndexBy'
 

@@ -4,7 +4,7 @@ import {exportBigInt, randomInt} from 'bloom-filters/utils'
 import random from 'random'
 import range from 'lodash/range'
 import seedrandom from 'seedrandom'
-import {getNewSeed} from './common'
+import {getSeedTest} from './common'
 
 describe('Invertible Bloom Lookup Tables', () => {
   const keys = 1000
@@ -13,7 +13,7 @@ describe('Invertible Bloom Lookup Tables', () => {
   const d = 100
   let size = Math.ceil(alpha * d)
   size = size + (hashCount - (size % hashCount))
-  const seed = getNewSeed()
+  const seed = getSeedTest()
   random.use(seedrandom('' + seed))
   const toInsert = [
     'help',

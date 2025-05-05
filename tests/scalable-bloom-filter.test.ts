@@ -1,10 +1,10 @@
 import {expect, test, describe} from '@jest/globals'
 import ScalableBloomFilter from 'bloom-filters/bloom/scalable-bloom-filter'
-import {getNewSeed} from './common'
+import {getSeedTest} from './common'
 
 describe('ScalableBloomFilter', () => {
   const targetRate = 0.1
-  const seed = getNewSeed()
+  const seed = getSeedTest()
 
   describe('construction', () => {
     test('should #add add elements without error', () => {
