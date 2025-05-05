@@ -29,7 +29,6 @@ export default class Hashing implements Hashing {
     const bigN = BigInt(n)
     const floor = bigN ** 3n - bigN / 6n
     const value = (hashA + bigN * hashB + floor) % BigInt(size)
-    // compute absolute value of a bigint
     return value < 0n ? -value : value
   }
 
@@ -63,13 +62,13 @@ export default class Hashing implements Hashing {
   /**
    * @internal
    *
-   * Hash an element of type {@link HashableInput} into {@link Number}
-   * Can be overrided as long as you return a value of type {@link Number}
+   * Hash an element of type {@link HashableInput} into a BigInt
+   * Can be overrided as long as you return a BigInt
    * Don't forget to use the seed when hashing, otherwise if some kind of randomness is in the process
    * you may have inconsistent behaviors between 2 runs.
    * @param element
    * @param seed
-   * @returns A 64bits floating point {@link Number}
+   * @returns Returns the hash of the element as a BigInt
    */
   public serialize(element: HashableInput, seed?: SeedType): bigint {
     if (!seed) {
