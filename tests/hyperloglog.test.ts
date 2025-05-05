@@ -74,7 +74,7 @@ describe('HyperLogLog', () => {
             'The two sketches cannot be merged, as they have different number of registers'
           )
         )
-      } catch (error) {
+      } catch {
         done()
       }
     })

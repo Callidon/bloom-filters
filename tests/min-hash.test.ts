@@ -86,7 +86,7 @@ describe('MinHash', () => {
             'compareWith should throw an error when we try to compare an empty set with another MinHash'
           )
         )
-      } catch (error) {
+      } catch {
         done()
       }
     })
@@ -102,7 +102,7 @@ describe('MinHash', () => {
             'compareWith should throw an error when we try to compare with an empty MinHash'
           )
         )
-      } catch (error) {
+      } catch {
         done()
       }
     })
