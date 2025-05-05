@@ -1,4 +1,6 @@
 import BaseFilter from '../base-filter'
+import { ExportedBigInt, SeedType } from '../types'
+import { exportBigInt, importBigInt } from '../utils'
 import CountMinSketch, {ExportedCountMinSketch} from './count-min-sketch'
 import sortedIndexBy from 'lodash/sortedIndexBy'
 
@@ -118,7 +120,7 @@ export class MinHeap {
 }
 
 export type ExportedTopK = {
-  _seed: number
+  _seed: ExportedBigInt
   _k: number
   _errorRate: number
   _accuracy: number
@@ -145,13 +147,16 @@ export default class TopK extends BaseFilter {
    * @param k - How many elements to store
    * @param errorRate - The error rate
    * @param accuracy  - The probability of accuracy
+   * @param seed - The seed to use (optional)
    */
-  constructor(k: number, errorRate: number, accuracy: number) {
+  constructor(k: number, errorRate: number, accuracy: number, seed?: SeedType) {
     super()
+    if (seed) this.seed = seed
     this._k = k
     this._errorRate = errorRate
     this._accuracy = accuracy
     this._sketch = CountMinSketch.create(errorRate, accuracy)
+    if (seed) this._sketch.seed = seed
     this._heap = new MinHeap()
   }
 
@@ -234,7 +239,7 @@ export default class TopK extends BaseFilter {
 
   public saveAsJSON(): ExportedTopK {
     return {
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
       _accuracy: this._accuracy,
       _errorRate: this._errorRate,
       _heap: this._heap.saveAsJSON(),
@@ -245,7 +250,7 @@ export default class TopK extends BaseFilter {
 
   public static fromJSON(element: ExportedTopK): TopK {
     const filter = new TopK(element._k, element._errorRate, element._accuracy)
-    filter.seed = element._seed
+    filter.seed = importBigInt(element._seed)
     filter._heap = MinHeap.fromJSON(element._heap)
     filter._sketch = CountMinSketch.fromJSON(element._sketch)
     return filter

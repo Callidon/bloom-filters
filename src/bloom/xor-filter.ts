@@ -1,10 +1,6 @@
 import BaseFilter from '../base-filter.js'
-import {
-  allocateArray,
-  exportBigInt,
-  ExportedBigInt,
-  importBigInt,
-} from '../utils.js'
+import {allocateArray, exportBigInt, importBigInt} from '../utils.js'
+import {ExportedBigInt} from '../types.js'
 import {HashableInput, SeedType} from '../types.js'
 import {xxh3} from '@node-rs/xxhash'
 
@@ -14,7 +10,7 @@ export type ExportedXorFilter = {
   _bits: XorSize
   _size: number
   _blockLength: number
-  _seed: number
+  _seed: ExportedBigInt
 }
 
 /**
@@ -158,13 +154,13 @@ export default class XorFilter extends BaseFilter {
    */
   public _create(elements: HashableInput[]) {
     // work only on bigint(s)
-    this.seed = 0
+    this.seed = 0n
 
     const reverseOrder: bigint[] = allocateArray(this._size, 0n)
     const reverseH: number[] = allocateArray(this._size, 0)
     let reverseOrderPos
     do {
-      this.seed = this.nextInt32()
+      this.seed = BigInt(this.nextInt32())
       const t2count = allocateArray(this._filter.length, 0)
       const t2 = allocateArray(this._filter.length, 0n)
       elements.forEach(k => {
@@ -301,7 +297,7 @@ export default class XorFilter extends BaseFilter {
       _bits: this._bits,
       _blockLength: this._blockLength,
       _filter: this._filter.map(e => exportBigInt(e)),
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
     }
   }
 
@@ -311,7 +307,7 @@ export default class XorFilter extends BaseFilter {
    */
   public static fromJSON(element: ExportedXorFilter): XorFilter {
     const bl = new XorFilter(element._size, element._bits)
-    bl.seed = element._seed
+    bl.seed = importBigInt(element._seed)
     bl._size = element._size
     bl._blockLength = element._blockLength
     bl._filter = element._filter.map(e => importBigInt(e))

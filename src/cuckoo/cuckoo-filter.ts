@@ -1,7 +1,15 @@
 import WritableFilter from '../interfaces/writable-filter'
 import BaseFilter from '../base-filter'
 import Bucket, {ExportedBucket} from './bucket'
-import {HashableInput, allocateArray, randomInt} from '../utils'
+import {
+  allocateArray,
+  bigIntToNumber,
+  exportBigInt,
+  importBigInt,
+  randomInt,
+} from '../utils'
+import {ExportedBigInt} from '../types'
+import {HashableInput} from '../types'
 
 export type ExportedCuckooFilter = {
   _size: number
@@ -9,7 +17,7 @@ export type ExportedCuckooFilter = {
   _length: number
   _maxKicks: number
   _filter: ExportedBucket<string>[]
-  _seed: number
+  _seed: ExportedBigInt
   _bucketSize: number
 }
 
@@ -194,7 +202,11 @@ export default class CuckooFilter
         movedElement = tmp
         // movedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
         const newHash = this._hashing.hashAsInt(movedElement, this.seed)
-        index = Math.abs(index ^ Math.abs(newHash)) % this._filter.length
+        const absNewHash = newHash < 0n ? -newHash : newHash
+        let _index = BigInt(index) ^ absNewHash
+        _index = _index < 0n ? -_index : _index
+        _index = _index % BigInt(this._filter.length)
+        index = bigIntToNumber(_index)
         // add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {
           this._filter[index].add(movedElement)
@@ -312,13 +324,15 @@ export default class CuckooFilter
       )
     }
     const fingerprint = hashes.string.substring(0, this._fingerprintLength)
-    const firstIndex = Math.abs(hash)
-    const secondHash = Math.abs(this._hashing.hashAsInt(fingerprint, this.seed))
-    const secondIndex = Math.abs(firstIndex ^ secondHash)
+    const firstIndex = hash < 0n ? -hash : hash
+    let secondHash = this._hashing.hashAsInt(fingerprint, this.seed)
+    secondHash = secondHash < 0n ? -secondHash : secondHash
+    let secondIndex = firstIndex ^ secondHash
+    secondIndex = secondIndex < 0n ? -secondIndex : secondIndex
     const res = {
       fingerprint,
-      firstIndex: firstIndex % this._size,
-      secondIndex: secondIndex % this._size,
+      firstIndex: bigIntToNumber(firstIndex % BigInt(this._size)),
+      secondIndex: bigIntToNumber(secondIndex % BigInt(this._size)),
     }
     return res
   }
@@ -352,7 +366,7 @@ export default class CuckooFilter
       _length: this._length,
       _maxKicks: this._maxKicks,
       _filter: this._filter.map(f => f.saveAsJSON()),
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
       _bucketSize: this._bucketSize,
     }
   }
@@ -369,7 +383,7 @@ export default class CuckooFilter
       element._bucketSize,
       element._maxKicks as number | undefined
     )
-    filter.seed = element._seed
+    filter.seed = importBigInt(element._seed)
     filter._length = element._length
     filter._filter = element._filter.map(e => Bucket.fromJSON<string>(e))
     return filter

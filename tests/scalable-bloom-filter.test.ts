@@ -1,9 +1,10 @@
 import {expect, test, describe} from '@jest/globals'
 import ScalableBloomFilter from 'bloom-filters/bloom/scalable-bloom-filter'
+import {getNewSeed} from './common'
 
 describe('ScalableBloomFilter', () => {
   const targetRate = 0.1
-  const seed = Math.random()
+  const seed = getNewSeed()
 
   describe('construction', () => {
     test('should #add add elements without error', () => {
@@ -62,7 +63,7 @@ describe('ScalableBloomFilter', () => {
       filter._filters.forEach(f => {
         expect(f.seed).toEqual(seed)
       })
-      expect(filter._filters.length).toEqual(7)
+      expect(filter._filters.length).toEqual(6)
     })
 
     test('should import/export correctly', () => {

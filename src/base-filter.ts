@@ -8,7 +8,7 @@ import {getDefaultSeed} from './utils'
  * @author Arnaud Grall
  */
 export default abstract class BaseFilter {
-  public _seed: number
+  public _seed: bigint
   public _rng: PRNG
   public _hashing: Hashing
 
@@ -21,7 +21,7 @@ export default abstract class BaseFilter {
   /**
    * Get the seed used in this structure
    */
-  public get seed(): number {
+  public get seed(): bigint {
     return this._seed
   }
 
@@ -29,7 +29,7 @@ export default abstract class BaseFilter {
    * Set the seed for this structure
    * @param  seed the new seed that will be used in this structure
    */
-  public set seed(seed: number) {
+  public set seed(seed: bigint) {
     this._seed = seed
     this._rng = seedrandom(`${this._seed}`)
   }

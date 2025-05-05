@@ -4,10 +4,12 @@ import {
   randomInt,
   xorUint8Array,
   getDefaultSeed,
+  bigIntToNumber,
 } from 'bloom-filters/utils'
 import BloomFilter from 'bloom-filters/bloom/bloom-filter'
-import XXH from 'xxhashjs'
 import Hashing from 'bloom-filters/hashing'
+import {xxh64} from '@node-rs/xxhash'
+import {SeedType} from 'bloom-filters/types'
 
 const seed = getDefaultSeed()
 
@@ -34,13 +36,21 @@ describe('Utils', () => {
     test('should perform a double hashing', () => {
       const hashing = new Hashing()
       const hashA = randomInt(Number.MIN_VALUE, Number.MAX_VALUE / 2)
+      const bigHashA = BigInt(hashA)
       const hashB = randomInt(Number.MAX_VALUE / 2, Number.MAX_VALUE)
+      const bigHashB = BigInt(hashB)
       const size = 1000
       const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
       values.forEach(n => {
-        expect(hashing.doubleHashing(n, hashA, hashB, size)).toEqual(
-          (hashA + n * hashB + (n ** 3 - n) / 6) % size
+        const nhash = bigIntToNumber(
+          hashing.doubleHashing(n, bigHashA, bigHashB, size)
         )
+        const bigN = BigInt(n)
+        const floor = bigN ** 3n - bigN / 6n
+        let value = (bigHashA + bigN * bigHashB + floor) % BigInt(size)
+        value = value < 0n ? -value : value
+        expect(nhash).toEqual(bigIntToNumber(value))
+        expect(nhash).toBeLessThan(size)
       })
     })
   })
@@ -83,7 +93,7 @@ describe('Utils', () => {
       let b = new Uint8Array(max).fill(0)
       let last
       for (let i = 0; i < max; i++) {
-        const s = XXH.h64('' + i, seed).toString(16)
+        const s = xxh64(`${i}`, seed).toString(16)
         const x = Buffer.from(s)
         const buf = new Uint8Array(x.buffer, x.byteOffset, x.byteLength)
         a = xorUint8Array(a, buf)
@@ -108,8 +118,8 @@ describe('Utils', () => {
     test('overriding serialize function by always returning Number(1)', () => {
       class CustomHashing extends Hashing {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        serialize(_element: string, _seed = undefined) {
-          return Number(1)
+        serialize(_element: string, _seed?: SeedType) {
+          return BigInt(1)
         }
       }
       const bl = BloomFilter.create(2, 0.01)

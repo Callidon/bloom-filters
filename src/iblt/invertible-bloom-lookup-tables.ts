@@ -1,8 +1,10 @@
 import BaseFilter from '../base-filter.js'
 import WritableFilter from '../interfaces/writable-filter.js'
 import Cell, {ExportedCell} from './cell.js'
-import {allocateArray} from '../utils.js'
+import {allocateArray, exportBigInt, importBigInt} from '../utils.js'
+import {ExportedBigInt} from '../types.js'
 import {xxh3} from '@node-rs/xxhash'
+import {SeedType} from '../types.js'
 
 /**
  * The reason why an Invertible Bloom Lookup Table decoding operation has failed
@@ -29,7 +31,7 @@ export type ExportedInvertibleBloomFilter = {
   _elements: ExportedCell[]
   _differences: number
   _alpha: number
-  _seed: number
+  _seed: ExportedBigInt
 }
 
 /**
@@ -60,7 +62,7 @@ export default class InvertibleBloomFilter
    * @param hashCount the number of hash functions used
    * @param seed (Optional) the seed to assign to the IBLT and its cells
    */
-  constructor(differences: number, alpha = 2, hashCount = 6, seed?: number) {
+  constructor(differences: number, alpha = 2, hashCount = 6, seed?: SeedType) {
     super()
     if (seed) {
       this.seed = seed
@@ -290,7 +292,7 @@ export default class InvertibleBloomFilter
       _elements: this._elements.map(e => e.saveAsJSON()),
       _size: this._size,
       _hashCount: this._hashCount,
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
     }
   }
 
@@ -301,7 +303,7 @@ export default class InvertibleBloomFilter
       element._differences,
       element._alpha,
       element._hashCount,
-      element._seed
+      importBigInt(element._seed)
     )
     filter._elements = element._elements.map(e => Cell.fromJSON(e))
     return filter

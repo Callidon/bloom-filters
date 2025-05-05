@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 // For documentation
-export {type HashableInput as HashableInput} from './utils'
+export {type HashableInput as HashableInput} from './types'
 
 // export all default
 export {default as BaseFilter} from './base-filter'

@@ -1,6 +1,12 @@
-import XXH from 'xxhashjs'
-import {getDefaultSeed, HashableInput, numberToHex} from './utils'
-import {TwoHashes, TwoHashesIntAndString, TwoHashesTemplated} from './types'
+import {bigIntToNumber, getDefaultSeed} from './utils'
+import {
+  HashableInput,
+  SeedType,
+  TwoHashes,
+  TwoHashesIntAndString,
+  TwoHashesTemplated,
+} from './types'
+import {xxh64} from '@node-rs/xxhash'
 
 export default class Hashing implements Hashing {
   /**
@@ -16,11 +22,15 @@ export default class Hashing implements Hashing {
    */
   public doubleHashing(
     n: number,
-    hashA: number,
-    hashB: number,
+    hashA: bigint,
+    hashB: bigint,
     size: number
-  ): number {
-    return Math.abs((hashA + n * hashB + Math.floor((n ** 3 - n) / 6)) % size)
+  ): bigint {
+    const bigN = BigInt(n)
+    const floor = bigN ** 3n - bigN / 6n
+    const value = (hashA + bigN * hashB + floor) % BigInt(size)
+    // compute absolute value of a bigint
+    return value < 0n ? -value : value
   }
 
   /**
@@ -37,7 +47,7 @@ export default class Hashing implements Hashing {
     element: HashableInput,
     size: number,
     hashCount: number,
-    seed?: number
+    seed?: SeedType
   ): Array<number> {
     if (seed === undefined) {
       seed = getDefaultSeed()
@@ -47,7 +57,7 @@ export default class Hashing implements Hashing {
     for (let i = 0; i < hashCount; i++) {
       arr.push(this.doubleHashing(i, hashes.first, hashes.second, size))
     }
-    return arr
+    return arr.map(bigIntToNumber)
   }
 
   /**
@@ -61,11 +71,11 @@ export default class Hashing implements Hashing {
    * @param seed
    * @returns A 64bits floating point {@link Number}
    */
-  public serialize(element: HashableInput, seed?: number) {
+  public serialize(element: HashableInput, seed?: SeedType): bigint {
     if (!seed) {
       seed = getDefaultSeed()
     }
-    return XXH.h64(element, seed).toNumber()
+    return xxh64(element, seed)
   }
 
   /**
@@ -75,13 +85,13 @@ export default class Hashing implements Hashing {
    * @return The results of the hash functions applied to the value (in hex or integer)
    * @author Arnaud Grall & Thomas Minier
    */
-  public hashTwice(value: HashableInput, seed?: number): TwoHashes {
+  public hashTwice(value: HashableInput, seed?: SeedType): TwoHashes {
     if (seed === undefined) {
       seed = getDefaultSeed()
     }
     return {
-      first: this.serialize(value, seed + 1),
-      second: this.serialize(value, seed + 2),
+      first: this.serialize(value, seed + 1n),
+      second: this.serialize(value, seed + 2n),
     }
   }
 
@@ -93,31 +103,31 @@ export default class Hashing implements Hashing {
    */
   public hashTwiceAsString(
     value: HashableInput,
-    seed?: number
+    seed?: SeedType
   ): TwoHashesTemplated<string> {
     const {first, second} = this.hashTwice(value, seed)
     return {
-      first: numberToHex(first),
-      second: numberToHex(second),
+      first: first.toString(16),
+      second: second.toString(16),
     }
   }
 
   /**
    * (64-bits only) Same as hashTwice but return Numbers and String equivalent
    * @param  val the value to hash
-   * @param  seed the seed to change when hashing
+   * @param  seed - The hash seed
    * @return TwoHashesIntAndString
    * @author Arnaud Grall
    */
   public hashTwiceIntAndString(
     val: HashableInput,
-    seed?: number
+    seed?: SeedType
   ): TwoHashesIntAndString {
     if (seed === undefined) {
       seed = getDefaultSeed()
     }
-    const one = this.hashIntAndString(val, seed + 1)
-    const two = this.hashIntAndString(val, seed + 2)
+    const one = this.hashIntAndString(val, seed + 1n)
+    const two = this.hashIntAndString(val, seed + 2n)
     return {
       int: {
         first: one.int,
@@ -133,11 +143,11 @@ export default class Hashing implements Hashing {
   /**
    * Hash an item as an unsigned int
    * @param  elem - Element to hash
-   * @param  seed - The hash seed. If its is UINT32 make sure to set the length to 32
+   * @param  seed - The hash seed
    * @return The hash value as an unsigned int
    * @author Arnaud Grall
    */
-  public hashAsInt(elem: HashableInput, seed?: number): number {
+  public hashAsInt(elem: HashableInput, seed?: SeedType): bigint {
     if (seed === undefined) {
       seed = getDefaultSeed()
     }
@@ -151,8 +161,8 @@ export default class Hashing implements Hashing {
    * @return The item hased as an int and a string
    * @author Arnaud Grall
    */
-  public hashIntAndString(elem: HashableInput, seed?: number) {
+  public hashIntAndString(elem: HashableInput, seed?: SeedType) {
     const hash = this.hashAsInt(elem, seed)
-    return {int: hash, string: numberToHex(hash)}
+    return {int: hash, string: hash.toString(16)}
   }
 }

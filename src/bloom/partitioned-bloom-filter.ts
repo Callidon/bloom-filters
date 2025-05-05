@@ -1,11 +1,12 @@
 import BaseFilter from '../base-filter.js'
 import ClassicFilter from '../interfaces/classic-filter.js'
-import {HashableInput, allocateArray} from '../utils.js'
-import {SeedType} from '../types.js'
+import {allocateArray, exportBigInt, importBigInt} from '../utils.js'
+import {ExportedBigInt} from '../types.js'
+import {HashableInput, SeedType} from '../types.js'
 import BitSet, {ExportedBitSet} from './bit-set.js'
 
 export type ExportedPartitionedBloomFilter = {
-  _seed: number
+  _seed: ExportedBigInt
   _bits: number
   _k: number
   _m: number
@@ -192,7 +193,7 @@ export default class PartitionedBloomFilter
       _bits: this._bits,
       _k: this._k,
       _filter: this._filter.map(m => m.export()),
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
       _m: this._m,
       _errorRate: this._errorRate,
     }
@@ -206,7 +207,7 @@ export default class PartitionedBloomFilter
       element._k,
       element._errorRate
     )
-    bl.seed = element._seed
+    bl.seed = importBigInt(element._seed)
     bl._m = element._m
     bl._filter = element._filter.map(b => BitSet.import(b))
     return bl

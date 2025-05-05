@@ -1,7 +1,4 @@
-/**
- * Data type of an hashable value, must be string, ArrayBuffer or Buffer.
- */
-export type HashableInput = string | ArrayBuffer | Buffer
+import {ExportedBigInt} from './types'
 
 /**
  * Create a new array fill with a base value
@@ -79,11 +76,11 @@ export function isEmptyBuffer(buffer: Buffer | null): boolean {
 
 /**
  * Return the default seed used in the package
- * @return A seed as a floating point number
+ * @return A seed as a big integer
  * @author Arnaud Grall
  */
-export function getDefaultSeed(): number {
-  return 0x1234567890
+export function getDefaultSeed(): bigint {
+  return 0x1234567890n
 }
 
 /**
@@ -137,10 +134,6 @@ export function arraysEqual(a: Uint8Array, b: Uint8Array): boolean {
  */
 export function getBigIntAbs(n: bigint): bigint {
   return n < 0n ? -n : n
-}
-
-export type ExportedBigInt = {
-  $bf$bigint: string
 }
 
 /**
