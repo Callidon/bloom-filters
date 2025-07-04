@@ -1,14 +1,15 @@
 import ClassicFilter from '../interfaces/classic-filter.js'
 import BaseFilter from '../base-filter.js'
-import {SeedType} from '../types.js'
+import {HashableInput, SeedType} from '../types.js'
 import PartitionBloomFilter, {
   ExportedPartitionedBloomFilter,
 } from './partitioned-bloom-filter.js'
 import seedrandom from 'seedrandom'
-import {HashableInput} from '../utils.js'
+import {exportBigInt, importBigInt} from '../utils.js'
+import {ExportedBigInt} from '../types.js'
 
 export type ExportedScalableBloomFilter = {
-  _seed: number
+  _seed: ExportedBigInt
   _initial_size: number
   _initial_error_rate: number
   _ratio: number
@@ -105,14 +106,12 @@ export default class ScalableBloomFilter
 
   public addFilter() {
     const index = this._filters.length
-    let newSize
-    let newErrorRate
-    let newHashes
+    let newErrorRate, newHashes, newSize
     if (index === 0) {
       newSize = this._initial_size
       newErrorRate = this._initial_error_rate
     } else {
-      newSize = this._filters[0]._m * Math.pow(ScalableBloomFilter._s, index)
+      newSize = this._filters[0]._m * ScalableBloomFilter._s ** index
       newErrorRate = this.current._errorRate * this._ratio
       newHashes = Math.ceil(
         this._filters[0]._k + index * Math.log2(1 / this._ratio)
@@ -132,11 +131,11 @@ export default class ScalableBloomFilter
    * @param element
    */
   public add(element: HashableInput) {
-    // determine if we need to create a new filter
+    // Determine if we need to create a new filter
     if (this.current.load() >= 0.5) {
       this.addFilter()
     }
-    // get the newly created filter
+    // Get the newly created filter
     this.current.add(element)
   }
 
@@ -186,7 +185,7 @@ export default class ScalableBloomFilter
       _initial_size: this._initial_size,
       _initial_error_rate: this._initial_error_rate,
       _filters: this._filters.map(filter => filter.saveAsJSON()),
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
       _ratio: this._ratio,
     }
   }
@@ -199,7 +198,7 @@ export default class ScalableBloomFilter
       element._initial_error_rate,
       element._ratio
     )
-    bl.seed = element._seed
+    bl.seed = importBigInt(element._seed)
     bl._filters = element._filters.map(filter =>
       PartitionBloomFilter.fromJSON(filter)
     )

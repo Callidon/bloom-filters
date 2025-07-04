@@ -130,8 +130,8 @@ export default class Bucket<T> {
    * @return The element that have been swapped with the parameter
    */
   public swapRandom(element: T, random: () => number = Math.random): T | null {
-    const index = utils.randomInt(0, this._length - 1, random)
-    const tmp = this._elements[index]
+    const index = utils.randomInt(0, this._length - 1, random),
+      tmp = this._elements[index]
     this._elements[index] = element
     return tmp
   }
@@ -154,8 +154,9 @@ export default class Bucket<T> {
    * @return True if the two buckets are equals, False otherwise
    */
   public equals(bucket: Bucket<T>): boolean {
-    if (this._size !== bucket.size || this._length !== bucket.length)
+    if (this._size !== bucket.size || this._length !== bucket.length) {
       return false
+    }
     return this._elements.every((elt, index) => eq(bucket.at(index), elt))
   }
 

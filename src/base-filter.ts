@@ -1,6 +1,7 @@
 import seedrandom, {PRNG} from 'seedrandom'
 import Hashing from './hashing'
 import {getDefaultSeed} from './utils'
+import { SeedType } from './types'
 
 /**
  * A base class for implementing probailistic filters
@@ -8,7 +9,7 @@ import {getDefaultSeed} from './utils'
  * @author Arnaud Grall
  */
 export default abstract class BaseFilter {
-  public _seed: number
+  public _seed: SeedType
   public _rng: PRNG
   public _hashing: Hashing
 
@@ -21,7 +22,7 @@ export default abstract class BaseFilter {
   /**
    * Get the seed used in this structure
    */
-  public get seed(): number {
+  public get seed(): SeedType {
     return this._seed
   }
 
@@ -29,7 +30,7 @@ export default abstract class BaseFilter {
    * Set the seed for this structure
    * @param  seed the new seed that will be used in this structure
    */
-  public set seed(seed: number) {
+  public set seed(seed: SeedType) {
     this._seed = seed
     this._rng = seedrandom(`${this._seed}`)
   }

@@ -1,8 +1,9 @@
 import BaseFilter from '../base-filter'
-import {allocateArray} from '../utils'
+import {ExportedBigInt} from '../types'
+import {allocateArray, exportBigInt, importBigInt} from '../utils'
 
 export type ExportedMinHash = {
-  _seed: number
+  _seed: ExportedBigInt
   _nbHashes: number
   _hashFunctions: HashFunction[]
   _signature: number[]
@@ -95,9 +96,9 @@ export default class MinHash extends BaseFilter {
       const candidateSignatures = values.map((value: number) =>
         applyHashFunction(value, this._hashFunctions[i])
       )
-      // get the minimum of the candidate Signatures
-      // dont supply too much parameters to Math.min or Math.max with risk of getting stack error
-      // so we compute an iterative minimum
+      // Get the minimum of the candidate Signatures
+      // Dont supply too much parameters to Math.min or Math.max with risk of getting stack error
+      // So we compute an iterative minimum
       let min = candidateSignatures[0]
       for (let i = 1; i < candidateSignatures.length; i++) {
         if (min > candidateSignatures[i]) {
@@ -119,8 +120,8 @@ export default class MinHash extends BaseFilter {
         'Cannot compute a Jaccard similairty with a MinHash that contains no values'
       )
     }
-    // fix: we need to check for the number of equal signatures, not uniq equal signatures
-    // lodash intersection ends with a uniq set of values
+    // Fix: we need to check for the number of equal signatures, not uniq equal signatures
+    // Lodash intersection ends with a uniq set of values
     let count = 0
     for (let i = 0; i < this._nbHashes; i++) {
       if (this._signature[i] === other._signature[i]) {
@@ -135,13 +136,13 @@ export default class MinHash extends BaseFilter {
       _hashFunctions: this._hashFunctions,
       _nbHashes: this._nbHashes,
       _signature: this._signature,
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
     }
   }
 
   public static fromJSON(element: ExportedMinHash): MinHash {
     const filter = new MinHash(element._nbHashes, element._hashFunctions)
-    filter.seed = element._seed
+    filter.seed = importBigInt(element._seed)
     filter._signature = element._signature
     return filter
   }

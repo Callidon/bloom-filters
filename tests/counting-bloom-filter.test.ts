@@ -1,5 +1,6 @@
 import {expect, test, describe} from '@jest/globals'
 import CountingBloomFilter from 'bloom-filters/bloom/counting-bloom-filter'
+import {exportBigInt} from 'bloom-filters/utils'
 
 describe('CountingBloomFilter', () => {
   const targetRate = 0.1
@@ -102,7 +103,7 @@ describe('CountingBloomFilter', () => {
     test('should export a bloom filter to a JSON object', () => {
       const filter = getFilter()
       const exported = filter.saveAsJSON()
-      expect(exported._seed).toEqual(filter.seed)
+      expect(exported._seed).toEqual(exportBigInt(filter.seed))
       expect(exported._size).toEqual(filter.size)
       expect(exported._length).toEqual(filter.length)
       expect(exported._nbHashes).toEqual(filter._nbHashes)

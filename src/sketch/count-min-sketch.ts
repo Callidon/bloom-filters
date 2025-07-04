@@ -1,9 +1,10 @@
 import BaseFilter from '../base-filter'
 import CountingFilter from '../interfaces/counting-filter'
-import {allocateArray, HashableInput} from '../utils'
+import {ExportedBigInt, HashableInput, SeedType} from '../types'
+import {allocateArray, exportBigInt, importBigInt} from '../utils'
 
 export type ExportedCountMinSketch = {
-  _seed: number
+  _seed: ExportedBigInt
   _columns: number
   _rows: number
   _matrix: number[][]
@@ -33,8 +34,11 @@ export default class CountMinSketch
    * @param columns - Number of columns
    * @param rows - Number of rows
    */
-  constructor(columns: number, rows: number) {
+  constructor(columns: number, rows: number, seed?: SeedType) {
     super()
+    if (seed) {
+      this.seed = seed
+    }
     this._columns = columns
     this._rows = rows
     this._matrix = allocateArray(this._rows, () =>
@@ -50,9 +54,9 @@ export default class CountMinSketch
    * @return A new Count Min Sketch optimal for the input parameters
    */
   public static create(errorRate: number, accuracy = 0.999): CountMinSketch {
-    // columns = Math.ceil(Math.E / epsilon) and rows = Math.ceil(Math.log(1 / delta))
-    const columns = Math.ceil(Math.E / errorRate)
-    const rows = Math.ceil(Math.log(1 / accuracy))
+    // Columns = Math.ceil(Math.E / epsilon) and rows = Math.ceil(Math.log(1 / delta))
+    const columns = Math.ceil(Math.E / errorRate),
+      rows = Math.ceil(Math.log(1 / accuracy))
     return new CountMinSketch(columns, rows)
   }
 
@@ -66,9 +70,13 @@ export default class CountMinSketch
   public static from(
     items: Iterable<HashableInput>,
     errorRate: number,
-    accuracy = 0.999
+    accuracy = 0.999,
+    seed?: SeedType
   ): CountMinSketch {
     const filter = CountMinSketch.create(errorRate, accuracy)
+    if (seed) {
+      filter.seed = seed
+    }
     for (const item of items) {
       filter.update(item)
     }
@@ -191,13 +199,13 @@ export default class CountMinSketch
       _matrix: this._matrix,
       _rows: this._rows,
       _columns: this._columns,
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
     }
   }
 
   public static fromJSON(element: ExportedCountMinSketch): CountMinSketch {
     const filter = new CountMinSketch(element._columns, element._rows)
-    filter.seed = element._seed
+    filter.seed = importBigInt(element._seed)
     filter._matrix = element._matrix
     filter._allSums = element._allSums
     return filter

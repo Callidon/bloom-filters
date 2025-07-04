@@ -9,12 +9,12 @@ export default interface CountingFilter<T> {
    * @param element - The new element
    * @param count - Number of occurences of the elemnt (defauls to one)
    */
-  update(element: T, count: number): void
+  update(element: T, count: number): void // eslint-disable-line no-unused-vars
 
   /**
    * Perform a point query: estimate the number of occurence of an element
    * @param element - The element we want to count
    * @return The estimate number of occurence of the element
    */
-  count(element: T): number
+  count(element: T): number // eslint-disable-line no-unused-vars
 }

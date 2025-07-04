@@ -1,9 +1,11 @@
 import {expect, test, describe} from '@jest/globals'
 import BloomFilter from 'bloom-filters/bloom/bloom-filter'
+import {exportBigInt, getDefaultSeed} from 'bloom-filters/utils'
+import {getSeedTest} from './common'
 
 describe('BloomFilter', () => {
   const targetRate = 0.1
-  const seed = Math.random()
+  const seed = getSeedTest()
 
   describe('construction', () => {
     test('should add element to the filter with #add', () => {
@@ -30,13 +32,13 @@ describe('BloomFilter', () => {
       expect(filter.length).toBeGreaterThan(0)
       expect(filter.length).toBeLessThanOrEqual(filter._nbHashes * data.length)
       expect(filter.rate()).toBeCloseTo(targetRate, 0.1)
-      expect(filter.seed).toEqual(0x1234567890) // utils.getDefaultSeed()
+      expect(filter.seed).toEqual(getDefaultSeed())
     })
   })
 
   describe('#has', () => {
     const getFilter = () =>
-      BloomFilter.from(['alice', 'bob', 'carl'], targetRate)
+      BloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
     test('should return false for elements that are definitively not in the set', () => {
       const filter = getFilter()
       expect(filter.has('daniel')).toEqual(false)
@@ -53,8 +55,16 @@ describe('BloomFilter', () => {
 
   describe('#equals', () => {
     test('should returns True when two filters are equals', () => {
-      const first = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
-      const other = BloomFilter.from(['alice', 'bob', 'carol'], targetRate)
+      const first = BloomFilter.from(
+        ['alice', 'bob', 'carol'],
+        targetRate,
+        seed
+      )
+      const other = BloomFilter.from(
+        ['alice', 'bob', 'carol'],
+        targetRate,
+        seed
+      )
       expect(first.equals(other)).toEqual(true)
     })
 
@@ -81,7 +91,7 @@ describe('BloomFilter', () => {
     const filter = BloomFilter.from(['alice', 'bob', 'carl'], targetRate, seed)
     test('should export a bloom filter to a JSON object', () => {
       const exported = filter.saveAsJSON()
-      expect(exported._seed).toEqual(filter.seed)
+      expect(exported._seed).toEqual(exportBigInt(filter.seed))
       expect(exported._size).toEqual(filter.size)
       expect(exported._nbHashes).toEqual(filter._nbHashes)
       expect(exported._filter).toEqual(filter._filter.export())
@@ -101,7 +111,7 @@ describe('BloomFilter', () => {
   })
 
   describe('Performance test', () => {
-    const max = 1000
+    const max = 10000
     const targetedRate = 0.01
     test(`should not return an error when inserting ${max} elements`, () => {
       const filter = BloomFilter.create(max, targetedRate)

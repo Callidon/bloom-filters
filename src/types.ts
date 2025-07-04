@@ -5,8 +5,8 @@
  * @memberof Utils
  */
 export interface TwoHashes {
-  first: number // bigint
-  second: number // bigint
+  first: bigint
+  second: bigint
 }
 
 /**
@@ -21,7 +21,7 @@ export interface TwoHashesTemplated<T> {
  * TwoHashes type in bigint and int format
  */
 export interface TwoHashesIntAndString {
-  int: TwoHashesTemplated<number> // TwoHashesTemplated<bigint>
+  int: TwoHashesTemplated<bigint>
   string: TwoHashesTemplated<string>
 }
 
@@ -33,4 +33,7 @@ export type HashableInput = string | Uint8Array
 /**
  * Type of the seed used in this package
  */
-export type SeedType = number
+export type SeedType = bigint
+export type ExportedBigInt = {
+  $bf$bigint: string
+}

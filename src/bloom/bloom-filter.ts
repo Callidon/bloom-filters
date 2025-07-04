@@ -2,13 +2,15 @@ import ClassicFilter from '../interfaces/classic-filter'
 import BaseFilter from '../base-filter'
 import BitSet, {ExportedBitSet} from './bit-set'
 import {optimalFilterSize, optimalHashes} from '../formulas'
-import {HashableInput} from '../utils'
+import {exportBigInt, importBigInt} from '../utils'
+import {ExportedBigInt} from '../types'
+import {HashableInput, SeedType} from '../types'
 
 export type ExportedBloomFilter = {
   _size: number
   _nbHashes: number
   _filter: ExportedBitSet
-  _seed: number
+  _seed: ExportedBigInt
 }
 
 /**
@@ -52,8 +54,8 @@ export default class BloomFilter
    * @return A new {@link BloomFilter}
    */
   public static create(nbItems: number, errorRate: number): BloomFilter {
-    const size = optimalFilterSize(nbItems, errorRate)
-    const hashes = optimalHashes(size, nbItems)
+    const size = optimalFilterSize(nbItems, errorRate),
+      hashes = optimalHashes(size, nbItems)
     return new this(size, hashes)
   }
 
@@ -72,11 +74,11 @@ export default class BloomFilter
   public static from(
     items: Iterable<HashableInput>,
     errorRate: number,
-    seed?: number
+    seed?: SeedType
   ): BloomFilter {
-    const array = Array.from(items)
-    const filter = BloomFilter.create(array.length, errorRate)
-    if (typeof seed === 'number') {
+    const array = Array.from(items),
+      filter = BloomFilter.create(array.length, errorRate)
+    if (seed) {
       filter.seed = seed
     }
     array.forEach(element => filter.add(element))
@@ -157,7 +159,7 @@ export default class BloomFilter
    * ```
    */
   public rate(): number {
-    return Math.pow(1 - Math.exp(-this.length / this._size), this._nbHashes)
+    return (1 - Math.exp(-this.length / this._size)) ** this._nbHashes
   }
 
   /**
@@ -177,13 +179,13 @@ export default class BloomFilter
       _size: this._size,
       _nbHashes: this._nbHashes,
       _filter: this._filter.export(),
-      _seed: this._seed,
+      _seed: exportBigInt(this._seed),
     }
   }
 
   public static fromJSON(element: ExportedBloomFilter): BloomFilter {
     const bl = new BloomFilter(element._size, element._nbHashes)
-    bl.seed = element._seed
+    bl.seed = importBigInt(element._seed)
     const data = element._filter
     if (Array.isArray(data)) {
       const bs = new BitSet(data.length)
