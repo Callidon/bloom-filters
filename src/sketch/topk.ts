@@ -65,7 +65,7 @@ export class MinHeap {
    * @param element - Element to insert
    */
   public add(element: HeapElement) {
-    // Kepp items sorted by frequency
+    // Keep items sorted by frequency
     const index = sortedIndexBy(
       this._content,
       element,
