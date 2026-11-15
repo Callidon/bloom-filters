@@ -103,22 +103,14 @@ export default class HyperLogLog extends BaseFilter {
       // The last k are the next
       second = x.slice(0, k),
       registerIndex = parseInt(first, 2)
-    // Find the left most 1-bit in the second part of the buffer
-    // Simple while loop
-    let leftmost_pos = k - 1,
-      found = false,
-      i = 0
-    while (!found && i < second.length) {
-      if (second[i] === '1') {
-        found = true
-        leftmost_pos = i
-      } else {
-        i++
-      }
-    }
+    // Compute the rank, denoted rho in the algorithm: the 1-based position of the
+    // leftmost 1-bit in the second part of the buffer, or k + 1 if there is none.
+    // The rank is always >= 1, so a register set to 0 has never been updated.
+    const leftmost_pos = second.indexOf('1'),
+      rank = leftmost_pos === -1 ? k + 1 : leftmost_pos + 1
     this._registers[registerIndex] = Math.max(
       this._registers[registerIndex],
-      leftmost_pos
+      rank
     )
   }
 
@@ -132,7 +124,7 @@ export default class HyperLogLog extends BaseFilter {
         (acc: number, value: number) => acc + 2 ** -value,
         0
       ),
-      raw_estimation = (this._correctionBias * this._m * this._m * 2) / Z
+      raw_estimation = (this._correctionBias * this._m * this._m) / Z
 
     let corrected_estimation
     if (raw_estimation <= (5 / 2) * this._m) {

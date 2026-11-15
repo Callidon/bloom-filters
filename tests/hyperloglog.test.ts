@@ -46,6 +46,44 @@ describe('HyperLogLog', () => {
     })
   })
 
+  describe('#count', () => {
+    test('should return 0 for an empty sketch', () => {
+      expect(new HyperLogLog(1024).count()).toEqual(0)
+    })
+
+    test('should store ranks >= 1 so that only untouched registers are equal to zero', () => {
+      const sketch = new HyperLogLog(1024)
+      sketch.update('alice')
+      expect(sketch._registers.filter(v => v !== 0)).toHaveLength(1)
+      expect(Math.round(sketch.count())).toEqual(1)
+    })
+
+    // Regression test for https://github.com/Callidon/bloom-filters/issues/131
+    // n = 10..2000 hits the small range correction (linear counting),
+    // n = 3000 and 5000 sit just above the 5m/2 threshold.
+    test.each([10, 100, 500, 1000, 2000, 3000, 5000])(
+      'should estimate small cardinalities (n = %i, m = 1024)',
+      n => {
+        const m = 1024
+        const sketch = new HyperLogLog(m)
+        for (let i = 0; i < n; i++) {
+          sketch.update(i.toString())
+        }
+        // within 3σ of the exact count, with a floor of 2 for tiny n
+        const tolerance = Math.max(2, 3 * sketch.relative_error() * n)
+        expect(Math.abs(sketch.count() - n)).toBeLessThanOrEqual(tolerance)
+      }
+    )
+
+    test('should ignore duplicated elements', () => {
+      const sketch = new HyperLogLog(1024)
+      for (let i = 0; i < 5000; i++) {
+        sketch.update((i % 100).toString())
+      }
+      expect(Math.abs(sketch.count() - 100)).toBeLessThanOrEqual(10)
+    })
+  })
+
   describe('#merge', () => {
     test('should peforms the union of two HyperLogLog sketches', () => {
       const first = new HyperLogLog(8)
