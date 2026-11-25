@@ -11,19 +11,33 @@ describe('CuckooFilter', () => {
       const hash = hashes.int
       const fingerprint = hashes.string.substring(0, 3)
 
-      const firstIndex = getBigIntAbs(hash)
-      let secondHash = filter._hashing.hashAsInt(fingerprint, filter.seed)
-      secondHash = getBigIntAbs(secondHash)
-      let secondIndex = firstIndex ^ secondHash
-      secondIndex = getBigIntAbs(secondIndex)
+      const firstIndex = bigIntToNumber(
+        getBigIntAbs(hash) % BigInt(filter.size)
+      )
+      const secondIndex = filter._alternateIndex(firstIndex, fingerprint)
       const locations = filter._locations(element)
       expect(locations.fingerprint).toBe(fingerprint)
-      expect(locations.firstIndex).toBe(
-        bigIntToNumber(firstIndex % BigInt(filter.size))
-      )
-      expect(locations.secondIndex).toBe(
-        bigIntToNumber(secondIndex % BigInt(filter.size))
-      )
+      expect(locations.firstIndex).toBe(firstIndex)
+      expect(locations.secondIndex).toBe(secondIndex)
+    })
+
+    test('should find each of the two buckets from the other one', () => {
+      for (const size of [1, 2, 10, 15, 16, 101]) {
+        const filter = new CuckooFilter(size, 3, 2)
+        for (let i = 0; i < 50; i++) {
+          const {fingerprint, firstIndex, secondIndex} = filter._locations(
+            '' + i
+          )
+          expect(secondIndex).toBeGreaterThanOrEqual(0)
+          expect(secondIndex).toBeLessThan(size)
+          expect(filter._alternateIndex(firstIndex, fingerprint)).toBe(
+            secondIndex
+          )
+          expect(filter._alternateIndex(secondIndex, fingerprint)).toBe(
+            firstIndex
+          )
+        }
+      }
     })
   })
 
@@ -93,17 +107,10 @@ describe('CuckooFilter', () => {
     })
 
     test('should not rollback to its initial state in case the filter is full with option add(x, false, true)', () => {
-      const filter = new CuckooFilter(10, 3, 1)
-      expect(filter.add('a')).toEqual(true)
-      expect(filter.add('b')).toEqual(true)
-      expect(filter.add('c')).toEqual(true)
-      expect(filter.add('d')).toEqual(true)
-      expect(filter.add('e')).toEqual(true)
-      expect(filter.add('f')).toEqual(true)
-      expect(filter.add('h')).toEqual(true)
-      expect(filter.add('i')).toEqual(true)
-      expect(filter.add('j')).toEqual(true)
-      expect(filter.add('k')).toEqual(true)
+      const filter = new CuckooFilter(10, 3, 1, 1)
+      for (let i = 0; filter._filter.some(bucket => bucket.isFree()); i++) {
+        filter.add('' + i)
+      }
       const snapshot = JSON.stringify(filter.saveAsJSON())
       expect(filter.add('l', false, true)).toEqual(false)
       const snapshot2 = JSON.stringify(filter.saveAsJSON())
@@ -115,16 +122,9 @@ describe('CuckooFilter', () => {
 
     test('should rollback to its initial state in case the filter is full', () => {
       const filter = new CuckooFilter(10, 3, 1)
-      expect(filter.add('a')).toEqual(true)
-      expect(filter.add('b')).toEqual(true)
-      expect(filter.add('c')).toEqual(true)
-      expect(filter.add('d')).toEqual(true)
-      expect(filter.add('e')).toEqual(true)
-      expect(filter.add('f')).toEqual(true)
-      expect(filter.add('h')).toEqual(true)
-      expect(filter.add('i')).toEqual(true)
-      expect(filter.add('j')).toEqual(true)
-      expect(filter.add('k')).toEqual(true)
+      for (let i = 0; filter._filter.some(bucket => bucket.isFree()); i++) {
+        filter.add('' + i)
+      }
       const snapshot = JSON.stringify(filter.saveAsJSON())
       expect(filter.add('l')).toEqual(false)
       const snapshot2 = JSON.stringify(filter.saveAsJSON())
@@ -236,6 +236,28 @@ describe('CuckooFilter', () => {
       ).toEqual(true)
     })
   })
+  describe('#create', () => {
+    test.each([
+      [10, 4],
+      [50, 4],
+      [100, 4],
+      [1000, 4],
+      [1000, 2],
+    ])(
+      'should contain all of %d elements, bucketSize = %d',
+      (max, bucketSize) => {
+        const filter = CuckooFilter.create(max, 0.01, bucketSize)
+        for (let i = 0; i < max; i++) {
+          expect(filter.add('' + i)).toEqual(true)
+        }
+        for (let i = 0; i < max; i++) {
+          expect(filter.has('' + i)).toEqual(true)
+        }
+        expect(filter.length).toEqual(max)
+      }
+    )
+  })
+
   describe('Performance test', () => {
     const max = 20
     const rate = 0.000000000000000001

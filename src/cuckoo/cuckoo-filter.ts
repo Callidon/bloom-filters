@@ -36,6 +36,20 @@ function computeFingerpintLength(size: number, rate: number): number {
 }
 
 /**
+ * Compute the load that a cuckoo filter can reach before insertions start to fail
+ * (see section 5.1 of the paper)
+ * @param  bucketSize - The size of the buckets in the filter
+ * @return The maximum load
+ * @private
+ */
+function computeMaxLoad(bucketSize: number): number {
+  if (bucketSize === 1) {
+    return 0.5
+  }
+  return bucketSize < 4 ? 0.84 : 0.955
+}
+
+/**
  * Cuckoo filters improve on Bloom filters by supporting deletion, limited counting,
  * and bounded False positive rate with similar storage efficiency as a standard Bloom filter.
  *
@@ -91,7 +105,7 @@ export default class CuckooFilter
     maxKicks = 500
   ): CuckooFilter {
     const fl = computeFingerpintLength(bucketSize, errorRate),
-      capacity = Math.ceil(size / bucketSize / 0.955)
+      capacity = Math.ceil(size / bucketSize / computeMaxLoad(bucketSize))
     return new CuckooFilter(capacity, fl, bucketSize, maxKicks)
   }
 
@@ -202,12 +216,7 @@ export default class CuckooFilter
         this._filter[index].set(rndIndex, movedElement)
         movedElement = tmp
         // MovedElement = this._filter[index].set(rndswapRandom(movedElement, this._rng)
-        const newHash = this._hashing.hashAsInt(movedElement, this.seed),
-          absNewHash = getBigIntAbs(newHash)
-        let _index = BigInt(index) ^ absNewHash
-        _index = getBigIntAbs(_index)
-        _index %= BigInt(this._filter.length)
-        index = bigIntToNumber(_index)
+        index = this._alternateIndex(index, movedElement)
         // Add the moved element to the bucket if possible
         if (this._filter[index].isFree()) {
           this._filter[index].add(movedElement)
@@ -325,17 +334,27 @@ export default class CuckooFilter
       )
     }
     const fingerprint = hashes.string.substring(0, this._fingerprintLength),
-      firstIndex = hash < 0n ? -hash : hash
-    let secondHash = this._hashing.hashAsInt(fingerprint, this.seed)
-    secondHash = secondHash < 0n ? -secondHash : secondHash
-    let secondIndex = firstIndex ^ secondHash
-    secondIndex = secondIndex < 0n ? -secondIndex : secondIndex
-    const res = {
+      firstIndex = bigIntToNumber(getBigIntAbs(hash) % BigInt(this._size))
+    return {
       fingerprint,
-      firstIndex: bigIntToNumber(firstIndex % BigInt(this._size)),
-      secondIndex: bigIntToNumber(secondIndex % BigInt(this._size)),
+      firstIndex,
+      secondIndex: this._alternateIndex(firstIndex, fingerprint),
     }
-    return res
+  }
+
+  /**
+   * Compute the index of the other bucket of a fingerprint. It only depends on the fingerprint and
+   * the index of the bucket it is in, and going from one bucket to the other works in both directions.
+   * The XOR of the paper does that only if the number of buckets is a power of two.
+   * @param index - The index of one of the two buckets
+   * @param fingerprint - The fingerprint
+   * @return The index of the other bucket
+   * @private
+   */
+  public _alternateIndex(index: number, fingerprint: string): number {
+    const size = BigInt(this._size),
+      hash = getBigIntAbs(this._hashing.hashAsInt(fingerprint, this.seed))
+    return bigIntToNumber(((hash % size) - BigInt(index) + size) % size)
   }
 
   /**
